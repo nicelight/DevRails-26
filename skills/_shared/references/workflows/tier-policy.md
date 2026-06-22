@@ -57,7 +57,7 @@ Tier summary:
 Execution Packets are derivative runtime artifacts:
 
 ```text
-.memory-bank/packets/TASK-XXX.packet.json
+.memory-bank/packets/TASK-NNN-FT-NNN-W-N.packet.json
 ```
 
 They summarize task purpose, linked specs, allowed/forbidden scope,
@@ -71,13 +71,13 @@ Rules:
 - `T2` / `T3` tasks require a usable packet before implementation regardless
   of whether older task records omit `runtime_context.packet_required`.
 - `/foundation-to-tasks` and `/prd-to-tasks` must set `runtime_context.packet_required: true` and
-  `runtime_context.packet_ref: ".memory-bank/packets/TASK-<ID>.packet.json"`
+  `runtime_context.packet_ref: ".memory-bank/packets/<task.id>.packet.json"`
   for generated `T2` / `T3` task records. If a task is downgraded to `T0` /
   `T1`, do not infer or add packet requirement from the old planned tier.
 - If a `T2` / `T3` task record has `runtime_context.packet_required: false`,
   treat it as a policy violation, not permission to skip the packet.
 - Required packet gates use canonical
-  `.memory-bank/packets/TASK-<ID>.packet.json` when `packet_ref` is absent.
+  `.memory-bank/packets/<task.id>.packet.json` when `packet_ref` is absent.
 - For required packet gates, `/verify`, `/red-verify`, `/autopilot`, and
   `/autonomous` must block on missing, malformed, stale, blocked, or
   hash-mismatched packets.

@@ -55,7 +55,7 @@ Read `.memory-bank/foundation.md` and require this parseable section:
 - Foundation Required: true|false
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: TASK-<ID>|not_required
+- Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required
 ```
 
 Rules:
@@ -115,7 +115,7 @@ Create normal schema-backed task records only:
 
 ```json
 {
-  "id": "TASK-000",
+  "id": "TASK-000-FT-000-W-0",
   "title": "Create minimal executable skeleton",
   "status": "ready",
   "wave": "W0",
@@ -137,9 +137,10 @@ Create normal schema-backed task records only:
 ```
 
 Task rules:
-- prefer `TASK-000` for the first foundation task; otherwise use the next safe
-  `TASK-*` ID without renumbering existing tasks
+- prefer `TASK-000-FT-000-W-0` for the first foundation task; otherwise use the next safe
+  `TASK-<NNN>-FT-000-W-<N>` ID without renumbering existing tasks
 - use `feature: "FT-000"` for every foundation task
+- task id feature and wave segments must match the task record fields
 - use `reqs: ["REQ-000"]` unless a task also traces to concrete product
   requirements
 - use `wave: "W0"` only for project executable baseline tasks under `FT-000`
@@ -165,13 +166,13 @@ product feature tasking.
 When foundation is required, create exactly one final gate task.
 
 Rules:
-- it must be a normal `TASK-*` record with `feature: "FT-000"` and
+- it must be a normal `TASK-NNN-FT-000-W-N` record with `feature: "FT-000"` and
   `reqs: ["REQ-000"]`
 - it depends on every required foundation implementation/probe task
 - it verifies the minimal work path and all required compatibility probes
 - it records evidence requirements for build/start/test/smoke success
 - it is the task named by `.memory-bank/foundation.md`
-  `Foundation Gate Task: TASK-<ID>`
+  `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>`
 - product feature tasks created later by `/prd-to-tasks` must depend on this
   gate task when foundation is required
 
@@ -186,7 +187,7 @@ Create or refresh required initial Execution Packets for:
   `runtime_context.packet_required: true`
 
 Use the same packet rules as `/prd-to-tasks`:
-- canonical path `.memory-bank/packets/TASK-<ID>.packet.json`
+- canonical path `.memory-bank/packets/<task.id>.packet.json`
 - `source_task_hash` over the raw task record bytes
 - packet is derivative and never overrides task/spec/foundation truth
 - use `status: ready`, `ready_with_gaps`, or `blocked`

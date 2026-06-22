@@ -1,4 +1,4 @@
-# memobank
+# factory for development
 
 ![Схема MEMOFLOW](devrails.jpg)
 
@@ -111,7 +111,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Когда:** после `/spec-design`, если `.memory-bank/foundation.md` говорит `Foundation Required: true`.
 
-   **Создает/обновляет:** `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.protocols/FT-000/*`, `.memory-bank/tasks/plans/IMPL-FT-000.md`, normal JSON `TASK-*` records для foundation и final foundation gate task. Свежий bootstrap это не создает.
+   **Создает/обновляет:** `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.protocols/FT-000/*`, `.memory-bank/tasks/plans/IMPL-FT-000.md`, normal JSON `TASK-NNN-FT-000-W-N` records для foundation и final foundation gate task. Свежий bootstrap это не создает.
 
    **Дальше:** `/mb-doctor` на foundation/task-queue boundary, затем `/execute`/`/verify` foundation tasks до `done` у final gate task.
 
@@ -129,7 +129,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** feature-level SDD design status/spec links, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
 
-   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-*`; `/verify TASK-*` выполняется после реализации конкретной задачи.
+   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-FT-NNN-W-N`; `/verify TASK-NNN-FT-NNN-W-N` выполняется после реализации конкретной задачи.
 
 9. `/mb-doctor`
 
@@ -137,25 +137,25 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** report readiness findings; не заменяет `/verify` и не исполняет tasks.
 
-   **Дальше:** исправить findings или перейти к `/execute TASK-*`.
+   **Дальше:** исправить findings или перейти к `/execute TASK-NNN-FT-NNN-W-N`.
 
-10. `/execute TASK-*`
+10. `/execute TASK-NNN-FT-NNN-W-N`
 
    **Когда:** для реализации одной конкретной задачи из task record.
 
-   **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-*/`, evidence и handoff в `.tasks/TASK-*/`.
+   **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-NNN-FT-NNN-W-N/`, evidence и handoff в `.tasks/TASK-NNN-FT-NNN-W-N/`.
 
-   **Дальше:** запустить `/verify TASK-*`.
+   **Дальше:** запустить `/verify TASK-NNN-FT-NNN-W-N`.
 
-11. `/verify TASK-*`
+11. `/verify TASK-NNN-FT-NNN-W-N`
 
    **Когда:** после реализации задачи.
 
    **Создает/обновляет:** verification evidence, verdict `PASS` или `FAIL`, task/protocol state по результату проверки.
 
-   **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-*`; иначе перейти к `/mb-sync`.
+   **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-NNN-FT-NNN-W-N`; иначе перейти к `/mb-sync`.
 
-12. `/red-verify TASK-*`
+12. `/red-verify TASK-NNN-FT-NNN-W-N`
 
    **Когда:** обязательно для T3 task closure; опционально для T2 task closure; обязательно как `/red-verify --feature FT-*` перед T2 feature completion. Feature-level verdict записывается в сам feature doc. Особенно полезно там, где обычные tests могут пройти, но решение может быть неверным по смыслу.
 

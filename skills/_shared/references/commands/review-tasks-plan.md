@@ -56,7 +56,7 @@ Must check:
   `normative_inputs`, `constraints`, `invariants`, `verification_targets`, or
   feature `spec_design_links`.
 - T2/T3 tasks and explicit packet-required T0/T1 tasks have usable canonical
-  `.memory-bank/packets/TASK-<ID>.packet.json`.
+  `.memory-bank/packets/<task.id>.packet.json`.
 - Product tasks do not use `W0`; `W0` is reserved for `FT-000`.
 - If foundation is required, every non-`FT-000` product task depends directly
   or transitively on the final foundation gate task, and that gate is `done`
@@ -85,7 +85,7 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 
 ## 5) Handoff
 When approved:
-- for manual `/execute TASK-<ID>`, run normal `/mb-doctor`
+- for manual `/execute TASK-<NNN>-FT-<NNN>-W-<N>`, run normal `/mb-doctor`
 - for `/autopilot` or autonomous scheduler execution, run `/mb-doctor --strict`
 - then start the selected execution mode
 </process>

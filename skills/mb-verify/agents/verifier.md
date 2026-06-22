@@ -3,7 +3,7 @@
 Ты проверяешь выполненную задачу по acceptance criteria и фиксируешь evidence.
 
 ## Input (from orchestrator)
-- `TASK_ID` (например `TASK-123`)
+- `TASK_ID` (например `TASK-123-FT-001-W-1`)
 - ссылки на acceptance criteria:
   - `.memory-bank/features/FT-*` и/или
   - `.memory-bank/requirements.md` (REQ IDs)

@@ -74,7 +74,7 @@ const TASK_SCHEMA = {
     'verification_targets',
   ],
   properties: {
-    id: { type: 'string', pattern: '^TASK-[0-9]{3,}$' },
+    id: { type: 'string', pattern: '^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$' },
     title: { type: 'string' },
     status: {
       type: 'string',
@@ -598,25 +598,25 @@ After finishing a meaningful unit of work:
 - \`.codex/\` is only for project configuration (e.g. \`.codex/config.toml\`).
 
 ## Clean context (recommended)
-- Route each \`TASK-XXX\` by \`task.tier\` and \`.memory-bank/workflows/tier-policy.md\`.
+- Route each \`TASK-NNN-FT-NNN-W-N\` by \`task.tier\` and \`.memory-bank/workflows/tier-policy.md\`.
 - Delegation and worker reports follow \`.memory-bank/roles/orchestrator.md\` and \`.memory-bank/roles/worker.md\`.
-- T0/T1 may use compact \`.protocols/TASK-XXX/run.md\`; compact evidence can be enough.
+- T0/T1 may use compact \`.protocols/TASK-NNN-FT-NNN-W-N/run.md\`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, required packet/spec gates, and \`/verify\` \`VERDICT: PASS\`; per-task \`/red-verify\` is not required for T2 task closure.
 - Scheduler mode: T2 feature completion requires \`/red-verify --feature FT-<ID>\` with \`SEMANTIC_VERDICT: semantic-pass\` after all feature tasks are implemented.
 - Scheduler mode: T3 requires full protocol state, required packet/spec gates, \`/verify\` \`VERDICT: PASS\`, and per-task \`/red-verify\` \`SEMANTIC_VERDICT: semantic-pass\` before scheduler marks \`done\`.
 - T3 also requires exact marker lines \`HUMAN_CHECKPOINT: done\` and \`ROLLBACK_RECOVERY_NOTE: present\`.
 - Manual mode: T0/T1 may close after \`/verify PASS\` only with explicit closure ownership and completed evidence; T2 may close after \`/verify PASS\` when full protocol plus required packet/spec gates are satisfied; T3 must run per-task \`/red-verify\` before final closure/\`/mb-sync\`.
-- Packet requirement: T2/T3 require canonical \`.memory-bank/packets/TASK-<ID>.packet.json\`; T0/T1 require packets only when \`task.runtime_context.packet_required === true\`.
-- Required packets are derivative runtime artifacts under \`.memory-bank/packets/\`; \`/foundation-to-tasks\` and \`/prd-to-tasks\` create initial required packets, and \`/mb-doctor\` validates readiness at the foundation/task-queue or feature/task-queue boundary. Use \`/mb-packet TASK-XXX\` only to repair or refresh packets after task/spec changes.
-- If running in **Claude Code**: execute each \`TASK-XXX\` in a **fresh Claude session** using tier-appropriate \`.protocols/TASK-XXX/\` state.
-- If running in **Codex**: you can run each \`TASK-XXX\` in a fresh session via \`codex exec\` (see \`/execute\`).
+- Packet requirement: T2/T3 require canonical \`.memory-bank/packets/<task.id>.packet.json\`; T0/T1 require packets only when \`task.runtime_context.packet_required === true\`.
+- Required packets are derivative runtime artifacts under \`.memory-bank/packets/\`; \`/foundation-to-tasks\` and \`/prd-to-tasks\` create initial required packets, and \`/mb-doctor\` validates readiness at the foundation/task-queue or feature/task-queue boundary. Use \`/mb-packet TASK-NNN-FT-NNN-W-N\` only to repair or refresh packets after task/spec changes.
+- If running in **Claude Code**: execute each \`TASK-NNN-FT-NNN-W-N\` in a **fresh Claude session** using tier-appropriate \`.protocols/TASK-NNN-FT-NNN-W-N/\` state.
+- If running in **Codex**: you can run each \`TASK-NNN-FT-NNN-W-N\` in a fresh session via \`codex exec\` (see \`/execute\`).
 - Sequencing: independent tasks may run in parallel clean sessions; dependent/shared-file tasks must run sequentially.
 
 Codex (fresh session):
-- \`codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123. Read AGENTS.md, .memory-bank/commands/execute.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and packet context when present or expected. Assume packet readiness was checked by the feature/task-queue gate; do not repair or structurally validate packets here. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123/ state. Implement. Record evidence. Report → .tasks/TASK-123/…'\`
+- \`codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-FT-001-W-1. Read AGENTS.md, .memory-bank/commands/execute.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and packet context when present or expected. Assume packet readiness was checked by the feature/task-queue gate; do not repair or structurally validate packets here. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-FT-001-W-1/ state. Implement. Record evidence. Report → .tasks/TASK-123-FT-001-W-1/…'\`
 
 Claude (fresh session):
-- \`claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123. Read AGENTS.md, .memory-bank/commands/execute.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and packet context when present or expected. Assume packet readiness was checked by the feature/task-queue gate; do not repair or structurally validate packets here. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123/ state. Implement. Record evidence. Report → .tasks/TASK-123/…'\`
+- \`claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-FT-001-W-1. Read AGENTS.md, .memory-bank/commands/execute.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and packet context when present or expected. Assume packet readiness was checked by the feature/task-queue gate; do not repair or structurally validate packets here. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-FT-001-W-1/ state. Implement. Record evidence. Report → .tasks/TASK-123-FT-001-W-1/…'\`
 
 ## Two modes (interactive vs autonomous)
 - **Interactive**: target chain is \`/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan -> /mb-doctor at feature/task-queue boundary -> /execute first indexed TASK -> /verify same TASK -> /red-verify same TASK for T3 (optional for T2 task) -> /mb-sync\`; before treating a T2 feature as complete, run \`/red-verify --feature FT-001\` after all its tasks are implemented (start product execution after the current feature task set is decomposed, \`/review-tasks-plan\` has approved it, and the feature/task-queue doctor gate has passed).
@@ -628,8 +628,8 @@ Claude (fresh session):
 - **Autonomous (batch)**: use \`/autonomous\` for full \`PRD → done\`; it runs \`/spec-auto --init\` after \`/write-prd\`, \`/review-feat-plan\` after \`/prd\`, \`/spec-design --all\`, \`/foundation-to-tasks\` when required, strict \`/mb-doctor\` at the foundation/task-queue boundary, and execute/verify \`FT-000\` until the foundation gate is \`done\` before \`/spec-auto --all\`, \`/prd-to-tasks --all\`, and \`/review-tasks-plan\`. Use \`/autopilot\` only if JSON task records and required SDD spec links already exist and \`/review-tasks-plan\` approved the queue. See: \`.memory-bank/workflows/execute-loop.md\` and \`.memory-bank/workflows/autonomy-policy.md\`.
 
 Naming:
-- Folder: \`.tasks/TASK-<ID>/\`
-- Files: \`TASK-<ID>-S-<STAGE>-final-report-<code|docs>-<NN>.md\`
+- Folder: \`.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/\`
+- Files: \`TASK-<NNN>-FT-<NNN>-W-<N>-S-<STAGE>-final-report-<code|docs>-<NN>.md\`
 
 ## Quality gates (before merge)
 - \`node scripts/mb-lint.mjs\` / typecheck / build
@@ -972,11 +972,11 @@ status: active
 
 ## UI verification
 - Prefer Playwright / agent-browser / CDP for UI flows when available
-- Store screenshots/videos/traces in .tasks/TASK-XXX/
+- Store screenshots/videos/traces in .tasks/TASK-NNN-FT-NNN-W-N/
 - In Memory Bank keep only links + short conclusions
 
 ## Artifacts
-- screenshots/logs/videos → .tasks/TASK-XXX/
+- screenshots/logs/videos → .tasks/TASK-NNN-FT-NNN-W-N/
 - in Memory Bank store only links + conclusions
 `);
 

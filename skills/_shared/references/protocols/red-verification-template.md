@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-XXX/red-verification.md (adversarial semantic verification).
+description: Template for .protocols/TASK-NNN-FT-NNN-W-N/red-verification.md (adversarial semantic verification).
 status: active
 ---
 # Red Verification — <TASK_ID>

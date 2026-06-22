@@ -46,7 +46,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - Explicit `clarification_status: pending|blocked` is not allowed for autonomous/autopilot readiness or task-linked features.
 - Indexed task records do not exist for features that are pending, missing, or otherwise not clarified.
 - `.memory-bank/tasks/index.json` is valid JSON and has a valid task list.
-- Every indexed `.memory-bank/tasks/TASK-*.task.json` exists and is valid JSON.
+- Every indexed `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json` exists and is valid JSON.
 - Every indexed task record has `tier: T0|T1|T2|T3`.
 - Authoritative routing uses only `task.tier`; legacy `risk` / `risk.level` is invalid.
 - `FT-000` is the only allowed pseudo-feature for project foundation. It is not
@@ -59,7 +59,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   - `Foundation Required: true|false`
   - `Foundation Requirement: REQ-000`
   - `Foundation Pseudo-Feature: FT-000`
-  - `Foundation Gate Task: TASK-<ID>|not_required`
+  - `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required`
 - When foundation is required, the final foundation gate task exists, is indexed,
   has `feature: "FT-000"`, and every non-`FT-000` product task depends on it
   directly or transitively.
@@ -96,7 +96,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - For required packets, packet validation checks:
   - `TASK_PACKET_REQUIRED_POLICY` when a T2/T3 task does not explicitly store `runtime_context.packet_required: true`.
   - `TASK_PACKET_REF_MISSING` when `runtime_context.packet_ref` is absent or empty.
-  - `TASK_PACKET_REF_INVALID` when `packet_ref` is not the safe canonical `.memory-bank/packets/<TASK_ID>.packet.json` path.
+  - `TASK_PACKET_REF_INVALID` when `packet_ref` is not the safe canonical `.memory-bank/packets/<task.id>.packet.json` path.
   - `TASK_PACKET_MISSING` when the required packet file does not exist.
   - `TASK_PACKET_INVALID` when packet JSON, task id, status, or required packet shape is invalid.
   - `TASK_PACKET_NOT_READY` when packet status is `blocked` or `stale`.

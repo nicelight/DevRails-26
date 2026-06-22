@@ -192,7 +192,7 @@ GEMINI.md
 - `mb-analysis` - optional discovery до PRD: `/analysis`, `/brainstorm`, `/brief`.
 - `mb-from-prd` - clarified PRD -> product, requirements, epics, features.
 - `mb-map-codebase` - as-is mapping существующего codebase без roadmap speculation.
-- `mb-execute` - implementation handoff для одного `TASK-*`.
+- `mb-execute` - implementation handoff для одного `TASK-NNN-FT-NNN-W-N`.
 - `mb-verify` - functional verification по AC/REQ и evidence.
 - `mb-red-verify` - adversarial semantic verification.
 - `mb-review` - fresh-context review gates: feature plan or task queue plan.
@@ -220,9 +220,9 @@ idea / rough draft
   -> /prd-to-tasks FT-001
   -> /review-tasks-plan
   -> /mb-doctor at feature/task-queue boundary
-  -> /execute TASK-001
-  -> /verify TASK-001
-  -> /red-verify TASK-001 для T3 (optional для T2 task)
+  -> /execute TASK-001-FT-001-W-1
+  -> /verify TASK-001-FT-001-W-1
+  -> /red-verify TASK-001-FT-001-W-1 для T3 (optional для T2 task)
   -> /red-verify --feature FT-001 для T2 feature completion
   -> /mb-sync
   -> повторять feature/task loop
@@ -265,7 +265,7 @@ idea / rough draft
 Interactive mode для одной задачи:
 
 ```text
-/execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T3 (optional for T2 task) -> /mb-sync
+/execute TASK-001-FT-001-W-1 -> /verify TASK-001-FT-001-W-1 -> /red-verify TASK-001-FT-001-W-1 for T3 (optional for T2 task) -> /mb-sync
 ```
 
 В manual mode T0/T1 task можно закрыть после `/verify PASS` только при явном closure owner и recorded evidence. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, required packet/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`; для T3 сохраняются human/recovery markers.
@@ -328,7 +328,7 @@ Task registry является JSON-only:
 
 ```text
 .memory-bank/tasks/index.json
-.memory-bank/tasks/TASK-001.task.json
+.memory-bank/tasks/TASK-001-FT-001-W-1.task.json
 .memory-bank/schemas/task.schema.json
 ```
 
@@ -341,13 +341,13 @@ Fresh bootstrap создает:
 }
 ```
 
-Fresh bootstrap не создает `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000`, `.memory-bank/tasks/TASK-001.task.json` и не создает runnable task records. Task records появляются через `/foundation-to-tasks` when required, closed `FT-000` foundation gate, then `/prd-to-tasks FT-001`; autonomous runs use the same foundation gate before `/spec-auto --all` + `/prd-to-tasks --all`.
+Fresh bootstrap не создает `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-FT-000-W-0`, `.memory-bank/tasks/TASK-001-FT-001-W-1.task.json` и не создает runnable task records. Task records появляются через `/foundation-to-tasks` when required, closed `FT-000` foundation gate, then `/prd-to-tasks FT-001`; autonomous runs use the same foundation gate before `/spec-auto --all` + `/prd-to-tasks --all`.
 
 Минимальная форма task record:
 
 ```json
 {
-  "id": "TASK-001",
+  "id": "TASK-001-FT-001-W-1",
   "title": "Short task title",
   "status": "planned",
   "wave": "W1",
@@ -393,7 +393,7 @@ evidence:
 For T0/T1, `packet_required` defaults to false/absent and `packet_ref` without
 `packet_required: true` is advisory only. For T2/T3, `/prd-to-tasks` stores
 `runtime_context.packet_required: true` and canonical
-`packet_ref: ".memory-bank/packets/TASK-<ID>.packet.json"`; downstream gates
+`packet_ref: ".memory-bank/packets/<task.id>.packet.json"`; downstream gates
 also require the packet for older T2/T3 records that omit the flag. A T2/T3
 record with `packet_required: false` is a policy violation, not permission to
 skip the packet.
@@ -461,12 +461,12 @@ The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 | `/spec-init` | Bootstrap lightweight SDD route map | `.memory-bank/spec-index.md` planned/candidate/unknown/not_applicable areas, gaps, expected locations | не проводит architecture interview; не создает authoritative specs или global backbone | `/prd` |
 | `/prd` | Clarified PRD -> L1-L3 Memory Bank | product, requirements, epics, features, testing/index | не создает всю task queue вслепую | `/review-feat-plan` for high-risk/large work, then `/spec-design`; `/clarify-feature` если blocked |
 | `/spec-design` | Mandatory adaptive global SDD backbone and foundation decision | consumes lightweight spec-index; writes backbone status, SDD backbone specs, and `.memory-bank/foundation.md` when needed; defaults architecture to one `architecture/system-architecture.md` hub, with split architecture docs only by explicit strategy/complexity | не создает tasks/plans/feature-local tech-specs; не раздувает T0/T1 scope; не дублирует detailed API/state/message contracts в `architecture/*` | `/foundation-to-tasks` only if foundation proof is required, close the `FT-000` foundation gate when one exists, then `/prd-to-tasks FT-*` или `/spec-auto --all` |
-| `/foundation-to-tasks` | Foundation Dev Path -> FT-000 JSON tasks or brownfield verified-baseline no-op | `REQ-000`, `FT-000`, `.protocols/FT-000/*`, `IMPL-FT-000.md`, indexed foundation `TASK-*.task.json`, required packets; or `Foundation Required: false` with `Foundation Gate Task: not_required` | не создает product feature tasks; не вводит отдельную task schema/lifecycle protocol family; не реализует features; brownfield не создает `FT-000`, если baseline уже доказан | `/mb-doctor` at foundation/task-queue boundary when tasks were created, then `/execute`/`/verify`; otherwise `/prd-to-tasks` |
+| `/foundation-to-tasks` | Foundation Dev Path -> FT-000 JSON tasks or brownfield verified-baseline no-op | `REQ-000`, `FT-000`, `.protocols/FT-000/*`, `IMPL-FT-000.md`, indexed foundation `TASK-NNN-FT-000-W-N` records, required packets; or `Foundation Required: false` with `Foundation Gate Task: not_required` | не создает product feature tasks; не вводит отдельную task schema/lifecycle protocol family; не реализует features; brownfield не создает `FT-000`, если baseline уже доказан | `/mb-doctor` at foundation/task-queue boundary when tasks were created, then `/execute`/`/verify`; otherwise `/prd-to-tasks` |
 | `/spec-improve` | Standalone feature-level SDD repair/refresh | needed tech-specs/architecture/contracts/domains/states/ADR/testing links, feature `spec_design_status` | не создает task records; не дублирует existing specs; не выдумывает decisions | `/prd-to-tasks FT-*` when decomposition is needed |
 | `/spec-auto` | Autonomous SDD init/design | spec-index, feature design status, assumptions/blockers | не спрашивает пользователя; не игнорирует unsafe ambiguity; не обрабатывает `FT-000` как product feature | `/prd`, `/foundation-to-tasks` + foundation gate closure, или `/prd-to-tasks --all` |
 | `/clarify-feature` | Resolve feature-level blockers | target `.memory-bank/features/FT-*.md` clarification metadata/answers | не назначает tier; не создает task records | `/spec-design`, required foundation gate closure, then `/prd-to-tasks FT-*` |
-| `/prd-to-tasks` | Product feature design -> implementation plan + JSON tasks + required packets | `.memory-bank/tasks/plans/IMPL-FT-*.md`, indexed product `TASK-*.task.json`, `.memory-bank/packets/TASK-*.packet.json` when required | не запускает execution; не проходит pending blockers, missing T2/T3 SDD specs, `FT-000`, or missing required foundation gate | `/review-tasks-plan`, `/mb-doctor` at feature/task-queue boundary, then `/execute`; or `/autopilot` |
-| `/mb-packet` | Repair or refresh derivative task runtime context | `.memory-bank/packets/TASK-*.packet.json` | не создает tasks/specs, не реализует code, не закрывает task, не вводит module graph/Failure Packet | rerun `/mb-doctor` или resolve packet blocker |
+| `/prd-to-tasks` | Product feature design -> implementation plan + JSON tasks + required packets | `.memory-bank/tasks/plans/IMPL-FT-*.md`, indexed product `TASK-NNN-FT-NNN-W-N` records, `.memory-bank/packets/<task.id>.packet.json` when required | не запускает execution; не проходит pending blockers, missing T2/T3 SDD specs, `FT-000`, or missing required foundation gate | `/review-tasks-plan`, `/mb-doctor` at feature/task-queue boundary, then `/execute`; or `/autopilot` |
+| `/mb-packet` | Repair or refresh derivative task runtime context | `.memory-bank/packets/<task.id>.packet.json` | не создает tasks/specs, не реализует code, не закрывает task, не вводит module graph/Failure Packet | rerun `/mb-doctor` или resolve packet blocker |
 | `/execute` | Implement one scoped task | `.protocols/<TASK>/...`, `.tasks/<TASK>/...`, code/docs в task scope | не закрывает task; не запускает verify/red-verify/mb-sync | `/verify` |
 | `/verify` | Functional acceptance/evidence verification | verification protocol/evidence, task `verify` entries, possible bugs/follow-ups | в scheduler mode не закрывает/fail-ит/promote-ит | manual close или `/red-verify`/scheduler decision |
 | `/red-verify` | Adversarial semantic verification | `.protocols/<TASK>/red-verification.md`, `.tasks/<TASK>/...`, bugs/follow-ups при необходимости | не дублирует `/verify`; в scheduler mode не закрывает | `/mb-sync` или scheduler decision |

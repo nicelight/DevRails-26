@@ -82,7 +82,7 @@ Instead:
 3) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate before product feature tasking.
 4) For each selected feature, run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, JSON tasks, and required packets:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
-   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`
+   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-FT-NNN-W-N`
 
 When enough structured evidence exists, those feature-level plans and task records may include optional richer fields such as `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, and `verification_targets`.
 Task routing is authoritative only through `task.tier`; the old `risk` / `risk.level` model is invalid.

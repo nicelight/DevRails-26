@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-XXX/verification.md (acceptance criteria + evidence).
+description: Template for .protocols/TASK-NNN-FT-NNN-W-N/verification.md (acceptance criteria + evidence).
 status: active
 ---
 # Verification — <TASK_ID>

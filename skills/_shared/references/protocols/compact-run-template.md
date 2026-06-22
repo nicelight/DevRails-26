@@ -5,7 +5,7 @@ status: active
 # Compact Run
 
 ## Metadata
-- task: TASK-XXX
+- task: TASK-NNN-FT-NNN-W-N
 - tier: T0 | T1
 - started:
 - finished:

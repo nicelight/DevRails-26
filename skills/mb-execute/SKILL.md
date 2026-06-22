@@ -1,8 +1,8 @@
 ---
 name: mb-execute
 description: >
-  Implementation handoff skill for one TASK-* using tier-selected protocol files,
-  local gates, evidence, and explicit verification/sync handoff.
+  Implementation handoff skill for one TASK-NNN-FT-NNN-W-N using tier-selected
+  protocol files, local gates, evidence, and explicit verification/sync handoff.
 ---
 
 # mb-execute - Implementation Handoff
@@ -44,7 +44,7 @@ Manual mode:
 - No persisted `mode` field is used.
 
 ## Inputs
-- `TASK_ID`, for example `TASK-123`
+- `TASK_ID`, for example `TASK-123-FT-001-W-1`
 - `.memory-bank/tasks/index.json`
 - indexed `.memory-bank/tasks/<TASK_ID>.task.json`
 - task `tier: T0|T1|T2|T3`

@@ -321,7 +321,7 @@ status: active
 - Foundation Required: true|false
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: TASK-<ID>|not_required
+- Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required
 
 ## Minimal Work Path
 - Build command:
@@ -359,7 +359,7 @@ Rules:
   still needed before product feature work
 - keep the Feature Pressure Map grounded in current PRD/features/specs; do not
   convert product behavior into foundation work
-- do not create `REQ-000`, `FT-000`, `TASK-*`, packets, protocols, or
+- do not create `REQ-000`, `FT-000`, task records, packets, protocols, or
   implementation plans in `/spec-design`
 - route required executable work to `/foundation-to-tasks`
 

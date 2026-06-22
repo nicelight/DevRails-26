@@ -38,8 +38,9 @@ const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
 const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
-const TASK_ID_RE = /^TASK-[0-9]{3,}$/;
-const TASK_FILE_RE = /^TASK-[0-9]{3,}\.task\.json$/;
+const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
+const TASK_ID_RE = /^TASK-[0-9]{3}-(FT-[0-9]{3})-W-([0-9]+)$/;
+const TASK_FILE_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
 const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
@@ -603,6 +604,29 @@ function canonicalPacketRef(taskId) {
   return `.memory-bank/packets/${taskId}.packet.json`;
 }
 
+function taskIdParts(taskId) {
+  const match = TASK_ID_RE.exec(taskId);
+  if (!match) return null;
+  return {
+    feature: match[1],
+    wave: `W${match[2]}`,
+  };
+}
+
+function checkTaskIdMatchesRecord(rel, task) {
+  if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) return;
+
+  const parts = taskIdParts(task.id);
+  if (!parts) return;
+
+  if (task.feature !== parts.feature) {
+    errors.push(`${rel}: task id feature segment '${parts.feature}' must match feature '${task.feature}'`);
+  }
+  if (task.wave !== parts.wave) {
+    errors.push(`${rel}: task id wave segment 'W-${parts.wave.slice(1)}' must match wave '${task.wave}'`);
+  }
+}
+
 function checkOptionalTaskRuntimeContext(rel, task) {
   checkOptionalStringField(rel, task, 'purpose');
   checkOptionalStringField(rel, task, 'success_outcome');
@@ -896,7 +920,7 @@ function checkTaskRecords() {
       continue;
     }
     if (!TASK_ID_RE.test(id)) {
-      errors.push(`${indexRel}: task id '${id}' must match TASK-[0-9]{3,}`);
+      errors.push(`${indexRel}: task id '${id}' must match ${TASK_ID_FORMAT}`);
       continue;
     }
     if (records.has(id)) {
@@ -912,7 +936,7 @@ function checkTaskRecords() {
       continue;
     }
     if (!TASK_FILE_RE.test(file)) {
-      errors.push(`${indexRel}: task '${id}' file '${file}' must match TASK-[0-9]{3,}.task.json`);
+      errors.push(`${indexRel}: task '${id}' file '${file}' must match ${TASK_ID_FORMAT}.task.json`);
       continue;
     }
     if (file !== `${id}.task.json`) {
@@ -949,8 +973,9 @@ function checkTaskRecords() {
       errors.push(`${rel}: task id '${task.id}' does not match index id '${id}'`);
     }
     if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) {
-      errors.push(`${rel}: task id '${task.id}' must match TASK-[0-9]{3,}`);
+      errors.push(`${rel}: task id '${task.id}' must match ${TASK_ID_FORMAT}`);
     }
+    checkTaskIdMatchesRecord(rel, task);
     if (!ALLOWED_TASK_STATUS.has(task.status)) {
       errors.push(
         `${rel}: invalid task status '${task.status}' (allowed: planned|ready|in_progress|blocked|done|failed)`
@@ -991,7 +1016,7 @@ function checkTaskRecords() {
     const rel = records.get(id)?.rel ?? indexRel;
     for (const dep of deps) {
       if (typeof dep !== 'string' || !TASK_ID_RE.test(dep)) {
-        errors.push(`${rel}: depends_on value '${dep}' must match TASK-[0-9]{3,}`);
+        errors.push(`${rel}: depends_on value '${dep}' must match ${TASK_ID_FORMAT}`);
         continue;
       }
       if (!records.has(dep)) {

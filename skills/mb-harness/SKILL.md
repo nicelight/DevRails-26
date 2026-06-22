@@ -67,12 +67,12 @@ node scripts/mb-lint.mjs
 node scripts/mb-doctor.mjs --strict
 ```
 
-The harness should treat missing `task.tier` as a blocking policy error. Task state is JSON-only through `.memory-bank/tasks/index.json` and indexed `TASK-*.task.json` records; `backlog.md`, markdown task cards, and old `risk` / `risk.level` routing are unsupported.
+The harness should treat missing `task.tier` as a blocking policy error. Task state is JSON-only through `.memory-bank/tasks/index.json` and indexed `TASK-*.task.json` records with concrete IDs shaped as `TASK-NNN-FT-NNN-W-N`; `backlog.md`, markdown task cards, and old `risk` / `risk.level` routing are unsupported.
 
 ### 4.1) Browser verification for UI projects
 If the product has a UI:
 - prefer Playwright / agent-browser / CDP-driven checks over “manual looks OK”
-- persist artifacts (screenshots, videos, traces) into `.tasks/TASK-XXX/`
+- persist artifacts (screenshots, videos, traces) into `.tasks/TASK-NNN-FT-NNN-W-N/`
 - document canonical browser verification commands in `.memory-bank/testing/index.md`
 
 ### 5) Optional: skill eval harness

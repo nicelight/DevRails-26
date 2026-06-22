@@ -1,5 +1,5 @@
 ---
-description: Выполнение одной TASK-XXX как implementation handoff: read -> preflight -> protocol -> implement -> local gates -> evidence -> handoff.
+description: Выполнение одной TASK-NNN-FT-NNN-W-N как implementation handoff: read -> preflight -> protocol -> implement -> local gates -> evidence -> handoff.
 status: active
 ---
 
@@ -45,11 +45,11 @@ Manual mode:
 
 ## 0) Input
 Expected `$ARGUMENTS`:
-- `TASK-<ID>`
+- `TASK-<NNN>-FT-<NNN>-W-<N>`
 
 Required sources:
 - `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<ID>.task.json`
+- `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json`
 - task-relevant feature, epic, requirements, or normative docs referenced by the
   task
 - `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all linked
@@ -70,7 +70,7 @@ Use richer task fields when present:
 Packet context:
 - `/prd-to-tasks` creates initial required Execution Packets, and
   `/mb-doctor` validates packet readiness at the feature/task-queue boundary.
-- `/execute` may read `.memory-bank/packets/TASK-<ID>.packet.json` when present
+- `/execute` may read `.memory-bank/packets/<TASK_ID>.packet.json` when present
   or expected by tier/policy, but it does not validate `packet_ref`,
   `source_task_hash`, packet freshness, or packet status.
 - If packet context is absent, continue from the authoritative task/spec inputs
@@ -98,7 +98,7 @@ For any tier, linked SDD specs are primary normative inputs. If the task record 
 Stop with an explicit error if:
 - the task record is missing from `index.json`
 - the indexed task file is missing
-- the task record `id` does not match `TASK-<ID>`
+- the task record `id` does not match `TASK-<NNN>-FT-<NNN>-W-<N>`
 - the task record has no `tier`
 - `tier` is not `T0`, `T1`, `T2`, or `T3`
 - task `status` is `blocked`, `failed`, or `done`
@@ -126,21 +126,21 @@ a blocker and report the contradiction; do not repair or validate the packet
 inside `/execute`.
 
 ## 2) Protocol By Tier
-Create `.tasks/TASK-<ID>/` for runtime evidence and reports.
+Create `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/` for runtime evidence and reports.
 
 For `T0` / `T1`, create or update compact protocol:
-- `.protocols/TASK-<ID>/run.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/run.md`
 - include tier, task record path, goal, non-goals, context used, fallback basis,
   plan, changes, local gates, evidence, and handoff notes
 - `VERDICT: PASS|FAIL|BLOCKED` is a local evidence verdict only; it is not final
   task closure
 
 For `T2` / `T3`, create or update full protocol:
-- `.protocols/TASK-<ID>/context.md`
-- `.protocols/TASK-<ID>/plan.md`
-- `.protocols/TASK-<ID>/progress.md`
-- `.protocols/TASK-<ID>/verification.md`
-- `.protocols/TASK-<ID>/handoff.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/context.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/plan.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/progress.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/handoff.md`
 
 For `T3`, exact closure marker lines are required by the later closure owner:
 - `HUMAN_CHECKPOINT: done`
@@ -190,7 +190,7 @@ Rules:
 - do not touch `runtime_context.forbidden_scope`; if forbidden scope was touched
   accidentally, stop and record it as a blocker
 - top-level owner only, and only when the operator explicitly requested subagents: if fan-out is necessary, use narrow non-overlapping worker scopes and collect
-  reports in `.tasks/TASK-<ID>/`
+  reports in `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
 
 Dependency sequencing:
 - `/execute` handles only the requested task
@@ -219,7 +219,7 @@ Return a concise handoff report containing:
 - changed files
 - protocol paths
 - local gates run and results
-- evidence paths under `.tasks/TASK-<ID>/`
+- evidence paths under `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
 - verification targets and notes for `/verify` or `/red-verify`
 - scope compliance: yes/no
 - forbidden scope touched: yes/no

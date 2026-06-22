@@ -1,12 +1,13 @@
 ---
 name: mb-red-verify
 description: >
-  Adversarial semantic verification for one TASK-* so teams can catch solutions that pass process checks but are still wrong in substance.
+  Adversarial semantic verification for one TASK-NNN-FT-NNN-W-N so teams can
+  catch solutions that pass process checks but are still wrong in substance.
 ---
 
 # mb-red-verify — Adversarial semantic verification
 
-- **What it does:** pressure-tests one completed `TASK-*` for semantic correctness, hidden failure modes, and systemic harm.
+- **What it does:** pressure-tests one completed `TASK-NNN-FT-NNN-W-N` for semantic correctness, hidden failure modes, and systemic harm.
 - **Use it when:** a task may be locally correct yet still wrong in product/domain/architectural/operational reality.
 - **Input:** `TASK_ID`, task intent, actual change surface, tests/evidence, and only then relevant spec reconciliation.
 - **Output:** `red-verification.md`, a concise semantic-risk report, and follow-up bugs/tasks when concerns are serious.

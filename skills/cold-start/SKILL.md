@@ -33,7 +33,7 @@ Supported scenarios:
 - **Max depth = 2**: orchestrator → subagent. No sub-sub-agents.
 
 ### 2) `.tasks/` is runtime memory (НЕ Memory Bank)
-- Every agent process gets a unique task folder: `.tasks/TASK-XXX/`.
+- Every agent process gets a unique task folder: `.tasks/TASK-NNN-FT-NNN-W-N/`.
 - Subagents write *detailed* outputs there, and return *only short summaries* to the orchestrator.
 
 ### 3) Avoid conflicts by design
@@ -234,7 +234,7 @@ Instead:
 4) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate.
 5) Run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, JSON tasks, and required packets:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
-   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`
+   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-FT-NNN-W-N`
 
 Task routing is authoritative only through `task.tier`; the old `risk` / `risk.level` model is invalid.
 
@@ -319,7 +319,7 @@ When the repo is new/empty and no `prd.md` is available:
 Run Step 1 as usual — create all directories, core files from templates, `AGENTS.md`, `CLAUDE.md` symlink.
 
 The skeleton provides a ready-to-fill structure: `product.md`, `requirements.md`, `tasks/index.json`, etc. remain as draft stubs/placeholders.
-In PRD-less mode, `tasks/index.json` must be `{ "version": 1, "tasks": [] }` and no `TASK-001.task.json` or other runnable task record is generated.
+In PRD-less mode, `tasks/index.json` must be `{ "version": 1, "tasks": [] }` and no `TASK-001-FT-001-W-1.task.json` or other runnable task record is generated.
 
 ### 3C.2 Ask for PRD
 After skeleton is created, **ask the user** to provide a PRD:

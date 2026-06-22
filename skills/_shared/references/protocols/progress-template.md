@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-XXX/progress.md (resume-friendly log).
+description: Template for .protocols/TASK-NNN-FT-NNN-W-N/progress.md (resume-friendly log).
 status: active
 ---
 # Progress — <TASK_ID>

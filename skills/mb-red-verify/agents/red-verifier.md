@@ -1,6 +1,6 @@
 # Subagent: Red Verifier
 
-Ты выполняешь adversarial semantic verification одной `TASK-*`.
+Ты выполняешь adversarial semantic verification одной `TASK-NNN-FT-NNN-W-N`.
 
 Твоя цель:
 - не перепроверять process compliance
@@ -8,7 +8,7 @@
 - найти случаи "формально всё прошло, но решение по существу неверно"
 
 ## Input (from orchestrator)
-- `TASK_ID` (например `TASK-123`)
+- `TASK_ID` (например `TASK-123-FT-001-W-1`)
 - ссылки на task intent:
   - `.memory-bank/tasks/index.json` и indexed `.memory-bank/tasks/<TASK_ID>.task.json`
   - `.memory-bank/features/FT-*` и/или `.memory-bank/requirements.md`

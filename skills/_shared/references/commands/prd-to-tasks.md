@@ -79,7 +79,7 @@ Before product feature task generation, read `.memory-bank/foundation.md`.
 Allowed states:
 - `Foundation Required: false` with `Foundation Gate Task: not_required` and a
   rationale in `.memory-bank/foundation.md`
-- `Foundation Required: true` with a concrete `Foundation Gate Task: TASK-<ID>`
+- `Foundation Required: true` with a concrete `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>`
   whose indexed task record has `feature: "FT-000"` and `status: "done"`
 
 If `.memory-bank/foundation.md` is missing, route to `/spec-design` and stop.
@@ -262,12 +262,18 @@ Constitution Check rules:
 JSON task records are the source of truth:
 - `.memory-bank/schemas/task.schema.json`
 - `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<NNN>.task.json`
+- `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json`
 
 Создай или обнови отдельные `.task.json` файлы:
 - Wave 1: enabling/product setup for this feature (`W1`, not project `W0`)
 - Wave 2: core logic
 - Wave 3: integration & polish
+
+Task id format is mandatory:
+- `TASK-<NNN>-FT-<NNN>-W-<N>`
+- the `FT-<NNN>` segment must match the task record `feature`
+- the `W-<N>` segment must match the task record `wave` (`W1` -> `W-1`)
+- the task file must be `<task.id>.task.json`
 
 Правила:
 - каждая задача должна быть достаточно маленькой (обычно 1–2 часа)
@@ -281,7 +287,7 @@ JSON task records are the source of truth:
 Минимальный JSON record (обязательно для `/autopilot` и `/autonomous`):
 ```json
 {
-  "id": "TASK-001",
+  "id": "TASK-001-FT-001-W-1",
   "title": "Short task title",
   "status": "planned",
   "wave": "W1",
@@ -343,7 +349,7 @@ Rules for optional purpose/runtime fields:
 - `T2` / `T3` tasks always require an Execution Packet before implementation
 - for every generated `T2` / `T3` task, set
   `runtime_context.packet_required: true` and `packet_ref` to
-  `.memory-bank/packets/TASK-<NNN>.packet.json`
+  `.memory-bank/packets/<task.id>.packet.json`
 - if a planned `T2` / `T3` task is downgraded to `T0` / `T1`, remove the
   automatic packet requirement unless explicit T0/T1 packet evidence remains
 - `allowed_write_scope` may default from `touched_files` when that scope is
@@ -400,8 +406,8 @@ Persistence rule:
   "version": 1,
   "tasks": [
     {
-      "id": "TASK-001",
-      "file": "TASK-001.task.json"
+      "id": "TASK-001-FT-001-W-1",
+      "file": "TASK-001-FT-001-W-1.task.json"
     }
   ]
 }
@@ -420,7 +426,7 @@ Persistence rule:
 After task records are written, build initial derivative Execution Packets while
 the feature/task/spec context is still loaded.
 
-Create or refresh `.memory-bank/packets/TASK-<ID>.packet.json` for:
+Create or refresh `.memory-bank/packets/<task.id>.packet.json` for:
 - every generated `T2` / `T3` task
 - every `T0` / `T1` task with `runtime_context.packet_required: true`
 
@@ -443,7 +449,7 @@ For T2/T3 required packet use, missing linked SDD specs, missing verification
 basis, contradictory scope, or unresolved public contract/state/data/security
 decisions are packet blockers, not `ready_with_gaps`.
 
-Standalone `/mb-packet TASK-<ID>` remains the repair/refresh command when task
+Standalone `/mb-packet TASK-<NNN>-FT-<NNN>-W-<N>` remains the repair/refresh command when task
 records or specs change after decomposition.
 
 ## 7) Readiness handoff
@@ -454,7 +460,7 @@ Before handoff:
 - for `T2` / `T3`, verify that `runtime_context.packet_required: true` and
   canonical `packet_ref` are present before handing off task records
 - if `runtime_context.packet_required` is set for any tier, verify that
-  `packet_ref` points to expected `.memory-bank/packets/TASK-*.packet.json`
+  `packet_ref` points to expected `.memory-bank/packets/<task.id>.packet.json`
 - required packet files exist and have `status: ready|ready_with_gaps`; if any
   required packet is `blocked`, report the blocker and do not hand off execution
 - when foundation is required, every created/updated non-`FT-000` product task
@@ -471,7 +477,7 @@ Final report:
 - implementation plan path
 - task records created/updated
 - packet files created/updated and their statuses
-- foundation gate dependency: `not_required` or `TASK-<ID>`
+- foundation gate dependency: `not_required` or `TASK-<NNN>-FT-000-W-<N>`
 - blockers/open questions, or `none`
 - next gate: run `/review-tasks-plan`, then `/mb-doctor` once for the
   feature/task-queue boundary before starting `/execute`

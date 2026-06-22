@@ -140,8 +140,8 @@ jobs:
           node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
           test ! -e "$TARGET/.memory-bank/foundation.md"
           test ! -e "$TARGET/.memory-bank/features/FT-000-foundation.md"
-          test ! -e "$TARGET/.memory-bank/tasks/TASK-000.task.json"
-          test ! -e "$TARGET/.memory-bank/tasks/TASK-001.task.json"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-000-FT-000-W-0.task.json"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-001-FT-001-W-1.task.json"
           ! grep -q 'REQ-000' "$TARGET/.memory-bank/requirements.md"
 
           (

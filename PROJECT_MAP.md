@@ -133,15 +133,16 @@ Primary source files:
 - `README.en.md`, `README.ru.md`, `howItWorks.md`
 
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
-`FT-000`, `TASK-000`, or any runnable foundation records.
+`FT-000`, `TASK-000-FT-000-W-0`, or any runnable foundation records.
 
 ## Task Runtime Context / Execution Packet Hotspots
 
 Execution Packets are derivative runtime artifacts under
-`.memory-bank/packets/TASK-*.packet.json`. They summarize task/spec context for
-one run but never replace JSON task records or linked SDD specs as source of
-truth. T2/T3 tasks require a canonical
-`.memory-bank/packets/TASK-*.packet.json` before execute/scheduler
+`.memory-bank/packets/TASK-*.packet.json`, with concrete file names following
+`TASK-NNN-FT-NNN-W-N.packet.json`. They summarize task/spec context for one run
+but never replace JSON task records or linked SDD specs as source of truth.
+T2/T3 tasks require a canonical `.memory-bank/packets/<task.id>.packet.json`
+before execute/scheduler
 implementation. T0/T1 tasks require packets only when
 `runtime_context.packet_required: true`.
 
@@ -167,7 +168,7 @@ Do not add `.memory-bank/modules/`, `.memory-bank/graph/`,
 `.memory-bank/verification/`, Failure Packet artifacts, or new task lifecycle
 statuses for this flow.
 
-Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, and commands must treat those records as the only task model.
+Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-FT-NNN-W-N`, and commands must treat those records as the only task model.
 
 ## Verification Commands
 

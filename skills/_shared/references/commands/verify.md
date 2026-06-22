@@ -41,17 +41,17 @@ Manual mode:
 
 0) Вход
 Ожидается `$ARGUMENTS`:
-- `TASK-<ID>`
+- `TASK-<NNN>-FT-<NNN>-W-<N>`
 
 1) Прочитай минимум:
 - `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<ID>.task.json`
-- `.memory-bank/packets/TASK-<ID>.packet.json` when required by tier/policy:
+- `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json`
+- `.memory-bank/packets/<TASK_ID>.packet.json` when required by tier/policy:
   all `T2` / `T3`, and `T0` / `T1` only when
   `runtime_context.packet_required` is true
-- `.protocols/TASK-<ID>/context.md`
-- `.protocols/TASK-<ID>/plan.md`
-- `.protocols/TASK-<ID>/progress.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/context.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/plan.md`
+- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/progress.md`
 - acceptance criteria источник:
   - `.memory-bank/features/FT-*` и/или
   - `.memory-bank/requirements.md` (REQ IDs)
@@ -88,9 +88,9 @@ Do not block `T0` / `T1` only because SDD spec links are absent.
 If task/AC wording conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with a blocker instead of verifying against the task alone.
 
 Tier policy:
-- `T0`: `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<ID>/run.md`.
+- `T0`: `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/run.md`.
 - `T1`: `/verify` is optional for strictly local scope; compact `run.md` may contain the verification evidence and verdict.
-- `T2` / `T3`: `/verify` is required before scheduler closure and must update `.protocols/TASK-<ID>/verification.md`.
+- `T2` / `T3`: `/verify` is required before scheduler closure and must update `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md`.
 - `T3`: include critical/security/runtime evidence where relevant. Exact markers are scheduler closure requirements, not loose text.
 
 Status ownership:
@@ -109,7 +109,7 @@ Status ownership:
 6. classic acceptance criteria из feature doc
 7. RTM / REQ IDs
 8. required packet verification/scope checks when required by tier/policy
-9. tests, logs, screenshots и иные evidence artifacts в `.tasks/TASK-<ID>/`
+9. tests, logs, screenshots и иные evidence artifacts в `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
 
 Важно:
 - отсутствие richer verification fields не является ошибкой
@@ -118,7 +118,7 @@ Status ownership:
 - for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route back to `/prd-to-tasks` feature design, standalone `/spec-improve` repair, or `/spec-auto` when absent
 - linked SDD specs are the primary normative basis when present; conflicting task records must be blocked, not locally reinterpreted
 - `evidence_required` и `verification_targets` описывают требования/цели проверки; сами по себе они не являются proof
-- detailed verification report may live in `.protocols/TASK-<ID>/verification.md`, with artifacts in `.tasks/TASK-<ID>/`
+- detailed verification report may live in `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md`, with artifacts in `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
 - before any command sets `status: done`, the task record `verify` field must contain the completed evidence summary/marker (string or structured object)
 - in scheduler mode, `/verify` itself must not set `status: done`; for `T2`, PASS makes task closure eligible when full protocol and required packet/spec gates are satisfied; for `T3`, PASS leaves task closure pending per-task `/red-verify`
 - in manual mode, `/verify PASS` alone may close `T0` / `T1`, and may close `T2` when full protocol plus required packet/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` before final closure/`/mb-sync`
@@ -128,7 +128,7 @@ Status ownership:
 - зафиксируй:
   - что сделал
   - команды
-  - где evidence (в `.tasks/TASK-<ID>/`)
+  - где evidence (в `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`)
 
 If purpose/runtime fields are present:
 - verify `purpose` was actually served, not merely that local edits happened
@@ -148,8 +148,8 @@ If purpose/runtime fields are present:
 - затем проверь, что они не противоречат classic acceptance criteria
 
 3) Заполни protocol evidence:
-- для `T0` / `T1`, если используется compact path, обнови `.protocols/TASK-<ID>/run.md`
-- для `T2` / `T3`, заполни `.protocols/TASK-<ID>/verification.md` (по шаблону, если он есть в проекте)
+- для `T0` / `T1`, если используется compact path, обнови `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/run.md`
+- для `T2` / `T3`, заполни `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md` (по шаблону, если он есть в проекте)
 
 4) Если проблемы:
 - зафиксируй BUG в `.memory-bank/bugs/`
