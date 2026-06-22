@@ -1,0 +1,20 @@
+name: Memory Bank Lint
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  mb-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install (if package-lock exists)
+        run: |
+          if [ -f package-lock.json ]; then npm ci; fi
+      - name: Memory Bank lint
+        run: node scripts/mb-lint.mjs

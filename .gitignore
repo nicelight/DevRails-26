@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+
+# Generated when testing the skill pack locally
+.memory-bank/
+.tasks/
+.protocols/
+.claude/
+.agents/
+.codex/
+
+# Temporary outputs
+*.log
+tmp/
+dist/

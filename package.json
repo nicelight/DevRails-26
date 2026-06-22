@@ -1,0 +1,13 @@
+{
+  "name": "memobank-bmad-sdd",
+  "version": "0.0.0",
+  "private": true,
+  "bin": {
+    "memobank-install": "scripts/install-framework.mjs"
+  },
+  "scripts": {
+    "vendor:shared:in-place": "node scripts/vendor-shared.mjs --in-place",
+    "install:framework": "node scripts/install-framework.mjs",
+    "check:syntax": "node --check scripts/vendor-shared.mjs && node --check scripts/install-framework.mjs && node --check skills/_shared/scripts/init-mb.js && node --check skills/mb-garden/assets/mb-lint.mjs && node --check skills/mb-garden/assets/mb-doctor.mjs"
+  }
+}

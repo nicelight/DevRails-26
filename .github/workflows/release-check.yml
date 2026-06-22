@@ -1,0 +1,154 @@
+name: Release Check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  skill-pack-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Assert source repository hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if find . -name '.DS_Store' | grep -q .; then
+            echo 'Found .DS_Store files in repository'
+            find . -name '.DS_Store'
+            exit 1
+          fi
+
+          if find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | grep -q .; then
+            echo 'Found vendored shared-* files in source-only repository'
+            find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print
+            exit 1
+          fi
+
+          if git ls-files .memory-bank | grep -q .; then
+            echo 'Found tracked generated .memory-bank files in source-only repository'
+            git ls-files .memory-bank
+            exit 1
+          fi
+
+          test -f scripts/install-framework.mjs
+          test -f scripts/vendor-shared.mjs
+          test -f skills/_shared/scripts/init-mb.js
+          test -f skills/_shared/references/structure-template.md
+          test -f skills/_shared/references/commands/spec-design.md
+          test -f skills/_shared/references/commands/foundation-to-tasks.md
+          test -f skills/_shared/references/commands/prd-to-tasks.md
+          test -f skills/_shared/references/commands/review-feat-plan.md
+          test -f skills/_shared/references/commands/review-tasks-plan.md
+          test ! -e skills/_shared/references/commands/review.md
+          test -f skills/_shared/references/commands/execute.md
+          test -f skills/_shared/references/commands/verify.md
+          test -f skills/_shared/references/roles/general.md
+          test -f skills/_shared/references/roles/orchestrator.md
+          test -f skills/_shared/references/roles/worker.md
+          test -f skills/mb-garden/assets/mb-lint.mjs
+          test -f skills/mb-garden/assets/mb-doctor.mjs
+
+      - name: Syntax check helper scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check:syntax --silent
+          node -e 'JSON.parse(require("node:fs").readFileSync("skills/_shared/references/protocols/packet-template.json", "utf8"));'
+
+      - name: Install-only smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP_DIR="$(mktemp -d)"
+          trap 'rm -rf "$TMP_DIR"' EXIT
+
+          mkdir -p "$TMP_DIR/project"
+          cd "$TMP_DIR/project"
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --skill '*' --yes
+
+          test -f .agents/skills/cold-start/SKILL.md
+          test -f .agents/skills/cold-start/scripts/shared-init-mb.js
+          test -f .agents/skills/cold-start/references/shared-structure-template.md
+          test -f .agents/skills/cold-start/references/shared-roles-general.md
+          test -f .agents/skills/mb-garden/assets/mb-lint.mjs
+          test -f .agents/skills/mb-garden/assets/mb-doctor.mjs
+          test -f .agents/skills/mb-from-prd/SKILL.md
+          test -f .agents/skills/mb-execute/SKILL.md
+          test -f .agents/skills/mb-verify/SKILL.md
+          test ! -e .memory-bank
+
+      - name: Bootstrap and sync smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP_DIR="$(mktemp -d)"
+          trap 'rm -rf "$TMP_DIR"' EXIT
+
+          TARGET="$TMP_DIR/target-repo"
+          TODAY="$(date -u +%F)"
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$TARGET" --yes
+
+          test -f "$TARGET/AGENTS.md"
+          test -f "$TARGET/.memory-bank/index.md"
+          test -f "$TARGET/.memory-bank/spec-index.md"
+          test -f "$TARGET/.memory-bank/spec-backbone.md"
+          test -f "$TARGET/.memory-bank/constitution.md"
+          test -f "$TARGET/.memory-bank/requirements.md"
+          test -f "$TARGET/.memory-bank/tasks/index.json"
+          test -f "$TARGET/.memory-bank/schemas/task.schema.json"
+          test -f "$TARGET/.memory-bank/contracts/boundary-map.md"
+          test -f "$TARGET/.memory-bank/workflows/execute-loop.md"
+          test -f "$TARGET/.memory-bank/workflows/tier-policy.md"
+          test -f "$TARGET/.memory-bank/roles/general.md"
+          test -f "$TARGET/.memory-bank/roles/orchestrator.md"
+          test -f "$TARGET/.memory-bank/roles/worker.md"
+          test -f "$TARGET/.memory-bank/commands/spec-design.md"
+          test -f "$TARGET/.memory-bank/commands/foundation-to-tasks.md"
+          test -f "$TARGET/.memory-bank/commands/prd-to-tasks.md"
+          test -f "$TARGET/.memory-bank/commands/review-feat-plan.md"
+          test -f "$TARGET/.memory-bank/commands/review-tasks-plan.md"
+          test ! -e "$TARGET/.memory-bank/commands/review.md"
+          test -f "$TARGET/.memory-bank/commands/execute.md"
+          test -f "$TARGET/.memory-bank/commands/verify.md"
+          test -f "$TARGET/.memory-bank/commands/autonomous.md"
+          test -f "$TARGET/scripts/mb-lint.mjs"
+          test -f "$TARGET/scripts/mb-doctor.mjs"
+          test -f "$TARGET/.claude/skills/foundation-to-tasks/SKILL.md"
+          test -f "$TARGET/.agents/skills/foundation-to-tasks/SKILL.md"
+          test -f "$TARGET/.claude/skills/review-feat-plan/SKILL.md"
+          test -f "$TARGET/.agents/skills/review-feat-plan/SKILL.md"
+          test -f "$TARGET/.claude/skills/review-tasks-plan/SKILL.md"
+          test -f "$TARGET/.agents/skills/review-tasks-plan/SKILL.md"
+          test ! -e "$TARGET/.claude/skills/review/SKILL.md"
+          test ! -e "$TARGET/.agents/skills/review/SKILL.md"
+
+          grep -q 'ROLE: GENERAL' "$TARGET/AGENTS.md"
+          grep -q 'roles/general.md' "$TARGET/AGENTS.md"
+          grep -q 'Роль GENERAL' "$TARGET/.memory-bank/roles/general.md"
+          grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
+          grep -q "^last_updated: $TODAY$" "$TARGET/.memory-bank/constitution.md"
+          ! grep -q '{{TODAY}}' "$TARGET/.memory-bank/constitution.md"
+
+          node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
+          test ! -e "$TARGET/.memory-bank/foundation.md"
+          test ! -e "$TARGET/.memory-bank/features/FT-000-foundation.md"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-000.task.json"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-001.task.json"
+          ! grep -q 'REQ-000' "$TARGET/.memory-bank/requirements.md"
+
+          (
+            cd "$TARGET"
+            node scripts/mb-lint.mjs
+            node scripts/mb-doctor.mjs
+            node "$GITHUB_WORKSPACE/skills/_shared/scripts/init-mb.js" --sync
+            node scripts/mb-lint.mjs
+            node scripts/mb-doctor.mjs
+          )

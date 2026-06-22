@@ -1,0 +1,15 @@
+# .codex/config.toml (project-scoped)
+#
+# Baseline: gpt-5.2 with high reasoning ("gpt-5.2-high")
+# Deep review: gpt-5.2 with xhigh reasoning (same model, deeper pass)
+
+model = "gpt-5.2"
+model_reasoning_effort = "high"
+
+# Optional: keep responses shorter by default
+model_verbosity = "low"
+
+[profiles.deep-review]
+model = "gpt-5.2"
+model_reasoning_effort = "xhigh"
+model_verbosity = "low"

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "packet_id": "PACKET-TASK-001-R1",
+  "task_id": "TASK-001",
+  "created_at": "ISO-8601",
+  "source_task_hash": "sha256:<64-lowercase-hex>",
+  "status": "ready",
+  "tier": "T2",
+  "purpose": "",
+  "success_outcome": "",
+  "anti_goals": [],
+  "source_refs": {
+    "task": ".memory-bank/tasks/TASK-001.task.json",
+    "feature": ".memory-bank/features/FT-001-example.md",
+    "specs": [],
+    "guides": [],
+    "protocols": []
+  },
+  "scope": {
+    "allowed_write_scope": [],
+    "forbidden_scope": []
+  },
+  "verification": {
+    "commands": [],
+    "success_checks": [],
+    "evidence_required": []
+  },
+  "stop_conditions": [],
+  "required_handoff": [
+    "changed_files",
+    "commands_run",
+    "evidence",
+    "scope_compliance",
+    "blockers_or_none"
+  ]
+}
