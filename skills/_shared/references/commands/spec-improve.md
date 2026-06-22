@@ -53,6 +53,10 @@ Before creating any new spec:
 Rule: do not create a new spec before checking existing specs through the index.
 If several features need the same missing domain/contract/state/API/security/data/runtime/testing decision, stop and route to `/spec-design` instead of creating duplicate feature-local specs.
 If a task/feature interpretation conflicts with a backbone spec, stop with a blocker instead of choosing locally.
+If the missing decision is a compact T2/T3 or shared-boundary rule, prefer updating
+`.memory-bank/architecture/system-architecture.md#Architecture Spine` through the
+same KISS `AD-*` format used by `/spec-design`; do not create a separate
+architecture workflow or local feature-only duplicate.
 
 ## 2) Decide required design depth
 Classify what the feature needs:
@@ -107,6 +111,9 @@ Keep KISS:
 - do not add schema, migration, hook, or governance machinery just for design routing
 - write decisions, constraints, invariants, and verification targets only when grounded in PRD/user/spec evidence
 - use backbone specs from `/spec-design` as primary normative inputs
+- for T2/T3 or shared-boundary work, keep Architecture Spine `AD-*` rules short,
+  stable, and linked from downstream task fields instead of duplicating long
+  rationale in feature specs
 
 ## 6) Update routes and feature metadata
 Update `.memory-bank/spec-index.md`:

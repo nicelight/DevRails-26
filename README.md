@@ -9,6 +9,7 @@
 Основные области:
 
 - `.memory-bank/` - знания и состояние проекта: продукт, требования, epics, features, архитектура, task records, индексы и правила работы.
+- `.memory-bank/architecture/system-architecture.md#Architecture Spine` - короткие `AD-*` rules только для T2/T3 и shared-boundary решений.
 - `.memory-bank/contracts/boundary-map.md` - легкие responsibility/scope boundary notes, которые используются через существующие task поля и `runtime_context`.
 - `.memory-bank/packets/` - derivative Execution Packets с компактным runtime context; T2/T3 требуют packet, T0/T1 только при явном `packet_required`.
 - `.protocols/` - планы, прогресс и verification по конкретным задачам или features.
@@ -57,51 +58,7 @@ Memory Bank помогает вести разработку как повтор
   -> следующая task
 ```
 
-Та же greenfield-схема в виде карты:
-
-```mermaid
-flowchart TD
-  idea["Идея / черновик"] --> brief["/analysis или /brief"]
-  brief --> constitution["/constitution"]
-  constitution --> writePrd["/write-prd"]
-  writePrd --> specInit["/spec-init"]
-  specInit --> prd["/prd"]
-  prd --> reviewFeat{"High-risk / large work?"}
-  reviewFeat -- "да" --> reviewFeatPlan["/review-feat-plan"]
-  reviewFeat -- "нет" --> specDesign["/spec-design"]
-  reviewFeatPlan --> specDesign
-
-  specDesign --> foundation{"Нужен executable baseline?"}
-  foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
-  foundationTasks --> foundationDoctor["/mb-doctor<br/>foundation/task-queue"]
-  foundationDoctor --> foundationExec["/execute + /verify<br/>FT-000 до final gate done"]
-  foundationExec --> tasking["/prd-to-tasks FT-001"]
-  foundation -- "нет" --> tasking
-
-  tasking --> reviewTasks["/review-tasks-plan"]
-  reviewTasks --> doctor["/mb-doctor<br/>feature/task-queue"]
-  doctor --> mode{"Как выполнять JSON task queue?"}
-
-  mode -- "Manual" --> exec["/execute<br/>TASK-NNN-FT-NNN-W-N"]
-  exec --> verify["/verify<br/>TASK-NNN-FT-NNN-W-N"]
-  verify --> redTask{"Нужен semantic pass?"}
-  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-FT-NNN-W-N"]
-  redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
-  redTask -- "нет" --> sync["/mb-sync"]
-  redVerify --> sync
-  redFeature --> sync
-  sync --> more{"Еще tasks/features?"}
-  more -- "следующая task" --> exec
-  more -- "следующая feature" --> tasking
-  more -- "нет" --> done["Готово"]
-
-  mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Scheduler loop:<br/>packet gate -> execute -> verify -> red-verify для T3 -> mb-sync"]
-  scheduler --> terminal{"Queue terminal?"}
-  terminal -- "done" --> done
-  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / packets / specs"]
-  repair --> reviewTasks
-```
+Та же greenfield-схема в виде Mermaid-карты вынесена отдельно: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
 
 1. `/analysis` или `/brief`
 
@@ -149,7 +106,7 @@ flowchart TD
 
    **Когда:** после `/prd`, всегда перед `/prd-to-tasks`. Это обязательный gate, но не обязательная тяжелая фаза.
 
-   **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. По умолчанию держит architecture в одном `architecture/system-architecture.md` с секциями source-of-truth/module-boundaries; отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только при явном выборе split/реальной сложности. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
+   **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. По умолчанию держит architecture в одном `architecture/system-architecture.md`; для T2/T3 и shared-boundary pressure добавляет короткий `Architecture Spine` с `AD-*` executable rules. Отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только при явном выборе split/реальной сложности. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
 
    **Дальше:** если foundation required, запустить `/foundation-to-tasks` и закрыть final foundation gate; иначе выбрать feature и запустить `/prd-to-tasks FT-001`.
 

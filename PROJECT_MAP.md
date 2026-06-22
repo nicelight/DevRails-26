@@ -135,6 +135,29 @@ Primary source files:
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
 `FT-000`, `TASK-000-FT-000-W-0`, or any runnable foundation records.
 
+## Architecture Spine Hotspots
+
+Architecture Spine is a compact T2/T3 and shared-boundary guardrail inside
+`.memory-bank/architecture/system-architecture.md#Architecture Spine`. It uses
+stable `AD-*` executable rules and does not introduce a separate architecture
+workflow.
+
+Primary source files for this behavior:
+
+- `skills/_shared/references/commands/spec-design.md` for creating/updating the
+  spine during the global SDD backbone gate
+- `skills/_shared/references/commands/spec-improve.md` for repair/refresh
+  guidance when feature design exposes a shared architecture gap
+- `skills/_shared/references/commands/prd-to-tasks.md` for copying relevant
+  AD/boundary links into existing task fields
+- `skills/_shared/references/structure-template.md` and
+  `skills/_shared/scripts/init-mb.js` for generated skeleton templates
+- `skills/mb-garden/assets/mb-lint.mjs` and
+  `skills/mb-garden/assets/mb-doctor.mjs` for minimal deterministic checks
+
+Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
+mandatory ADRs for local/simple work.
+
 ## Task Runtime Context / Execution Packet Hotspots
 
 Execution Packets are derivative runtime artifacts under

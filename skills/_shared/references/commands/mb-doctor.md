@@ -88,6 +88,11 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - `T2` / `T3` tasks have relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
 - `guides/*` may count as linked SDD specs when the guide is the normative source for frontend component behavior or operating procedure; guides alone do not replace required T2/T3 architecture/contract/domain/state/testing specs when those concerns are in scope.
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
+- In `--strict`, T2/T3 tasks with no architecture/contract/ADR reference in
+  richer task fields may report `TASK_ARCH_SPINE_LINK_ABSENT` as a warning. It
+  is advisory: add relevant Architecture Spine, boundary-map, contract, or ADR
+  links when the task touches shared boundaries; no action is required for
+  feature-local tasks where no such link is relevant.
 - T2/T3 tasks require canonical Execution Packets even when older task records
   omit `runtime_context.packet_required`; absent or false `packet_required` on
   T2/T3 is reported as `TASK_PACKET_REQUIRED_POLICY`.
@@ -186,6 +191,7 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_FEATURE_FILE_MISSING`
 - `TASK_SDD_SPEC_LINK_MISSING`
 - `TASK_SDD_SPEC_GUIDE_ONLY`
+- `TASK_ARCH_SPINE_LINK_ABSENT`
 - `TASK_PACKET_REQUIRED_POLICY`
 - `TASK_PACKET_REF_MISSING`
 - `TASK_PACKET_REF_INVALID`

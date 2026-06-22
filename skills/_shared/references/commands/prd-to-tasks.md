@@ -340,6 +340,16 @@ Rules for optional purpose/runtime fields:
   other contracts/specs, link those docs through existing fields such as
   `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
   `verification_targets`; do not add boundary-specific task fields
+- for `T2` / `T3` or shared-boundary work, read relevant
+  `.memory-bank/architecture/system-architecture.md#Architecture Spine`
+  decisions and `.memory-bank/contracts/boundary-map.md` boundary cards before
+  slicing tasks
+- when an `AD-*` or boundary card constrains the task, copy the doc link into
+  `normative_inputs`, copy the executable rule into `constraints` or
+  `invariants`, and add a concrete check to `verification_targets`
+- if required T2/T3 boundary or architecture decisions are missing,
+  contradictory, or not checkable, stop with a design blocker and route back to
+  `/spec-design` or `/spec-improve` instead of creating a weak task record
 - `T0` / `T1` tasks may omit runtime context entirely
 - `T0` / `T1` tasks require packets only when there is explicit evidence that
   compact executable runtime context is needed; in that case set
@@ -398,6 +408,9 @@ Persistence rule:
 - не выдумывай содержимое без evidence из PRD / feature docs / baseline docs / contracts / states / runbooks
 - for `T2` / `T3`, include relevant linked SDD specs from `spec_design_links`, `.memory-bank/spec-backbone.md`, and `spec-index.md` in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
 - include relevant backbone specs from `.memory-bank/spec-backbone.md` and `spec-index.md` whenever they constrain source of truth, module boundaries, runtime data model, API behavior, events/messages, frontend component behavior, invariants, or testing gates
+- include relevant Architecture Spine `AD-*`, ADR, and boundary-map links for
+  T2/T3 or shared-boundary work when they constrain implementation or
+  verification
 - if a planned `T2` / `T3` task still has no relevant linked SDD spec after the feature design phase, stop with a design blocker; route shared/global gaps to `/spec-design`, or repair feature-local gaps before creating a weak task record
 
 Обнови `.memory-bank/tasks/index.json` только ссылками:

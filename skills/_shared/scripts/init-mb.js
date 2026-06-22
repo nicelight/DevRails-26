@@ -886,6 +886,50 @@ status: draft
 - Ссылайся на этот файл из архитектурных, контрактных и execution docs, если правило является cross-cutting.
 `);
 
+writeFile(`${MB}/architecture/system-architecture.md`, `---
+description: Compact system architecture hub and Architecture Spine for serious T2/T3 or shared-boundary work.
+status: draft
+---
+# System Architecture
+
+## System Goal
+- TBD
+
+## Main Constraints
+- TBD
+
+## Architecture Spine
+
+Use this section only for durable decisions that constrain T2/T3 or shared-boundary work. Keep it short; detailed rationale belongs in ADRs or decision logs.
+
+### Architecture Decisions
+
+#### AD-NNN — <short decision>
+- Binds:
+- Prevents:
+- Rule:
+- Verification:
+- Source:
+
+### Deferred Decisions
+
+| Decision | Deferred because | Revisit when |
+|---|---|---|
+| TBD | TBD | TBD |
+
+## Main Modules / Bounded Contexts
+- TBD
+
+## Data Flow
+- TBD
+
+## API / Contract Boundaries
+- See [.memory-bank/contracts/boundary-map.md](../contracts/boundary-map.md).
+
+## Testing Strategy
+- TBD
+`);
+
 writeFile(`${MB}/contracts/boundary-map.md`, `---
 description: Lightweight responsibility and scope boundary notes for decomposition, implementation, and verification.
 status: draft
@@ -900,6 +944,17 @@ status: draft
 | Boundary | Purpose | Direction | Owner | Known Constraints | Questions |
 |---|---|---|---|---|---|
 | TBD | TBD | TBD | TBD | TBD | TBD |
+
+## Boundary: <producer> -> <consumer>
+
+- Owner:
+- Consumers:
+- Allowed calls:
+- Forbidden calls:
+- Data owner:
+- Compatibility rule:
+- Verification:
+- Linked ADs:
 
 ## Runtime Context Hints
 - Allowed write scope hints: TBD

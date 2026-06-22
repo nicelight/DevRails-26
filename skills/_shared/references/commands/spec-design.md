@@ -226,6 +226,7 @@ Recommended `system-architecture.md` sections for Single-file KISS:
 - `## System goal`
 - `## Main constraints`
 - `## Non-goals`
+- `## Architecture Spine` when T2/T3 or shared-boundary decisions need compact executable rules
 - `## Architecture style`
 - `## Main modules / bounded contexts`
 - `## Data flow`
@@ -242,6 +243,39 @@ Architecture docs content boundary:
 - keep only global architecture decisions and invariants there: system shape, ownership, module boundaries, source-of-truth, deployment assumptions, high-level data flow, and diagrams
 - do not put detailed API schemas, endpoint contracts, lifecycle state machines, message/event envelope contracts, or feature-local implementation design in `architecture/*`
 - route those details to `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/domains/`, or feature-level `.memory-bank/tech-specs/`
+
+### Architecture Spine KISS rule
+
+For T2/T3 or shared-boundary pressure, update
+`.memory-bank/architecture/system-architecture.md#Architecture Spine`.
+
+Keep the spine short and executable. It is not a full architecture essay.
+
+Use stable `AD-*` blocks:
+
+```markdown
+#### AD-001 — <short decision>
+- Binds:
+- Prevents:
+- Rule:
+- Verification:
+- Source:
+```
+
+Rules:
+- create `AD-*` only for decisions that constrain T2/T3 or shared-boundary work
+- do not create `AD-*` for local T0/T1 implementation details
+- do not renumber existing `AD-*`
+- retire/replace decisions explicitly; do not silently delete them
+- every active `AD-*` must include `Binds`, `Prevents`, and `Rule`
+- `Rule` must be actionable for `/execute` and checkable by `/verify`
+- put detailed rationale in ADRs or decision logs only when it is worth preserving
+
+ADR routing remains optional. Create/update an ADR only when a decision has
+durable trade-off rationale, changes source of truth, changes public
+contract/schema/message envelope, introduces irreversible
+storage/state/deployment/security behavior, or will be reused by more than one
+feature.
 
 ## 10) Domain Spec routing
 Route domain model work through the Backbone Area Matrix as `domain_model` with status `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`.
@@ -270,7 +304,7 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
 - `.memory-bank/user-scenarios.md` when scenario evidence exists or a scenario gap must be explicit
-- `.memory-bank/architecture/system-architecture.md` as the default architecture hub, using the Single-file KISS sections above and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
+- `.memory-bank/architecture/system-architecture.md` as the default architecture hub, using the Single-file KISS sections above, Architecture Spine for T2/T3/shared-boundary executable rules, and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
 - `.memory-bank/architecture/source-of-truth.md` only when Split core docs or Split by boundary/topic was selected, or when source-of-truth rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/module-boundaries.md` only when Split core docs or Split by boundary/topic was selected, or when boundary rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/<boundary>.md` only for a complex dedicated architecture boundary that cannot stay readable inside `system-architecture.md`

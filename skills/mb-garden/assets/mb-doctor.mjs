@@ -44,6 +44,7 @@ const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const SOURCE_TASK_HASH_RE = /^sha256:[0-9a-f]{64}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
+const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
 const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifact|report)\b/i;
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
@@ -486,6 +487,7 @@ function checkTaskReadiness() {
     checkTerminalEvidence(record);
     checkReqFeatureLinkage(record);
     checkSddSpecLinkage(record);
+    checkArchitectureReferencePresence(record);
     checkRequiredExecutionPacket(record);
   }
 
@@ -983,6 +985,20 @@ function checkSddSpecLinkage(record) {
       missing_feature_spec_design_links: featureSpec?.links.missing ?? [],
     },
     suggested_fix: `Run /spec-improve ${featureId ?? 'FT-<NNN>'} or /spec-auto, then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
+  });
+}
+
+function checkArchitectureReferencePresence(record) {
+  const { id, rel, task } = record;
+  if (!options.strict) return;
+  if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
+  if (hasArchitectureContractAdrReference(task)) return;
+
+  addFinding('warning', 'TASK_ARCH_SPINE_LINK_ABSENT', `${rel}: ${task.tier} task has no architecture/contract/ADR reference in richer task fields.`, {
+    path: rel,
+    task_id: id,
+    suggested_fix:
+      'If this task touches shared boundaries, add relevant Architecture Spine, boundary-map, contract, or ADR links to normative_inputs/constraints/invariants/verification_targets. If it is feature-local, no action is required.',
   });
 }
 
@@ -1565,6 +1581,17 @@ function sddSpecLinksFromTask(task) {
     task.verification_targets,
   ];
   return collectSddSpecLinks(fields);
+}
+
+function hasArchitectureContractAdrReference(task) {
+  const fields = [
+    task.source_artifacts,
+    task.normative_inputs,
+    task.constraints,
+    task.invariants,
+    task.verification_targets,
+  ];
+  return fields.some((field) => ARCHITECTURE_CONTRACT_ADR_PATH_RE.test(JSON.stringify(field ?? '')));
 }
 
 function sddSpecLinkStatusFromTask(task) {

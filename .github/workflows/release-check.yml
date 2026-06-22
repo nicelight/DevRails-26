@@ -104,6 +104,7 @@ jobs:
           test -f "$TARGET/.memory-bank/requirements.md"
           test -f "$TARGET/.memory-bank/tasks/index.json"
           test -f "$TARGET/.memory-bank/schemas/task.schema.json"
+          test -f "$TARGET/.memory-bank/architecture/system-architecture.md"
           test -f "$TARGET/.memory-bank/contracts/boundary-map.md"
           test -f "$TARGET/.memory-bank/workflows/execute-loop.md"
           test -f "$TARGET/.memory-bank/workflows/tier-policy.md"
@@ -134,6 +135,9 @@ jobs:
           grep -q 'roles/general.md' "$TARGET/AGENTS.md"
           grep -q 'Роль GENERAL' "$TARGET/.memory-bank/roles/general.md"
           grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
+          grep -q '## Architecture Spine' "$TARGET/.memory-bank/architecture/system-architecture.md"
+          grep -q '#### AD-NNN' "$TARGET/.memory-bank/architecture/system-architecture.md"
+          grep -q '## Boundary: <producer> -> <consumer>' "$TARGET/.memory-bank/contracts/boundary-map.md"
           grep -q "^last_updated: $TODAY$" "$TARGET/.memory-bank/constitution.md"
           ! grep -q '{{TODAY}}' "$TARGET/.memory-bank/constitution.md"
 

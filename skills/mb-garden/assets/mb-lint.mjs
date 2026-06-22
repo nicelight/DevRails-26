@@ -42,6 +42,9 @@ const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
 const TASK_ID_RE = /^TASK-[0-9]{3}-(FT-[0-9]{3})-W-([0-9]+)$/;
 const TASK_FILE_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
+const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
+const ARCHITECTURE_REF_PATH_RE =
+  /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`),\]}]+/gi;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
 const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
@@ -743,6 +746,99 @@ function checkTaskFeatureClarification(rel, task, featuresById) {
   }
 }
 
+function extractArchitectureReferencePaths(value, out = []) {
+  if (typeof value === 'string') {
+    for (const match of value.matchAll(ARCHITECTURE_REF_PATH_RE)) {
+      const normalized = normalizeArchitectureReferencePath(match[0]);
+      if (normalized) out.push(normalized);
+    }
+    return out;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) extractArchitectureReferencePaths(item, out);
+    return out;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const child of Object.values(value)) extractArchitectureReferencePaths(child, out);
+  }
+
+  return out;
+}
+
+function normalizeArchitectureReferencePath(value) {
+  const withoutAnchor = normalizeRel(String(value ?? '').trim())
+    .replace(/^\.\//, '')
+    .replace(/[.,:;]+$/g, '')
+    .split('#')[0];
+
+  if (!withoutAnchor.startsWith('.memory-bank/')) return null;
+  return withoutAnchor;
+}
+
+function checkTaskArchitectureReferences(rel, task) {
+  const fields = [
+    task.source_artifacts,
+    task.normative_inputs,
+    task.constraints,
+    task.invariants,
+    task.verification_targets,
+  ];
+  const refs = [...new Set(extractArchitectureReferencePaths(fields))];
+
+  for (const ref of refs) {
+    if (!fs.existsSync(path.join(ROOT, ref))) {
+      errors.push(`${rel}: references missing architecture/contract/ADR path '${ref}'`);
+    }
+  }
+}
+
+function isRetiredArchitectureDecision(headingTail, block) {
+  return /\b(retired|replaced|superseded|deprecated)\b/i.test(`${headingTail}\n${block}`);
+}
+
+function hasNonEmptyDecisionLabel(block, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = block.match(new RegExp(`^\\s*-\\s*${escaped}\\s*:\\s*(.*)$`, 'im'));
+  if (!match) return false;
+  const value = String(match[1] ?? '').trim();
+  return value.length > 0 && !/^(TBD|TODO|none|n\/a)$/i.test(value);
+}
+
+function checkArchitectureSpine() {
+  const abs = path.join(ROOT, ARCHITECTURE_SPINE_REL);
+  if (!fs.existsSync(abs)) return;
+
+  const text = readText(abs).replace(/\r\n/g, '\n');
+  const matches = [...text.matchAll(/^####\s+(AD-[0-9]{3,})\b(.*)$/gm)];
+  const activeIds = new Map();
+
+  for (let i = 0; i < matches.length; i += 1) {
+    const match = matches[i];
+    const id = match[1];
+    const headingTail = match[2] ?? '';
+    const start = match.index + match[0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const block = text.slice(start, end);
+    const line = text.slice(0, match.index).split('\n').length;
+
+    if (isRetiredArchitectureDecision(headingTail, block)) continue;
+
+    if (activeIds.has(id)) {
+      errors.push(`${ARCHITECTURE_SPINE_REL}:${line}: duplicate active Architecture Spine decision '${id}'`);
+    } else {
+      activeIds.set(id, line);
+    }
+
+    for (const label of ['Binds', 'Prevents', 'Rule']) {
+      if (!hasNonEmptyDecisionLabel(block, label)) {
+        errors.push(`${ARCHITECTURE_SPINE_REL}:${line}: active Architecture Spine decision '${id}' must include non-empty '${label}:'`);
+      }
+    }
+  }
+}
+
 function walkJson(value, visitor, pathParts = []) {
   if (Array.isArray(value)) {
     value.forEach((item, index) => {
@@ -1003,6 +1099,7 @@ function checkTaskRecords() {
     ]) {
       checkArrayField(rel, task, field);
     }
+    checkTaskArchitectureReferences(rel, task);
     checkGateItems(rel, task);
 
     checkDoneEvidence(rel, task);
@@ -1058,6 +1155,7 @@ for (const f of files) {
 
 checkIndexRouters();
 checkAnalysisStructure();
+checkArchitectureSpine();
 checkTaskRecords();
 
 if (warnings.length) {
