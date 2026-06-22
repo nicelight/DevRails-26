@@ -57,6 +57,52 @@ Memory Bank помогает вести разработку как повтор
   -> следующая task
 ```
 
+Та же greenfield-схема в виде карты:
+
+```mermaid
+flowchart TD
+  idea["Идея / черновик"] --> brief["/analysis или /brief"]
+  brief --> constitution["/constitution"]
+  constitution --> writePrd["/write-prd"]
+  writePrd --> specInit["/spec-init"]
+  specInit --> prd["/prd"]
+  prd --> reviewFeat{"High-risk / large work?"}
+  reviewFeat -- "да" --> reviewFeatPlan["/review-feat-plan"]
+  reviewFeat -- "нет" --> specDesign["/spec-design"]
+  reviewFeatPlan --> specDesign
+
+  specDesign --> foundation{"Нужен executable baseline?"}
+  foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
+  foundationTasks --> foundationDoctor["/mb-doctor<br/>foundation/task-queue"]
+  foundationDoctor --> foundationExec["/execute + /verify<br/>FT-000 до final gate done"]
+  foundationExec --> tasking["/prd-to-tasks FT-001"]
+  foundation -- "нет" --> tasking
+
+  tasking --> reviewTasks["/review-tasks-plan"]
+  reviewTasks --> doctor["/mb-doctor<br/>feature/task-queue"]
+  doctor --> mode{"Как выполнять JSON task queue?"}
+
+  mode -- "Manual" --> exec["/execute<br/>TASK-NNN-FT-NNN-W-N"]
+  exec --> verify["/verify<br/>TASK-NNN-FT-NNN-W-N"]
+  verify --> redTask{"Нужен semantic pass?"}
+  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-FT-NNN-W-N"]
+  redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
+  redTask -- "нет" --> sync["/mb-sync"]
+  redVerify --> sync
+  redFeature --> sync
+  sync --> more{"Еще tasks/features?"}
+  more -- "следующая task" --> exec
+  more -- "следующая feature" --> tasking
+  more -- "нет" --> done["Готово"]
+
+  mode -- "Autopilot" --> autopilot["/autopilot"]
+  autopilot --> scheduler["Scheduler loop:<br/>packet gate -> execute -> verify -> red-verify для T3 -> mb-sync"]
+  scheduler --> terminal{"Queue terminal?"}
+  terminal -- "done" --> done
+  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / packets / specs"]
+  repair --> reviewTasks
+```
+
 1. `/analysis` или `/brief`
 
    **Когда:** если входная идея сырая, противоречивая или еще не готова для PRD.
@@ -131,7 +177,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-FT-NNN-W-N`; `/verify TASK-NNN-FT-NNN-W-N` выполняется после реализации конкретной задачи.
 
-9. `/mb-doctor`
+10. `/mb-doctor`
 
    **Когда:** после того как feature полностью разложена на task records и required packets, перед стартом execution по этой feature.
 
@@ -139,7 +185,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** исправить findings или перейти к `/execute TASK-NNN-FT-NNN-W-N`.
 
-10. `/execute TASK-NNN-FT-NNN-W-N`
+11. `/execute TASK-NNN-FT-NNN-W-N`
 
    **Когда:** для реализации одной конкретной задачи из task record.
 
@@ -147,7 +193,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** запустить `/verify TASK-NNN-FT-NNN-W-N`.
 
-11. `/verify TASK-NNN-FT-NNN-W-N`
+12. `/verify TASK-NNN-FT-NNN-W-N`
 
    **Когда:** после реализации задачи.
 
@@ -155,7 +201,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-NNN-FT-NNN-W-N`; иначе перейти к `/mb-sync`.
 
-12. `/red-verify TASK-NNN-FT-NNN-W-N`
+13. `/red-verify TASK-NNN-FT-NNN-W-N`
 
    **Когда:** обязательно для T3 task closure; опционально для T2 task closure; обязательно как `/red-verify --feature FT-*` перед T2 feature completion. Feature-level verdict записывается в сам feature doc. Особенно полезно там, где обычные tests могут пройти, но решение может быть неверным по смыслу.
 
@@ -163,7 +209,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** при проблемах вернуть задачу в доработку; при успешной проверке перейти к `/mb-sync`.
 
-13. `/mb-sync`
+14. `/mb-sync`
 
    **Когда:** после результата задачи, особенно если менялись требования, task status, changelog, RTM или durable Memory Bank docs.
 
@@ -171,7 +217,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Дальше:** выбрать следующую задачу или feature.
 
-14. Повторять цикл
+15. Повторять цикл
 
     **Когда:** пока features и tasks не доведены до нужного состояния.
 
