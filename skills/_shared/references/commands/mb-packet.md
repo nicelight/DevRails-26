@@ -12,7 +12,7 @@ linked specs as source of truth.
 
 Normal manual flow creates initial required packets inside
 `/prd-to-tasks FT-<NNN>` while feature/task/spec context is already loaded. Use
-standalone `/mb-packet TASK-<NNN>-FT-<NNN>-W-<N>` after task records or linked specs changed, or
+standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` after task records or linked specs changed, or
 when `/mb-doctor` reports a packet readiness problem.
 </objective>
 
@@ -20,7 +20,7 @@ when `/mb-doctor` reports a packet readiness problem.
 
 ## 0) Input
 Expected `$ARGUMENTS`:
-- `TASK-<NNN>-FT-<NNN>-W-<N>`
+- `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
 
 Output path:
 - `.memory-bank/packets/<TASK_ID>.packet.json`
@@ -33,8 +33,8 @@ Minimal packet shape:
 ```json
 {
   "schema_version": 1,
-  "packet_id": "PACKET-TASK-001-FT-001-W-1-R1",
-  "task_id": "TASK-001-FT-001-W-1",
+  "packet_id": "PACKET-TASK-001-T2-FT-001-W1-R1",
+  "task_id": "TASK-001-T2-FT-001-W1",
   "created_at": "ISO-8601",
   "source_task_hash": "sha256:<64-lowercase-hex>",
   "status": "ready",
@@ -43,7 +43,7 @@ Minimal packet shape:
   "success_outcome": "",
   "anti_goals": [],
   "source_refs": {
-    "task": ".memory-bank/tasks/TASK-001-FT-001-W-1.task.json",
+    "task": ".memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json",
     "feature": ".memory-bank/features/FT-001-example.md",
     "specs": [],
     "guides": [],
@@ -74,7 +74,7 @@ Execution Packet is derivative only.
 
 Authoritative sources remain:
 - `.memory-bank/tasks/index.json`
-- indexed `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json`
+- indexed `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`
 - linked feature/REQ docs
 - `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
@@ -89,7 +89,7 @@ expectations, the packet loses. Rebuild it or stop with a blocker.
 
 ## 2) Build steps
 1. Read `.memory-bank/tasks/index.json`.
-2. Read the indexed task record and verify the record `id` matches `TASK-<NNN>-FT-<NNN>-W-<N>`.
+2. Read the indexed task record and verify the record `id` matches `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`.
 3. Read linked feature/REQ docs and richer task fields when present:
    - `purpose`
    - `success_outcome`
@@ -108,7 +108,7 @@ expectations, the packet loses. Rebuild it or stop with a blocker.
    existing source/normative/constraint/verification fields or clearly supplies
    the task's runtime scope; do not add boundary-specific task fields.
 6. Compute `source_task_hash` as `sha256:<64-lowercase-hex>` over the raw
-   bytes of the current indexed `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json` file.
+   bytes of the current indexed `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` file.
    MVP freshness uses this task-record hash only.
 7. Build a compact packet with:
    - task id, tier, purpose fields, and source refs
@@ -163,14 +163,14 @@ basis, or contradictory scope should be `blocked`, not `ready_with_gaps`.
 Report:
 
 ```text
-Packet: .memory-bank/packets/TASK-001-FT-001-W-1.packet.json
+Packet: .memory-bank/packets/TASK-001-T2-FT-001-W1.packet.json
 Status: ready|ready_with_gaps|blocked|stale
 Missing:
 - ...
 Gaps:
 - ...
 Next action:
-- rerun /mb-doctor at the feature/task-queue boundary, then /execute TASK-001-FT-001-W-1; or resolve blocker
+- rerun /mb-doctor at the feature/task-queue boundary, then /execute TASK-001-T2-FT-001-W1; or resolve blocker
 ```
 
 For `T2` / `T3`, and for `T0` / `T1` tasks with

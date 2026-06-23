@@ -1,7 +1,7 @@
 ---
 name: mb-verify
 description: >
-  Verify one TASK-NNN-FT-NNN-W-N against acceptance criteria and record
+  Verify one TASK-NNN-TN-FT-NNN-WN against acceptance criteria and record
   reproducible evidence.
 ---
 
@@ -47,7 +47,7 @@ Manual mode:
 - No persisted `mode` field is used.
 
 ## Inputs
-- `TASK_ID` (e.g. `TASK-123-FT-001-W-1`)
+- `TASK_ID` (e.g. `TASK-123-T2-FT-001-W1`)
 - Authoritative task record via `.memory-bank/tasks/index.json` and `.memory-bank/tasks/<TASK_ID>.task.json`
 - Mandatory `tier: T0|T1|T2|T3` in that task record
 - Links to acceptance criteria:

@@ -55,14 +55,16 @@ Read `.memory-bank/foundation.md` and require this parseable section:
 - Foundation Required: true|false
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required
+- Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required
 ```
 
 Rules:
 - `Foundation Required: false` requires `Foundation Gate Task: not_required` and a
   concise rationale in `.memory-bank/foundation.md`; create no tasks.
-- `Foundation Required: true` requires `REQ-000`, `FT-000`, at least one
-  implementation/probe task, and one final foundation gate task.
+- `Foundation Required: true` may enter this command with
+  `Foundation Gate Task: pending_foundation_to_tasks`; this command creates or
+  refreshes `REQ-000`, `FT-000`, at least one implementation/probe task, and one
+  final foundation gate task.
 - `FT-000` is reserved for project foundation only. It is not a product feature.
 - `REQ-000` is reserved for the verified executable baseline requirement.
 - Product features must not use `FT-000` and product tasks must not use `W0`.
@@ -115,7 +117,7 @@ Create normal schema-backed task records only:
 
 ```json
 {
-  "id": "TASK-000-FT-000-W-0",
+  "id": "TASK-000-T1-FT-000-W0",
   "title": "Create minimal executable skeleton",
   "status": "ready",
   "wave": "W0",
@@ -137,10 +139,11 @@ Create normal schema-backed task records only:
 ```
 
 Task rules:
-- prefer `TASK-000-FT-000-W-0` for the first foundation task; otherwise use the next safe
-  `TASK-<NNN>-FT-000-W-<N>` ID without renumbering existing tasks
+- prefer `TASK-000-T1-FT-000-W0` for the first minimal `T1` foundation task;
+  otherwise use the next safe `TASK-<NNN>-T<N>-FT-000-W<N>` ID with the chosen
+  tier segment, without renumbering existing tasks
 - use `feature: "FT-000"` for every foundation task
-- task id feature and wave segments must match the task record fields
+- task id tier, feature, and wave segments must match the task record fields
 - use `reqs: ["REQ-000"]` unless a task also traces to concrete product
   requirements
 - use `wave: "W0"` only for project executable baseline tasks under `FT-000`
@@ -166,13 +169,14 @@ product feature tasking.
 When foundation is required, create exactly one final gate task.
 
 Rules:
-- it must be a normal `TASK-NNN-FT-000-W-N` record with `feature: "FT-000"` and
+- it must be a normal `TASK-NNN-TN-FT-000-WN` record with `feature: "FT-000"` and
   `reqs: ["REQ-000"]`
 - it depends on every required foundation implementation/probe task
 - it verifies the minimal work path and all required compatibility probes
 - it records evidence requirements for build/start/test/smoke success
-- it is the task named by `.memory-bank/foundation.md`
-  `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>`
+- replace `.memory-bank/foundation.md`
+  `Foundation Gate Task: pending_foundation_to_tasks` with the concrete final
+  gate task id: `Foundation Gate Task: TASK-<NNN>-T<N>-FT-000-W<N>`
 - product feature tasks created later by `/prd-to-tasks` must depend on this
   gate task when foundation is required
 

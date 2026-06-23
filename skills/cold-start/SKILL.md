@@ -33,7 +33,7 @@ Supported scenarios:
 - **Max depth = 2**: orchestrator → subagent. No sub-sub-agents.
 
 ### 2) `.tasks/` is runtime memory (НЕ Memory Bank)
-- Every agent process gets a unique task folder: `.tasks/TASK-NNN-FT-NNN-W-N/`.
+- Every agent process gets a unique task folder: `.tasks/TASK-NNN-TN-FT-NNN-WN/`.
 - Subagents write *detailed* outputs there, and return *only short summaries* to the orchestrator.
 
 ### 3) Avoid conflicts by design
@@ -201,7 +201,7 @@ If the user explicitly wants **autonomous mode**:
 - continue with `/autonomous` after `/write-prd` is complete
 
 ### 3A.2 Route PRD to L1–L3
-Run `/spec-init` to update `.memory-bank/spec-index.md` as a lightweight SDD route map from PRD/brief/existing-spec evidence, without architecture interview or invented authoritative specs.
+Run `/spec-init` to update `.memory-bank/spec-backbone.md` as the lightweight pre-PRD framing state from PRD/brief/existing-spec evidence, and keep `.memory-bank/spec-index.md` as a pure spec registry/index, without architecture interview or invented authoritative specs.
 Then run `/prd` to decompose `.memory-bank/prd.md` into product, requirements, epics, features, testing, and index updates.
 After `/prd`, run `/review-feat-plan` for high-risk/large work, then always run `/spec-design`. For small independent T0/T1 features it may record a minimal backbone with irrelevant areas marked `not_applicable`; for shared/T2/T3 concerns it creates or updates the needed backbone SDD specs and `spec-index`. This is not another mandatory heavy phase: it creates no tasks and no feature-local implementation design. If foundation is required, `/foundation-to-tasks` creates normal `FT-000` tasks and the final foundation gate before product feature tasking. `/prd-to-tasks FT-<NNN>` performs feature-level SDD design before task slicing.
 
@@ -234,7 +234,7 @@ Instead:
 4) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate.
 5) Run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, JSON tasks, and required packets:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
-   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-FT-NNN-W-N`
+   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-TN-FT-NNN-WN`
 
 Task routing is authoritative only through `task.tier`; the old `risk` / `risk.level` model is invalid.
 
@@ -319,7 +319,7 @@ When the repo is new/empty and no `prd.md` is available:
 Run Step 1 as usual — create all directories, core files from templates, `AGENTS.md`, `CLAUDE.md` symlink.
 
 The skeleton provides a ready-to-fill structure: `product.md`, `requirements.md`, `tasks/index.json`, etc. remain as draft stubs/placeholders.
-In PRD-less mode, `tasks/index.json` must be `{ "version": 1, "tasks": [] }` and no `TASK-001-FT-001-W-1.task.json` or other runnable task record is generated.
+In PRD-less mode, `tasks/index.json` must be `{ "version": 1, "tasks": [] }` and no `TASK-001-T2-FT-001-W1.task.json` or other runnable task record is generated.
 
 ### 3C.2 Ask for PRD
 After skeleton is created, **ask the user** to provide a PRD:

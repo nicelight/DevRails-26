@@ -1,5 +1,5 @@
 ---
-description: Adversarial semantic verification задачи (TASK-NNN-FT-NNN-W-N) для поиска "дисциплинированно, но по существу неверно".
+description: Adversarial semantic verification задачи (TASK-NNN-TN-FT-NNN-WN) для поиска "дисциплинированно, но по существу неверно".
 status: active
 ---
 # /red-verify — Adversarial semantic verification
@@ -91,7 +91,7 @@ Status ownership:
 
 0) Вход
 Ожидается `$ARGUMENTS`:
-- `TASK-<NNN>-FT-<NNN>-W-<N>` for per-task semantic verification
+- `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for per-task semantic verification
 - `--feature FT-<ID>` for T2 feature-completion semantic verification
 
 Do not use `--feature FT-000`; foundation is closed through normal `FT-000`
@@ -107,17 +107,17 @@ Modes:
 
 1) Не anchor слишком рано на full spec surface
 Сначала прочитай в таком порядке:
-- task intent из `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json` через `.memory-bank/tasks/index.json`
+- task intent из `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` через `.memory-bank/tasks/index.json`
 - packet intent/scope from `.memory-bank/packets/<TASK_ID>.packet.json` when
   required by tier/policy: all `T2` / `T3`, and `T0` / `T1` only when
   `runtime_context.packet_required` is true
-- linked FT/REQ и `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/plan.md`
-- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/progress.md`
-- `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md`, если уже есть
+- linked FT/REQ и `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/plan.md`
+- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/progress.md`
+- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`, если уже есть
 - реальный change surface:
   - изменённые файлы / diff
   - тесты
-  - логи, screenshots, traces и другие artifacts в `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
+  - логи, screenshots, traces и другие artifacts в `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
 
 Только после этого подтягивай the smallest sufficient provenance-linked context:
 - `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and linked SDD specs for `T2` / `T3`
@@ -182,7 +182,7 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 - exact marker `ROLLBACK_RECOVERY_NOTE: present` is present and credible
 - exact marker `HUMAN_CHECKPOINT: done` is present before autonomous closure
 
-4) Заполни `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/red-verification.md`
+4) Заполни `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/red-verification.md`
 Используй шаблон проекта, если он есть.
 Отчёт должен быть коротким, но содержать:
 - semantic verdict
@@ -215,7 +215,7 @@ credible semantic verdict, use the existing report plus this block:
 
 5) Сохрани короткий артефакт
 Per-task mode:
-- `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`
+- `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`
 
 Feature mode:
 - `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`
@@ -252,9 +252,9 @@ Feature mode:
 
 7) Место в normal loop
 Рекомендуемый порядок:
-- `/execute TASK-<NNN>-FT-<NNN>-W-<N>`
-- `/verify TASK-<NNN>-FT-<NNN>-W-<N>`
-- `/red-verify TASK-<NNN>-FT-<NNN>-W-<N>` for `T3` task closure; optional for `T2` task closure
+- `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+- `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+- `/red-verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for `T3` task closure; optional for `T2` task closure
 - `/red-verify --feature FT-<ID>` after all `T2` feature tasks are implemented,
   before treating the feature as complete; record the verdict in the feature
   doc itself under `## Semantic Verification`

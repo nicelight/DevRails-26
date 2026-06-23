@@ -25,10 +25,10 @@ flowchart TD
   reviewTasks --> doctor["/mb-doctor<br/>feature/task-queue"]
   doctor --> mode{"Как выполнять JSON task queue?"}
 
-  mode -- "Manual" --> exec["/execute<br/>TASK-NNN-FT-NNN-W-N"]
-  exec --> verify["/verify<br/>TASK-NNN-FT-NNN-W-N"]
+  mode -- "Manual" --> exec["/execute<br/>TASK-NNN-TN-FT-NNN-WN"]
+  exec --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]
   verify --> redTask{"Нужен semantic pass?"}
-  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-FT-NNN-W-N"]
+  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-TN-FT-NNN-WN"]
   redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
   redTask -- "нет" --> sync["/mb-sync"]
   redVerify --> sync

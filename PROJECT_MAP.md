@@ -2,9 +2,9 @@
 
 ## Read First
 
-Before changing this repository, reaad:
+Before changing this repository, read:
 
-- `README.en.md`
+- `README.md`
 - `package.json`
 - `scripts/install-framework.mjs`
 - `scripts/vendor-shared.mjs`
@@ -29,8 +29,8 @@ source-only repo
   -> scripts/install-framework.mjs
   -> temporary repo copy
   -> scripts/vendor-shared.mjs
-  -> generated shared-* files for installable skills
-  -> npx -y skills add <prepared-temp-repo> ...
+  -> full runtime command skills generated into target .agents/.claude
+  -> bootstrap/sync Memory Bank skeleton from prepared temp repo
 ```
 
 Do not edit or commit generated `skills/*/{agents,references,scripts}/shared-*` files. If shared behavior needs to change, edit `skills/_shared/...`.
@@ -52,14 +52,14 @@ Root documentation:
 Packaging and install:
 
 - `package.json`: package bin and scripts.
-- `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` preserves legacy install-only behavior, and every path prepares a temporary vendored repo before `skills add`.
+- `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
 - `.github/workflows/release-check.yml`: CI source-only hygiene, syntax checks, install smoke, bootstrap smoke.
 
 Canonical shared source:
 
 - `skills/_shared/agents/*.md`: shared worker/reviewer prompts.
-- `skills/_shared/references/commands/*.md`: command specs copied into generated Memory Bank skeletons.
+- `skills/_shared/references/commands/*.md`: canonical command specs copied into generated runtime skills by the installer.
 - `skills/_shared/references/protocols/*`: protocol templates and derivative artifact templates such as `packet-template.json`.
 - `skills/_shared/references/structure-template.md`: Memory Bank structure reference.
 - `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator.
@@ -133,7 +133,7 @@ Primary source files:
 - `README.en.md`, `README.ru.md`, `howItWorks.md`
 
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
-`FT-000`, `TASK-000-FT-000-W-0`, or any runnable foundation records.
+`FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable foundation records.
 
 ## Architecture Spine Hotspots
 
@@ -166,7 +166,7 @@ mandatory ADRs for local/simple work.
 
 Execution Packets are derivative runtime artifacts under
 `.memory-bank/packets/TASK-*.packet.json`, with concrete file names following
-`TASK-NNN-FT-NNN-W-N.packet.json`. They summarize task/spec context for one run
+`TASK-NNN-TN-FT-NNN-WN.packet.json`. They summarize task/spec context for one run
 but never replace JSON task records or linked SDD specs as source of truth.
 T2/T3 tasks require a canonical `.memory-bank/packets/<task.id>.packet.json`
 before execute/scheduler
@@ -195,7 +195,7 @@ Do not add `.memory-bank/modules/`, `.memory-bank/graph/`,
 `.memory-bank/verification/`, Failure Packet artifacts, or new task lifecycle
 statuses for this flow.
 
-Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-FT-NNN-W-N`, and commands must treat those records as the only task model.
+Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-TN-FT-NNN-WN`, the ID tier/feature/wave segments must match `task.tier`, `task.feature`, and `task.wave`, and commands must treat those records as the only task model.
 
 ## Behavior Specs Hotspots
 

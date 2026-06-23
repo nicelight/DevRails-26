@@ -80,13 +80,14 @@ Before product feature task generation, read `.memory-bank/foundation.md`.
 Allowed states:
 - `Foundation Required: false` with `Foundation Gate Task: not_required` and a
   rationale in `.memory-bank/foundation.md`
-- `Foundation Required: true` with a concrete `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>`
+- `Foundation Required: true` with a concrete `Foundation Gate Task: TASK-<NNN>-T<N>-FT-000-W<N>`
   whose indexed task record has `feature: "FT-000"` and `status: "done"`
 
 If `.memory-bank/foundation.md` is missing, route to `/spec-design` and stop.
-If foundation is required but the final gate task is missing, not indexed, not
-`done`, or not an `FT-000` task, stop and route to `/foundation-to-tasks`,
-`/mb-doctor`, `/execute`, and `/verify` for the foundation queue.
+If foundation is required but `Foundation Gate Task` is
+`pending_foundation_to_tasks`, missing, not indexed, not `done`, or not an
+`FT-000` task, stop and route to `/foundation-to-tasks`, `/mb-doctor`,
+`/execute`, and `/verify` for the foundation queue.
 
 When foundation is required and the gate task is `done`, every product task
 created or updated by this command must include that gate task in `depends_on`
@@ -317,7 +318,7 @@ Rules:
 JSON task records are the source of truth:
 - `.memory-bank/schemas/task.schema.json`
 - `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json`
+- `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`
 
 Создай или обнови отдельные `.task.json` файлы:
 - Wave 1: enabling/product setup for this feature (`W1`, not project `W0`)
@@ -325,9 +326,10 @@ JSON task records are the source of truth:
 - Wave 3: integration & polish
 
 Task id format is mandatory:
-- `TASK-<NNN>-FT-<NNN>-W-<N>`
+- `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+- the `T<N>` segment must match the task record `tier`
 - the `FT-<NNN>` segment must match the task record `feature`
-- the `W-<N>` segment must match the task record `wave` (`W1` -> `W-1`)
+- the `W<N>` segment must match the task record `wave` (`W1` -> `W1`)
 - the task file must be `<task.id>.task.json`
 
 Правила:
@@ -342,7 +344,7 @@ Task id format is mandatory:
 Минимальный JSON record (обязательно для `/autopilot` и `/autonomous`):
 ```json
 {
-  "id": "TASK-001-FT-001-W-1",
+  "id": "TASK-001-T1-FT-001-W1",
   "title": "Short task title",
   "status": "planned",
   "wave": "W1",
@@ -476,8 +478,8 @@ Persistence rule:
   "version": 1,
   "tasks": [
     {
-      "id": "TASK-001-FT-001-W-1",
-      "file": "TASK-001-FT-001-W-1.task.json"
+      "id": "TASK-001-T1-FT-001-W1",
+      "file": "TASK-001-T1-FT-001-W1.task.json"
     }
   ]
 }
@@ -519,7 +521,7 @@ For T2/T3 required packet use, missing linked SDD specs, missing verification
 basis, contradictory scope, or unresolved public contract/state/data/security
 decisions are packet blockers, not `ready_with_gaps`.
 
-Standalone `/mb-packet TASK-<NNN>-FT-<NNN>-W-<N>` remains the repair/refresh command when task
+Standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` remains the repair/refresh command when task
 records or specs change after decomposition.
 
 ## 7) Readiness handoff
@@ -548,7 +550,7 @@ Final report:
 - behavior specs created/linked, or `none`
 - task records created/updated
 - packet files created/updated and their statuses
-- foundation gate dependency: `not_required` or `TASK-<NNN>-FT-000-W-<N>`
+- foundation gate dependency: `not_required` or `TASK-<NNN>-T<N>-FT-000-W<N>`
 - blockers/open questions, or `none`
 - next gate: run `/review-tasks-plan`, then `/mb-doctor` once for the
   feature/task-queue boundary before starting `/execute`

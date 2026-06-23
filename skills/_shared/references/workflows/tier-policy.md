@@ -57,7 +57,7 @@ Tier summary:
 Execution Packets are derivative runtime artifacts:
 
 ```text
-.memory-bank/packets/TASK-NNN-FT-NNN-W-N.packet.json
+.memory-bank/packets/TASK-NNN-TN-FT-NNN-WN.packet.json
 ```
 
 They summarize task purpose, linked specs, allowed/forbidden scope,

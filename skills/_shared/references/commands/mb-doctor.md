@@ -46,7 +46,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - Explicit `clarification_status: pending|blocked` is not allowed for autonomous/autopilot readiness or task-linked features.
 - Indexed task records do not exist for features that are pending, missing, or otherwise not clarified.
 - `.memory-bank/tasks/index.json` is valid JSON and has a valid task list.
-- Every indexed `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json` exists and is valid JSON.
+- Every indexed `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` exists and is valid JSON.
 - Every indexed task record has `tier: T0|T1|T2|T3`.
 - Authoritative routing uses only `task.tier`; legacy `risk` / `risk.level` is invalid.
 - `FT-000` is the only allowed pseudo-feature for project foundation. It is not
@@ -59,10 +59,10 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   - `Foundation Required: true|false`
   - `Foundation Requirement: REQ-000`
   - `Foundation Pseudo-Feature: FT-000`
-  - `Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required`
-- When foundation is required, the final foundation gate task exists, is indexed,
-  has `feature: "FT-000"`, and every non-`FT-000` product task depends on it
-  directly or transitively.
+  - `Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required`
+- When foundation is required and a concrete final foundation gate task is named,
+  it exists, is indexed, has `feature: "FT-000"`, and every non-`FT-000` product
+  task depends on it directly or transitively.
 - Task dependencies reference known task IDs and do not create cycles or execution deadlock.
 - Task status, dependency, and tier policy allow safe scheduler decisions.
 - `in_progress` `T0` / `T1` tasks have a `.protocols/<TASK_ID>/` directory.

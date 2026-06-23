@@ -75,14 +75,14 @@ jobs:
           node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --skill '*' --yes
 
           test -f .agents/skills/cold-start/SKILL.md
-          test -f .agents/skills/cold-start/scripts/shared-init-mb.js
-          test -f .agents/skills/cold-start/references/shared-structure-template.md
-          test -f .agents/skills/cold-start/references/shared-roles-general.md
-          test -f .agents/skills/mb-garden/assets/mb-lint.mjs
-          test -f .agents/skills/mb-garden/assets/mb-doctor.mjs
-          test -f .agents/skills/mb-from-prd/SKILL.md
-          test -f .agents/skills/mb-execute/SKILL.md
-          test -f .agents/skills/mb-verify/SKILL.md
+          test -f .claude/skills/cold-start/SKILL.md
+          test -f .agents/skills/spec-design/SKILL.md
+          test -f .claude/skills/spec-design/SKILL.md
+          test -f .agents/skills/foundation-to-tasks/SKILL.md
+          test -f .claude/skills/foundation-to-tasks/SKILL.md
+          grep -q '# /spec-design' .agents/skills/spec-design/SKILL.md
+          grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
+          ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
           test ! -e .memory-bank
 
       - name: Bootstrap and sync smoke test
@@ -112,15 +112,7 @@ jobs:
           test -f "$TARGET/.memory-bank/roles/general.md"
           test -f "$TARGET/.memory-bank/roles/orchestrator.md"
           test -f "$TARGET/.memory-bank/roles/worker.md"
-          test -f "$TARGET/.memory-bank/commands/spec-design.md"
-          test -f "$TARGET/.memory-bank/commands/foundation-to-tasks.md"
-          test -f "$TARGET/.memory-bank/commands/prd-to-tasks.md"
-          test -f "$TARGET/.memory-bank/commands/review-feat-plan.md"
-          test -f "$TARGET/.memory-bank/commands/review-tasks-plan.md"
-          test ! -e "$TARGET/.memory-bank/commands/review.md"
-          test -f "$TARGET/.memory-bank/commands/execute.md"
-          test -f "$TARGET/.memory-bank/commands/verify.md"
-          test -f "$TARGET/.memory-bank/commands/autonomous.md"
+          test ! -e "$TARGET/.memory-bank/commands"
           test -f "$TARGET/scripts/mb-lint.mjs"
           test -f "$TARGET/scripts/mb-doctor.mjs"
           test -f "$TARGET/.claude/skills/foundation-to-tasks/SKILL.md"
@@ -131,9 +123,13 @@ jobs:
           test -f "$TARGET/.agents/skills/review-tasks-plan/SKILL.md"
           test ! -e "$TARGET/.claude/skills/review/SKILL.md"
           test ! -e "$TARGET/.agents/skills/review/SKILL.md"
+          grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
+          grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
+          ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' "$TARGET/.agents/skills/execute/SKILL.md"
 
           grep -q 'ROLE: GENERAL' "$TARGET/AGENTS.md"
           grep -q 'roles/general.md' "$TARGET/AGENTS.md"
+          ! grep -q '.memory-bank/commands' "$TARGET/AGENTS.md"
           grep -q 'Роль GENERAL' "$TARGET/.memory-bank/roles/general.md"
           grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
           grep -q '## Architecture Spine' "$TARGET/.memory-bank/architecture/system-architecture.md"
@@ -143,10 +139,12 @@ jobs:
           ! grep -q '{{TODAY}}' "$TARGET/.memory-bank/constitution.md"
 
           node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
+          grep -Fq '^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$' "$TARGET/.memory-bank/schemas/task.schema.json"
+          grep -q 'TASK-NNN-TN-FT-NNN-WN' "$TARGET/AGENTS.md"
           test ! -e "$TARGET/.memory-bank/foundation.md"
           test ! -e "$TARGET/.memory-bank/features/FT-000-foundation.md"
-          test ! -e "$TARGET/.memory-bank/tasks/TASK-000-FT-000-W-0.task.json"
-          test ! -e "$TARGET/.memory-bank/tasks/TASK-001-FT-001-W-1.task.json"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-000-T1-FT-000-W0.task.json"
+          test ! -e "$TARGET/.memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json"
           ! grep -q 'REQ-000' "$TARGET/.memory-bank/requirements.md"
 
           (
@@ -157,3 +155,7 @@ jobs:
             node scripts/mb-lint.mjs
             node scripts/mb-doctor.mjs
           )
+
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$TARGET" --yes --sync
+          test ! -e "$TARGET/.memory-bank/commands"
+          grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"

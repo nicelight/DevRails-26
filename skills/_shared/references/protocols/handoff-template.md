@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-NNN-FT-NNN-W-N/handoff.md (what the next agent needs).
+description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/handoff.md (what the next agent needs).
 status: active
 ---
 # Handoff — <TASK_ID>

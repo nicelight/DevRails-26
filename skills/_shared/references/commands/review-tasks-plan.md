@@ -89,7 +89,7 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 
 ## 5) Handoff
 When approved:
-- for manual `/execute TASK-<NNN>-FT-<NNN>-W-<N>`, run normal `/mb-doctor`
+- for manual `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`, run normal `/mb-doctor`
 - for `/autopilot` or autonomous scheduler execution, run `/mb-doctor --strict`
 - then start the selected execution mode
 </process>

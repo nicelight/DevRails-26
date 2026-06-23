@@ -14,7 +14,7 @@ description: >
 ## Preconditions
 - You are in the repo root.
 - `.memory-bank/prd.md` exists with `type: prd`, `clarification_status: complete`, and `constitution_checked: true`; otherwise run `/write-prd` first.
-- `.memory-bank/spec-index.md` exists after `/spec-init` as the required lightweight SDD route map for PRD decomposition. After `/prd`, `/review-feat-plan` checks high-risk/large work before mandatory `/spec-design`; `/spec-design` consumes that map, records a minimal or full backbone gate, may record `.memory-bank/foundation.md`, and may update backbone SDD specs and `spec-index` when features share domain/model/contracts/state/security/runtime design.
+- `.memory-bank/spec-backbone.md` exists after `/spec-init` as the required lightweight pre-PRD framing state for PRD decomposition, and `.memory-bank/spec-index.md` remains a pure spec registry/index. After `/prd`, `/review-feat-plan` checks high-risk/large work before mandatory `/spec-design`; `/spec-design` consumes `spec-backbone` plus the registry, records a minimal or full backbone gate, may record `.memory-bank/foundation.md`, and may update backbone SDD specs and `spec-index` registry rows when features share domain/model/contracts/state/security/runtime design.
 - Optional Analysis artifacts such as a product brief may exist; use them as upstream PRD input, but do not require them.
 - `.memory-bank/` exists. If not, run `mb-init` first (or create the skeleton manually).
 
@@ -24,11 +24,12 @@ description: >
 1. Read `.memory-bank/prd.md`.
 2. Confirm frontmatter has `type: prd`, `clarification_status: complete`, and `constitution_checked: true`.
 3. Stop if PRD contains unresolved `NEEDS CLARIFICATION` markers that affect decomposition.
-4. Read `.memory-bank/spec-index.md` as the lightweight SDD route map. Stop and run `/spec-init` if the index is missing, stale, placeholder-only, has broken links, is ambiguous, or cannot safely identify relevant existing specs and planned/candidate/unknown/not_applicable areas.
-5. Determine relevant authoritative specs from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy.
-6. Resolve and read only those relevant authoritative spec files routed by `.memory-bank/spec-index.md`. Do not load every SDD spec by default.
-7. If a relevant authoritative spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment.
-8. Start a task protocol folder:
+4. Read `.memory-bank/spec-backbone.md` as the lightweight pre-PRD framing state. Stop and run `/spec-init` if the backbone is missing, stale, placeholder-only, blocked, or does not make decomposition inputs explicit enough.
+5. Read `.memory-bank/spec-index.md` as a pure registry/index. Stop and run `/spec-init` if the index is missing, stale, ambiguous, has broken links, or contains old readiness/status sections instead of only registry/planned-spec routing.
+6. Determine relevant authoritative specs from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy.
+7. Resolve and read only those relevant authoritative spec files routed by `.memory-bank/spec-index.md`. Do not load every SDD spec by default.
+8. If a relevant authoritative spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment.
+9. Start a task protocol folder:
    - `.protocols/PRD-BOOTSTRAP/`
    - `plan.md` (steps)
    - `decision-log.md` (Q/A and choices)
@@ -82,7 +83,7 @@ Instead:
 3) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate before product feature tasking.
 4) For each selected feature, run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, JSON tasks, and required packets:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
-   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-FT-NNN-W-N`
+   - atomic `.memory-bank/tasks/TASK-*.task.json` records grouped by `wave`, each with mandatory `tier: T0|T1|T2|T3`; concrete IDs use `TASK-NNN-TN-FT-NNN-WN`
 
 When enough structured evidence exists, those feature-level plans and task records may include optional richer fields such as `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, and `verification_targets`.
 Task routing is authoritative only through `task.tier`; the old `risk` / `risk.level` model is invalid.
@@ -126,7 +127,7 @@ If the goal is “PRD → done without more user interaction”:
 - product.md + requirements.md are coherent.
 - Every REQ maps to an Epic/Feature in RTM.
 - Epics and features exist with acceptance criteria.
-- `.memory-bank/spec-index.md` routes existing/planned/candidate/unknown/not_applicable SDD design areas.
+- `.memory-bank/spec-backbone.md` records pre-PRD decomposition inputs, gaps, and handoff; `.memory-bank/spec-index.md` lists existing/planned spec files as a pure registry/index.
 - No schema-backed task records are required from `mb-from-prd` itself.
 - If task planning is explicitly continued with `/prd-to-tasks FT-<NNN>`, schema-backed task records are indexed in `.memory-bank/tasks/index.json`; every task has `tier`.
 - index.md is updated.

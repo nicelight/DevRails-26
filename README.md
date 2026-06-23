@@ -1,8 +1,9 @@
 # factory for development
 
-![Схема MEMOFLOW](devrails.jpg)
+![Схема DevRails 26](devrails.jpg)
 
-`DevRails 26` - это набор skills и workflow для агентной разработки проектов с долгосрочной SDD orientated памятью и кучей бюрократии ради поддержки автономного режима разработки.
+`DevRails 26` - это фреймворк, который содержит набор skills и workflow для агентной разработки проектов с долгосрочной SDD orientated памятью и кучей бюрократии ради надежной долгосрочной поддержки проекта Агентами. Ориентирован на упряжки Claude CLI / Codex CLI. 
+
 
 ## 📌 Что это
 
@@ -115,7 +116,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Когда:** после `/spec-design`, если `.memory-bank/foundation.md` говорит `Foundation Required: true`.
 
-   **Создает/обновляет:** `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.protocols/FT-000/*`, `.memory-bank/tasks/plans/IMPL-FT-000.md`, normal JSON `TASK-NNN-FT-000-W-N` records для foundation и final foundation gate task. Свежий bootstrap это не создает.
+   **Создает/обновляет:** `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.protocols/FT-000/*`, `.memory-bank/tasks/plans/IMPL-FT-000.md`, normal JSON `TASK-NNN-TN-FT-000-WN` records для foundation и final foundation gate task. Свежий bootstrap это не создает.
 
    **Дальше:** `/mb-doctor` на foundation/task-queue boundary, затем `/execute`/`/verify` foundation tasks до `done` у final gate task.
 
@@ -133,7 +134,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** feature-level SDD design status/spec links, optional `.memory-bank/behavior-specs/*.behavior.json` для конкретных behavior examples, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
 
-   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-FT-NNN-W-N`; `/verify TASK-NNN-FT-NNN-W-N` выполняется после реализации конкретной задачи.
+   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`; `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации конкретной задачи.
 
 10. `/mb-doctor`
 
@@ -141,25 +142,25 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** report readiness findings; не заменяет `/verify` и не исполняет tasks.
 
-   **Дальше:** исправить findings или перейти к `/execute TASK-NNN-FT-NNN-W-N`.
+   **Дальше:** исправить findings или перейти к `/execute TASK-NNN-TN-FT-NNN-WN`.
 
-11. `/execute TASK-NNN-FT-NNN-W-N`
+11. `/execute TASK-NNN-TN-FT-NNN-WN`
 
    **Когда:** для реализации одной конкретной задачи из task record.
 
-   **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-NNN-FT-NNN-W-N/`, evidence и handoff в `.tasks/TASK-NNN-FT-NNN-W-N/`.
+   **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-NNN-TN-FT-NNN-WN/`, evidence и handoff в `.tasks/TASK-NNN-TN-FT-NNN-WN/`.
 
-   **Дальше:** запустить `/verify TASK-NNN-FT-NNN-W-N`.
+   **Дальше:** запустить `/verify TASK-NNN-TN-FT-NNN-WN`.
 
-12. `/verify TASK-NNN-FT-NNN-W-N`
+12. `/verify TASK-NNN-TN-FT-NNN-WN`
 
    **Когда:** после реализации задачи.
 
    **Создает/обновляет:** verification evidence, verdict `PASS` или `FAIL`, task/protocol state по результату проверки.
 
-   **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-NNN-FT-NNN-W-N`; иначе перейти к `/mb-sync`.
+   **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-NNN-TN-FT-NNN-WN`; иначе перейти к `/mb-sync`.
 
-13. `/red-verify TASK-NNN-FT-NNN-W-N`
+13. `/red-verify TASK-NNN-TN-FT-NNN-WN`
 
    **Когда:** обязательно для T3 task closure; опционально для T2 task closure; обязательно как `/red-verify --feature FT-*` перед T2 feature completion. Feature-level verdict записывается в сам feature doc. Особенно полезно там, где обычные tests могут пройти, но решение может быть неверным по смыслу.
 
@@ -186,7 +187,7 @@ Memory Bank помогает вести разработку как повтор
 ## 🛠️ Команды вне основного ручного цикла
 
 - `/cold-start` - выбирает стартовый сценарий для нового или существующего репозитория: greenfield, brownfield, skeleton-only.
-- `/mb-init` - создает skeleton Memory Bank, `.tasks/`, `.protocols/`, `AGENTS.md` и project command proxies.
+- `/mb-init` - создает skeleton Memory Bank, `.tasks/`, `.protocols/`, `AGENTS.md` и runtime scripts.
 - `/spec-improve` - standalone repair/refresh feature-level SDD design, когда нужно обновить design без task decomposition.
 - `/mb-packet` - repair/refresh derivative Execution Packet после task/spec изменений или readiness finding; initial required packets создает `/prd-to-tasks`.
 - `/map-codebase` - описывает существующий код как as-is baseline в Memory Bank.
@@ -210,11 +211,11 @@ node scripts/install-framework.mjs
 ```
 
 Интерактивный installer позволит выбрать нужную папку проекта из списка,
-установит команды memobank и создаст или синхронизирует skeleton Memory Bank в
+установит команды DevRails 26 и создаст или синхронизирует skeleton Memory Bank в
 выбранном репозитории.
 
-Если Memory Bank уже был развернут, installer обновит generated commands,
-proxy skills, runtime scripts и может синхронизировать `AGENTS.md`. Для
+Если Memory Bank уже был развернут, installer обновит runtime command skills,
+runtime scripts и может синхронизировать `AGENTS.md`. Для
 существующего проекта лучше запускать установку в git-репозитории или заранее
 сделать копию `AGENTS.md`, чтобы при необходимости посмотреть diff.
 

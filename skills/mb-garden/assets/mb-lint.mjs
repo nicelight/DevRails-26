@@ -38,9 +38,10 @@ const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
 const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
-const TASK_ID_FORMAT = 'TASK-NNN-FT-NNN-W-N';
-const TASK_ID_RE = /^TASK-[0-9]{3}-(FT-[0-9]{3})-W-([0-9]+)$/;
-const TASK_FILE_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\.task\.json$/;
+const TASK_ID_FORMAT = 'TASK-NNN-TN-FT-NNN-WN';
+const TASK_ID_RE = /^TASK-[0-9]{3}-(T[0-3])-(FT-[0-9]{3})-W([0-9]+)$/;
+const LEGACY_TASK_ID_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$/;
+const TASK_FILE_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
 const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
 const ARCHITECTURE_DECISION_ANCHOR_RE = /^AD-[0-9]{3,}$/;
@@ -613,9 +614,17 @@ function taskIdParts(taskId) {
   const match = TASK_ID_RE.exec(taskId);
   if (!match) return null;
   return {
-    feature: match[1],
-    wave: `W${match[2]}`,
+    tier: match[1],
+    feature: match[2],
+    wave: `W${match[3]}`,
   };
+}
+
+function taskIdFormatMessage(value) {
+  const suffix = LEGACY_TASK_ID_RE.test(String(value ?? ''))
+    ? '; legacy TASK-NNN-FT-NNN-W-N IDs are missing the required tier segment'
+    : '';
+  return `must match ${TASK_ID_FORMAT}${suffix}`;
 }
 
 function checkTaskIdMatchesRecord(rel, task) {
@@ -627,8 +636,11 @@ function checkTaskIdMatchesRecord(rel, task) {
   if (task.feature !== parts.feature) {
     errors.push(`${rel}: task id feature segment '${parts.feature}' must match feature '${task.feature}'`);
   }
+  if (task.tier !== parts.tier) {
+    errors.push(`${rel}: task id tier segment '${parts.tier}' must match tier '${task.tier}'`);
+  }
   if (task.wave !== parts.wave) {
-    errors.push(`${rel}: task id wave segment 'W-${parts.wave.slice(1)}' must match wave '${task.wave}'`);
+    errors.push(`${rel}: task id wave segment '${parts.wave}' must match wave '${task.wave}'`);
   }
 }
 
@@ -1042,7 +1054,7 @@ function checkTaskRecords() {
       continue;
     }
     if (!TASK_ID_RE.test(id)) {
-      errors.push(`${indexRel}: task id '${id}' must match ${TASK_ID_FORMAT}`);
+      errors.push(`${indexRel}: task id '${id}' ${taskIdFormatMessage(id)}`);
       continue;
     }
     if (records.has(id)) {
@@ -1095,7 +1107,7 @@ function checkTaskRecords() {
       errors.push(`${rel}: task id '${task.id}' does not match index id '${id}'`);
     }
     if (typeof task.id !== 'string' || !TASK_ID_RE.test(task.id)) {
-      errors.push(`${rel}: task id '${task.id}' must match ${TASK_ID_FORMAT}`);
+      errors.push(`${rel}: task id '${task.id}' ${taskIdFormatMessage(task.id)}`);
     }
     checkTaskIdMatchesRecord(rel, task);
     if (!ALLOWED_TASK_STATUS.has(task.status)) {
@@ -1139,7 +1151,7 @@ function checkTaskRecords() {
     const rel = records.get(id)?.rel ?? indexRel;
     for (const dep of deps) {
       if (typeof dep !== 'string' || !TASK_ID_RE.test(dep)) {
-        errors.push(`${rel}: depends_on value '${dep}' must match ${TASK_ID_FORMAT}`);
+        errors.push(`${rel}: depends_on value '${dep}' ${taskIdFormatMessage(dep)}`);
         continue;
       }
       if (!records.has(dep)) {

@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-NNN-FT-NNN-W-N/context.md (clean-session context set).
+description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/context.md (clean-session context set).
 status: active
 ---
 # Context — <TASK_ID>

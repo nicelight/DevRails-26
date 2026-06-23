@@ -147,7 +147,7 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   for `/foundation-to-tasks`
 - if foundation is required, every product feature task must depend directly or
   transitively on the final foundation gate task
-- each indexed `.memory-bank/tasks/TASK-<NNN>-FT-<NNN>-W-<N>.task.json` must contain:
+- each indexed `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` must contain:
   - `id`
   - `title`
   - `status: planned|ready|in_progress|blocked|done|failed`
@@ -251,7 +251,7 @@ Manual mode:
 - follow-up task, добавленная по итогам verify, должна попасть в **следующую итерацию того же run**
 
 ## 8) Execution loop per TASK
-Для каждого выбранного `TASK-NNN-FT-NNN-W-N`:
+Для каждого выбранного `TASK-NNN-TN-FT-NNN-WN`:
 1) reread `task.tier` and `runtime_context` from the JSON record and route only
    by those authoritative values
 2) before writing `ready -> in_progress`, ensure a usable packet while the task
@@ -260,8 +260,8 @@ Manual mode:
    - use canonical `.memory-bank/packets/<task.id>.packet.json` when
      `runtime_context.packet_ref` is absent
    - if a `T2` / `T3` task has `packet_required` absent or false, record a
-     policy violation and route to task-record fix + `/mb-packet TASK-<NNN>-FT-<NNN>-W-<N>`
-   - if missing or stale, run/route `/mb-packet TASK-<NNN>-FT-<NNN>-W-<N>` once without
+     policy violation and route to task-record fix + `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+   - if missing or stale, run/route `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` once without
      changing task status
    - usable packet status is `ready` or `ready_with_gaps` with matching
      `source_task_hash`
@@ -270,12 +270,12 @@ Manual mode:
      clear halt reason in `.protocols/AUTONOMOUS-RUN/status.md`, and stop with
      `HALT_QUALITY_GATES`
 3) only after the required packet gate passes, scheduler writes `ready -> in_progress`
-4) `/execute TASK-<NNN>-FT-<NNN>-W-<N>`
-5) `/verify TASK-<NNN>-FT-<NNN>-W-<N>` by `task.tier` from the JSON record:
+4) `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
+5) `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` by `task.tier` from the JSON record:
    - `T0` / `T1`: compact protocol/evidence allowed according to tier policy
    - `T2` / `T3`: full protocol path is required
    - `T3`: require exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`; no silent autonomous closure
-6) run `/red-verify TASK-<NNN>-FT-<NNN>-W-<N>` only when required by tier:
+6) run `/red-verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` only when required by tier:
    - `T2`: not required for task closure; optional/manual per-task semantic review is allowed
    - `T3`: required before task closure
 7) scheduler records the closure/failure/blocking decision, final task status, and evidence links in the authoritative indexed `.memory-bank/tasks/TASK-*.task.json`

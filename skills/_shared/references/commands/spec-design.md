@@ -337,10 +337,9 @@ Do not create:
 After the FT set and global backbone evidence exist, decide whether the project
 needs a verified executable baseline before product feature implementation.
 
-Create or update `.memory-bank/foundation.md` when either:
-- foundation is required; or
-- foundation is explicitly not required and downstream commands need a recorded
-  rationale.
+Always create or update `.memory-bank/foundation.md` during `/spec-design`.
+Downstream product tasking requires an explicit foundation decision, even when
+no separate foundation queue is needed.
 
 Minimal required shape:
 
@@ -355,7 +354,7 @@ status: active
 - Foundation Required: true|false
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: TASK-<NNN>-FT-000-W-<N>|not_required
+- Foundation Gate Task: pending_foundation_to_tasks|not_required
 
 ## Minimal Work Path
 - Build command:
@@ -384,7 +383,10 @@ Rules:
 - set `Foundation Required: true` when planned features cannot safely start
   without a walking skeleton, runtime path, test harness, entrypoint, storage
   baseline, contract boundary, or compatibility probe
-- set `Foundation Required: false` only when existing code/baseline or project
+- for `Foundation Required: true`, set
+  `Foundation Gate Task: pending_foundation_to_tasks`; the concrete final gate
+  task id is created later by `/foundation-to-tasks`
+- set `Foundation Required: false` when existing code/baseline or project
   simplicity makes a separate foundation queue unnecessary; set
   `Foundation Gate Task: not_required` and record rationale
 - in brownfield, default to `Foundation Required: false` when the existing

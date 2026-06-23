@@ -1,5 +1,5 @@
 ---
-description: Template for .protocols/TASK-NNN-FT-NNN-W-N/plan.md (execution plan + MB-SYNC handoff).
+description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/plan.md (execution plan + MB-SYNC handoff).
 status: active
 ---
 # Plan — <TASK_ID>
