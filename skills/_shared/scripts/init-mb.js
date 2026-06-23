@@ -282,7 +282,42 @@ function hasGeneratedMarker(content) {
     || content.includes(RUNTIME_SKILL_GENERATED_MARKER);
 }
 
+function uniqueExistingAgentsContent(existingContent, generatedContent) {
+  const generatedLines = new Set(
+    generatedContent
+      .replace(/\r\n/g, '\n')
+      .split('\n')
+      .map((line) => line.trimEnd())
+  );
+  const uniqueLines = [];
+  let previousBlank = true;
+
+  existingContent
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .forEach((line) => {
+      const normalized = line.trimEnd();
+      if (normalized === '') {
+        if (!previousBlank && uniqueLines.length) {
+          uniqueLines.push('');
+          previousBlank = true;
+        }
+        return;
+      }
+      if (generatedLines.has(normalized)) return;
+
+      uniqueLines.push(normalized);
+      previousBlank = false;
+    });
+
+  while (uniqueLines[uniqueLines.length - 1] === '') uniqueLines.pop();
+  return uniqueLines.join('\n');
+}
+
 function mergeAgentsGuide(existingContent, generatedContent) {
+  const uniqueExistingContent = uniqueExistingAgentsContent(existingContent, generatedContent);
+  if (!uniqueExistingContent.trim()) return `${generatedContent.trimEnd()}\n`;
+
   return `${generatedContent.trimEnd()}
 
 ---
@@ -292,7 +327,7 @@ function mergeAgentsGuide(existingContent, generatedContent) {
 The following content existed before DevRails 26 bootstrap and was appended automatically.
 Review it for contradictions with the generated guide above.
 
-${existingContent.trimEnd()}
+${uniqueExistingContent}
 `;
 }
 

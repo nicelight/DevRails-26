@@ -321,22 +321,15 @@ function resolveCommandSpecs(preparedRepo) {
       const name = filename.replace(/\.md$/i, '');
       const absPath = join(commandDir, filename);
       const content = readFileSync(absPath, 'utf8').replace(/\r\n/g, '\n');
-      const packageSkillPath = join(preparedRepo, 'skills', name, 'SKILL.md');
 
       return {
         name,
         filename,
         content,
         desc: extractFrontmatterDescription(content) || `/${name}`,
-        legacyPackageContent: existsSync(packageSkillPath) ? readFileSync(packageSkillPath, 'utf8') : null,
       };
     })
     .filter(({ name }) => !LEGACY_ALIAS_COMMANDS.has(name));
-}
-
-function isLegacyFrameworkPackageSkill(content, spec) {
-  if (!spec.legacyPackageContent) return false;
-  return normalizeText(content) === normalizeText(spec.legacyPackageContent);
 }
 
 function collectRequestedRuntimeSkills(addArgs) {
@@ -382,27 +375,18 @@ function runtimeSkillContent({ name, desc, content }) {
   return `---\nname: ${name}\ndescription: ${yamlQuote(desc)}\n---\n${RUNTIME_SKILL_GENERATED_MARKER}\n\n${content.trimEnd()}\n`;
 }
 
-function writeRuntimeSkill(targetRepo, runtimeRoot, spec, syncMode) {
-  const skillDir = ensureRuntimeSkillDir(targetRepo, runtimeRoot, spec.name);
+function writeRuntimeSkill(targetRepo, runtimeRoot, spec) {
+  const skillDir = join(targetRepo, runtimeRoot, spec.name);
   const skillPath = join(skillDir, 'SKILL.md');
   const relSkill = `${runtimeRoot}/${spec.name}/SKILL.md`;
   const content = runtimeSkillContent(spec);
-  const existed = existsSync(skillPath);
+  const existed = existsSync(skillDir);
 
   if (existed) {
-    const current = readFileSync(skillPath, 'utf8');
-    if (
-      !hasRuntimeGeneratedMarker(current)
-      && !isLegacyGeneratedProxySkill(current, spec.name)
-      && !isLegacyFrameworkPackageSkill(current, spec)
-    ) {
-      console.log(`  ! ${relSkill} exists but is not recognized as generated; left unchanged`);
-      return false;
-    }
-  } else if (!syncMode && existsSync(skillDir)) {
-    // Empty/precreated directory is fine; custom files are left alone.
+    rmSync(skillDir, { recursive: true, force: true });
   }
 
+  ensureRuntimeSkillDir(targetRepo, runtimeRoot, spec.name);
   writeFileSync(skillPath, content, 'utf8');
   console.log(`  ${existed ? '~' : '+'} ${relSkill}`);
   return true;
@@ -469,8 +453,8 @@ function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode
   }
 
   selectedSpecs.forEach((spec) => {
-    writeRuntimeSkill(targetRepo, '.agents/skills', spec, syncMode);
-    writeRuntimeSkill(targetRepo, '.claude/skills', spec, syncMode);
+    writeRuntimeSkill(targetRepo, '.agents/skills', spec);
+    writeRuntimeSkill(targetRepo, '.claude/skills', spec);
   });
 }
 
