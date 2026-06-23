@@ -43,6 +43,8 @@ const TASK_ID_RE = /^TASK-[0-9]{3}-(FT-[0-9]{3})-W-([0-9]+)$/;
 const TASK_FILE_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
 const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
+const ARCHITECTURE_DECISION_ANCHOR_RE = /^AD-[0-9]{3,}$/;
+const RETIRED_ARCHITECTURE_DECISION_RE = /\b(retired|replaced|superseded|deprecated)\b/i;
 const ARCHITECTURE_REF_PATH_RE =
   /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`),\]}]+/gi;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
@@ -746,35 +748,42 @@ function checkTaskFeatureClarification(rel, task, featuresById) {
   }
 }
 
-function extractArchitectureReferencePaths(value, out = []) {
+function extractArchitectureReferences(value, out = []) {
   if (typeof value === 'string') {
     for (const match of value.matchAll(ARCHITECTURE_REF_PATH_RE)) {
-      const normalized = normalizeArchitectureReferencePath(match[0]);
+      const normalized = normalizeArchitectureReference(match[0]);
       if (normalized) out.push(normalized);
     }
     return out;
   }
 
   if (Array.isArray(value)) {
-    for (const item of value) extractArchitectureReferencePaths(item, out);
+    for (const item of value) extractArchitectureReferences(item, out);
     return out;
   }
 
   if (value && typeof value === 'object') {
-    for (const child of Object.values(value)) extractArchitectureReferencePaths(child, out);
+    for (const child of Object.values(value)) extractArchitectureReferences(child, out);
   }
 
   return out;
 }
 
-function normalizeArchitectureReferencePath(value) {
-  const withoutAnchor = normalizeRel(String(value ?? '').trim())
+function normalizeArchitectureReference(value) {
+  const normalized = normalizeRel(String(value ?? '').trim())
     .replace(/^\.\//, '')
-    .replace(/[.,:;]+$/g, '')
-    .split('#')[0];
+    .replace(/[.,:;]+$/g, '');
+  const [relPath, ...anchorParts] = normalized.split('#');
 
-  if (!withoutAnchor.startsWith('.memory-bank/')) return null;
-  return withoutAnchor;
+  if (!relPath.startsWith('.memory-bank/')) return null;
+  return { path: relPath, anchor: anchorParts.join('#') };
+}
+
+function architectureDecisionIds() {
+  const abs = path.join(ROOT, ARCHITECTURE_SPINE_REL);
+  if (!fs.existsSync(abs)) return new Set();
+  const text = readText(abs).replace(/\r\n/g, '\n');
+  return new Set([...text.matchAll(/^####\s+(AD-[0-9]{3,})\b/gm)].map((match) => match[1]));
 }
 
 function checkTaskArchitectureReferences(rel, task) {
@@ -785,17 +794,34 @@ function checkTaskArchitectureReferences(rel, task) {
     task.invariants,
     task.verification_targets,
   ];
-  const refs = [...new Set(extractArchitectureReferencePaths(fields))];
+  const refsByKey = new Map();
+  for (const ref of extractArchitectureReferences(fields)) {
+    refsByKey.set(`${ref.path}#${ref.anchor}`, ref);
+  }
+  const refs = [...refsByKey.values()];
+  const decisionIds = architectureDecisionIds();
 
   for (const ref of refs) {
-    if (!fs.existsSync(path.join(ROOT, ref))) {
-      errors.push(`${rel}: references missing architecture/contract/ADR path '${ref}'`);
+    if (!fs.existsSync(path.join(ROOT, ref.path))) {
+      errors.push(`${rel}: references missing architecture/contract/ADR path '${ref.path}'`);
+      continue;
+    }
+
+    if (ref.path === ARCHITECTURE_SPINE_REL && ref.anchor.startsWith('AD-')) {
+      if (!ARCHITECTURE_DECISION_ANCHOR_RE.test(ref.anchor)) {
+        errors.push(`${rel}: references invalid Architecture Spine decision anchor '${ref.path}#${ref.anchor}'`);
+      } else if (!decisionIds.has(ref.anchor)) {
+        errors.push(`${rel}: references missing Architecture Spine decision anchor '${ref.path}#${ref.anchor}'`);
+      }
     }
   }
 }
 
 function isRetiredArchitectureDecision(headingTail, block) {
-  return /\b(retired|replaced|superseded|deprecated)\b/i.test(`${headingTail}\n${block}`);
+  if (RETIRED_ARCHITECTURE_DECISION_RE.test(String(headingTail ?? ''))) return true;
+
+  const status = String(block ?? '').match(/^\s*-\s*Status\s*:\s*(.*)$/im);
+  return status ? RETIRED_ARCHITECTURE_DECISION_RE.test(status[1] ?? '') : false;
 }
 
 function hasNonEmptyDecisionLabel(block, label) {

@@ -55,6 +55,10 @@ Must check:
 - T2/T3 tasks have relevant linked SDD specs through `source_artifacts`,
   `normative_inputs`, `constraints`, `invariants`, `verification_targets`, or
   feature `spec_design_links`.
+- Shared-boundary T2/T3 tasks have relevant Architecture Spine `AD-*`,
+  boundary-map, contract, or ADR links when those decisions constrain
+  implementation or verification. Feature-local T2/T3 tasks may rely on their
+  narrower linked SDD specs.
 - T2/T3 tasks and explicit packet-required T0/T1 tasks have usable canonical
   `.memory-bank/packets/<task.id>.packet.json`.
 - Product tasks do not use `W0`; `W0` is reserved for `FT-000`.
@@ -80,7 +84,7 @@ Use fresh context. Example:
 
 ```bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS. Review .memory-bank/constitution.md, .memory-bank/spec-backbone.md, .memory-bank/spec-index.md, .memory-bank/features/*.md, .memory-bank/tasks/index.json, indexed .memory-bank/tasks/*.task.json records, .memory-bank/tasks/plans/IMPL-FT-*.md, packets when required, tier policy, and mb-doctor readiness findings. Check waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links, packet readiness, and Foundation Dev Path dependency invariants. Write report to .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.'
+  'TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS. Review .memory-bank/constitution.md, .memory-bank/spec-backbone.md, .memory-bank/spec-index.md, .memory-bank/features/*.md, .memory-bank/tasks/index.json, indexed .memory-bank/tasks/*.task.json records, .memory-bank/tasks/plans/IMPL-FT-*.md, packets when required, tier policy, and mb-doctor readiness findings. Check waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links, Architecture Spine/boundary link routing for shared-boundary work, packet readiness, and Foundation Dev Path dependency invariants. Write report to .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.'
 ```
 
 ## 5) Handoff

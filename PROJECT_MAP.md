@@ -148,8 +148,12 @@ Primary source files for this behavior:
   spine during the global SDD backbone gate
 - `skills/_shared/references/commands/spec-improve.md` for repair/refresh
   guidance when feature design exposes a shared architecture gap
+- `skills/_shared/references/commands/spec-auto.md` for applying the same KISS
+  AD rules during autonomous feature design
 - `skills/_shared/references/commands/prd-to-tasks.md` for copying relevant
   AD/boundary links into existing task fields
+- `skills/_shared/references/commands/review-tasks-plan.md` for fresh-context
+  review of shared-boundary AD/boundary routing before execution
 - `skills/_shared/references/structure-template.md` and
   `skills/_shared/scripts/init-mb.js` for generated skeleton templates
 - `skills/mb-garden/assets/mb-lint.mjs` and
