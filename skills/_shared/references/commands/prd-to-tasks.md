@@ -9,6 +9,7 @@ status: active
 - feature design status/spec links
 - Implementation Plan
 - schema-backed JSON task records (waves)
+- optional behavior specs for concrete ambiguous behavior
 - required derivative Execution Packets
 - критерии done + тесты + verify
 </objective>
@@ -258,6 +259,60 @@ Constitution Check rules:
 - Add Constitution to a task `normative_inputs` only when a specific principle is materially relevant to execution or verification of that task.
 - Do not introduce alternatives to the required `tier: T0|T1|T2|T3` routing model.
 
+## 4.5) Optional behavior specs
+Decide whether the feature needs concrete behavior examples before slicing tasks.
+Creating `0` behavior specs is the correct result for simple, mechanical, or
+obvious features.
+
+Create 1-3 behavior specs only when evidence from PRD, feature docs, linked
+specs, baseline docs, contracts, states, runbooks, or testing docs shows that a
+specific `given / when / then` example will materially reduce implementation
+ambiguity. Typical cases:
+- core happy path for an important feature
+- negative or edge case with real implementation risk
+- `T2` / `T3` behavior where acceptance criteria could be satisfied too narrowly
+- API, state, domain, or UI flow needing a concrete example
+
+Do not create behavior specs for simple `T0` / `T1`, mechanical, or obvious
+tasks. Do not invent scenarios without evidence.
+
+Store behavior specs as standalone JSON files:
+
+```text
+.memory-bank/behavior-specs/FT-<NNN>-BHV-<NNN>-<slug>.behavior.json
+```
+
+Use this minimal shape:
+
+```json
+{
+  "id": "FT-001-BHV-001",
+  "feature_id": "FT-001",
+  "title": "Successful login with valid credentials",
+  "given": {},
+  "when": {},
+  "then": {}
+}
+```
+
+Rules:
+- one behavior spec describes one independent behavior
+- keep JSON short; do not duplicate the whole feature spec
+- do not add a registry, index, JSON Schema, validator, doctor gate, or new task
+  field
+- if behavior specs are created, add or update the feature doc section:
+
+```md
+## Behavior specs
+- `.memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json`
+```
+
+- link task-relevant behavior specs only through task `source_artifacts`
+- do not add behavior specs to `verification_targets`, `evidence_required`,
+  `gates`, `constraints`, or `invariants`
+- behavior specs are implementation context examples, not readiness,
+  verification, or done gates
+
 ## 5) Нарежь на schema-backed tasks (waves)
 JSON task records are the source of truth:
 - `.memory-bank/schemas/task.schema.json`
@@ -406,6 +461,8 @@ Persistence rule:
 Важно:
 - ключи обязательны, но значения могут быть пустыми массивами, если evidence нет
 - не выдумывай содержимое без evidence из PRD / feature docs / baseline docs / contracts / states / runbooks
+- when task-relevant behavior specs exist, include their file paths only in
+  `source_artifacts`; never copy them into verification/gate/constraint fields
 - for `T2` / `T3`, include relevant linked SDD specs from `spec_design_links`, `.memory-bank/spec-backbone.md`, and `spec-index.md` in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
 - include relevant backbone specs from `.memory-bank/spec-backbone.md` and `spec-index.md` whenever they constrain source of truth, module boundaries, runtime data model, API behavior, events/messages, frontend component behavior, invariants, or testing gates
 - include relevant Architecture Spine `AD-*`, ADR, and boundary-map links for
@@ -488,6 +545,7 @@ Final report:
 - feature id and final `spec_design_status`
 - linked specs created/used
 - implementation plan path
+- behavior specs created/linked, or `none`
 - task records created/updated
 - packet files created/updated and their statuses
 - foundation gate dependency: `not_required` or `TASK-<NNN>-FT-000-W-<N>`

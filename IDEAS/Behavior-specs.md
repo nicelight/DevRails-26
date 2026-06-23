@@ -1,40 +1,47 @@
-Да. Убираем JSON Schema, doctor-gates, обязательные проверки связности. Оставляем только полезный слой: **JSON behavior specs как рабочие сценарии для агента и будущего harness**.
-
-# ТЗ: KISS-слой Behavior Specs для DevRails
+# KISS Behavior Specs для DevRails
 
 ## Цель
 
-Добавить в DevRails простой слой JSON-спеков поведения.
+Добавить optional JSON-сценарии поведения для важных или неоднозначных фич.
 
-Задача слоя: фиксировать ожидаемое поведение фичи в формате `given / when / then`, чтобы агент мог писать код не только по текстовой спеки, но и по конкретным проверяемым сценариям.
+Behavior spec фиксирует конкретный `given / when / then` пример, который агент
+может использовать как контекст при реализации.
 
-## Место в пайплайне
+## Scope
 
-Behavior specs генерируются на этапе разложения PRD:
+Использовать только когда это реально помогает:
+
+- core happy path важной фичи;
+- negative / edge case с риском неверной реализации;
+- T2/T3 поведение, где acceptance criteria можно выполнить слишком узко;
+- API/state/domain/UI flow, которому нужен конкретный пример поведения.
+
+Не создавать behavior specs для простых T0/T1, механических или очевидных задач.
+
+## Место в workflow
+
+Behavior specs создаются в `/prd-to-tasks`, когда фича уже выбрана и перед
+нарезкой task records понятно, какие сценарии нужны.
+
+`/prd` может только добавить секцию `## Behavior specs` в feature template.
+
+## Хранение
 
 ```text
-prd.md
-  → epics
-  → features
-  → behavior specs
-  → tasks
-  → implementation
+.memory-bank/behavior-specs/
+  FT-001-BHV-001-login-success.behavior.json
+  FT-001-BHV-002-invalid-password.behavior.json
 ```
 
-То есть сначала из `prd.md` выделяются фичи, затем для важных фичей создаются behavior specs, потом уже задачи на реализацию.
+Без registry/index.
 
 ## Формат
 
-Использовать простой JSON.
-
-Пример:
-
 ```json
 {
-  "id": "AUTH_LOGIN_SUCCESS",
-  "feature_id": "AUTH_LOGIN",
+  "id": "FT-001-BHV-001",
+  "feature_id": "FT-001",
   "title": "Successful login with valid credentials",
-
   "given": {
     "user": {
       "exists": true,
@@ -42,7 +49,6 @@ prd.md
       "password": "correct-password"
     }
   },
-
   "when": {
     "action": "login",
     "payload": {
@@ -50,7 +56,6 @@ prd.md
       "password": "correct-password"
     }
   },
-
   "then": {
     "response": {
       "status": 200
@@ -62,125 +67,83 @@ prd.md
 }
 ```
 
-## Хранение
+## Связь с feature
 
-Добавить директорию:
+В feature doc добавлять Markdown-секцию:
 
-```text
-.memory-bank/behavior-specs/
+```md
+## Behavior specs
+- `.memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json`
+- `.memory-bank/behavior-specs/FT-001-BHV-002-invalid-password.behavior.json`
 ```
 
-Структура простая:
+## Связь с task records
 
-```text
-.memory-bank/behavior-specs/
-  AUTH_LOGIN_SUCCESS.behavior.json
-  AUTH_LOGIN_INVALID_PASSWORD.behavior.json
-```
+Новые task fields не добавлять.
 
-Без вложенных схем, реестров и сложной иерархии на первом этапе.
-
-## Связь с фичами
-
-В feature spec можно добавить список связанных behavior specs:
+Ссылать behavior specs только как source/context:
 
 ```json
 {
-  "id": "AUTH_LOGIN",
-  "behavior_specs": [
-    "AUTH_LOGIN_SUCCESS",
-    "AUTH_LOGIN_INVALID_PASSWORD"
+  "source_artifacts": [
+    ".memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json"
   ]
 }
 ```
 
-Это не строгий контракт, а навигационная связь для агента.
-
-## Связь с задачами
-
-В task spec можно добавить поле:
-
-```json
-{
-  "verifies_behavior": [
-    "AUTH_LOGIN_SUCCESS"
-  ]
-}
-```
-
-Смысл: задача должна реализовать или проверить указанное поведение.
+Не добавлять behavior specs в `verification_targets`, `evidence_required`,
+`gates`, `constraints` или `invariants`.
 
 ## Правила генерации
 
-При разложении `prd.md` агент должен:
+- Создавать 0-3 сценария на фичу. `0` — нормальный результат для простой фичи.
+- Если сценарии нужны, обычно начинать с одного happy path.
+- Добавлять negative/edge только для реального риска.
+- Один behavior spec = одно независимое поведение.
+- Не дублировать весь feature spec в JSON.
+- Не выдумывать сценарии без evidence из PRD/feature/specs.
 
-1. Создать behavior specs только для важных фичей.
-2. Для каждой основной фичи создать минимум один happy-path сценарий.
-3. Для рискованных мест добавить negative/edge сценарии.
-4. Не плодить сценарии ради количества.
-5. Не смешивать несколько независимых поведений в одном сценарии.
-6. Писать сценарии так, чтобы по ним позже можно было сделать тест или harness.
+## Использование
 
-## Что НЕ делать
+`/execute` может читать linked behavior specs из task `source_artifacts` и
+учитывать их как concrete examples.
+
+`/verify` не проверяет behavior specs и не блокирует результат из-за их
+отсутствия, непокрытия или расхождения с кодом. Если нужна проверка поведения,
+она должна быть выражена обычными AC, `verification_targets`, contract/state
+specs или тестами.
+
+## Non-goals
 
 На первом этапе не добавлять:
 
-* JSON Schema;
-* отдельный validator;
-* обязательную doctor-проверку;
-* сложный registry;
-* Gherkin;
-* Cucumber/JBehave-подобный парсер;
-* обязательный test runner;
-* блокировку `done` из-за отсутствия behavior specs.
+- JSON Schema;
+- validator;
+- doctor gate;
+- behavior registry;
+- новый task field;
+- новое feature frontmatter поле;
+- использование behavior specs как `verification_targets`;
+- lint/doctor/link checks для behavior specs;
+- Gherkin/Cucumber parser;
+- test runner;
+- блокировку `done` из-за отсутствия behavior specs.
 
-## Использование агентом
+## Внедрение
 
-Агент при реализации фичи должен читать:
+Минимальные source touchpoints:
 
-```text
-feature spec
-+ связанные behavior specs
-+ task spec
-```
+- `skills/_shared/scripts/init-mb.js` — создать `.memory-bank/behavior-specs/`.
+- `skills/_shared/references/structure-template.md` — описать папку.
+- `skills/mb-from-prd/references/feature-template.md` — добавить секцию.
+- `skills/_shared/references/commands/prd-to-tasks.md` — генерация и task links.
+- `skills/_shared/references/commands/execute.md` — чтение linked specs.
+- `skills/_shared/references/commands/verify.md` — явно не считать behavior specs
+  verification gate.
+- `README.md`, `howItWorks.md`, `PROJECT_MAP.md` — короткая документация.
 
-И реализовывать код так, чтобы поведение из behavior specs было выполнено.
+## Definition of Done
 
-## Будущий harness
+Фича закрывается по текущим правилам DevRails.
 
-Позже можно добавить harness, который будет запускать behavior specs как проверки.
-
-Но на первом этапе behavior specs — это просто строгие JSON-сценарии, которые:
-
-* помогают агенту точнее понять поведение;
-* уменьшают размытость feature spec;
-* дают основу для будущих автотестов;
-* остаются рядом с фичами как живые сценарии поведения.
-
-## Definition of Done на первом этапе
-
-Фича считается готовой по текущим правилам DevRails.
-
-Behavior specs не блокируют `done`, пока нет полноценного harness.
-
-Рекомендуемое правило для агента:
-
-```text
-Если у задачи есть verifies_behavior, агент должен явно указать в отчёте, как реализован каждый связанный behavior spec.
-```
-
-## Ожидаемый результат
-
-DevRails получает лёгкий слой:
-
-```text
-feature
-  → behavior json
-  → task
-  → implementation
-```
-
-Без лишней бюрократии.
-
-Главная ценность: behavior specs становятся мостом между текстовым SDD и будущим исполняемым harness.
-
+Behavior specs не участвуют в readiness, verification или done gates.

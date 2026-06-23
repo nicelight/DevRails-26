@@ -179,6 +179,7 @@ status: active
 - [.memory-bank/requirements.md](requirements.md): Требования (REQ-IDs) + RTM.
 - [.memory-bank/epics/](epics/): Эпики (C4 L2).
 - [.memory-bank/features/](features/): Фичи (C4 L3).
+- [.memory-bank/behavior-specs/](behavior-specs/): Optional JSON behavior examples linked from feature docs and task `source_artifacts`.
 - [.memory-bank/tasks/index.json](tasks/index.json): Authoritative JSON task record index.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
 
@@ -712,6 +713,27 @@ Packet semantics:
 - Task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 - No new `.memory-bank/modules/`, `.memory-bank/graph/`, or `.memory-bank/verification/` layers are introduced for this flow.
 - Verification continues to use task `verify`, `verification_targets`, `.memory-bank/testing/`, `.protocols/TASK-NNN-FT-NNN-W-N/`, and `.tasks/TASK-NNN-FT-NNN-W-N/`.
+
+### 6d) `.memory-bank/behavior-specs/`
+
+Optional behavior specs are concrete JSON examples for important or ambiguous
+feature behavior:
+
+```text
+.memory-bank/behavior-specs/FT-NNN-BHV-NNN-short-title.behavior.json
+```
+
+Rules:
+- Create 0-3 behavior specs per feature only when concrete `given / when / then`
+  examples materially help implementation.
+- Do not create a registry, schema, validator, doctor gate, or new task field
+  for behavior specs.
+- Link behavior specs from the feature doc `## Behavior specs` section.
+- Link task-relevant behavior specs only through task `source_artifacts`.
+- Do not put behavior specs in `verification_targets`, `evidence_required`,
+  `gates`, `constraints`, or `invariants`.
+- `/execute` may use linked behavior specs as context examples; `/verify` does
+  not require their presence, coverage, or exact code alignment.
 
 ---
 

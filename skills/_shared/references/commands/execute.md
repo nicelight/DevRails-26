@@ -81,6 +81,15 @@ Boundary notes are not a separate artifact flow. If the task links
 through existing task fields, read them as part of the authoritative context and
 copy only task-relevant executable limits into the protocol notes.
 
+Behavior specs are optional concrete examples. If task `source_artifacts`
+contains `.memory-bank/behavior-specs/*.behavior.json`, read those files as
+implementation context after the task record and linked feature. They may help
+interpret a concrete `given / when / then` flow, but they are not authoritative
+SDD specs and must not override task records, acceptance criteria, tier policy,
+or linked normative specs. If a behavior spec conflicts with authoritative
+inputs, note the drift and use the authoritative inputs; stop only when the
+remaining task context is unsafe or contradictory.
+
 Scan richer task fields and linked feature `spec_design_links` for authoritative
 SDD spec links. For this rule, authoritative SDD spec links are links to
 `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
@@ -165,6 +174,9 @@ Use protocol templates when available. In `plan.md` or compact `run.md`, record:
   - Linked boundary/contracts:
   - Responsibility boundary:
   - Boundary drift risk:
+- Behavior Specs:
+  - Linked behavior specs:
+  - Context examples used:
 - intended local gates
 - MB-SYNC handoff / owner
 

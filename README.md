@@ -12,6 +12,7 @@
 - `.memory-bank/architecture/system-architecture.md#Architecture Spine` - короткие `AD-*` rules только для T2/T3 и shared-boundary решений.
 - `.memory-bank/contracts/boundary-map.md` - легкие responsibility/scope boundary notes, которые используются через существующие task поля и `runtime_context`.
 - `.memory-bank/packets/` - derivative Execution Packets с компактным runtime context; T2/T3 требуют packet, T0/T1 только при явном `packet_required`.
+- `.memory-bank/behavior-specs/` - optional JSON `given / when / then` примеры для важных или неоднозначных feature behaviors; tasks ссылаются на них только через `source_artifacts`.
 - `.protocols/` - планы, прогресс и verification по конкретным задачам или features.
 - `.tasks/` - runtime evidence, отчеты, handoff-файлы и материалы, которые помогают передавать работу между агентами.
 - `.memory-bank/tasks/*.task.json` - task records. Это источник правды для задач.
@@ -130,7 +131,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Когда:** когда feature можно разложить на implementation tasks.
 
-   **Создает/обновляет:** feature-level SDD design status/spec links, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
+   **Создает/обновляет:** feature-level SDD design status/spec links, optional `.memory-bank/behavior-specs/*.behavior.json` для конкретных behavior examples, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
 
    **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-FT-NNN-W-N`; `/verify TASK-NNN-FT-NNN-W-N` выполняется после реализации конкретной задачи.
 

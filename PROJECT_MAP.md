@@ -197,6 +197,31 @@ statuses for this flow.
 
 Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-FT-NNN-W-N`, and commands must treat those records as the only task model.
 
+## Behavior Specs Hotspots
+
+Behavior specs are optional JSON `given / when / then` examples under
+`.memory-bank/behavior-specs/`. They have no registry, schema, validator,
+doctor gate, task field, or verification-gate semantics. `/prd-to-tasks` may
+create 0-3 specs per feature when evidence shows concrete behavior examples
+will reduce implementation ambiguity. Feature docs link them in `## Behavior
+specs`; task records link task-relevant specs only through `source_artifacts`.
+
+Primary source files for this behavior:
+
+- `skills/_shared/scripts/init-mb.js`
+- `skills/_shared/references/structure-template.md`
+- `skills/mb-from-prd/references/feature-template.md`
+- `skills/_shared/references/commands/prd.md`
+- `skills/_shared/references/commands/prd-to-tasks.md`
+- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/verify.md`
+- `.github/workflows/release-check.yml`
+- `README.md`, `howItWorks.md`
+
+Do not add a behavior registry, JSON Schema, lint/doctor gate, new task field,
+feature frontmatter field, test runner, or verification requirement for behavior
+specs.
+
 ## Verification Commands
 
 Fast syntax/source-only check:

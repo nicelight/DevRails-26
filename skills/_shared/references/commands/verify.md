@@ -83,6 +83,13 @@ Use `.memory-bank/contracts/boundary-map.md` and other boundary/contract docs
 only when they are linked through those existing fields or provide the source
 for `runtime_context` scope. Do not require or invent boundary-specific task
 fields.
+Behavior specs linked through task `source_artifacts` under
+`.memory-bank/behavior-specs/*.behavior.json` are optional implementation
+context examples. `/verify` may read them for orientation, but must not treat
+their presence, absence, coverage, or exact alignment with code as an
+independent verification gate. If the behavior must be verified, it must appear
+in ordinary acceptance criteria, `verification_targets`, linked contracts/states,
+tests, packet verification checks, or another normal verification source.
 If `tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop and report a blocker instead of verifying against classic AC alone.
 Do not block `T0` / `T1` only because SDD spec links are absent.
 If task/AC wording conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with a blocker instead of verifying against the task alone.
@@ -118,6 +125,9 @@ Status ownership:
 - for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route back to `/prd-to-tasks` feature design, standalone `/spec-improve` repair, or `/spec-auto` when absent
 - linked SDD specs are the primary normative basis when present; conflicting task records must be blocked, not locally reinterpreted
 - `evidence_required` и `verification_targets` описывают требования/цели проверки; сами по себе они не являются proof
+- behavior specs are not `verification_targets`, `evidence_required`, gates, or
+  done criteria; report behavior-spec drift as a note unless a normal
+  verification source also fails
 - detailed verification report may live in `.protocols/TASK-<NNN>-FT-<NNN>-W-<N>/verification.md`, with artifacts in `.tasks/TASK-<NNN>-FT-<NNN>-W-<N>/`
 - before any command sets `status: done`, the task record `verify` field must contain the completed evidence summary/marker (string or structured object)
 - in scheduler mode, `/verify` itself must not set `status: done`; for `T2`, PASS makes task closure eligible when full protocol and required packet/spec gates are satisfied; for `T3`, PASS leaves task closure pending per-task `/red-verify`

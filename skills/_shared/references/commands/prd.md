@@ -92,6 +92,9 @@ Before writing derived docs:
 - use cases
 - acceptance criteria
 - edge cases & failure modes
+- `## Behavior specs` section as optional routing only; `/prd` may mention that
+  concrete behavior examples could help later, but must not create
+  `.memory-bank/behavior-specs/*.behavior.json`
 - test strategy pointers
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
 - `status: draft` по умолчанию

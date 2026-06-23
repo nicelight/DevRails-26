@@ -530,6 +530,7 @@ console.log('\n[1/5] Creating directories...');
   `${MB}/skills`,
   `${MB}/epics`,
   `${MB}/features`,
+  `${MB}/behavior-specs`,
   `${MB}/schemas`,
   `${MB}/tasks`,
   `${MB}/tasks/plans`,
@@ -688,6 +689,7 @@ status: active
 - [.memory-bank/requirements.md](requirements.md): Требования + RTM.
 - [.memory-bank/epics/](epics/): Эпики (C4 L2).
 - [.memory-bank/features/](features/): Фичи (C4 L3).
+- [.memory-bank/behavior-specs/](behavior-specs/): Optional JSON behavior examples linked from feature docs and task \`source_artifacts\`.
 - [.memory-bank/tasks/index.json](tasks/index.json): Authoritative JSON task record index.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
 - [.memory-bank/workflows/tier-policy.md](workflows/tier-policy.md): Tier policy for TASK routing and protocol depth.

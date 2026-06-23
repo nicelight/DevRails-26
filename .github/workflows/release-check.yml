@@ -104,6 +104,7 @@ jobs:
           test -f "$TARGET/.memory-bank/requirements.md"
           test -f "$TARGET/.memory-bank/tasks/index.json"
           test -f "$TARGET/.memory-bank/schemas/task.schema.json"
+          test -d "$TARGET/.memory-bank/behavior-specs"
           test -f "$TARGET/.memory-bank/architecture/system-architecture.md"
           test -f "$TARGET/.memory-bank/contracts/boundary-map.md"
           test -f "$TARGET/.memory-bank/workflows/execute-loop.md"

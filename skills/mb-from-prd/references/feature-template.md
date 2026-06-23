@@ -52,6 +52,11 @@ req_ids: [REQ-XXX]
 ## Edge cases / failure modes
 - ...
 
+## Behavior specs
+- Optional. Link 0-3 concrete JSON examples from `.memory-bank/behavior-specs/`
+  only when the feature behavior is important or ambiguous enough to need
+  `given / when / then` examples for implementation.
+
 ## Verification plan (RTM-friendly)
 | AC/REQ | Method | Where implemented | Evidence |
 |---|---|---|---|
