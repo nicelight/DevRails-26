@@ -10,7 +10,7 @@
 Основные области:
 
 - `.memory-bank/` - знания и состояние проекта: продукт, требования, epics, features, архитектура, task records, индексы и правила работы.
-- `.memory-bank/architecture/system-architecture.md#Architecture Spine` - короткие `AD-*` rules только для T2/T3 и shared-boundary решений.
+- `.memory-bank/architecture/system-architecture.md#Architecture Spine` - короткие `AD-*` rules для shared-boundary, contract, state/data/runtime/security или strict pressure.
 - `.memory-bank/contracts/boundary-map.md` - легкие responsibility/scope boundary notes, которые используются через существующие task поля и `runtime_context`.
 - `.memory-bank/packets/` - derivative Execution Packets с компактным runtime context; T2/T3 требуют packet, T0/T1 только при явном `packet_required`.
 - `.memory-bank/behavior-specs/` - optional JSON `given / when / then` примеры для важных или неоднозначных feature behaviors; tasks ссылаются на них только через `source_artifacts`.
@@ -53,10 +53,10 @@ Memory Bank помогает вести разработку как повтор
   -> execute/verify       foundation до закрытого gate task
   -> /prd-to-tasks        feature design + JSON tasks + required packets
   -> /review-tasks-plan   review JSON task queue
-  -> /mb-doctor           readiness gate на feature/task-queue boundary
-  -> execute             можно все сразу в авторежиме
-  -> verify              + red-verify для T3 task / T2 feature completion
-  -> sync
+  -> /mb-doctor           conditional readiness gate на complex/T3/autonomous boundaries
+  -> execute             tier-routed: T0/T1 compact, T2/T3 full safety
+  -> verify              required for T2/T3; optional for manual T0/T1 uncertainty
+  -> sync                boundary sync, not per-task habit
   -> следующая task
 ```
 
@@ -102,13 +102,13 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** `.memory-bank/product.md`, `.memory-bank/requirements.md`, `.memory-bank/epics/`, `.memory-bank/features/` и связанные индексы.
 
-   **Дальше:** для high-risk/large work запустить `/review-feat-plan`, затем обязательный `/spec-design`. Для маленьких независимых T0/T1 features `/spec-design` создает minimal backbone и помечает лишние области `not_applicable`; для shared/T2/T3 concerns проводит архитектурный checkpoint. Если нужен executable baseline, сначала пройти `/foundation-to-tasks` и закрыть foundation gate. Затем выбрать feature для декомпозиции. Если она заблокирована неясностями, сначала использовать `/clarify-feature FT-001`; затем `/prd-to-tasks FT-001`.
+   **Дальше:** для high-risk/large work запустить `/review-feat-plan`, затем обязательный `/spec-design`. Для local/simple feature-set pressure `/spec-design` создает minimal backbone и помечает лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure проводит архитектурный checkpoint. Если нужен executable baseline, сначала пройти `/foundation-to-tasks` и закрыть foundation gate. Затем выбрать feature для декомпозиции. Если она заблокирована неясностями, сначала использовать `/clarify-feature FT-001`; затем `/prd-to-tasks FT-001`.
 
 6. `/spec-design`
 
    **Когда:** после `/prd`, всегда перед `/prd-to-tasks`. Это обязательный gate, но не обязательная тяжелая фаза.
 
-   **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. По умолчанию держит architecture в одном `architecture/system-architecture.md`; для T2/T3 и shared-boundary pressure добавляет короткий `Architecture Spine` с `AD-*` executable rules. Отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только при явном выборе split/реальной сложности. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
+   **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. Architecture scaffold может остаться в одном `architecture/system-architecture.md` только когда это лучший readable shape; для shared-boundary, contract, state/data/runtime/security или strict pressure добавляет короткий `Architecture Spine` с `AD-*` executable rules. Отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только когда split снижает реальную сложность или нужен как authoritative reference. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
 
    **Дальше:** если foundation required, запустить `/foundation-to-tasks` и закрыть final foundation gate; иначе выбрать feature и запустить `/prd-to-tasks FT-001`.
 
@@ -134,15 +134,15 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** feature-level SDD design status/spec links, optional `.memory-bank/behavior-specs/*.behavior.json` для конкретных behavior examples, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
 
-   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем `/mb-doctor` на feature/task-queue boundary и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`; `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации конкретной задачи.
+   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем conditional `/mb-doctor` для T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`. Для manual T0/T1 `/execute` может закрыть task с compact evidence; для T2/T3 `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации.
 
 10. `/mb-doctor`
 
-   **Когда:** после того как feature полностью разложена на task records и required packets, перед стартом execution по этой feature.
+   **Когда:** после того как feature полностью разложена на task records и required packets, если есть T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases. Для simple manual T0/T1 это не default gate.
 
    **Создает/обновляет:** report readiness findings; не заменяет `/verify` и не исполняет tasks.
 
-   **Дальше:** исправить findings или перейти к `/execute TASK-NNN-TN-FT-NNN-WN`.
+   **Дальше:** исправить findings, перейти к `/execute TASK-NNN-TN-FT-NNN-WN`, или для simple manual T0/T1 пропустить gate и идти к tier-routed `/execute`.
 
 11. `/execute TASK-NNN-TN-FT-NNN-WN`
 
@@ -150,7 +150,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-NNN-TN-FT-NNN-WN/`, evidence и handoff в `.tasks/TASK-NNN-TN-FT-NNN-WN/`.
 
-   **Дальше:** запустить `/verify TASK-NNN-TN-FT-NNN-WN`.
+   **Дальше:** для manual T0/T1 можно закрыть compact evidence/no-runnable-check note прямо в `/execute`, если есть explicit top-level closure ownership и нет required packet/T2/T3 trigger. Для T2/T3 или uncertainty запустить `/verify TASK-NNN-TN-FT-NNN-WN`.
 
 12. `/verify TASK-NNN-TN-FT-NNN-WN`
 
@@ -158,7 +158,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** verification evidence, verdict `PASS` или `FAIL`, task/protocol state по результату проверки.
 
-   **Дальше:** если задача сложная или рискованная, запустить `/red-verify TASK-NNN-TN-FT-NNN-WN`; иначе перейти к `/mb-sync`.
+   **Дальше:** если задача T3, запустить `/red-verify TASK-NNN-TN-FT-NNN-WN`; для T2 feature completion запустить `/red-verify --feature FT-*`; full `/mb-sync` нужен на boundary или когда менялось broader durable state.
 
 13. `/red-verify TASK-NNN-TN-FT-NNN-WN`
 
@@ -166,11 +166,11 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** semantic verification report и semantic verdict.
 
-   **Дальше:** при проблемах вернуть задачу в доработку; при успешной проверке перейти к `/mb-sync`.
+   **Дальше:** при проблемах вернуть задачу в доработку; при успешной T3 проверке перейти к `/mb-sync`, для T2 feature completion синхронизировать feature/wave boundary.
 
 14. `/mb-sync`
 
-   **Когда:** после результата задачи, особенно если менялись требования, task status, changelog, RTM или durable Memory Bank docs.
+   **Когда:** на boundary, где нужно reconcile broader Memory Bank state: RTM/lifecycle/changelog/index/spec/contract/dependency, T2 wave/feature boundary, T3 closure, handoff/review freshness или drift. Не обязателен для local manual T0/T1 closure, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
 
    **Создает/обновляет:** индексы Memory Bank, lifecycle/RTM notes, changelog, task-record consistency и ссылки на evidence.
 
@@ -194,7 +194,7 @@ Memory Bank помогает вести разработку как повтор
 - `/review-feat-plan` - fresh-context review PRD/requirements/epics/features до `/spec-design`.
 - `/review-tasks-plan` - fresh-context review JSON task queue после `/prd-to-tasks`.
 - `/mb-garden` - обслуживает Memory Bank: lint, чистка, устранение drift, архивирование.
-- `/mb-doctor` - deterministic readiness gate для autopilot/autonomous runs.
+- `/mb-doctor` - deterministic readiness gate для autopilot/autonomous runs и conditional manual readiness check для T3/complex boundaries.
 - `/mb-harness` - помогает настроить чистые сессии, профили и проверочные команды.
 - `/autopilot` - автономно проходит уже созданную JSON task queue.
 - `/autonomous` - ведет полный unattended flow от PRD до terminal state.
@@ -222,7 +222,7 @@ runtime scripts и может синхронизировать `AGENTS.md`. Дл
 После установки используйте `/cold-start` или начните ручной цикл:
 
 ```text
-/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan -> /mb-doctor at feature/task-queue boundary -> /execute first indexed TASK -> /verify same TASK -> /mb-sync
+/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
 ```
 
 Автоматические режимы стоит включать после того, как PRD, features и task records уже понятны. `/autopilot` работает по готовой JSON task queue, а `/autonomous` берет на себя более длинный unattended flow. Оба режима требуют usable packets для T2/T3 и для T0/T1 только при `runtime_context.packet_required: true`.

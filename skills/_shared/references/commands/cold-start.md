@@ -59,7 +59,7 @@ status: active
 ## 3) После запуска флоу
 После `/prd` или `/map-codebase`:
 - after `/prd`, run `/review-feat-plan` (fresh context) before `/spec-design` for high-risk, large, or autonomous flows
-- interactive: после `/prd` всегда пройди `/spec-design`; для simple T0/T1 scope запиши minimal status с explicit `not_applicable` areas; если foundation required, пройди `/foundation-to-tasks` и закрой foundation gate; затем выбери фичу, при необходимости пройди `/clarify-feature FT-<NNN>`, затем `/prd-to-tasks FT-<NNN>` и выполняй задачи через `/execute` → `/verify` → `/red-verify` (если задача T3; optional для T2 task) → `/mb-sync`; для T2 feature completion после всех задач выполни `/red-verify --feature FT-<NNN>`
+- interactive: после `/prd` всегда пройди `/spec-design`; для local/simple feature-set pressure запиши minimal status с explicit `not_applicable` areas; если foundation required, пройди `/foundation-to-tasks` и закрой foundation gate; затем выбери фичу, при необходимости пройди `/clarify-feature FT-<NNN>`, затем `/prd-to-tasks FT-<NNN>` и выполняй задачи по tier route: T0/T1 manual через `/execute TASK` с compact evidence/no-runnable-check note и optional local closure by explicit owner; T2 через `/execute` → `/verify` и `/mb-sync` на wave/feature boundary; T3 через `/execute` → `/verify` → `/red-verify` → `/mb-sync`; для T2 feature completion после всех задач выполни `/red-verify --feature FT-<NNN>`
 - JSON task queue unattended: используй `/autopilot`
 - full unattended (`PRD → done`): используй `/autonomous`
 </process>

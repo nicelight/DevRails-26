@@ -98,7 +98,11 @@ Do not recommend `/prd-to-tasks` for a feature when the feature has `clarificati
 
 Missing clarification metadata does not block task decomposition.
 
-Always recommend `/spec-design` after `/prd`. Simple independent T0/T1-only features record a minimal backbone status with explicit `not_applicable` areas instead of skipping the gate. If `/spec-design` records required foundation, route through `/foundation-to-tasks` and the foundation gate before product feature tasking.
+Always recommend `/spec-design` after `/prd`. Local/simple feature-set pressure
+records a minimal backbone status with explicit `not_applicable` areas instead
+of skipping the gate. If `/spec-design` records required foundation, route
+through `/foundation-to-tasks` and the foundation gate before product feature
+tasking.
 
 If feature-level clarification is explicitly pending or blocked, recommend:
 

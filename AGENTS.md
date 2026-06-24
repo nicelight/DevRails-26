@@ -46,9 +46,13 @@ Do not overengineer. Придерживайся KISS. Лучшнее враг х
 
 # Важный контекст репозитория
 
+Этот проект DevRails - это фреймворк для агентной разработки приложений. 
+Фреймворк включает в себя  воркфлоу разработки программного обеспечения, завязанный на разраотку design specs, feature specs, разложение на таски и протоколы выполнения тасок, долгосрочную память и протоколы выполнения разработки Фреймворк при установке разворачивается в целевой проект.
+
+
 Перед доработкой проекта прочитай `PROJECT_MAP.md`.
 
-Этот форк использует source-only модель упаковки skills:
+Этот проект использует source-only модель упаковки skills:
 
 - `skills/_shared/` — единственный canonical source для общих prompts, references и scripts.
 - В рабочем дереве намеренно нет package-local файлов `skills/*/{agents,references,scripts}/shared-*`.
@@ -82,5 +86,3 @@ node scripts/install-framework.mjs --skill '*' --yes
 MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-## Canonical Interactive Chain
-- `/analysis -> /brainstorm -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /spec-design -> /prd-to-tasks FT-001 -> /mb-doctor at feature/task-queue boundary -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T3 -> /red-verify --feature FT-001 for T2 feature completion -> /mb-sync`

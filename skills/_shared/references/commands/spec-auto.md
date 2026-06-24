@@ -62,7 +62,7 @@ Before any feature design:
 - read `.memory-bank/spec-index.md`
 - if global backbone status in `.memory-bank/spec-backbone.md` is missing, run `/spec-design --all` autonomously first
 - if global backbone status is `blocked`, stop and report the blocker
-- if the project is simple T0/T1-only, the backbone may be `minimal` only with explicit `not_applicable` areas; bare `minimal` is not ready
+- if the feature-set pressure is local/simple, the backbone may be `minimal` only with explicit `not_applicable` areas; bare `minimal` is not ready
 
 For each targeted feature:
 1. Read `.memory-bank/spec-index.md` and relevant existing specs first.
@@ -76,12 +76,12 @@ Autonomous decision rules:
 - choose the smallest reversible design that satisfies PRD/Constitution/requirements
 - do not ask user questions
 - record assumptions in the feature design hub or linked authoritative spec; keep `.memory-bank/spec-index.md` to registry rows, planned specs, and broken/missing links
-- for global architecture docs, prefer one `.memory-bank/architecture/system-architecture.md` by default; split `architecture/*` only when existing docs, project size, or boundary complexity makes the split clearly useful
+- for global architecture docs, use one `.memory-bank/architecture/system-architecture.md` only when it is the best readable scaffold shape; split `architecture/*` only when existing docs, project size, or boundary complexity makes the split clearly useful
 - keep `architecture/*` to global architecture invariants; put detailed API schemas/contracts in `contracts/*`, lifecycle state machines in `states/*`, domain schemas in `domains/*`, and feature-local design in `tech-specs/*`
-- for T2/T3 or shared-boundary pressure, update `.memory-bank/architecture/system-architecture.md#Architecture Spine` with compact executable `AD-*` rules using the same KISS format as `/spec-design`
-- do not create `AD-*` for local T0/T1 implementation details, and do not invent `AD-*` entries when evidence is absent
-- if a required T2/T3 shared-boundary architecture decision is missing, contradictory, or not checkable, record a blocker instead of completing feature design
-- when T2/T3 or shared-boundary feature design is complete, include relevant
+- for shared-boundary, contract, state/data/runtime/security, or strict pressure, update `.memory-bank/architecture/system-architecture.md#Architecture Spine` with compact executable `AD-*` rules using the same KISS format as `/spec-design`
+- do not create `AD-*` for local/simple implementation details, and do not invent `AD-*` entries when evidence is absent
+- if a required shared-boundary, contract, state/data/runtime/security, or strict architecture decision is missing, contradictory, or not checkable, record a blocker instead of completing feature design
+- when serious design-pressure feature design is complete, include relevant
   Architecture Spine, ADR, contract, and boundary-map links in the feature
   `spec_design_links` or linked authoritative specs so `/prd-to-tasks` can route
   them into existing task fields

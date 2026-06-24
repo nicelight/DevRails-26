@@ -101,7 +101,7 @@ Before writing derived docs:
 - write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
 - if existing SDD specs apply, add candidate/normative `spec_design_links` or route notes only when grounded in evidence; `/prd` must not set `spec_design_status: complete` before `/spec-design` has produced a global backbone status of `complete` or valid `minimal`
 - otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/prd-to-tasks FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
-- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before foundation gating and feature-level design inside `/prd-to-tasks`; if the feature set is simple T0/T1-only, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
+- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before foundation gating and feature-level design inside `/prd-to-tasks`; if the feature-set pressure is local/simple, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
 
 Do not set every new feature to `clarification_status: pending`.
 Only add feature clarification metadata when the PRD explicitly leaves a feature-level decomposition blocker:

@@ -30,9 +30,10 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify`.
+- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership.
+- Standalone `/verify` is not the default for manual `T0` / `T1`; use it when the user explicitly asks for independent verification, acceptance criteria are unclear, implementation scope grew, `/execute` cannot produce credible evidence, or public contract/state/data/security/runtime/cross-module behavior changed.
+- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership. Manual `/execute` may also close `T0` / `T1` directly when the tier-policy fast-lane conditions are met.
 - T2 task closure may rely on `/verify PASS` when full protocol, required packet/spec gates, and explicit closure ownership are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 - If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
@@ -95,8 +96,8 @@ Do not block `T0` / `T1` only because SDD spec links are absent.
 If task/AC wording conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with a blocker instead of verifying against the task alone.
 
 Tier policy:
-- `T0`: `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/run.md`.
-- `T1`: `/verify` is optional for strictly local scope; compact `run.md` may contain the verification evidence and verdict.
+- `T0`: standalone `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/run.md` by `/execute`.
+- `T1`: standalone `/verify` is optional for strictly local scope; compact `run.md` may contain the verification evidence and verdict from the cheapest relevant local check, or a no-runnable-check reason.
 - `T2` / `T3`: `/verify` is required before scheduler closure and must update `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`.
 - `T3`: include critical/security/runtime evidence where relevant. Exact markers are scheduler closure requirements, not loose text.
 
@@ -131,7 +132,7 @@ Status ownership:
 - detailed verification report may live in `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`, with artifacts in `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
 - before any command sets `status: done`, the task record `verify` field must contain the completed evidence summary/marker (string or structured object)
 - in scheduler mode, `/verify` itself must not set `status: done`; for `T2`, PASS makes task closure eligible when full protocol and required packet/spec gates are satisfied; for `T3`, PASS leaves task closure pending per-task `/red-verify`
-- in manual mode, `/verify PASS` alone may close `T0` / `T1`, and may close `T2` when full protocol plus required packet/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` before final closure/`/mb-sync`
+- in manual mode, `/verify PASS` may close `T0` / `T1` when independent verification was requested, and may close `T2` when full protocol plus required packet/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` before final closure/`/mb-sync`
 
 2) Для каждого AC/REQ:
 - выполни минимальную проверку (предпочтительно детерминированную)

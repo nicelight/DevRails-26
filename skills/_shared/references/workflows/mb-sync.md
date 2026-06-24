@@ -6,7 +6,11 @@ status: active
 
 ## Когда запускать
 - После scheduler записал closure/failure/blocking decision, final task status, and evidence links в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` (`/autopilot` / `/autonomous`) и выполнения required `/verify` / `/red-verify` gates.
-- После manual `/verify`, если он изменил durable task/docs state.
+- После manual `/verify`, если он изменил broader durable task/docs state beyond task-local closure evidence.
+- Не запускать full `/mb-sync` по умолчанию для local manual `T0` / `T1`
+  closure, если authoritative `.task.json` уже содержит `status`/`verify`,
+  compact `.protocols/<TASK>/run.md` записан, and no RTM/lifecycle/index/
+  changelog/spec/contract/guide/packet/dependency state changed.
 - После `/red-verify`, если выполнялась семантическая adversarial-проверка и она изменила или требует reconcile task/docs state.
 - После task run с Execution Packet, если task record/protocol/evidence уже
   содержит `runtime_context.packet_ref` или packet-related evidence links.
@@ -17,6 +21,9 @@ status: active
 - После значимых рефакторингов или архитектурных изменений.
 - Перед `/review-feat-plan` или `/review-tasks-plan` (чтобы reviewer видел
   актуальное состояние нужной поверхности).
+- На T2 wave/feature boundary, после T2 feature-level red-verify completion,
+  and after T3 closure.
+- Перед handoff to another agent when they need fresh durable Memory Bank state.
 - При ощущении drift между кодом и документацией.
 
 ## Status Transition Modes
@@ -39,7 +46,7 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify` for one TASK.
+- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
@@ -76,6 +83,8 @@ Manual mode:
 - [ ] Новые задачи (из багов, из новых требований) добавлены как schema-backed task records.
 - [ ] В scheduler mode closure/failure/blocking decision уже записан в indexed `.task.json`; если нет, report consistency gap and stop for explicit scheduler or standalone owner decision.
 - [ ] В manual mode manual closure sync имеет already-recorded explicit owner decision в task record или direct instruction for this sync; иначе report consistency gap and do not infer closure.
+- [ ] Local manual `T0` / `T1` closure with only task `status`, task `verify`,
+      and compact `.protocols/<TASK>/run.md` does not require full sync.
 - [ ] Если использовался Execution Packet, reconcile только уже записанные
   `runtime_context.packet_ref`, protocol links и evidence paths. Не строить
   packet, не обновлять его статус и не выводить closure/promotion decision из

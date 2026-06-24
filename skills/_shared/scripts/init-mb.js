@@ -469,7 +469,7 @@ Claude (fresh session):
 ## Two modes (interactive vs autonomous)
 - **Interactive**: target chain is \`/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan -> /mb-doctor at feature/task-queue boundary -> /execute first indexed TASK -> /verify same TASK -> /red-verify same TASK for T3 (optional for T2 task) -> /mb-sync\`; before treating a T2 feature as complete, run \`/red-verify --feature FT-001\` after all its tasks are implemented (start product execution after the current feature task set is decomposed, \`/review-tasks-plan\` has approved it, and the feature/task-queue doctor gate has passed).
 - \`/prd-to-tasks\` performs feature-level SDD design and creates required initial packets before task handoff.
-- \`/spec-design\` is mandatory after \`/prd\`, but simple T0/T1 projects may record a minimal backbone with irrelevant areas \`not_applicable\`; when a Foundation Dev Path is needed it records \`.memory-bank/foundation.md\`, and \`/foundation-to-tasks\` creates normal \`FT-000\` task records and the final foundation gate.
+- \`/spec-design\` is mandatory after \`/prd\`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas \`not_applicable\`; when a Foundation Dev Path is needed it records \`.memory-bank/foundation.md\`, and \`/foundation-to-tasks\` creates normal \`FT-000\` task records and the final foundation gate.
 - Use \`/brainstorm\` before \`/brief\` only when the idea is raw.
 - Use \`/clarify-feature FT-001\` only for explicit feature blockers before \`/prd-to-tasks\`.
 - Use standalone \`/spec-improve\` and \`/mb-packet\` only for repair or refresh outside the happy path.
@@ -587,7 +587,7 @@ status: active
 
 ## Purpose
 - Keep a concise registry of existing and planned SDD specs.
-- Read this index before creating new specs or doing serious T2/T3 work.
+- Read this index before creating new specs or doing serious design-pressure work.
 - Keep readiness, open design questions, backbone status, and routing handoffs in [.memory-bank/spec-backbone.md](spec-backbone.md).
 - Feature \`spec_design_status\` lives in feature frontmatter, not in this index.
 
@@ -607,7 +607,7 @@ status: active
 | core_domain | .memory-bank/domains/core-domain.md | /prd, /spec-design | Create only when domain model affects decomposition or shared design. |
 | boundary_hints | .memory-bank/contracts/boundary-map.md | /prd, /spec-design | Seeded lightweight template; fill only evidence-backed responsibility/scope notes, no endpoint/OpenAPI details. |
 | lifecycle_hints | .memory-bank/states/lifecycle-map.md | /prd, /spec-design | Create only when lifecycles affect feature boundaries. |
-| system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Default global architecture hub after /prd. |
+| system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Candidate architecture hub; fill only when selected or needed by /spec-design. |
 | feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /prd-to-tasks | Feature-local specs only when needed before task decomposition. |
 
 ## Broken / Missing Links
@@ -677,11 +677,11 @@ status: active
 
 ## Global Backbone Status
 - Status: blocked
-- Mode: standard_ai_first
-- Architecture artifact strategy: single-file
+- Mode: pending
+- Architecture artifact strategy: pending
 - Not applicable areas:
   - TBD
-- Notes: /spec-design has not completed the global AI-first architecture guardrails yet.
+- Notes: /spec-design has not completed the global architecture scaffold yet.
 `);
 
 writeFile(`${MB}/constitution.md`, constitutionSkeleton());
@@ -716,7 +716,7 @@ status: draft
 `);
 
 writeFile(`${MB}/architecture/system-architecture.md`, `---
-description: Compact system architecture hub and Architecture Spine for serious T2/T3 or shared-boundary work.
+description: Compact system architecture hub and Architecture Spine for serious design-pressure work.
 status: draft
 ---
 # System Architecture
@@ -729,7 +729,7 @@ status: draft
 
 ## Architecture Spine
 
-Use this section only for durable decisions that constrain T2/T3 or shared-boundary work. Keep it short; detailed rationale belongs in ADRs or decision logs.
+Use this section only for durable decisions that constrain shared-boundary, contract, state/data/runtime/security, or strict work. Keep it short; detailed rationale belongs in ADRs or decision logs.
 
 ### Architecture Decisions
 

@@ -7,14 +7,16 @@ status: active
 <objective>
 Create or update the mandatory global architecture/design backbone after `/prd` has created the FT set and before `/prd-to-tasks FT-<NNN>` or `/spec-auto --all`.
 
-The first result is AI-first implementation guardrails: technical decisions, boundaries, and contracts that constrain agents/developers so they do not damage the project. It is not an architecture essay.
+The first result is an architecture scaffold: technical decisions, boundaries,
+and contracts that constrain agents/developers so they do not damage the
+project. It is not a narrative architecture essay.
 
 Main question:
 > What technical decisions, boundaries, and contracts must constrain implementation so agents/developers cannot tear the project apart?
 
 The gate is mandatory by workflow, but adaptive by depth:
-- simple T0/T1 projects create a minimal backbone and mark irrelevant areas `not_applicable`;
-- projects with shared/T2/T3 concerns get staged architecture decisions and normal backbone specs;
+- local/simple feature-set pressure creates a minimal backbone and marks irrelevant areas `not_applicable`;
+- shared-boundary, contract, state/data/runtime/security, or strict pressure gets staged architecture decisions and normal backbone specs;
 - unresolved key decisions are recorded as blockers and downstream commands must stop.
 
 `/spec-design` does not create TASK records, implementation plans, or feature-local tech specs. Feature-local design is handled inside `/prd-to-tasks`; standalone `/spec-improve` is for repair/refresh. When a project needs a minimum executable baseline before business features, `/spec-design` records the Foundation Dev Path decision and Feature Pressure Map in `.memory-bank/foundation.md`; executable foundation work is generated later by `/foundation-to-tasks`.
@@ -38,7 +40,7 @@ Required inputs:
 - `.memory-bank/user-scenarios.md` when present
 - existing relevant specs under `.memory-bank/architecture/`, `.memory-bank/guides/`, `.memory-bank/domains/`, `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/`
 
-Never skip the command. Read `.memory-bank/spec-backbone.md` as the pre-PRD framing from `/spec-init`. For small independent T0/T1-only scope, write the minimal backbone status and mark non-applicable areas instead of expanding architecture.
+Never skip the command. Read `.memory-bank/spec-backbone.md` as the pre-PRD framing from `/spec-init`. For explicitly local/simple feature sets, write the minimal backbone status and mark non-applicable areas instead of expanding architecture.
 
 ## 1) Source-of-truth precedence
 Use this precedence when deciding what is authoritative:
@@ -48,7 +50,7 @@ Use this precedence when deciding what is authoritative:
 4. Authoritative contracts/specs
 5. PRD / requirements / features
 6. User scenarios
-7. Task records
+7. Task records, only when rerunning after task generation
 8. Agent assumptions
 
 A lower source cannot override a higher source. Any conflict becomes `blocked` unless the user makes an explicit decision.
@@ -96,13 +98,19 @@ Use this simple template:
 ```
 
 ## 4) Initial architecture mode
-After reading PRD/requirements/features and current specs, ask one initial architecture mode question in interactive mode, or choose the mode from evidence in autonomous mode:
+After reading PRD/requirements/features and current specs, ask one initial
+architecture mode question in interactive mode, or choose the mode from
+evidence in autonomous mode. Task tiers are assigned later by `/prd-to-tasks`;
+`/spec-design` routes by feature/design pressure, not by task tier.
 
-- **Minimal T0/T1 backbone**: only for explicitly local/simple scope; irrelevant global areas require `not_applicable` rationale.
-- **Standard AI-first architecture backbone (recommended when shared behavior exists)**: normal guardrails for modules, source-of-truth, contracts, data, testing, and deployment.
-- **Strict T2/T3 backbone**: for public contracts, security/safety, migrations, distributed/runtime boundaries, cross-team ownership, or irreversible decisions.
+- **local_simple_backbone**: only for explicitly local/simple feature sets with no shared boundary, contract, state/data, runtime, security, or irreversible pressure; irrelevant global areas require `not_applicable` rationale.
+- **standard_architecture_scaffold**: default for normal greenfield architecture scaffold; records guardrails for modules, source-of-truth, contracts, data, testing, and deployment as needed by the feature set.
+- **strict_architecture_scaffold**: for public contracts, security/safety, migrations, distributed/runtime boundaries, cross-team ownership, production-sensitive behavior, or irreversible decisions.
 
-Recommend the mode from evidence; the user may override. Preserve the rule that `/prd-to-tasks` may route back to `/spec-design` for shared/global gaps or use its own feature-level design phase for feature-local gaps if T2/T3 indicators appear during task slicing.
+Recommend the mode from evidence; the user may override. Preserve the rule that
+`/prd-to-tasks` may route back to `/spec-design` for shared/global gaps or use
+its own feature-level design phase for feature-local gaps if serious design
+pressure appears during task slicing.
 
 ## 5) Backbone status gate
 Update `.memory-bank/spec-backbone.md` with this exact contract:
@@ -110,10 +118,10 @@ Update `.memory-bank/spec-backbone.md` with this exact contract:
 ```markdown
 ## Global Backbone Status
 - Status: complete|minimal|blocked
-- Mode: minimal_t0_t1|standard_ai_first|strict_t2_t3
+- Mode: local_simple_backbone|standard_architecture_scaffold|strict_architecture_scaffold
 - Architecture artifact strategy: single-file|split-core-docs|split-by-boundary-topic
 - Not applicable areas:
-  - event_message_contracts: not_applicable - no event/message boundary in T0/T1 scope.
+  - event_message_contracts: not_applicable - no event/message boundary in local/simple feature set.
 - Notes:
 ```
 
@@ -123,7 +131,7 @@ Do not use `TBD`, `none`, or empty placeholders as a substitute for `not_applica
 
 Status criteria:
 - `complete`: every relevant/global area in the Backbone Area Matrix has an authoritative linked source or explicit `not_applicable`; no `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
-- `minimal`: only for explicit T0/T1-like scope; each unnecessary global/shared area has `not_applicable` plus rationale.
+- `minimal`: only for explicit local/simple feature-set pressure; each unnecessary global/shared area has `not_applicable` plus rationale.
 - `blocked`: unsafe ambiguity remains, source-of-truth conflict exists, or a required global/shared area cannot be decided truthfully.
 
 If status is `blocked`, stop downstream work. Record:
@@ -207,26 +215,34 @@ Confirm or choose only decisions that affect the current PRD:
 - testing gates
 - architecture documentation granularity
 
-For simple/T0-T1 projects, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, no separate HTTP boundary, and minimal testing gates when supported by PRD evidence. Mark unrelated areas `not_applicable`.
+For local/simple feature sets, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, no separate HTTP boundary, and minimal testing gates when supported by PRD evidence. Mark unrelated areas `not_applicable`.
 
 In autonomous mode, do not ask questions. Record conservative assumptions only when they are reversible and safe; otherwise set backbone status `blocked`.
 
 ## 9) Architecture documentation granularity
 Before creating multiple files under `.memory-bank/architecture/`, choose the architecture artifact strategy.
 
-Ask one targeted question unless the answer is obvious from project size or existing docs:
-- **Single-file KISS (recommended default)**: keep the global architecture backbone in `.memory-bank/architecture/system-architecture.md`; include source-of-truth, module-boundary, deployment, data-flow, and Mermaid diagram sections there.
-- **Split core docs**: create `system-architecture.md`, `source-of-truth.md`, and `module-boundaries.md` only when those sections are large, reused independently, or owned by different workstreams.
-- **Split by boundary/topic**: add extra files such as `agno-boundary.md` only for large projects or complex external/runtime boundaries that would make `system-architecture.md` hard to prime.
+Ask one targeted question when scope/artifact shape is unclear. If a safe
+choice is impossible, mark `blocked` instead of defaulting to one file.
 
-Default to Single-file KISS for small, early, T0/T1, or unclear scope. Do not create `.memory-bank/architecture/index.md` unless the architecture folder has more than three docs. If the project already has split architecture docs, do not churn them unless consolidation is explicitly useful.
+Allowed strategies:
+- **single-file**: keep the global architecture scaffold in `.memory-bank/architecture/system-architecture.md`; use when the feature set is explicitly tiny/local/simple or when one hub is the best readable scaffold shape.
+- **split-core-docs**: create `system-architecture.md`, `source-of-truth.md`, and `module-boundaries.md` only when those sections are large, reused independently, or owned by different workstreams.
+- **split-by-boundary-topic**: add extra files such as `<boundary>.md` only for large projects or complex external/runtime boundaries that would make `system-architecture.md` hard to prime.
 
-Recommended `system-architecture.md` sections for Single-file KISS:
+Normal greenfield scope creates the architecture scaffold needed by the feature
+set. Complex/shared scope splits only when separate files reduce real complexity
+or are needed as authoritative references. Do not create
+`.memory-bank/architecture/index.md` unless the architecture folder has more
+than three docs. If the project already has split architecture docs, do not
+churn them unless consolidation is explicitly useful.
+
+Recommended `system-architecture.md` sections when `single-file` is selected:
 - `# System Architecture`
 - `## System goal`
 - `## Main constraints`
 - `## Non-goals`
-- `## Architecture Spine` when T2/T3 or shared-boundary decisions need compact executable rules
+- `## Architecture Spine` when shared-boundary, contract, state/data/runtime/security, or strict decisions need compact executable rules
 - `## Architecture style`
 - `## Main modules / bounded contexts`
 - `## Data flow`
@@ -246,10 +262,10 @@ Architecture docs content boundary:
 
 ### Architecture Spine KISS rule
 
-For T2/T3 or shared-boundary pressure, update
+For shared-boundary, contract, state/data/runtime/security, or strict pressure, update
 `.memory-bank/architecture/system-architecture.md#Architecture Spine`.
 
-Keep the spine short and executable. It is not a full architecture essay.
+Keep the spine short and executable. It is not a narrative architecture essay.
 
 Use stable `AD-*` blocks:
 
@@ -263,8 +279,8 @@ Use stable `AD-*` blocks:
 ```
 
 Rules:
-- create `AD-*` only for decisions that constrain T2/T3 or shared-boundary work
-- do not create `AD-*` for local T0/T1 implementation details
+- create `AD-*` only for decisions that constrain shared-boundary, contract, state/data/runtime/security, or strict work
+- do not create `AD-*` for local/simple implementation details
 - do not renumber existing `AD-*`
 - retire/replace decisions explicitly; do not silently delete them
 - every active `AD-*` must include `Binds`, `Prevents`, and `Rule`
@@ -281,9 +297,9 @@ feature.
 Route domain model work through the Backbone Area Matrix as `domain_model` with status `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`.
 
 Domain Spec is not a mandatory heavy phase for every project:
-- If the scope is simple T0/T1 and PRD/requirements/features already define the needed vocabulary and rules clearly enough, set `domain_model: not_applicable` with a short rationale, or link the authoritative PRD/requirements/features source.
+- If the feature set is local/simple and PRD/requirements/features already define the needed vocabulary and rules clearly enough, set `domain_model: not_applicable` with a short rationale, or link the authoritative PRD/requirements/features source.
 - If domain logic is feature-local, route it to the `/prd-to-tasks FT-<NNN>` feature-level design phase and the feature tech-spec instead of creating a global Domain Spec.
-- If the domain model affects modules, contracts, storage, states, security/safety, or likely T2/T3 tasks, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared authoritative source.
+- If the domain model affects modules, contracts, storage, states, security/safety, runtime behavior, or shared boundaries, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared authoritative source.
 
 Minimal Domain Spec sections:
 - main entities
@@ -304,7 +320,7 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
 - `.memory-bank/user-scenarios.md` when scenario evidence exists or a scenario gap must be explicit
-- `.memory-bank/architecture/system-architecture.md` as the default architecture hub, using the Single-file KISS sections above, Architecture Spine for T2/T3/shared-boundary executable rules, and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
+- `.memory-bank/architecture/system-architecture.md` when selected or needed as the architecture hub, using the sections above, Architecture Spine for shared-boundary, contract, state/data/runtime/security, or strict executable rules, and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
 - `.memory-bank/architecture/source-of-truth.md` only when Split core docs or Split by boundary/topic was selected, or when source-of-truth rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/module-boundaries.md` only when Split core docs or Split by boundary/topic was selected, or when boundary rules are too large/reused to keep in `system-architecture.md`
 - `.memory-bank/architecture/<boundary>.md` only for a complex dedicated architecture boundary that cannot stay readable inside `system-architecture.md`
@@ -436,7 +452,7 @@ If the answer is unavailable and a safe assumption is not possible, mark backbon
 Update `.memory-bank/spec-backbone.md`:
 - exact `## Global Backbone Status` section and `- Status: complete|minimal|blocked` line
 - Backbone Area Matrix with authoritative links or explicit `not_applicable` rationale
-- source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` by default, or `source-of-truth.md` when split)
+- source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` when single-file is selected, or `source-of-truth.md` when split)
 - global backbone blockers and next command routing
 - architecture artifact strategy and baseline backbone specs with their scope
 - short backbone decision labels only, never decision body/rationale/rules
@@ -451,7 +467,8 @@ Update `.memory-bank/spec-index.md` only as a pure registry:
 For affected feature docs:
 - add SDD Design Gate notes with normative backbone links where evidence exists
 - do not set `spec_design_status: complete` unless feature-local design criteria are already fully satisfied
-- do not mark `not_required` for features that still depend on shared T2/T3 backbone decisions
+- do not mark `not_required` for features that still depend on shared-boundary,
+  contract, state/data/runtime/security, or strict backbone decisions
 
 ## 15) Handoff
 Report:
@@ -460,7 +477,7 @@ Report:
 - architecture artifact strategy: single-file, split core docs, or split by boundary/topic
 - specs created/updated
 - Backbone Area Matrix summary
-- not_applicable areas and rationale for simple projects
+- not_applicable areas and rationale for local/simple feature-set pressure
 - affected features and normative links
 - foundation decision: `required`, `not_required`, or `blocked`
 - foundation next step: `/foundation-to-tasks`, or `none` when

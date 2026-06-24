@@ -78,7 +78,7 @@ Default pre-queue health check:
 4) Запусти `/spec-auto --init` after `/write-prd` and before `/prd`; it must produce `.memory-bank/spec-backbone.md` Pre-PRD Spec Status `ready_for_prd` and keep `.memory-bank/spec-index.md` as a pure registry.
 5) Построй L1–L3 через `/prd`.
 6) Запусти `/review-feat-plan` before global SDD design.
-7) Запусти `/spec-design --all`. For simple independent T0/T1-only features it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved decisions it must record blockers and stop downstream. If a minimum executable baseline is needed before business features, it records `.memory-bank/foundation.md` and routes executable work to `/foundation-to-tasks`.
+7) Запусти `/spec-design --all`. For local/simple feature-set pressure it must record a minimal backbone and mark irrelevant areas `not_applicable`; for unsafe unresolved shared-boundary, contract, state/data/runtime/security, or strict decisions it must record blockers and stop downstream. If a minimum executable baseline is needed before business features, it records `.memory-bank/foundation.md` and routes executable work to `/foundation-to-tasks`.
 8) If `.memory-bank/foundation.md` says `Foundation Required: true`, run `/foundation-to-tasks`, run strict `/mb-doctor` at the foundation/task-queue boundary, then execute and verify the `FT-000` queue first until the final foundation gate task is `done`.
 9) Запусти `/spec-auto --all` before `/prd-to-tasks --all`.
 10) Если есть пробелы:
@@ -222,9 +222,10 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify`.
+- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence.
+- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
+- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership.
 - T2 task closure may rely on `/verify PASS` when full protocol and required packet/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 - If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.

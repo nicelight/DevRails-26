@@ -137,7 +137,7 @@ Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
 
 ## Architecture Spine Hotspots
 
-Architecture Spine is a compact T2/T3 and shared-boundary guardrail inside
+Architecture Spine is a compact design-pressure guardrail inside
 `.memory-bank/architecture/system-architecture.md#Architecture Spine`. It uses
 stable `AD-*` executable rules and does not introduce a separate architecture
 workflow.
