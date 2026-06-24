@@ -12,7 +12,12 @@ status: active
 - `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
 - `/prd-to-tasks FT-<NNN>` performs full feature-level SDD design before task slicing, then creates the implementation plan, JSON task records, and required initial Execution Packets.
 - Standalone `/spec-improve FT-<NNN>` and `/mb-packet TASK-NNN-TN-FT-NNN-WN` remain repair/advanced commands when design or packets must be refreshed outside the happy path.
-- After the current feature task set is decomposed, run `/mb-doctor` at the feature/task-queue boundary when the queue has T3 work, autonomous/autopilot handoff, or complex T2/foundation/dependency/packet/stale-doc/risky-link conditions. Simple manual T0/T1 queues do not require `/mb-doctor` by default.
+- After the current feature task set is decomposed, run
+  `/review-tasks-plan FT-<NNN>` in a fresh-context reviewer / separate fresh
+  session. Then run `/mb-doctor` at the feature/task-queue boundary when the
+  queue has T3 work, autonomous/autopilot handoff, or complex
+  T2/foundation/dependency/packet/stale-doc/risky-link conditions. Simple manual
+  T0/T1 queues do not require `/mb-doctor` by default.
 
 ## Interactive mode (you stay)
 1) `/analysis -> /brief` when idea discovery is needed; use `/brainstorm` before `/brief` only for raw ideas
@@ -24,7 +29,10 @@ status: active
 7) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
 8) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
 9) `/prd-to-tasks FT-001` (completes feature-level SDD design, creates IMPL plan + `TASK-NNN-TN-FT-NNN-WN` records + required packets for this feature)
-10) Run `/mb-doctor` at the feature/task-queue boundary only when T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/packet/stale-doc/risky-link conditions apply; use `/mb-doctor --strict` before autonomous handoff
+10) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
+feature/task-queue boundary only when T3, autonomous/autopilot handoff, or
+complex T2/foundation/dependency/packet/stale-doc/risky-link conditions apply;
+use `/mb-doctor --strict` before autonomous handoff
 11) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
    - T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner
    - T2 manual: `/execute TASK -> /verify TASK`; sync at wave/feature boundary unless broader state must be reconciled earlier
@@ -32,20 +40,25 @@ status: active
    - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete
    - start `/execute` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
    - `/execute` reads packet/spec context only when required by tier/policy or linked by the task/feature; structural packet readiness is owned by `/mb-doctor`, not by the implementer
-12) After each wave: `/review-tasks-plan` (fresh context over task queue state)
+12) After each wave: `/review-tasks-plan FT-<NNN>` for the current or affected
+feature, using a fresh-context reviewer / separate fresh session
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
-2) command runs `/write-prd -> /spec-auto --init -> /prd -> /review-feat-plan -> /spec-design --all -> /foundation-to-tasks when required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until the final foundation gate is done -> /spec-auto --all -> /prd-to-tasks --all -> /review-tasks-plan`, then schedules ready TASKs
+2) command runs `/write-prd -> /spec-auto --init -> /prd -> /review-feat-plan -> /spec-design --all -> /foundation-to-tasks when required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until the final foundation gate is done -> /spec-auto --all -> /prd-to-tasks --all -> /review-tasks-plan FT-<NNN> for each task-linked product feature`, then schedules ready TASKs
 3) run `/mb-doctor --strict` again before product scheduler execution; T2/T3 tasks without SDD spec links are blockers
 4) before `/execute`, scheduler checks required packets for every T2/T3 task and explicit T0/T1 packet requirement; missing/blocked/stale/invalid packets stop execution and require `/mb-packet TASK-NNN-TN-FT-NNN-WN` or blocker resolution
 5) each TASK runs in **fresh CLI sessions**
 6) after each `/mb-sync`, run `/mb-doctor --strict` before promoting dependents
-7) after each wave: `/review-tasks-plan`
-8) final success only if last `/review-tasks-plan` = `APPROVE`, `/mb-doctor --strict` passes, and no blocking tasks remain
+7) after each wave: `/review-tasks-plan FT-<NNN>` for affected product features,
+or every task-linked product feature if affected-feature scope is ambiguous
+8) final success only if every task-linked product feature has latest
+`/review-tasks-plan FT-<NNN>` = `APPROVE`, `/mb-doctor --strict` passes, and no
+blocking tasks remain
 
 ## Autonomous executor only
-If JSON task records already exist and `/review-tasks-plan` already passed, use:
+If JSON task records already exist and `/review-tasks-plan FT-<NNN>` already
+approved every task-linked product feature, use:
 - `/autopilot`
 
 `/autopilot` must run `/mb-doctor --strict` before each task selection pass and after each `/mb-sync` before promotion.

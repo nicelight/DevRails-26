@@ -115,8 +115,9 @@ Update `.memory-bank/index.md` with annotated links to everything new.
 
 ### 11) Review gate
 For high-risk, large, or autonomous flows, run `/review-feat-plan` before
-`/spec-design`. After `/prd-to-tasks`, use `/review-tasks-plan` before
-execution or scheduler handoff.
+`/spec-design`. After `/prd-to-tasks FT-<NNN>`, use
+`/review-tasks-plan FT-<NNN>` before execution. For scheduler handoff, every
+task-linked product feature needs its own latest `APPROVE`.
 
 ### 12) Autonomous handoff (optional)
 If the goal is “PRD → done without more user interaction”:

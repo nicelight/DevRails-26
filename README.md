@@ -52,7 +52,8 @@ Memory Bank помогает вести разработку как повтор
   -> /mb-doctor           readiness gate на foundation/task-queue boundary
   -> execute/verify       foundation до закрытого gate task
   -> /prd-to-tasks        feature design + JSON tasks + required packets
-  -> /review-tasks-plan   review JSON task queue
+  -> /review-tasks-plan FT-001
+                           review feature task plan
   -> /mb-doctor           conditional readiness gate на complex/T3/autonomous boundaries
   -> execute             tier-routed: T0/T1 compact, T2/T3 full safety
   -> verify              required for T2/T3; optional for manual T0/T1 uncertainty
@@ -134,7 +135,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** feature-level SDD design status/spec links, optional `.memory-bank/behavior-specs/*.behavior.json` для конкретных behavior examples, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
 
-   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan`, затем conditional `/mb-doctor` для T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`. Для manual T0/T1 `/execute` может закрыть task с compact evidence; для T2/T3 `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации.
+   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan FT-<NNN>`, затем conditional `/mb-doctor` для T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`. Для manual T0/T1 `/execute` может закрыть task с compact evidence; для T2/T3 `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации.
 
 10. `/mb-doctor`
 
@@ -186,13 +187,13 @@ Memory Bank помогает вести разработку как повтор
 
 ## 🛠️ Команды вне основного ручного цикла
 
-- `/cold-start` - выбирает стартовый сценарий для нового или существующего репозитория: greenfield, brownfield, skeleton-only.
+- `/cold-start` - выбирает стартовый сценарий после skeleton creation: greenfield, brownfield, skeleton-only. Если `.memory-bank/` еще нет, сначала используйте `/mb-init` или installer bootstrap.
 - `/mb-init` - создает skeleton Memory Bank, `.tasks/`, `.protocols/`, `AGENTS.md` и runtime scripts.
 - `/spec-improve` - standalone repair/refresh feature-level SDD design, когда нужно обновить design без task decomposition.
 - `/mb-packet` - repair/refresh derivative Execution Packet после task/spec изменений или readiness finding; initial required packets создает `/prd-to-tasks`.
 - `/map-codebase` - описывает существующий код как as-is baseline в Memory Bank.
 - `/review-feat-plan` - fresh-context review PRD/requirements/epics/features до `/spec-design`.
-- `/review-tasks-plan` - fresh-context review JSON task queue после `/prd-to-tasks`.
+- `/review-tasks-plan FT-<NNN>` - fresh-context review task plan текущей feature после `/prd-to-tasks FT-<NNN>`. Без аргумента команда выводит последнюю разложенную product feature эвристически; для scheduler handoff требуется `APPROVE` по каждой task-linked product feature.
 - `/mb-garden` - обслуживает Memory Bank: lint, чистка, устранение drift, архивирование.
 - `/mb-doctor` - deterministic readiness gate для autopilot/autonomous runs и conditional manual readiness check для T3/complex boundaries.
 - `/mb-harness` - помогает настроить чистые сессии, профили и проверочные команды.
@@ -219,10 +220,12 @@ runtime scripts и может синхронизировать `AGENTS.md`. Дл
 существующего проекта лучше запускать установку в git-репозитории или заранее
 сделать копию `AGENTS.md`, чтобы при необходимости посмотреть diff.
 
-После установки используйте `/cold-start` или начните ручной цикл:
+После bootstrap-установки используйте `/cold-start` или начните ручной цикл.
+Если запускали только install-only и `.memory-bank/` еще нет, сначала выполните
+`/mb-init`.
 
 ```text
-/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
+/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
 ```
 
 Автоматические режимы стоит включать после того, как PRD, features и task records уже понятны. `/autopilot` работает по готовой JSON task queue, а `/autonomous` берет на себя более длинный unattended flow. Оба режима требуют usable packets для T2/T3 и для T0/T1 только при `runtime_context.packet_required: true`.

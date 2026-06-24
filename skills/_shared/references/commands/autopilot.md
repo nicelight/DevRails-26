@@ -7,7 +7,9 @@ status: active
 ## Важно
 - Это **executor JSON task queue**, а не полный `PRD → done` orchestrator.
 - Для полного unattended flow используй `/autonomous`.
-- Запуск разрешён только если JSON task records уже декомпозированы и последний `/review-tasks-plan` дал `APPROVE`.
+- Запуск разрешён только если JSON task records уже декомпозированы и каждая
+  task-linked product feature имеет latest `/review-tasks-plan FT-<NNN>`
+  `APPROVE`.
 - По умолчанию выполняй **строго последовательно**. Параллель — только для независимых задач без общих файлов.
 - `/autopilot` не запускает `/prd-to-tasks` и не создает task queue; он только исполняет уже готовые JSON task records.
 
@@ -65,7 +67,8 @@ Before task selection and before progression after a task closes, run `/mb-docto
 
 Во время прогона обновляй:
 - queue state from JSON task records (`ready`, `in_progress`, `blocked`, `done`, `failed`)
-- latest `/review-tasks-plan` verdict
+- latest `/review-tasks-plan FT-<NNN>` verdict coverage for task-linked product
+  features
 - current failure budget
 - terminal state
 
@@ -114,7 +117,10 @@ Manual mode:
 - нет blocking bug / blocked upstream
 
 Если после promotion pass `ready` пусто:
-- и JSON task queue полностью закрыт → запусти финальный `/review-tasks-plan`; `SUCCESS` разрешён только если final `/review-tasks-plan` вернул `APPROVE`
+- и JSON task queue полностью закрыт → запусти финальный
+  `/review-tasks-plan FT-<NNN>` for every task-linked product feature;
+  `SUCCESS` разрешён только если every final feature review returned
+  `APPROVE`
 - и остались `planned` / `blocked` → `HALT_DEPENDENCY_DEADLOCK`
 
 ## TASK loop

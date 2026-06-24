@@ -174,15 +174,25 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   advisory only.
 
 ## 6.1) Task-plan review gate по JSON task records
-Сразу после `/prd-to-tasks --all` и до scheduler execution запусти `/review-tasks-plan` именно по task planning surface:
-- `.memory-bank/tasks/index.json`
-- all indexed `.memory-bank/tasks/*.task.json`
-- per-feature implementation plans
+Сразу после `/prd-to-tasks --all` и до scheduler execution выполни
+feature-scoped `/review-tasks-plan` по каждой task-linked product feature:
+
+1. Resolve product feature ids from indexed task records and
+   `.memory-bank/tasks/plans/IMPL-FT-*.md`.
+2. Exclude `FT-000`; Foundation Dev Path is reviewed by its own
+   foundation/task-queue doctor gate and by product task dependency checks.
+3. For each `FT-<NNN>`, run `/review-tasks-plan FT-<NNN>` in a fresh-context
+   reviewer / separate fresh session.
 
 Правило:
-- если review даёт `REJECT` → это blocking gate; исправь JSON task records и повтори `/review-tasks-plan`
-- если после 2–3 циклов всё ещё `REJECT` → terminal state `HALT_REVIEW_REJECT`
-- scheduler execution разрешён только после `APPROVE`; non-blocking findings may appear only as notes under `APPROVE`
+- если review по feature даёт `REJECT` → это blocking gate; исправь task
+  records, packets, specs, or dependencies for that feature and rerun
+  `/review-tasks-plan FT-<NNN>`
+- если после 2–3 циклов та же feature всё ещё `REJECT` → terminal state
+  `HALT_REVIEW_REJECT`
+- scheduler execution разрешён только после latest `APPROVE` for every
+  task-linked product feature; non-blocking findings may appear only as notes
+  under `APPROVE`
 
 ## 6.2) Readiness gate
 Перед scheduler execution запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`.
@@ -321,7 +331,9 @@ runtime context.
 - убедись, что все `semantic-concern` этой wave имеют явное решение (blocked status, human review required, or follow-up); без subsequent `semantic-pass` affected tasks are not closed
 - обнови `.protocols/AUTONOMOUS-RUN/status.md`
 - запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict`; если gate падает, не закрывай wave и не переходи к следующей wave
-- запусти `/review-tasks-plan` по текущему состоянию task queue
+- запусти `/review-tasks-plan FT-<NNN>` по каждой product feature, затронутой
+  завершенной wave; если wave affected-feature set cannot be determined
+  safely, review every task-linked product feature one by one
 
 Если доступны **оба** движка:
 - prefer engine A for execution
@@ -362,6 +374,7 @@ runtime context.
 - every completed T2 feature doc contains a feature-level
   `SEMANTIC_VERDICT: semantic-pass`
 - нет открытых blocking bugs / blockers
-- latest `/review-tasks-plan` = `APPROVE`
+- latest `/review-tasks-plan FT-<NNN>` = `APPROVE` for every task-linked
+  product feature
 - latest `node scripts/mb-lint.mjs` + `/mb-doctor --strict` pass without readiness errors
 </process>

@@ -132,7 +132,7 @@ For small/manual flows, report review as optional/recommended and do not make it
 ## 9) What next
 - interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks` and close the foundation gate; then choose one feature and run `/prd-to-tasks FT-<NNN>`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
-- autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan`
+- autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan FT-<NNN>` for every task-linked product feature
 
 Do not create TASK records from `/prd`.
 </process>

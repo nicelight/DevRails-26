@@ -21,7 +21,7 @@ flowchart TD
   foundationExec --> tasking["/prd-to-tasks FT-001"]
   foundation -- "нет" --> tasking
 
-  tasking --> reviewTasks["/review-tasks-plan"]
+  tasking --> reviewTasks["/review-tasks-plan<br/>FT-001"]
   reviewTasks --> doctor["/mb-doctor<br/>feature/task-queue"]
   doctor --> mode{"Как выполнять JSON task queue?"}
 

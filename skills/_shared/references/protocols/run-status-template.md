@@ -12,7 +12,7 @@ status: active
 
 ## Review gates
 - latest feature-plan review verdict: PENDING | APPROVE | REJECT | NOT_RUN
-- latest task-plan review verdict: PENDING | APPROVE | REJECT | NOT_RUN
+- latest task-plan review coverage: PENDING | APPROVE | REJECT | NOT_RUN
 - blocking review issues:
   - ...
 

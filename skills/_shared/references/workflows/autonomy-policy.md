@@ -20,7 +20,8 @@ status: active
 Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOMOUS-RUN/decision-log.md`.
 
 ## Required gates
-- latest `/review-tasks-plan` verdict must be `APPROVE`
+- latest `/review-tasks-plan FT-<NNN>` verdict must be `APPROVE` for every
+  task-linked product feature
 - mandatory `/mb-doctor --strict` before autonomous/autopilot task selection, after `/mb-sync` before promotion, and before final success
 - tier-appropriate verification per TASK:
   - T0/T1: compact evidence may be enough

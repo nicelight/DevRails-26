@@ -552,6 +552,9 @@ Final report:
 - packet files created/updated and their statuses
 - foundation gate dependency: `not_required` or `TASK-<NNN>-T<N>-FT-000-W<N>`
 - blockers/open questions, or `none`
-- next gate: run `/review-tasks-plan`, then `/mb-doctor` once for the
-  feature/task-queue boundary before starting `/execute`
+- next gate:
+  - for `FT-<NNN>`: run `/review-tasks-plan FT-<NNN>`, then `/mb-doctor` once
+    for the feature/task-queue boundary before starting `/execute`
+  - for `--all`: run `/review-tasks-plan FT-<NNN>` for every task-linked
+    product feature before scheduler execution
 </process>

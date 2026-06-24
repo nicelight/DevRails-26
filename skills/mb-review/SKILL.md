@@ -6,8 +6,11 @@ description: >
 
 # mb-review — Explicit Memory Bank review gates
 
-- **What it does:** runs independent reviewers over one explicit surface: feature plan or task queue plan.
-- **Use it when:** you need `/review-feat-plan` before `/spec-design`, or `/review-tasks-plan` after `/prd-to-tasks` and before execution.
+- **What it does:** runs fresh-context reviewers over one explicit surface:
+  feature plan or feature task plan.
+- **Use it when:** you need `/review-feat-plan` before `/spec-design`, or
+  feature-scoped `/review-tasks-plan FT-<NNN>` after `/prd-to-tasks` and before
+  execution.
 - **Input:** an existing `.memory-bank/`.
 - **Output:** reviewer reports under `.tasks/TASK-MB-REVIEW-FEAT-PLAN/` or `.tasks/TASK-MB-REVIEW-TASKS-PLAN/` plus a synthesized fix list and verdict.
 
@@ -18,8 +21,12 @@ right gate.
 Use:
 - `/review-feat-plan` to check PRD -> REQ/EP/FT decomposition before
   `/spec-design`
-- `/review-tasks-plan` to check JSON task records, waves, dependencies,
-  packets, tier routing, and Foundation Dev Path dependencies before execution
+- `/review-tasks-plan FT-<NNN>` to check one feature's JSON task records, waves,
+  dependencies, packets, tier routing, and Foundation Dev Path dependencies
+  before execution
+- `/review-tasks-plan --all` only as a convenience expansion into independent
+  per-feature reviews for every task-linked product feature before
+  autonomous/autopilot scheduler execution
 
 For foundation migration, explicitly check that `FT-000` is used only as the
 reserved Foundation Dev Path pseudo-feature, product tasks do not use `W0`, and
@@ -39,8 +46,9 @@ Do not run a combined generic review by default.
 - Feature plan gate: create `.tasks/TASK-MB-REVIEW-FEAT-PLAN/`
 - Task queue plan gate: create `.tasks/TASK-MB-REVIEW-TASKS-PLAN/`
 
-### 2) Spawn reviewers (fresh contexts)
-Spawn only reviewers relevant to the selected gate.
+### 2) Run reviewers (fresh contexts)
+Use only reviewers relevant to the selected gate. A reviewer can be a subagent
+when the operator requested delegation, or a separate fresh CLI/session.
 
 For `/review-feat-plan`:
 - Scope/RTM
@@ -51,6 +59,10 @@ For `/review-tasks-plan`:
 - Task planning
 - Architect/spec linkage for T2/T3
 - Security/Constitution when risk requires it
+
+Use a fresh-context reviewer / separate fresh session for each target feature.
+Do not collapse all product features into one broad reviewer prompt unless the
+explicit task is to synthesize already-written per-feature reports.
 
 Shared prompts may still be reused:
 - Architect — `./agents/shared-review-architect.md`

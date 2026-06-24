@@ -16,8 +16,9 @@ Scope:
 - `FT-000` is reserved for Foundation Dev Path and is not a product feature
 - required Foundation Dev Path signals are visible before `/spec-design`
 
-This command does not review JSON task records. Use `/review-tasks-plan` after
-`/prd-to-tasks` creates or updates the task queue.
+This command does not review JSON task records. Use
+`/review-tasks-plan FT-<NNN>` after `/prd-to-tasks FT-<NNN>` creates or updates
+that feature's task records.
 </objective>
 
 <process>
