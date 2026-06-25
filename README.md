@@ -34,180 +34,74 @@ Memory Bank помогает вести разработку как повтор
 - 🌱 **Greenfield**: когда есть идея, черновик или разрозненные требования. Framework помогает довести входные данные до PRD, разложить PRD на requirements, epics, features и tasks, затем пройти реализацию до готового проекта.
 - 🏗️ **Brownfield**: когда код уже существует. Framework можно встроить в текущий репозиторий, сначала описать фактическое состояние через `/map-codebase`, а затем планировать изменения через новый PRD или delta к уже описанному baseline.
 
-## 🔄 Классический workflow разработки
+## 🔄 Workflow разработки
 
-Рекомендуемый режим - ручной. В нем проще контролировать входные данные, видеть, какие документы создаются, и проверять каждую задачу отдельно.
+Рабочий процесс DevRails состоит из трех фаз. Их можно проходить вручную под контролем оператора или частично отдавать агентам, но порядок важен: сначала понять, что строим, затем зафиксировать план и спецификации, затем исполнять задачи.
 
-```text
-идея
+### 1. 🧠 Мозговой штурм и формирование ТЗ
 
-  -> Brainstorming       Интервью -> brief.md
-  -> Constitution         Принципы проекта и non-negotiables
-  -> PRD
-  -> /spec-init           Pre-PRD framing для безопасной нарезки
-  -> /prd                 requirements, epics, features
-  -> /review-feat-plan    для high-risk/large work перед SDD design
-  -> /spec-design         обязательный адаптивный SDD backbone
-  -> /foundation-to-tasks если нужен
-  -> /mb-doctor           readiness gate на foundation/task-queue boundary
-  -> execute/verify       foundation до закрытого gate task
-  -> /prd-to-tasks        feature design + JSON tasks + required packets
-  -> /review-tasks-plan FT-001
-                           review feature task plan
-  -> /mb-doctor           conditional readiness gate на complex/T3/autonomous boundaries
-  -> execute             tier-routed: T0/T1 compact, T2/T3 full safety
-  -> verify              required for T2/T3; optional for manual T0/T1 uncertainty
-  -> sync                boundary sync, not per-task habit
-  -> следующая task
-```
+На этой фазе сырой запрос превращается в понятный вход для PRD. Если идея еще расплывчатая, запускают `/brainstorm`: агент задает вопросы, помогает разложить варианты, фиксирует выбранные и отброшенные направления в `.memory-bank/analysis/brainstorming/`. Если концепт уже понятен, можно сразу идти в `/brief` и оформить короткий Product Brief в `.memory-bank/analysis/product-brief.md`.
 
-Командная цепочка для ручного greenfield flow:
+После brief обычно проходит `/constitution`, если принципы проекта еще не `ratified|partial`. Здесь фиксируются правила работы агентов, Definition of Done, human checkpoints и non-negotiables. Затем `/write-prd` нормализует Product Brief, внешний PRD или текст требований в `.memory-bank/prd.md`. На выходе этой фазы у проекта есть ясное ТЗ: что делаем, для кого, какие ограничения, что не входит в scope и какие вопросы еще блокируют работу.
 
-```text
-/brainstorm for raw ideas or /brief for clear concepts -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
-```
+### 2. 🧩 Создание плана разработки и спецификаций
 
-Та же greenfield-схема в виде Mermaid-карты вынесена отдельно: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
+Эта фаза превращает PRD в структуру разработки. `/spec-init` сначала проверяет, достаточно ли понятны actors, сценарии, доменные границы, lifecycle и non-goals, чтобы не нарезать продукт неправильно. Если PRD уже содержит нужные факты, команда только связывает их в `spec-backbone`; если есть пробелы, создает минимальные framing specs, например user scenarios, domain notes, invariants или boundary hints.
 
-1. `/brainstorm` или `/brief`
+Затем `/prd` создает функциональный слой Memory Bank: `product.md`, `requirements.md`, epics и features. Это не task queue, а функциональные спецификации уровня продукта: требования, user-facing features, acceptance criteria и traceability.
 
-   **Когда:** `/brainstorm` для сырой или нестабильной идеи; `/brief` для ясного концепта, который уже можно оформить как Product Brief.
+После этого обязателен `/spec-design`. Он формирует SDD backbone: глобальные технические решения, source-of-truth, границы модулей, контракты, data/state/runtime/security/testing решения там, где они реально нужны. Для простых проектов backbone может быть минимальным с явными `not_applicable`; для сложных зон появляется Architecture Spine с `AD-*` rules и ссылки на authoritative specs в `architecture/`, `contracts/`, `domains/`, `states/`, `testing/` или `runbooks/`.
 
-   **Создает/обновляет:** discovery artifacts в `.memory-bank/analysis/`: brainstorming reports и/или product brief как вход для `/constitution` и PRD.
+Если до продуктовых features нужен проверенный executable baseline, `/spec-design` фиксирует Foundation Dev Path, а `/foundation-to-tasks` создает `FT-000`: reserved pseudo-feature для walking skeleton. `FT-000` не является продуктовой фичей. Его задачи доказывают, что проект запускается, тестируется и имеет минимальный вертикальный путь. Product tasks создаются только после закрытого final foundation gate.
 
-   **Дальше:** после `/brainstorm` перейти к `/brief`; после clear/proceed brief перейти к `/constitution`, когда достаточно понятно, что нужно строить.
+Когда feature готова к реализации, `/prd-to-tasks FT-<NNN>` делает feature-level SDD design, при необходимости создает feature tech-specs и до трех optional behavior specs в `.memory-bank/behavior-specs/`. Behavior specs - это короткие JSON `given / when / then` примеры для неоднозначного поведения; они помогают агентам не сузить смысл acceptance criteria, но не становятся отдельным registry или verification gate. Затем команда создает implementation plan, JSON task records и required Execution Packets для T2/T3.
 
-2. `/constitution`
+Перед исполнением task queue проходит review: `/review-feat-plan` проверяет PRD/REQ/EP/FT перед SDD design для high-risk/large work, а `/review-tasks-plan FT-<NNN>` проверяет уже нарезанные задачи. `/mb-doctor` нужен как readiness gate для foundation, T3, complex T2 и handoff в `/autopilot` или `/autonomous`; для простых manual T0/T1 он не является обязательной привычкой.
 
-   **Когда:** после product brief или existing PRD context, перед `/write-prd`.
+### 3. ⚙️ Имплементация кодовой базы
 
-   **Создает/обновляет:** `.memory-bank/constitution.md` с governing principles, Definition of Done, автономностью агентов, human checkpoints и критичными non-negotiables.
+Имплементация идет по JSON task records из `.memory-bank/tasks/index.json` и `.memory-bank/tasks/TASK-*.task.json`. У каждой задачи есть tier `T0|T1|T2|T3`; именно tier определяет глубину протокола, verification и red-verification.
 
-   **Дальше:** перейти к `/write-prd`. Если пользователь явно пропускает interview, flow продолжается с `project_principles: framework-default|skipped`, а `/constitution` можно пройти позже.
+В режиме ручного контроля оператор выбирает следующую задачу и запускает `/execute TASK-NNN-TN-FT-NNN-WN`. Это не значит, что код пишется руками: агент реализует задачу, но человек контролирует порядок, scope и моменты проверки. Для T0/T1 допустим compact evidence и иногда закрытие прямо в `/execute`, если есть explicit owner и нет признаков T2/T3. Для T2 нужен `/verify`; для T3 нужен `/verify` и `/red-verify`. Для T2 feature completion отдельно нужен `/red-verify --feature FT-<NNN>`, потому что обычные тесты могут пройти, а смысл feature все равно может быть реализован неправильно.
 
-3. `/write-prd`
+Если task queue уже подготовлена, можно запустить `/autopilot`. Это scheduler/executor для существующих JSON tasks: он сам продвигает `planned -> ready -> in_progress`, запускает execute/verify/red-verify по tier policy, делает `/mb-sync`, блокирует dependents при проблемах и идет дальше. `/autopilot` съест заметно больше токенов, потому что постоянно перечитывает task records, packets, evidence, запускает gates и держит scheduler state, но он старается реализовать всю подготовленную очередь самостоятельно. Для полного unattended пути от PRD до terminal state используется `/autonomous`, а не `/autopilot`.
 
-   **Когда:** когда есть product brief, черновик требований или уже понятное описание продукта.
+После реализации кода начинается проверка. Внутри workflow тесты задаются в task `gates`, `verification_targets`, feature acceptance criteria и testing docs. Минимальный путь: выполнить команды тестов из task gates, записать evidence в `task.verify` и `.protocols/<TASK>/`, затем запустить `/verify`. Для серьезных изменений T2/T3 дополнительно нужны linked SDD specs, required packets и semantic checks. Если тестов недостаточно, используйте `/add-tests` для unit/integration/e2e покрытия вокруг измененной области. На границах wave/feature выполняется `/mb-sync`, а перед autonomous/autopilot progression - `mb-lint` и `/mb-doctor --strict`.
 
-   **Создает/обновляет:** PRD с уточненными целями, scope, требованиями, ограничениями и открытыми вопросами.
+Схема greenfield happy path вынесена отдельно: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md). Подробная механика всех gates описана в [howItWorks.md](howItWorks.md).
 
-   **Дальше:** если PRD достаточно ясен, запустить `/spec-init`.
+## 🛠️ Описание команд
 
-4. `/spec-init`
-
-   **Когда:** после clarified PRD, до `/prd`.
-
-   **Зачем:** проверяет, достаточно ли из PRD понятны actors, scenarios, domain boundaries, lifecycles, constraints и non-goals, чтобы `/prd` мог безопасно вывести requirements, epics и features.
-
-   **Создает/обновляет:** pre-PRD spec framing: `.memory-bank/spec-backbone.md` с `Pre-PRD Spec Status: ready_for_prd|blocked`, чистый registry `.memory-bank/spec-index.md`, а при evidence или явных gaps — `user-scenarios.md`, `domains/<domain>.md`, `invariants.md`, optional `contracts/boundary-map.md` и `states/lifecycle-map.md`. При PASS состояние означает: pre-PRD framing готов для `/prd`, а Global Backbone Status намеренно ожидает `/spec-design`. Если PRD уже содержит достаточные evidence, `/spec-init` может просто сослаться на PRD вместо отдельного файла. Не проводит architecture interview, не проектирует full architecture и не создает features/tasks.
-
-   **Дальше:** запустить `/prd` только при `ready_for_prd`; при `blocked` сначала уточнить PRD/framing gaps.
-
-5. `/prd`
-
-   **Когда:** когда PRD готов к разложению на структуру Memory Bank.
-
-   **Создает/обновляет:** `.memory-bank/product.md`, `.memory-bank/requirements.md`, `.memory-bank/epics/`, `.memory-bank/features/` и связанные индексы.
-
-   **Дальше:** для high-risk/large work запустить `/review-feat-plan`, затем обязательный `/spec-design`. Для local/simple feature-set pressure `/spec-design` создает minimal backbone и помечает лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure проводит архитектурный checkpoint. Если нужен executable baseline, сначала пройти `/foundation-to-tasks` и закрыть foundation gate. Затем выбрать feature для декомпозиции. Если она заблокирована неясностями, сначала использовать `/clarify-feature FT-001`; затем `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
-
-6. `/spec-design`
-
-   **Когда:** после `/prd`, всегда перед `/prd-to-tasks`. Это обязательный gate, но не обязательная тяжелая фаза.
-
-   **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. Architecture scaffold может остаться в одном `architecture/system-architecture.md` только когда это лучший readable shape; для shared-boundary, contract, state/data/runtime/security или strict pressure добавляет короткий `Architecture Spine` с `AD-*` executable rules. Отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только когда split снижает реальную сложность или нужен как authoritative reference. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
-
-   **Дальше:** если foundation required, запустить `/foundation-to-tasks` и закрыть final foundation gate; иначе выбрать feature и запустить `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
-
-7. `/foundation-to-tasks`
-
-   **Когда:** после `/spec-design`, если `.memory-bank/foundation.md` говорит `Foundation Required: true`.
-
-   **Создает/обновляет:** `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.protocols/FT-000/*`, `.memory-bank/tasks/plans/IMPL-FT-000.md`, normal JSON `TASK-NNN-TN-FT-000-WN` records для foundation и final foundation gate task. Свежий bootstrap это не создает.
-
-   **Дальше:** `/mb-doctor` на foundation/task-queue boundary, затем `/execute`/`/verify` foundation tasks до `done` у final gate task.
-
-8. `/clarify-feature FT-001`
-
-   **Когда:** только если конкретная feature содержит blocker, `TBD`, `TODO`, `NEEDS CLARIFICATION` или другой marker, который мешает нарезать задачи.
-
-   **Создает/обновляет:** уточнения по feature и ее clarification status.
-
-   **Дальше:** после снятия blocker запустить `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
-
-9. `/prd-to-tasks FT-001`
-
-   **Когда:** когда feature можно разложить на implementation tasks.
-
-   **Создает/обновляет:** feature-level SDD design status/spec links, optional `.memory-bank/behavior-specs/*.behavior.json` для конкретных behavior examples, `.protocols/FT-001/plan.md`, `.protocols/FT-001/decision-log.md`, `.memory-bank/tasks/plans/IMPL-FT-001.md`, product task records в `.memory-bank/tasks/*.task.json`, индекс `.memory-bank/tasks/index.json` и required initial Execution Packets для T2/T3 и явных T0/T1 packet requirements. Если foundation required, product tasks зависят от final foundation gate.
-
-   **Дальше:** после декомпозиции текущей feature запустить `/review-tasks-plan FT-<NNN>`, затем conditional `/mb-doctor` для T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases и перейти к `/execute TASK-NNN-TN-FT-NNN-WN`. Для manual T0/T1 `/execute` может закрыть task с compact evidence; для T2/T3 `/verify TASK-NNN-TN-FT-NNN-WN` выполняется после реализации.
-
-10. `/mb-doctor`
-
-   **Когда:** после того как feature полностью разложена на task records и required packets, если есть T3, autonomous/autopilot handoff или complex T2/foundation/dependency/packet/stale-doc/risky-link cases. Для simple manual T0/T1 это не default gate.
-
-   **Создает/обновляет:** report readiness findings; не заменяет `/verify` и не исполняет tasks.
-
-   **Дальше:** исправить findings, перейти к `/execute TASK-NNN-TN-FT-NNN-WN`, или для simple manual T0/T1 пропустить gate и идти к tier-routed `/execute`.
-
-11. `/execute TASK-NNN-TN-FT-NNN-WN`
-
-   **Когда:** для реализации одной конкретной задачи из task record.
-
-   **Создает/обновляет:** код или документацию по scope задачи, protocol state в `.protocols/TASK-NNN-TN-FT-NNN-WN/`, evidence и handoff в `.tasks/TASK-NNN-TN-FT-NNN-WN/`.
-
-   **Дальше:** для manual T0/T1 можно закрыть compact evidence/no-runnable-check note прямо в `/execute`, если есть explicit top-level closure ownership и нет required packet/T2/T3 trigger. Для T2/T3 или uncertainty запустить `/verify TASK-NNN-TN-FT-NNN-WN`.
-
-12. `/verify TASK-NNN-TN-FT-NNN-WN`
-
-   **Когда:** после реализации задачи.
-
-   **Создает/обновляет:** verification evidence, verdict `PASS` или `FAIL`, task/protocol state по результату проверки.
-
-   **Дальше:** если задача T3, запустить `/red-verify TASK-NNN-TN-FT-NNN-WN`; для T2 feature completion запустить `/red-verify --feature FT-*`; full `/mb-sync` нужен на boundary или когда менялось broader durable state.
-
-13. `/red-verify TASK-NNN-TN-FT-NNN-WN`
-
-   **Когда:** обязательно для T3 task closure; опционально для T2 task closure; обязательно как `/red-verify --feature FT-*` перед T2 feature completion. Feature-level verdict записывается в сам feature doc. Особенно полезно там, где обычные tests могут пройти, но решение может быть неверным по смыслу.
-
-   **Создает/обновляет:** semantic verification report и semantic verdict.
-
-   **Дальше:** при проблемах вернуть задачу в доработку; при успешной T3 проверке перейти к `/mb-sync`, для T2 feature completion синхронизировать feature/wave boundary.
-
-14. `/mb-sync`
-
-   **Когда:** на boundary, где нужно reconcile broader Memory Bank state: RTM/lifecycle/changelog/index/spec/contract/dependency, T2 wave/feature boundary, T3 closure, handoff/review freshness или drift. Не обязателен для local manual T0/T1 closure, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
-
-   **Создает/обновляет:** индексы Memory Bank, lifecycle/RTM notes, changelog, task-record consistency и ссылки на evidence.
-
-   **Дальше:** выбрать следующую задачу или feature.
-
-15. Повторять цикл
-
-    **Когда:** пока features и tasks не доведены до нужного состояния.
-
-    **Создает/обновляет:** последовательные изменения в продукте, документах, task records и evidence.
-
-    **Дальше:** продолжать `/prd-to-tasks` для следующих features или `/execute` для следующих tasks. Использовать `/spec-improve` и `/mb-packet` только для repair/refresh вне happy path.
-
-## 🛠️ Команды вне основного ручного цикла
-
-- `/cold-start` - выбирает стартовый сценарий после skeleton creation: greenfield, brownfield, skeleton-only. Если `.memory-bank/` еще нет, сначала используйте `/mb-init` или installer bootstrap.
-- `/mb-init` - создает skeleton Memory Bank, `.tasks/`, `.protocols/`, `AGENTS.md` и runtime scripts.
-- `/spec-improve` - standalone repair/refresh feature-level SDD design, когда нужно обновить design без task decomposition.
-- `/mb-packet` - repair/refresh derivative Execution Packet после task/spec изменений или readiness finding; initial required packets создает `/prd-to-tasks`.
-- `/map-codebase` - описывает существующий код как as-is baseline в Memory Bank.
-- `/review-feat-plan` - fresh-context review PRD/requirements/epics/features до `/spec-design`.
-- `/review-tasks-plan FT-<NNN>` - fresh-context review task plan текущей feature после `/prd-to-tasks FT-<NNN>`. Без аргумента команда выводит последнюю разложенную product feature эвристически; для scheduler handoff требуется `APPROVE` по каждой task-linked product feature.
-- `/mb-garden` - обслуживает Memory Bank: lint, чистка, устранение drift, архивирование.
-- `/mb-doctor` - deterministic readiness gate для autopilot/autonomous runs и conditional manual readiness check для T3/complex boundaries.
-- `/mb-harness` - помогает настроить чистые сессии, профили и проверочные команды.
-- `/autopilot` - автономно проходит уже созданную JSON task queue.
-- `/autonomous` - ведет полный unattended flow от PRD до terminal state.
-- `/discuss` - проясняет неизвестные и противоречия перед реализацией.
-- `/add-tests` - добавляет или расширяет тесты вокруг выбранной области.
-- `/find-skills` - ищет релевантные skills среди установленных и доступных.
+- 🚦 `/cold-start` - выбирает стартовый сценарий после skeleton creation: greenfield, brownfield, skeleton-only. Если `.memory-bank/` еще нет, сначала используйте `/mb-init` или installer bootstrap.
+- 🧱 `/mb-init` - создает skeleton Memory Bank, `.tasks/`, `.protocols/`, `AGENTS.md` и runtime scripts.
+- 🧠 `/brainstorm` - проводит мозговой штурм для сырой идеи и пишет brainstorming report в `.memory-bank/analysis/brainstorming/`.
+- 📝 `/brief` - оформляет Product Brief как входной контракт для `/constitution` и `/write-prd`.
+- ⚖️ `/constitution` - фиксирует governing principles, Definition of Done, autonomy rules, human checkpoints и non-negotiables.
+- 📄 `/write-prd` - превращает brief, внешний PRD или текст требований в clarified `.memory-bank/prd.md`.
+- 🧭 `/spec-init` - готовит pre-PRD framing: сценарии, доменные границы, lifecycle hints, constraints и route map для `/prd`.
+- 🧾 `/prd` - создает функциональные спецификации Memory Bank: product, requirements, epics, features, testing index и traceability.
+- 🔍 `/review-feat-plan` - fresh-context review PRD/requirements/epics/features перед SDD design для high-risk/large work.
+- 🏛️ `/spec-design` - обязательный SDD backbone gate: архитектурные решения, boundaries, contracts, Architecture Spine и Foundation Dev Path decision.
+- 🧪 `/foundation-to-tasks` - создает `FT-000` foundation task queue, если нужен executable baseline перед продуктовыми features.
+- ❓ `/clarify-feature FT-<NNN>` - снимает feature-level blockers перед task decomposition.
+- 🧩 `/prd-to-tasks FT-<NNN>` - делает feature-level SDD design, optional behavior specs, implementation plan, JSON tasks и required packets.
+- 🔎 `/review-tasks-plan FT-<NNN>` - проверяет task plan текущей feature; для scheduler handoff нужен `APPROVE` по каждой task-linked product feature.
+- 🩺 `/mb-doctor` - deterministic readiness gate поверх `mb-lint`; strict mode обязателен перед autonomous/autopilot scheduler progression.
+- 📦 `/mb-packet` - repair/refresh derivative Execution Packet после task/spec изменений или readiness finding.
+- ⚙️ `/execute TASK-NNN-TN-FT-NNN-WN` - реализует одну задачу по JSON task record, tier policy и packet/spec context.
+- ✅ `/verify TASK-NNN-TN-FT-NNN-WN` - проверяет acceptance criteria, gates и evidence по задаче.
+- 🧯 `/red-verify TASK-NNN-TN-FT-NNN-WN` - adversarial semantic verification для T3 task closure и важных смысловых рисков.
+- 🧯 `/red-verify --feature FT-<NNN>` - semantic pass перед завершением T2 feature.
+- 🔄 `/mb-sync` - синхронизирует durable Memory Bank state, RTM, changelog, task consistency и evidence links на boundary.
+- 🧪 `/add-tests` - добавляет или расширяет unit/integration/e2e тесты вокруг выбранной области.
+- 🗺️ `/map-codebase` - описывает существующий код как as-is baseline в Memory Bank для brownfield проектов.
+- 🛠️ `/spec-improve` - standalone repair/refresh feature-level SDD design без task decomposition.
+- 🤖 `/autopilot` - автономно исполняет уже подготовленную JSON task queue.
+- 🚀 `/autonomous` - ведет полный unattended flow от PRD до terminal state.
+- 🧹 `/mb-garden` - обслуживает Memory Bank: lint, чистка, устранение drift, архивирование.
+- 🧰 `/mb-harness` - помогает настроить чистые сессии, профили и проверочные команды.
+- 💬 `/discuss` - проясняет неизвестные и противоречия перед реализацией.
+- 🔎 `/find-skills` - ищет релевантные skills среди установленных и доступных.
 
 ## 🚀 Установка и запуск
 
@@ -231,7 +125,7 @@ runtime scripts и может синхронизировать `AGENTS.md`. Дл
 `/mb-init`.
 
 Ручной greenfield flow описан выше в разделе
-`Классический workflow разработки`; Mermaid-карта вынесена в
+`Workflow разработки`; Mermaid-карта вынесена в
 [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
 
 Автоматические режимы стоит включать после того, как PRD, features и task records уже понятны. `/autopilot` работает по готовой JSON task queue, а `/autonomous` берет на себя более длинный unattended flow. Оба режима требуют usable packets для T2/T3 и для T0/T1 только при `runtime_context.packet_required: true`.
