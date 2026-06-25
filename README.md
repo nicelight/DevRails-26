@@ -61,6 +61,12 @@ Memory Bank помогает вести разработку как повтор
   -> следующая task
 ```
 
+Командная цепочка для ручного greenfield flow:
+
+```text
+/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
+```
+
 Та же greenfield-схема в виде Mermaid-карты вынесена отдельно: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
 
 1. `/analysis` или `/brief`
@@ -224,9 +230,9 @@ runtime scripts и может синхронизировать `AGENTS.md`. Дл
 Если запускали только install-only и `.memory-bank/` еще нет, сначала выполните
 `/mb-init`.
 
-```text
-/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
-```
+Ручной greenfield flow описан выше в разделе
+`Классический workflow разработки`; Mermaid-карта вынесена в
+[GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
 
 Автоматические режимы стоит включать после того, как PRD, features и task records уже понятны. `/autopilot` работает по готовой JSON task queue, а `/autonomous` берет на себя более длинный unattended flow. Оба режима требуют usable packets для T2/T3 и для T0/T1 только при `runtime_context.packet_required: true`.
 
