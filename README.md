@@ -8,11 +8,11 @@
 
 
 
-## 🗄️ Что дает Memory Bank
+## 🗄️ Что дает DevRails
 
 
 
-Memory Bank помогает вести разработку как повторяемый процесс:
+ Фреймворк помогает вести разработку как повторяемый процесс:
 
 - фиксирует требования, решения и статус задач в репозитории;
 - связывает PRD, requirements, epics, features и implementation tasks;
@@ -45,7 +45,7 @@ DevRails ведет проект через три фазы.
 
 После PRD `/spec-init` делает pre-PRD framing: проверяет, достаточно ли понятны домены, сценарии, границы, lifecycle и non-goals, чтобы `/prd` не нарезал продукт неправильно. Он обновляет `.memory-bank/spec-backbone.md` как lightweight route/state map и держит `.memory-bank/spec-index.md` чистым registry спецификаций.
 
-`/prd` раскладывает clarified PRD на продуктовую структуру Memory Bank: requirements, epics и функциональные спецификации features (`FT-*`). Для крупной или рискованной работы `/review-feat-plan` проверяет traceability и границы до архитектурного design gate.
+`/prd` раскладывает clarified PRD на продуктовую структуру: requirements, epics и функциональные спецификации features (`FT-*`). Для крупной или рискованной работы `/review-feat-plan` проверяет traceability и границы до архитектурного design gate.
 
 `/spec-design` - обязательный SDD gate после `/prd` и до task decomposition. Он не обязан быть тяжелым: для простой локальной работы может зафиксировать minimal backbone и пометить лишние области `not_applicable`. Для shared-boundary, contract, state/data/runtime/security или strict pressure он создает или обновляет SDD спецификации: архитектурный backbone, source-of-truth, boundary/contracts, state/domain/runtime/testing decisions. Короткие executable architecture rules живут в `Architecture Spine` как `AD-*` внутри `.memory-bank/architecture/system-architecture.md`.
 
@@ -145,7 +145,7 @@ DevRails ведет проект через три фазы.
 
 
 
-Подробное описание установки, source-only packaging, структуры Memory Bank, task model, tier policy, command reference и проверок находится в [howItWorks.md](howItWorks.md).
+Подробное описание установки, source-only packaging, структуры фреймворка, task model, tier policy, command reference и проверок находится в [howItWorks.md](howItWorks.md).
 
 ###  Основные папки фреймворка:
 
