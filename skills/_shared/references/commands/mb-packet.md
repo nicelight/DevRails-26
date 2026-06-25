@@ -87,6 +87,18 @@ Authoritative sources remain:
 If the packet conflicts with task record, linked specs, tier policy, or protocol
 expectations, the packet loses. Rebuild it or stop with a blocker.
 
+Packet refresh rule:
+- If a task record changes after its Execution Packet was generated, run
+  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` before `/execute`, `/verify`,
+  `/autopilot`, or strict readiness handoff.
+- Required packets are stale when `source_task_hash` is missing, malformed, or
+  does not match the current raw indexed task record bytes.
+- If linked specs changed after packet generation and the packet summarizes
+  their scope, verification, or stop conditions, refresh the packet even though
+  MVP freshness hashes only the task record.
+- Do not change task lifecycle status from `/mb-packet`; rebuild the derivative
+  packet or report the blocker.
+
 ## 2) Build steps
 1. Read `.memory-bank/tasks/index.json`.
 2. Read the indexed task record and verify the record `id` matches `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`.
@@ -144,7 +156,7 @@ Use:
   safe execution.
 - `stale` when an existing packet's `source_task_hash` does not match the
   current raw indexed task record file hash. Refresh the packet before
-  execution.
+  execution, verification, autopilot, or strict readiness handoff.
 
 For T2/T3 required packet use, missing linked SDD specs, missing verification
 basis, or contradictory scope should be `blocked`, not `ready_with_gaps`.

@@ -215,6 +215,105 @@ For `--all`, run this full feature SDD design phase for each targeted feature
 before task generation. If any targeted feature is blocked, halt before creating
 or updating task records for any feature and report all blocked features.
 
+## 1.2) Concrete contract readiness before T2/T3 task creation
+Before creating or updating any `T2` / `T3` task record, decide whether the task
+depends on a concrete boundary:
+- HTTP/API endpoint, request/response shape, status/error/auth behavior, or
+  compatibility contract
+- state/lifecycle transition, guard, rollback, or failure mode
+- schema/model fields, storage ownership, migration, retention, seed data, or
+  runtime data path
+- event/message envelope, ordering, idempotency, retry, or delivery behavior
+- domain vocabulary, invariant, business rule, or cross-module ownership
+- agent input/output contract, tool payload, or handoff envelope
+- security/safety behavior, secrets/auth/compliance, or irreversible operation
+- frontend component/UI behavior or operating procedure when a guide is the
+  normative source
+
+If a task depends on one of these boundaries, a linked authoritative spec must
+be implementable without guessing. The concrete block may live in the simplest
+natural owner:
+- `.memory-bank/contracts/*`
+- `.memory-bank/states/*`
+- `.memory-bank/domains/*`
+- `.memory-bank/tech-specs/FT-<NNN>-*.md`
+- `.memory-bank/testing/*`
+- `.memory-bank/guides/*` only when the guide is the normative source for UI or
+  operating behavior
+
+Minimum concrete block:
+- `shape`: fields, endpoint, states, message/envelope, storage entity/path, or
+  boundary shape
+- `rules`: `MUST` / `MUST NOT`
+- `edge cases/errors`
+- `verification target`
+
+Before writing or repairing a concrete block, resolve the authoritative owner:
+1. Find candidate specs from `.memory-bank/spec-index.md`,
+   `.memory-bank/spec-backbone.md`, feature `spec_design_links`, and existing
+   spec folders.
+2. Prefer updating the existing authoritative owner. If ownership is unclear,
+   do not create a new spec.
+3. Create a new spec only with a short rationale, then link it back from
+   `.memory-bank/spec-index.md` and the feature.
+
+Each concrete contract block has exactly one authoritative owner. Other docs may
+summarize or link to that owner, but must not restate `shape`, `rules`, `edge
+cases/errors`, or `verification target` as a second source of truth. When this
+command creates or materially updates a concrete contract spec, add or repair a
+short ownership statement near the top:
+
+```markdown
+## Ownership
+- Owns:
+- Does not own:
+- Related specs:
+```
+
+Owner hints:
+- `.memory-bank/contracts/api-guidelines.md` owns cross-cutting API naming,
+  status/error/auth/pagination/upload/compatibility rules.
+- `.memory-bank/contracts/http-api.md`, `.memory-bank/contracts/openapi.md`, or
+  stack-native schema docs own concrete HTTP boundary shapes when that boundary
+  exists.
+- `.memory-bank/contracts/message-envelope.md` or an existing event contract
+  owns event/message envelope rules.
+- `.memory-bank/contracts/<agent-boundary>.md` owns agent I/O contracts.
+- `.memory-bank/domains/<domain>.md` owns domain vocabulary and business
+  invariants.
+- `.memory-bank/domains/runtime-data-model.md` or an existing storage spec owns
+  runtime data/storage ownership, migrations, retention, and seed data.
+- `.memory-bank/states/<lifecycle>.md` owns lifecycle/state-machine transition
+  guards.
+- `.memory-bank/architecture/system-architecture.md#Architecture Spine` owns
+  short cross-cutting guardrails only; detailed contract/state/domain blocks
+  live in the relevant spec.
+- `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` owns only genuinely
+  feature-local behavior with no shared reuse.
+
+If `.memory-bank/spec-backbone.md` marks a relevant area `needed_before_tasks`,
+resolve it before creating any dependent T2/T3 task:
+- update the routed authoritative owner with the minimum concrete block when
+  evidence is sufficient;
+- update `.memory-bank/spec-index.md` as a registry only;
+- link the authoritative owner from feature `spec_design_links`;
+- update the Backbone Area Matrix row to `authoritative` or `not_applicable`
+  when the concrete readiness gap is resolved.
+
+If the missing contract is needed by multiple features or changes a shared
+boundary, update the shared owner. If the shared owner or decision is unclear,
+route back to `/spec-design` instead of creating duplicate feature-local blocks.
+
+If the concrete block cannot be truthfully completed without manual
+repair/clarification, stop before task generation and route to
+`/spec-improve FT-<NNN>`. If the ambiguity is shared/global, route to
+`/spec-design`.
+
+Do not duplicate concrete contract blocks in task records, implementation plans,
+or packets. Copy only task-relevant links into existing fields such as
+`source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
+`verification_targets`.
+
 ## 2) Создай протокол фичи
 - `.protocols/FT-<NNN>/plan.md`
 - `.protocols/FT-<NNN>/decision-log.md`
@@ -404,9 +503,10 @@ Rules for optional purpose/runtime fields:
 - when an `AD-*` or boundary card constrains the task, copy the doc link into
   `normative_inputs`, copy the executable rule into `constraints` or
   `invariants`, and add a concrete check to `verification_targets`
-- if required T2/T3 boundary or architecture decisions are missing,
-  contradictory, or not checkable, stop with a design blocker and route back to
-  `/spec-design` or `/spec-improve` instead of creating a weak task record
+- if required T2/T3 boundary, concrete contract, or architecture decisions are
+  missing, contradictory, or not checkable, stop with a design blocker and route
+  back to `/spec-design` or `/spec-improve` instead of creating a weak task
+  record
 - `T0` / `T1` tasks may omit runtime context entirely
 - `T0` / `T1` tasks require packets only when there is explicit evidence that
   compact executable runtime context is needed; in that case set
@@ -471,6 +571,10 @@ Persistence rule:
   T2/T3 or shared-boundary work when they constrain implementation or
   verification
 - if a planned `T2` / `T3` task still has no relevant linked SDD spec after the feature design phase, stop with a design blocker; route shared/global gaps to `/spec-design`, or repair feature-local gaps before creating a weak task record
+- if a planned `T2` / `T3` task depends on a concrete boundary but the linked
+  authoritative spec lacks `shape`, `rules`, `edge cases/errors`, or
+  `verification target`, stop before creating the task record and repair the
+  natural owner or route to `/spec-improve FT-<NNN>`
 
 Обнови `.memory-bank/tasks/index.json` только ссылками:
 ```json
@@ -524,6 +628,11 @@ decisions are packet blockers, not `ready_with_gaps`.
 Standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` remains the repair/refresh command when task
 records or specs change after decomposition.
 
+If a task record changes after its packet was generated, run
+`/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` again before `/execute`, `/verify`,
+`/autopilot`, or strict readiness handoff. Do not hand off a required packet
+whose `source_task_hash` no longer matches the indexed task record.
+
 ## 7) Readiness handoff
 Before handoff:
 - проверь что acceptance criteria из FT покрыты задачами
@@ -535,6 +644,8 @@ Before handoff:
   `packet_ref` points to expected `.memory-bank/packets/<task.id>.packet.json`
 - required packet files exist and have `status: ready|ready_with_gaps`; if any
   required packet is `blocked`, report the blocker and do not hand off execution
+- if any required task record was changed after packet generation, refresh the
+  packet with `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` before handoff
 - when foundation is required, every created/updated non-`FT-000` product task
   has the final foundation gate task in `depends_on` directly or transitively
 

@@ -103,6 +103,14 @@ Must check:
 - T2/T3 tasks have relevant linked SDD specs through `source_artifacts`,
   `normative_inputs`, `constraints`, `invariants`, `verification_targets`, or
   feature `spec_design_links`.
+- Every T2/T3 task can be implemented without guessing API, state, schema,
+  message, storage, domain, agent I/O, or security contracts.
+- If a T2/T3 task depends on a concrete boundary, a linked authoritative spec
+  contains the minimum concrete block: `shape`, `rules`, `edge cases/errors`,
+  and `verification target`.
+- T2/T3 tasks do not depend on duplicated or conflicting concrete contract
+  sources. If two docs both look authoritative for the same concrete contract,
+  the verdict must not be `APPROVE`.
 - Shared-boundary T2/T3 tasks have relevant Architecture Spine `AD-*`,
   boundary-map, contract, or ADR links when those decisions constrain
   implementation or verification. Feature-local T2/T3 tasks may rely on their
@@ -124,17 +132,26 @@ Must check:
   - `--all` completed with every product feature approved, or
   - a latest `APPROVE` report for every task-linked product feature.
 - `REJECT`: task records, waves, dependencies, packets, tier routing,
-  foundation dependencies, or verification surface have blocking gaps. Fix and
-  rerun `/review-tasks-plan FT-<NNN>` for the rejected feature.
+  contract readiness, foundation dependencies, or verification surface have
+  blocking gaps. Fix and rerun `/review-tasks-plan FT-<NNN>` for the rejected
+  feature.
 - Non-blocking notes may be reported with `APPROVE`; `REJECT` always means the
   gate is blocking.
+
+Contract-readiness routing for `REJECT`:
+- route back to `/prd-to-tasks FT-<NNN>` when the command can complete the
+  missing concrete block from existing evidence and update the natural owner;
+- route to `/spec-improve FT-<NNN>` when a focused manual repair or
+  clarification pass is needed;
+- route to `/spec-design` when the duplicated/unclear owner or missing decision
+  is shared/global.
 
 ## 5) Concrete reviewer prompt
 Use a fresh-context reviewer / separate fresh session. Example:
 
 ```bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS-FT-001. TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md, .memory-bank/spec-backbone.md, .memory-bank/spec-index.md, .memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md, .memory-bank/tasks/index.json, indexed task records whose feature is FT-001, dependency task records referenced by those tasks, .memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks, and mb-doctor readiness findings relevant to FT-001. Check target feature waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links, Architecture Spine/boundary link routing for shared-boundary work, packet readiness, and Foundation Dev Path dependency invariants for reviewed tasks. Write report to .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.'
+  'TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS-FT-001. TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md, .memory-bank/spec-backbone.md, .memory-bank/spec-index.md, .memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md, .memory-bank/tasks/index.json, indexed task records whose feature is FT-001, dependency task records referenced by those tasks, .memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks, and mb-doctor readiness findings relevant to FT-001. Check target feature waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links, concrete contract readiness for API/state/schema/message/storage/domain/agent I/O/security boundaries, duplicated/conflicting contract owners, Architecture Spine/boundary link routing for shared-boundary work, packet readiness, and Foundation Dev Path dependency invariants for reviewed tasks. Write report to .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT if any T2/T3 task requires guessing contract details or if concrete contract ownership is duplicated/conflicting.'
 ```
 
 For `--all`, run one fresh-context reviewer per feature. A synthesized summary

@@ -21,7 +21,7 @@ flowchart TD
   foundationExec --> tasking["/prd-to-tasks FT-001"]
   foundation -- "нет" --> tasking
 
-  tasking --> reviewTasks["/review-tasks-plan<br/>FT-001"]
+  tasking --> reviewTasks["/review-tasks-plan<br/>FT-001<br/>contract readiness"]
   reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>packet/stale-doc/risky-link?"}
   doctorNeeded -- "да" --> doctor["/mb-doctor<br/>feature/task-queue"]
   doctorNeeded -- "нет" --> mode

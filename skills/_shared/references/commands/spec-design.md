@@ -130,7 +130,7 @@ For `minimal`, explicit not-applicable global/shared lines must appear inside `.
 Do not use `TBD`, `none`, or empty placeholders as a substitute for `not_applicable` rationale.
 
 Status criteria:
-- `complete`: every relevant/global area in the Backbone Area Matrix has an authoritative linked source or explicit `not_applicable`; no `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
+- `complete`: every relevant/global area in the Backbone Area Matrix has a route-level decision. Rows are normally `authoritative` or `not_applicable`. A concrete contract-detail row may be `needed_before_tasks` only when the source-of-truth owner/path is routed clearly enough for `/prd-to-tasks` to complete the concrete block before dependent T2/T3 task records are created. No `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
 - `minimal`: only for explicit local/simple feature-set pressure; each unnecessary global/shared area has `not_applicable` plus rationale.
 - `blocked`: unsafe ambiguity remains, source-of-truth conflict exists, or a required global/shared area cannot be decided truthfully.
 
@@ -168,7 +168,9 @@ Required areas:
 - `open_questions`
 
 Allowed area statuses: `authoritative`, `needed_before_tasks`, `not_applicable`, `blocked`.
-Use `needed_before_tasks` only as a temporary working status; final `complete|minimal` cannot contain it for relevant/global areas.
+Use `needed_before_tasks` only for concrete contract details that are not yet written but are safely routed to a natural owner for `/prd-to-tasks` or `/spec-improve`. It must name the candidate authoritative source, affected features, and missing concrete block in the Notes column. It does not block entering `/prd-to-tasks`, but it blocks creation of dependent T2/T3 task records until resolved to `authoritative` or `not_applicable`.
+
+Strict/autonomous readiness cannot contain `needed_before_tasks`; `/prd-to-tasks` must resolve any affected rows before execution handoff.
 
 ## 7) Spec-index and spec-backbone content boundary
 `.memory-bank/spec-index.md` is a pure spec registry/index, not an authoritative design spec or readiness/status file.
@@ -425,6 +427,14 @@ For AI-first architecture, route concrete contracts to verifiable artifacts when
 - agent input/output schemas
 
 KISS rule: `/spec-design` must decide each relevant contract area as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`. It does not need to write every concrete contract immediately.
+
+Use contract-area routing this way:
+- `authoritative`: a linked spec already owns enough detail for downstream tasking, or the area is governed by an existing stack-native source.
+- `needed_before_tasks`: feature tasking can enter `/prd-to-tasks`, but dependent T2/T3 task records must not be created until `/prd-to-tasks` writes or links the missing concrete block in the routed owner.
+- `not_applicable`: the current feature set has no such boundary; include a rationale.
+- `blocked`: the owner, boundary, or decision is unsafe to choose without user/external evidence; stop downstream work.
+
+Do not mark an area `needed_before_tasks` for unresolved product or architecture choices. Use it only when the owner is clear and the remaining work is making an implementation contract concrete.
 
 OpenAPI is not the source of truth for the whole system.
 

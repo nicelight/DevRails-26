@@ -51,9 +51,9 @@ DevRails ведет проект через три фазы.
 
 Если проекту нужен executable baseline до продуктовых задач, `/spec-design` фиксирует Foundation Dev Path в `.memory-bank/foundation.md`. Тогда `/foundation-to-tasks` создает `REQ-000`, pseudo-feature `FT-000`, normal JSON tasks и final foundation gate. `FT-000` не является продуктовой feature: это walking skeleton / baseline proof, который нужно закрыть через `/execute` и `/verify` до генерации обычных product tasks. Fresh bootstrap сам `FT-000` не создает.
 
-После backbone и foundation decisions команда `/prd-to-tasks FT-<NNN>` закрывает feature-level SDD design и формирует план реализации: implementation plan, JSON task records `TASK-NNN-TN-FT-NNN-WN`, индекс `.memory-bank/tasks/index.json` и required Execution Packets для T2/T3. Там же могут появиться behavior specs - маленькие JSON `given / when / then` примеры для неоднозначного поведения. Они помогают агенту понять ожидаемый результат, но не являются отдельным test runner, registry или обязательным verification gate.
+После backbone и foundation decisions команда `/prd-to-tasks FT-<NNN>` закрывает feature-level SDD design и формирует план реализации: implementation plan, JSON task records `TASK-NNN-TN-FT-NNN-WN`, индекс `.memory-bank/tasks/index.json` и required Execution Packets для T2/T3. Для T2/T3 она не должна создавать task record, если реализация требует угадывать API/state/schema/message/storage/domain/agent I/O/security contract: сначала нужен linked authoritative spec с минимальным concrete block. Там же могут появиться behavior specs - маленькие JSON `given / when / then` примеры для неоднозначного поведения. Они помогают агенту понять ожидаемый результат, но не являются отдельным test runner, registry или обязательным verification gate.
 
-Перед исполнением `/review-tasks-plan FT-<NNN>` проверяет runnable task plan: размеры задач, зависимости, tiers, packets, ссылки на SDD specs и foundation dependency. `/mb-doctor` запускают как readiness gate для T3, complex T2, foundation/dependency/packet/stale-doc/risky-link cases и перед autonomous/autopilot handoff. Для простого ручного T0/T1 это не обязательный gate.
+Перед исполнением `/review-tasks-plan FT-<NNN>` проверяет runnable task plan: размеры задач, зависимости, tiers, packets, ссылки на SDD specs, concrete contract readiness для T2/T3 и foundation dependency. `/mb-doctor` запускают как readiness gate для T3, complex T2, foundation/dependency/packet/stale-doc/risky-link cases и перед autonomous/autopilot handoff. Для простого ручного T0/T1 это не обязательный gate.
 
 ### 3. Имплементация кодовой базы
 
@@ -113,9 +113,9 @@ DevRails ведет проект через три фазы.
 - `/clarify-feature FT-<NNN>` - снимает feature-level blockers перед task decomposition.
 - `/spec-improve FT-<NNN>` - ремонтирует или обновляет feature-level SDD design без создания tasks.
 - `/spec-auto` - autonomous equivalent для SDD init/design, используется в unattended flows.
-- `/prd-to-tasks FT-<NNN>` - создает feature implementation plan, JSON task records, optional behavior specs и required packets.
-- `/review-tasks-plan FT-<NNN>` - проверяет task queue план одной feature перед `/execute` или scheduler mode.
-- `/mb-packet TASK-...` - repair/refresh derivative Execution Packet после изменения task/spec context.
+- `/prd-to-tasks FT-<NNN>` - создает feature implementation plan, JSON task records, optional behavior specs и required packets; для T2/T3 требует concrete linked contract specs до task creation.
+- `/review-tasks-plan FT-<NNN>` - проверяет task queue план одной feature перед `/execute` или scheduler mode, включая отсутствие contract guessing для T2/T3.
+- `/mb-packet TASK-...` - repair/refresh derivative Execution Packet после изменения task/spec context или task record hash mismatch.
 
 ### 3. Реализация, проверки и синхронизация
 
@@ -187,7 +187,6 @@ runtime scripts и может синхронизировать `AGENTS.md`.
 Если запускали только install-only и `.memory-bank/` еще нет, сначала выполните
 
 `/mb-init`.
-
 
 
 

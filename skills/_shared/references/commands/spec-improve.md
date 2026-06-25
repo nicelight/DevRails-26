@@ -84,6 +84,67 @@ Before writing specs, explicitly look for:
 
 Do not hide complexity growth. Report it and explain the tradeoff.
 
+## 3.1) Concrete contract ownership
+Use `/spec-improve FT-<NNN>` as a repair pass when `/spec-design`,
+`/prd-to-tasks`, or review finds that feature design is too vague for safe task
+creation. It is not a mandatory happy-path phase.
+
+Before creating or repairing a concrete contract block, resolve its
+authoritative owner:
+1. Find candidate specs from `.memory-bank/spec-index.md`,
+   `.memory-bank/spec-backbone.md`, feature `spec_design_links`, and existing
+   spec folders.
+2. Prefer updating the existing authoritative owner. If ownership is unclear,
+   do not create a new spec.
+3. Create a new spec only when no existing doc can cleanly own the contract,
+   and include a short rationale explaining why an existing owner was not used.
+
+Each concrete contract block has exactly one authoritative owner. Other docs may
+summarize or link to that owner, but must not restate `shape`, `rules`,
+`edge cases/errors`, or `verification target` as a second source of truth.
+
+When this command creates or materially updates a concrete contract spec, add or
+repair a short ownership statement near the top:
+
+```markdown
+## Ownership
+- Owns:
+- Does not own:
+- Related specs:
+```
+
+Minimum concrete block for a T2/T3-relevant boundary:
+- `shape`: fields, endpoint, states, message/envelope, storage entity/path, or
+  boundary shape
+- `rules`: `MUST` / `MUST NOT`
+- `edge cases/errors`
+- `verification target`
+
+Owner hints:
+- `.memory-bank/contracts/api-guidelines.md` owns cross-cutting API naming,
+  status/error/auth/pagination/upload/compatibility rules.
+- `.memory-bank/contracts/http-api.md`, `.memory-bank/contracts/openapi.md`, or
+  stack-native schema docs own concrete HTTP boundary shapes when that boundary
+  exists.
+- `.memory-bank/contracts/message-envelope.md` or an existing event contract
+  owns event/message envelope rules.
+- `.memory-bank/contracts/<agent-boundary>.md` owns agent I/O contracts.
+- `.memory-bank/domains/<domain>.md` owns domain vocabulary and business
+  invariants.
+- `.memory-bank/domains/runtime-data-model.md` or an existing storage spec owns
+  runtime data/storage ownership, migrations, retention, and seed data.
+- `.memory-bank/states/<lifecycle>.md` owns lifecycle/state-machine transition
+  guards.
+- `.memory-bank/architecture/system-architecture.md#Architecture Spine` owns
+  short cross-cutting guardrails only; detailed contract/state/domain blocks
+  live in the relevant spec.
+- `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` owns only genuinely
+  feature-local behavior with no shared reuse.
+
+If the missing contract is needed by multiple features or changes a shared
+boundary, update the shared owner. If the shared owner or decision is unclear,
+route back to `/spec-design` instead of creating duplicate feature-local blocks.
+
 ## 4) Interview gate
 If design is blocked or multiple meaningful options exist, ask the user.
 
@@ -114,6 +175,8 @@ Keep KISS:
 - for T2/T3 or shared-boundary work, keep Architecture Spine `AD-*` rules short,
   stable, and linked from downstream task fields instead of duplicating long
   rationale in feature specs
+- for concrete T2/T3 contract repair, update the authoritative owner with the
+  minimum concrete block before marking feature design complete
 
 ## 6) Update routes and feature metadata
 Update `.memory-bank/spec-index.md`:
@@ -125,6 +188,9 @@ Do not write feature status maps into `.memory-bank/spec-index.md`; feature `spe
 
 Invariant for `spec_design_status: complete`:
 - set `complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
+- for T2/T3-relevant API/state/schema/message/storage/domain/agent I/O/security
+  boundaries, the linked authoritative spec must include the minimum concrete
+  block: `shape`, `rules`, `edge cases/errors`, and `verification target`
 - do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved
 - if unresolved feature-relevant planned/candidate/unknown/conflicting areas remain, set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in the feature doc or relevant spec; use `.memory-bank/spec-backbone.md` only for shared/global gaps
 
