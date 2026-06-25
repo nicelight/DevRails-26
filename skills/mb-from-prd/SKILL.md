@@ -15,7 +15,7 @@ description: >
 - You are in the repo root.
 - `.memory-bank/prd.md` exists with `type: prd`, `clarification_status: complete`, and `constitution_checked: true`; otherwise run `/write-prd` first.
 - `.memory-bank/spec-backbone.md` exists after `/spec-init` as the required lightweight pre-PRD framing state for PRD decomposition, and `.memory-bank/spec-index.md` remains a pure spec registry/index. After `/prd`, `/review-feat-plan` checks high-risk/large work before mandatory `/spec-design`; `/spec-design` consumes `spec-backbone` plus the registry, records a minimal or full backbone gate, may record `.memory-bank/foundation.md`, and may update backbone SDD specs and `spec-index` registry rows when features share domain/model/contracts/state/security/runtime design.
-- Optional Analysis artifacts such as a product brief may exist; use them as upstream PRD input, but do not require them.
+- Optional discovery artifacts such as a product brief may exist; use them as upstream PRD input, but do not require them.
 - `.memory-bank/` exists. If not, run `mb-init` first (or create the skeleton manually).
 
 ## Process
@@ -41,7 +41,7 @@ If the PRD mentions “use skills / tools / CLIs”:
 
 ### 3) No Deep Questioning here
 PRD-level ambiguity is handled by `/write-prd`. Do not ask Deep Questioning rounds in this skill.
-Optional Analysis (`/analysis`, `/brainstorm`, `/brief`) improves `/write-prd` input.
+Optional discovery (`/brainstorm`, `/brief`) improves `/write-prd` input.
 
 If the target mode is **full autonomous**:
 - non-blocking gaps may be recorded as explicit `Assumptions`

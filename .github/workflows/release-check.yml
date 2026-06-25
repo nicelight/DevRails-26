@@ -47,6 +47,7 @@ jobs:
           test -f skills/_shared/references/commands/prd-to-tasks.md
           test -f skills/_shared/references/commands/review-feat-plan.md
           test -f skills/_shared/references/commands/review-tasks-plan.md
+          test ! -e skills/_shared/references/commands/analysis.md
           test ! -e skills/_shared/references/commands/review.md
           test -f skills/_shared/references/commands/execute.md
           test -f skills/_shared/references/commands/verify.md
@@ -80,6 +81,8 @@ jobs:
           test -f .claude/skills/spec-design/SKILL.md
           test -f .agents/skills/foundation-to-tasks/SKILL.md
           test -f .claude/skills/foundation-to-tasks/SKILL.md
+          test ! -e .agents/skills/analysis/SKILL.md
+          test ! -e .claude/skills/analysis/SKILL.md
           grep -q '# /spec-design' .agents/skills/spec-design/SKILL.md
           grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
@@ -121,6 +124,8 @@ jobs:
           test -f "$TARGET/.agents/skills/review-feat-plan/SKILL.md"
           test -f "$TARGET/.claude/skills/review-tasks-plan/SKILL.md"
           test -f "$TARGET/.agents/skills/review-tasks-plan/SKILL.md"
+          test ! -e "$TARGET/.claude/skills/analysis/SKILL.md"
+          test ! -e "$TARGET/.agents/skills/analysis/SKILL.md"
           test ! -e "$TARGET/.claude/skills/review/SKILL.md"
           test ! -e "$TARGET/.agents/skills/review/SKILL.md"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"

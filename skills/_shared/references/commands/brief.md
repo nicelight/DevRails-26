@@ -13,7 +13,7 @@ Product Brief is the input contract for `/constitution` when needed and for `/wr
 <process>
 
 ## 0) Scope
-Use `/brief` when the concept is clear enough to summarize, or after `/brainstorm`.
+Use `/brief` when the concept is clear enough to summarize, or after `/brainstorm`. Raw ideas should go to `/brainstorm`; clear concepts can start here directly.
 
 Allowed outputs:
 - `.memory-bank/analysis/index.md`

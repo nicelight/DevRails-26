@@ -21,7 +21,7 @@ Real global architecture/backbone and foundation decisions belong to `/spec-desi
 Run after clarified `/write-prd` and before `/prd`.
 
 Canonical manual chain:
-`/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK`.
+`/brainstorm -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK`.
 
 Stage model:
 1. Read PRD and existing framing/spec context.

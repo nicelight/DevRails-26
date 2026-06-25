@@ -186,7 +186,7 @@ GEMINI.md
 - `cold-start` - package entrypoint / generated scenario router; skeleton
   creation остается за installer bootstrap или `mb-init`.
 - `mb-init` - генерация skeleton, agent guides и runtime scripts.
-- `mb-analysis` - optional discovery до PRD: `/analysis`, `/brainstorm`, `/brief`.
+- `mb-analysis` - optional discovery artifacts до PRD: `/brainstorm` для raw ideas и `/brief` для clear concepts.
 - `mb-from-prd` - clarified PRD -> product, requirements, epics, features.
 - `mb-map-codebase` - as-is mapping существующего codebase без roadmap speculation.
 - `mb-execute` - implementation handoff для одного `TASK-NNN-TN-FT-NNN-WN`.
@@ -204,7 +204,7 @@ GEMINI.md
 
 ```text
 idea / rough draft
-  -> /analysis или /brief, если направление нужно прояснить
+  -> /brainstorm для raw ideas или /brief для clear concepts
   -> /constitution, если project principles еще не ratified|partial
   -> /write-prd
   -> /spec-init
@@ -225,7 +225,7 @@ idea / rough draft
   -> повторять feature/task loop
 ```
 
-`/analysis` маршрутизирует discovery. `/brainstorm` может создать brainstorming report. `/brief` создает Product Brief как вход для `/constitution` и `/write-prd`. Ни один из этих discovery-шагов не создает runnable task records.
+`/brainstorm` может создать brainstorming report для raw ideas. `/brief` создает Product Brief как вход для `/constitution` и `/write-prd`. Ни один из этих discovery-шагов не создает runnable task records.
 
 `/constitution` читает Product Brief, если он есть, и проводит короткое contextual interview по project principles, Definition of Done, автономности агентов, human checkpoints и non-negotiables. Это нормальный шаг перед `/write-prd`, когда principles еще не `ratified|partial`, но не hard-blocker: если пользователь явно пропускает его, flow продолжает идти с `project_principles: framework-default|skipped`, а Constitution можно ratify позже.
 
@@ -451,10 +451,9 @@ The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 
 | Command | Purpose | Creates/updates | Does not do | Next step |
 |---|---|---|---|---|
-| `/cold-start` | Scenario router после skeleton creation | routing decision, next command recommendation | не создает EP/FT/TASK без PRD; не обходит `/write-prd`; не заменяет `/mb-init` | `/analysis`, `/brief`, `/constitution`, `/write-prd`, `/map-codebase` или stop |
+| `/cold-start` | Scenario router после skeleton creation | routing decision, next command recommendation | не создает EP/FT/TASK без PRD; не обходит `/write-prd`; не заменяет `/mb-init` | `/brainstorm`, `/brief`, `/constitution`, `/write-prd`, `/map-codebase` или stop |
 | `/mb` | Prime agent context из Memory Bank | обычно без writes; может создать `.protocols/<TASK>/plan.md` для unknowns | не реализует | выбранная task/workflow command |
 | `/mb-init` | Initialize Memory Bank skeleton | `.memory-bank/`, `.tasks/`, `.protocols/`, agent files, runtime scripts | не планирует roadmap/tasks | `/cold-start` |
-| `/analysis` | Optional discovery router | `.memory-bank/analysis/index.md` | не создает brief, PRD, tasks, research | `/brainstorm`, `/brief`, `/constitution`, `/write-prd`, `/map-codebase`, `/clarify-feature` |
 | `/brainstorm` | Facilitated ideation | `.memory-bank/analysis/brainstorming/BR-*.md`, analysis index | не создает PRD, Product Brief, tasks | `/brief` |
 | `/brief` | Product Brief input contract | `.memory-bank/analysis/product-brief.md`, analysis index | не создает features/tasks; не заменяет PRD | `/write-prd` если principles `ratified|partial`; иначе `/constitution`, затем `/write-prd` |
 | `/constitution` | Contextual interview for governing principles | `.memory-bank/constitution.md` | не добавляет Spec Kit hooks, governance engines или command aliases; не заменяет PRD | `/write-prd` или current workflow |

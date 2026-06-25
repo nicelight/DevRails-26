@@ -70,7 +70,7 @@ Manual mode:
 
 Минимальный чеклист:
 - [ ] Обновить релевантные `.memory-bank/*` (WHY/WHERE, без псевдокода)
-- [ ] Если есть `.memory-bank/analysis/*`, синхронизировать durable Analysis artifacts как часть Memory Bank; если их нет, не создавать их автоматически
+- [ ] Если есть `.memory-bank/analysis/*`, синхронизировать durable discovery artifacts как часть Memory Bank; если их нет, не создавать их автоматически
 - [ ] Обновить `.memory-bank/index.md` и подпапочные роутеры
 - [ ] Если менялись governance/workflow/routing/agent instructions/tier policy, проверить consistency с `.memory-bank/constitution.md`
 - [ ] Обновить RTM/REQ lifecycle в `.memory-bank/requirements.md`
@@ -89,7 +89,7 @@ Manual mode:
 - [ ] Для `/autonomous` и `/autopilot`: `/mb-doctor --strict` после sync — blocking gate, не optional
 
 Task synchronization rule:
-- Analysis artifacts in `.memory-bank/analysis/` are durable Memory Bank artifacts, but optional.
+- Discovery artifacts in `.memory-bank/analysis/` are durable Memory Bank artifacts, but optional.
 - If `.memory-bank/analysis/product-brief.md` exists, keep downstream docs consistent with it or record explicit deltas / override notes.
 - If brainstorming artifacts exist without a product brief, preserve them and warn that `/brief` is the expected bridge before `/prd` unless an existing PRD was intentionally used.
 - When governance, workflow, routing, AGENTS.md, MBB, spec-backbone, spec-index, invariants, task schema, or tier policy changes, compare affected docs with `.memory-bank/constitution.md`.

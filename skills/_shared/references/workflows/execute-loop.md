@@ -20,7 +20,7 @@ status: active
   T0/T1 queues do not require `/mb-doctor` by default.
 
 ## Interactive mode (you stay)
-1) `/analysis -> /brief` when idea discovery is needed; use `/brainstorm` before `/brief` only for raw ideas
+1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
 2) `/constitution` for contextual governing principles when `.memory-bank/constitution.md` is missing or `project_principles` is framework-default|skipped|missing; if principles are already ratified/partial, continue to `/write-prd`; if explicitly skipped, continue with framework-default/skipped principles
 3) `/write-prd` (creates clarified .memory-bank/prd.md)
 4) `/spec-init` (updates .memory-bank/spec-backbone.md framing and .memory-bank/spec-index.md registry)

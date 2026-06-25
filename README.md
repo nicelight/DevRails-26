@@ -64,18 +64,18 @@ Memory Bank помогает вести разработку как повтор
 Командная цепочка для ручного greenfield flow:
 
 ```text
-/analysis -> /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
+/brainstorm for raw ideas or /brief for clear concepts -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor for complex/T3/autonomous boundaries -> tier-routed /execute first indexed TASK (T0/T1 may close with compact evidence; T2/T3 continue through required verify and boundary sync gates)
 ```
 
 Та же greenfield-схема в виде Mermaid-карты вынесена отдельно: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
 
-1. `/analysis` или `/brief`
+1. `/brainstorm` или `/brief`
 
-   **Когда:** если входная идея сырая, противоречивая или еще не готова для PRD.
+   **Когда:** `/brainstorm` для сырой или нестабильной идеи; `/brief` для ясного концепта, который уже можно оформить как Product Brief.
 
-   **Создает/обновляет:** analysis artifacts в `.memory-bank/analysis/`, обычно product brief как вход для `/constitution` и PRD.
+   **Создает/обновляет:** discovery artifacts в `.memory-bank/analysis/`: brainstorming reports и/или product brief как вход для `/constitution` и PRD.
 
-   **Дальше:** перейти к `/constitution`, когда достаточно понятно, что нужно строить.
+   **Дальше:** после `/brainstorm` перейти к `/brief`; после clear/proceed brief перейти к `/constitution`, когда достаточно понятно, что нужно строить.
 
 2. `/constitution`
 

@@ -84,7 +84,7 @@ Routing summary:
 - no code + product brief: `/constitution` if needed, then `/write-prd`
 - clear concept but no PRD: `/brief`, then `/constitution` if needed, then
   `/write-prd`
-- raw idea: `/analysis`, which routes to `/brainstorm` or `/brief`
+- raw idea: `/brainstorm`, then `/brief`
 - no code and no actionable product input: stop and ask for PRD, product brief,
   or requirements text
 
