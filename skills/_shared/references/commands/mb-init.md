@@ -20,6 +20,6 @@ status: active
 Если ты уже видишь эту команду в проекте — значит skeleton уже создан.
 Для нового репозитория создай skeleton (скриптом или вручную по `structure-template.md`), затем используй:
 - `/cold-start` (единая точка входа — роутер сценариев)
-- `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` if required → `/prd-to-tasks FT-<NNN>` или `/map-codebase` по ситуации
+- `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` if required → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` → tier-routed `/execute TASK` или `/map-codebase` по ситуации
 - `/autonomous`, если нужен full unattended flow от PRD до terminal state
 </process>

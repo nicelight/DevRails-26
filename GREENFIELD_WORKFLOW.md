@@ -22,15 +22,20 @@ flowchart TD
   foundation -- "нет" --> tasking
 
   tasking --> reviewTasks["/review-tasks-plan<br/>FT-001"]
-  reviewTasks --> doctor["/mb-doctor<br/>feature/task-queue"]
+  reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>packet/stale-doc/risky-link?"}
+  doctorNeeded -- "да" --> doctor["/mb-doctor<br/>feature/task-queue"]
+  doctorNeeded -- "нет" --> mode
   doctor --> mode{"Как выполнять JSON task queue?"}
 
   mode -- "Manual" --> exec["/execute<br/>TASK-NNN-TN-FT-NNN-WN"]
-  exec --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]
+  exec --> fastLane{"T0/T1 fast-lane?<br/>explicit owner + compact evidence"}
+  fastLane -- "да" --> localDone["Task done<br/>compact evidence / no-runnable-check note"]
+  fastLane -- "нет / T2-T3 / uncertainty" --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]
+  localDone --> more
   verify --> redTask{"Нужен semantic pass?"}
   redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-TN-FT-NNN-WN"]
   redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
-  redTask -- "нет" --> sync["/mb-sync"]
+  redTask -- "нет" --> sync["/mb-sync<br/>boundary when needed"]
   redVerify --> sync
   redFeature --> sync
   sync --> more{"Еще tasks/features?"}

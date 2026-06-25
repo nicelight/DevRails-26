@@ -68,7 +68,7 @@ Full role contracts live in:
 ## Docs First
 After finishing a meaningful unit of work:
 1) Update `.memory-bank/` (WHY/WHERE + navigation)
-2) Then commit code changes
+2) Then include code changes in the handoff; commit only when explicitly requested or workflow-owned
 
 ## Runtime vs durable memory
 - Durable knowledge base: `.memory-bank/`

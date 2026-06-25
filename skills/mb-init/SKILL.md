@@ -78,7 +78,7 @@ If you don’t want a script, just create the files manually using the templates
 - `.memory-bank/constitution.md` exists as the governing-principles doc.
 - `.memory-bank/tasks/index.json` and `.memory-bank/schemas/task.schema.json` exist; task state is JSON-backed.
 - `.memory-bank/tasks/index.json` has an empty `tasks` array in a PRD-less skeleton.
-- Skeleton bootstrap creates no fake feature docs or foundation artifacts; task planning starts later with `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, mandatory `/spec-design`, `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`.
+- Skeleton bootstrap creates no fake feature docs or foundation artifacts; task planning starts later with `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, mandatory `/spec-design`, `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`.
 - No `.memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json` is created by bootstrap.
 - Future task records must contain mandatory `tier: T0|T1|T2|T3`; routing is only through `task.tier`, not the removed `risk` / `risk.level` model.
 - `.tasks/` and `.protocols/` exist.

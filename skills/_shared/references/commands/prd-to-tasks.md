@@ -31,7 +31,7 @@ from the product feature target set.
 
 ## 1) Decomposition preflight
 Перед созданием или обновлением implementation plan и JSON task records проверь, что feature can be decomposed.
-`/prd-to-tasks` does not require feature clarification metadata. The normal manual path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/prd-to-tasks FT-<NNN>`.
+`/prd-to-tasks` does not require feature clarification metadata. The normal manual path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/packet/stale-doc/risky-link cases → tier-routed `/execute TASK`.
 
 `/prd-to-tasks` owns the full feature-level SDD design phase before task slicing.
 Standalone `/spec-improve FT-<NNN>` remains a repair/advanced command for rerunning
@@ -553,8 +553,10 @@ Final report:
 - foundation gate dependency: `not_required` or `TASK-<NNN>-T<N>-FT-000-W<N>`
 - blockers/open questions, or `none`
 - next gate:
-  - for `FT-<NNN>`: run `/review-tasks-plan FT-<NNN>`, then `/mb-doctor` once
-    for the feature/task-queue boundary before starting `/execute`
+  - for `FT-<NNN>`: run `/review-tasks-plan FT-<NNN>`, then conditional
+    `/mb-doctor` for T3, autonomous/autopilot handoff, or complex
+    T2/foundation/dependency/packet/stale-doc/risky-link cases before
+    tier-routed `/execute TASK`
   - for `--all`: run `/review-tasks-plan FT-<NNN>` for every task-linked
     product feature before scheduler execution
 </process>

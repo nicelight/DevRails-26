@@ -29,11 +29,14 @@ req_ids: [REQ-XXX]
 - Contracts / states / runbooks / testing docs: ...
 
 ## SDD Design Gate
-- Run `/spec-improve FT-XXX` before `/prd-to-tasks FT-XXX`.
-- When `/spec-improve` sets `spec_design_status: complete`, linked specs must be listed in `spec_design_links`.
-- If feature-level design is not needed, `/spec-improve` may set `spec_design_status: not_required` with a short rationale.
-- If design is blocked, `/spec-improve` sets `spec_design_status: blocked` and records the blocker.
-- Until `/spec-improve` or an authoritative existing design establishes one of those outcomes, omit `spec_design_status`.
+- Run mandatory `/spec-design` after `/prd` before product feature tasking.
+- If foundation is required, close the `/foundation-to-tasks` final foundation gate before `/prd-to-tasks FT-XXX`.
+- Run `/prd-to-tasks FT-XXX`; it owns feature-level SDD design before task slicing and sets `spec_design_status: complete|not_required|blocked`.
+- When design is complete, linked specs must be listed in `spec_design_links`.
+- If feature-level design is not needed, record `spec_design_status: not_required` with a short rationale.
+- If design is blocked, record `spec_design_status: blocked` and the blocker before creating weak task records.
+- Use `/spec-improve FT-XXX` only to repair or refresh feature design outside the happy path.
+- Until `/prd-to-tasks`, repair `/spec-improve`, or an authoritative existing design establishes one of those outcomes, omit `spec_design_status`.
 
 ## Constraints / invariants (optional)
 - MUST: ...

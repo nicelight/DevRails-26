@@ -73,11 +73,14 @@ Routing summary:
   `/constitution` if needed, `/write-prd --delta`, `/spec-init`, `/prd`,
   `/review-feat-plan` for high-risk/large work, `/spec-design`,
   `/foundation-to-tasks --verify-existing` only when baseline proof is still
-  needed, then `/prd-to-tasks FT-<NNN>`
+  needed, then `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`,
+  conditional `/mb-doctor`, and tier-routed `/execute TASK`
 - code only: `/map-codebase` as an as-is baseline, then ask for PRD/delta
 - no code + existing PRD: `/constitution` if needed, `/write-prd`,
   `/spec-init`, `/prd`, `/review-feat-plan` when needed, `/spec-design`, then
-  `/prd-to-tasks FT-<NNN>` after foundation requirements are handled
+  `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional
+  `/mb-doctor`, and tier-routed `/execute TASK` after foundation requirements
+  are handled
 - no code + product brief: `/constitution` if needed, then `/write-prd`
 - clear concept but no PRD: `/brief`, then `/constitution` if needed, then
   `/write-prd`

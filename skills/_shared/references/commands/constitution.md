@@ -16,7 +16,7 @@ The Constitution captures project governing principles, agent autonomy rules, an
 Use `/constitution` in the normal manual greenfield flow after `/analysis`/`/brief` and before `/write-prd`:
 
 ```text
-/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN>
+/analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute TASK
 ```
 
 If the user explicitly skips this step, do not block the flow. Leave the Constitution at `project_principles: framework-default` or set `project_principles: skipped`, record the skip in output, and recommend revisiting `/constitution` later.

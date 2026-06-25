@@ -103,7 +103,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** `.memory-bank/product.md`, `.memory-bank/requirements.md`, `.memory-bank/epics/`, `.memory-bank/features/` и связанные индексы.
 
-   **Дальше:** для high-risk/large work запустить `/review-feat-plan`, затем обязательный `/spec-design`. Для local/simple feature-set pressure `/spec-design` создает minimal backbone и помечает лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure проводит архитектурный checkpoint. Если нужен executable baseline, сначала пройти `/foundation-to-tasks` и закрыть foundation gate. Затем выбрать feature для декомпозиции. Если она заблокирована неясностями, сначала использовать `/clarify-feature FT-001`; затем `/prd-to-tasks FT-001`.
+   **Дальше:** для high-risk/large work запустить `/review-feat-plan`, затем обязательный `/spec-design`. Для local/simple feature-set pressure `/spec-design` создает minimal backbone и помечает лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure проводит архитектурный checkpoint. Если нужен executable baseline, сначала пройти `/foundation-to-tasks` и закрыть foundation gate. Затем выбрать feature для декомпозиции. Если она заблокирована неясностями, сначала использовать `/clarify-feature FT-001`; затем `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
 
 6. `/spec-design`
 
@@ -111,7 +111,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** `spec-backbone` с Global Backbone Status и Backbone Area Matrix, чистый `spec-index` только как registry, SDD backbone specs по необходимости и `.memory-bank/foundation.md`, если нужен Foundation Dev Path. Architecture scaffold может остаться в одном `architecture/system-architecture.md` только когда это лучший readable shape; для shared-boundary, contract, state/data/runtime/security или strict pressure добавляет короткий `Architecture Spine` с `AD-*` executable rules. Отдельные `architecture/source-of-truth.md`, `architecture/module-boundaries.md` или boundary-файлы создаются только когда split снижает реальную сложность или нужен как authoritative reference. Детальные API/state/message contracts живут в `contracts/`, `states/`, `domains/`, `tech-specs/`. Потребляет pre-PRD framing из `/spec-init`, не создает task records.
 
-   **Дальше:** если foundation required, запустить `/foundation-to-tasks` и закрыть final foundation gate; иначе выбрать feature и запустить `/prd-to-tasks FT-001`.
+   **Дальше:** если foundation required, запустить `/foundation-to-tasks` и закрыть final foundation gate; иначе выбрать feature и запустить `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
 
 7. `/foundation-to-tasks`
 
@@ -127,7 +127,7 @@ Memory Bank помогает вести разработку как повтор
 
    **Создает/обновляет:** уточнения по feature и ее clarification status.
 
-   **Дальше:** после снятия blocker запустить `/prd-to-tasks FT-001`.
+   **Дальше:** после снятия blocker запустить `/prd-to-tasks FT-001`, `/review-tasks-plan FT-001`, conditional `/mb-doctor` и tier-routed `/execute TASK`.
 
 9. `/prd-to-tasks FT-001`
 

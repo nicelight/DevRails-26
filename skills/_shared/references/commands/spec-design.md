@@ -370,7 +370,7 @@ status: active
 - Foundation Required: true|false
 - Foundation Requirement: REQ-000
 - Foundation Pseudo-Feature: FT-000
-- Foundation Gate Task: pending_foundation_to_tasks|not_required
+- Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required
 
 ## Minimal Work Path
 - Build command:

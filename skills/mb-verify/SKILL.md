@@ -37,9 +37,11 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify`.
+- Expected T0/T1 simple flow: `/execute TASK`, compact evidence or no-runnable-check note, and optional closure by the explicit manual top-level owner.
+- Standalone `/verify` is optional for manual T0/T1 when requested, uncertainty exists, scope widened, `/execute` cannot produce credible evidence, or public contract/state/data/security/runtime/cross-module behavior changed.
 - Manual closure is allowed only when an explicit closure owner exists.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence.
+- `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
+- If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - T2 task closure may rely on `/verify PASS` when full protocol and required packet/spec gates are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 - If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.

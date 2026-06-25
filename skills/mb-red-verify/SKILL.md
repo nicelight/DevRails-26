@@ -45,7 +45,8 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify` for one TASK.
+- Expected T0/T1 simple flow: `/execute TASK`, compact evidence or no-runnable-check note, and optional closure by the explicit manual top-level owner.
+- Standalone `/verify` is optional for manual T0/T1 when requested, uncertainty exists, scope widened, `/execute` cannot produce credible evidence, or public contract/state/data/security/runtime/cross-module behavior changed.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.

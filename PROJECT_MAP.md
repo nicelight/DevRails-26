@@ -46,7 +46,8 @@ committing those outputs.
 Root documentation:
 
 - `README.md`: short bilingual entrypoint and install warning.
-- `README.en.md`, `README.ru.md`: full user documentation.
+- `howItWorks.md`: detailed workflow and framework behavior documentation.
+- `GREENFIELD_WORKFLOW.md`: greenfield manual/autopilot workflow map.
 - `PROJECT_MAP.md`: this file, intended as agent priming.
 
 Packaging and install:
@@ -108,7 +109,7 @@ For updates that change the JSON-only task registry or indexed task record model
 - `skills/mb-garden/assets/mb-lint.mjs` (packaged deterministic lint asset)
 - `skills/mb-garden/assets/mb-doctor.mjs` (current packaged deterministic readiness asset)
 - `.github/workflows/release-check.yml`
-- `README.en.md`, `README.ru.md`
+- `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 ## Foundation Dev Path Hotspots
 
@@ -130,7 +131,7 @@ Primary source files:
 - `skills/_shared/scripts/init-mb.js`
 - `skills/mb-garden/assets/mb-doctor.mjs`
 - `.github/workflows/release-check.yml`
-- `README.en.md`, `README.ru.md`, `howItWorks.md`
+- `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
 `FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable foundation records.

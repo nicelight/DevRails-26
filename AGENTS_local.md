@@ -83,4 +83,4 @@ MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
 ## Canonical Interactive Chain
-- `/analysis -> /brainstorm -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> /spec-design -> /prd-to-tasks FT-001 -> /mb-doctor at feature/task-queue boundary -> /execute TASK-001 -> /verify TASK-001 -> /red-verify TASK-001 for T3 -> /red-verify --feature FT-001 for T2 feature completion -> /mb-sync`
+- `/analysis or /brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor at feature/task-queue boundary -> tier-routed /execute TASK -> /verify TASK for T2/T3 or uncertainty -> /red-verify TASK for T3 -> /red-verify --feature FT-001 before T2 feature completion -> /mb-sync at boundary`

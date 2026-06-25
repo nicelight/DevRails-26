@@ -126,5 +126,5 @@ End with:
 Recommended next step: /brief
 ```
 
-Do not recommend `/prd-to-tasks` directly from brainstorming. If planning continues, route through `/brief`, `/constitution`, `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` when required, then `/prd-to-tasks FT-<NNN>`. Recommend `/clarify-feature FT-<NNN>` only for a specific pending/blocked feature.
+Do not recommend `/prd-to-tasks` directly from brainstorming. If planning continues, route through `/brief`, `/constitution`, `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` when required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`. Recommend `/clarify-feature FT-<NNN>` only for a specific pending/blocked feature.
 </process>

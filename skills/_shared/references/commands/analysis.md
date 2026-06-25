@@ -78,9 +78,9 @@ Use this table:
 | `.memory-bank/prd.md` exists with `clarification_status: complete` and `constitution_checked: true`, but feature docs are not created | `/spec-init`, then `/prd` |
 | `.memory-bank/prd.md` exists with `clarification_status: pending|blocked` | `/write-prd` |
 | Feature docs exist with `clarification_status: pending|blocked` | `/clarify-feature FT-<NNN>` |
-| Feature docs exist without blocking clarification metadata | `/spec-design`, then `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>` |
-| Approved product brief exists | `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>` |
-| Draft product brief exists | finish `/brief`, then `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, and `/prd-to-tasks FT-<NNN>` |
+| Feature docs exist without blocking clarification metadata | `/spec-design`, then `/foundation-to-tasks` if required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK` |
+| Approved product brief exists | `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK` |
+| Draft product brief exists | finish `/brief`, then `/constitution` if principles are not `ratified|partial`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK` |
 | Brainstorming report exists, but no brief exists | `/brief` |
 | Idea is raw or vague | `/brainstorm` |
 | Concept is understandable and no PRD exists | `/brief` |

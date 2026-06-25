@@ -130,7 +130,7 @@ For high-risk, large, or autonomous flows, run `/review-feat-plan` with fresh co
 For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
 
 ## 9) What next
-- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks` and close the foundation gate; then choose one feature and run `/prd-to-tasks FT-<NNN>`
+- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks` and close the foundation gate; then choose one feature and run `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
 - autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan FT-<NNN>` for every task-linked product feature
 

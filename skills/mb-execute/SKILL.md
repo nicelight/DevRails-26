@@ -9,8 +9,9 @@ description: >
 
 ## Purpose
 `mb-execute` implements one scoped JSON task. It is not a mini-scheduler and it
-does not own task closure. Flow: read task -> minimal preflight -> protocol ->
-implement -> local gates -> evidence -> handoff.
+may close only manual `T0` / `T1` tasks when explicit top-level closure
+ownership and all fast-lane conditions are met. Otherwise, flow is: read task ->
+minimal preflight -> protocol -> implement -> local gates -> evidence -> handoff.
 
 ## Status Transition Modes
 
@@ -32,9 +33,13 @@ Scheduler mode:
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute -> /verify` for one TASK.
+- Expected T0/T1 simple flow: `/execute TASK`, compact evidence or no-runnable-check note, and optional closure by the explicit manual top-level owner.
+- Standalone `/verify` is optional for manual T0/T1 when requested, uncertainty exists, scope widened, `/execute` cannot produce credible evidence, or public contract/state/data/security/runtime/cross-module behavior changed.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
+- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, no required packet is involved, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
+- When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
+- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or retier/split if scope became T2/T3.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires `/verify PASS` plus full protocol and required packet/spec gates; per-task `/red-verify` / `mb-red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
@@ -56,9 +61,10 @@ Manual mode:
 - richer task fields when present: `source_artifacts`, `normative_inputs`,
   `constraints`, `invariants`, `verification_targets`, `purpose`,
   `success_outcome`, `anti_goals`, `runtime_context`
-- `.memory-bank/packets/<TASK_ID>.packet.json` when present or expected by
-  tier/policy; `/foundation-to-tasks` and `/prd-to-tasks` create initial
-  required packets and `/mb-doctor` validates readiness before execution handoff
+- `.memory-bank/packets/<TASK_ID>.packet.json` only when required by
+  tier/policy or explicitly needed as advisory context; `/foundation-to-tasks`
+  and `/prd-to-tasks` create initial required packets and `/mb-doctor`
+  validates readiness before execution handoff
 
 Authoritative SDD spec links are links to `.memory-bank/spec-index.md`,
 `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
@@ -101,9 +107,11 @@ Create `.tasks/<TASK_ID>/` for runtime artifacts.
 
 `T0` / `T1`: use compact protocol:
 - `.protocols/<TASK_ID>/run.md`; record tier, goal, context, plan, changes,
-  gates, evidence, Goal Interpretation, packet context when present, and
-  handoff notes
-- `VERDICT: PASS|FAIL|BLOCKED` is a local evidence marker only, not task closure
+  gates, evidence, Goal Interpretation, packet context only when required by
+  tier/policy or explicitly used as advisory context, and handoff notes
+- `VERDICT: PASS|FAIL|BLOCKED` is compact evidence. It may support final task
+  closure only in manual mode when the explicit top-level owner fast-lane
+  conditions are met; otherwise it is handoff evidence only.
 
 `T2` / `T3`: use full protocol:
 - `.protocols/<TASK_ID>/context.md`, `plan.md`, `progress.md`,
@@ -144,6 +152,9 @@ When packet context is present, run applicable packet-sourced
 
 If a gate cannot run or fails, record command, result, evidence path, and the
 blocker in the protocol/handoff. Do not convert that into final task status.
+Exception: in manual mode, `T0` / `T1` may use local gate results or an explicit
+no-runnable-check note as compact closure evidence when all fast-lane conditions
+are met.
 
 ## Output / Handoff Contract
 Finish with:
@@ -159,13 +170,14 @@ Finish with:
 - recommended next owner: scheduler, verifier, red-verifier, explicit standalone owner, or human
 
 ## Non-Ownership Rules
-`mb-execute` never:
-- closes tasks
-- writes final task status
-- runs `/mb-sync`
-- runs `/verify` or `/red-verify`
-- promotes, blocks, or unblocks dependents
-- performs scheduler transitions such as in-progress, failed, or done
+Except for manual `T0` / `T1` fast-lane closure under the conditions above,
+`mb-execute` does not:
+- run `/mb-sync`
+- run `/verify` or `/red-verify`
+- write final task status
+- close tasks
+- promote, block, or unblock dependents
+- perform scheduler transitions such as in-progress, failed, or done
 
 Schedulers (`/autopilot`, `/autonomous`) or an explicit standalone owner perform
 verification orchestration, final status decisions, MB-SYNC, and dependent

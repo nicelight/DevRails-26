@@ -46,14 +46,15 @@ status: active
 - раздели facts vs inferences
 
 5) Попроси у пользователя PRD delta (что хотим изменить).
-   - Если delta уже оформлена как PRD — `/constitution`, если principles не ratified/partial, затем `/write-prd --delta`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks --verify-existing` only if baseline proof is still needed, close `FT-000` only if that command creates probe tasks, и `/prd-to-tasks FT-<NNN>`.
-   - Если delta ясна, но PRD нет — сначала `/brief`, затем `/constitution`, если principles не ratified/partial, затем `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks --verify-existing` only if baseline proof is still needed, close `FT-000` only if that command creates probe tasks, и `/prd-to-tasks FT-<NNN>`.
+   - Если delta уже оформлена как PRD — `/constitution`, если principles не ratified/partial, затем `/write-prd --delta`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks --verify-existing` only if baseline proof is still needed, close `FT-000` only if that command creates probe tasks, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
+   - Если delta ясна, но PRD нет — сначала `/brief`, затем `/constitution`, если principles не ratified/partial, затем `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan for high-risk/large work`, `/spec-design`, `/foundation-to-tasks --verify-existing` only if baseline proof is still needed, close `FT-000` only if that command creates probe tasks, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, и tier-routed `/execute TASK`.
    - Если delta сырая / направление нестабильно — сначала `/analysis` или `/brainstorm`.
    - Не переходи напрямую к `/prd-to-tasks`; для planning delta сначала нужен `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design` и foundation gate when required.
 6) После оформления PRD/delta и `/prd` запусти `/review-feat-plan` for high-risk,
 large, or autonomous flows before `/spec-design`.
 7) In brownfield, do not create `FT-000` by default. If `/spec-design` records
 `Foundation Required: false` because the existing baseline is already verified,
-continue to `/prd-to-tasks`; run `/foundation-to-tasks --verify-existing` only
+continue to `/prd-to-tasks`, `/review-tasks-plan`, conditional `/mb-doctor`,
+and tier-routed `/execute`; run `/foundation-to-tasks --verify-existing` only
 when baseline proof/probe tasks are still needed.
 </process>

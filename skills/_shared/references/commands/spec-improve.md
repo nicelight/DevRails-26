@@ -35,11 +35,11 @@ Examples:
 - `/spec-improve FT-012`
 
 Normal route:
-`/write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN>`.
+`/write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute TASK`.
 
 Standalone repair route:
-`/spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN>` when decomposition is still
-needed after the repair.
+`/spec-improve FT-<NNN> -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN>`
+when decomposition is still needed after the repair.
 
 ## 1) Read existing design surface first
 Before creating any new spec:

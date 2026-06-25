@@ -79,7 +79,7 @@ Do **not** generate a full task queue “в лоб” for all features in one pa
 
 Instead:
 1) Ensure `.memory-bank/schemas/task.schema.json` and `.memory-bank/tasks/index.json` exist. A fresh skeleton may have `{ "version": 1, "tasks": [] }`.
-2) Run `/spec-design` after `/prd`. For small independent T0/T1 features it may record a minimal backbone with irrelevant areas marked `not_applicable`; for shared/T2/T3 concerns it creates or updates the needed backbone SDD specs and `spec-index`. It creates no tasks and no feature-local implementation design; when foundation is needed it records `.memory-bank/foundation.md`.
+2) Run `/spec-design` after `/prd`. For local/simple feature-set pressure it may record a minimal backbone with irrelevant areas marked `not_applicable`; for shared-boundary, contract, state/data/runtime/security, or strict pressure it creates or updates the needed backbone SDD specs and `spec-index`. It creates no tasks and no feature-local implementation design; when foundation is needed it records `.memory-bank/foundation.md`.
 3) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate before product feature tasking.
 4) For each selected feature, run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, JSON tasks, and required packets:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
@@ -87,7 +87,7 @@ Instead:
 
 When enough structured evidence exists, those feature-level plans and task records may include optional richer fields such as `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, and `verification_targets`.
 Task routing is authoritative only through `task.tier`; the old `risk` / `risk.level` model is invalid.
-Canonical SDD planning path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` if required → `/prd-to-tasks FT-<NNN>`. `/prd-to-tasks` includes the feature-level design phase after the mandatory backbone/foundation gate. Run `/clarify-feature FT-<NNN>` only when a feature is explicitly pending/blocked. For simple T0/T1-like features, the feature design phase may set `spec_design_status: not_required` with a concise rationale.
+Canonical SDD planning path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` if required → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` → tier-routed `/execute TASK`. `/prd-to-tasks` includes the feature-level design phase after the mandatory backbone/foundation gate. Run `/clarify-feature FT-<NNN>` only when a feature is explicitly pending/blocked. For simple T0/T1-like features, the feature design phase may set `spec_design_status: not_required` with a concise rationale.
 
 This keeps planning accurate and avoids speculative task explosions.
 
