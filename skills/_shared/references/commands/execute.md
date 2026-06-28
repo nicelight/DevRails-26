@@ -83,14 +83,21 @@ Use richer task fields when present:
 - `runtime_context`
 
 Packet context:
-- `/prd-to-tasks` creates initial required Execution Packets, and
-  `/mb-doctor` validates packet readiness at the feature/task-queue boundary.
-- `/execute` may read `.memory-bank/packets/<TASK_ID>.packet.json` only when
-  required by tier/policy or explicitly linked by the task/feature, but it does
-  not validate `packet_ref`, `source_task_hash`, packet freshness, or packet
-  status.
-- If packet context is absent, continue from the authoritative task/spec inputs
-  unless the task is semantically unsafe to implement.
+- `/foundation-to-tasks` creates initial required Execution Packets for
+  `FT-000` foundation tasks, `/prd-to-tasks` creates them for product tasks, and
+  `/mb-doctor` validates packet readiness at the foundation/task-queue or
+  feature/task-queue boundary.
+- A canonical `.memory-bank/packets/<TASK_ID>.packet.json` is required for every
+  `T2` / `T3` task, regardless of an absent or false
+  `runtime_context.packet_required`; it is required for `T0` / `T1` only when
+  `runtime_context.packet_required: true`.
+- `/execute` checks only that a required canonical packet exists before
+  implementation. It does not validate `packet_ref`, packet shape/status,
+  `source_task_hash`, or freshness; those readiness checks remain owned by the
+  planning command, `/mb-doctor`, `/mb-packet`, or scheduler gate.
+- When a packet is optional/advisory or only explicitly linked for context,
+  `/execute` may read it. If that optional context is absent, continue from the
+  authoritative task/spec inputs unless implementation is semantically unsafe.
 
 Boundary notes are not a separate artifact flow. If the task links
 `.memory-bank/contracts/boundary-map.md` or other boundary/contract specs
@@ -114,9 +121,16 @@ SDD spec links. For this rule, authoritative SDD spec links are links to
 `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`,
 `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
 
+Guides may be authoritative for frontend component behavior or an operating
+procedure. For `T2` / `T3`, guide-only context does not replace a relevant
+architecture, contract, domain, state, or testing spec when that concern is in
+scope.
+
 Missing richer fields or absent SDD spec links are not an error for `T0` /
 `T1`. Use classic feature/requirements/docs fallback when they are absent.
-For `T2` / `T3`, missing linked SDD specs are a blocker for serious work unless the feature is explicitly marked `spec_design_status: not_required` and the task scope is downgraded to `T0` / `T1`.
+For `T2` / `T3`, missing linked SDD specs are a blocker. A feature marked
+`spec_design_status: not_required` can support only work that remains `T0` /
+`T1`; retier the task before `/execute` instead of bypassing the SDD gate.
 For any tier, linked SDD specs are primary normative inputs. If the task record conflicts with linked specs or the backbone, stop with a blocker instead of choosing locally.
 
 ## 1) Preflight
@@ -128,7 +142,17 @@ Stop with an explicit error if:
 - `tier` is not `T0`, `T1`, `T2`, or `T3`
 - task `status` is `blocked`, `failed`, or `done`
 - any `depends_on` task is missing or has status other than `done`
-- `tier` is `T2` or `T3` and task/feature/spec-backbone/spec-index provide no concrete linked SDD spec in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
+- the canonical `.memory-bank/packets/<TASK_ID>.packet.json` is missing for a
+  `T2` / `T3` task, or for a `T0` / `T1` task with
+  `runtime_context.packet_required: true`
+- `tier` is `T2` or `T3` and neither richer task fields nor linked feature
+  `spec_design_links` route through the backbone/index to a relevant concrete
+  SDD spec
+- `tier` is `T2` or `T3`, guides are the only linked SDD context, and the task
+  has an in-scope architecture, contract, domain, state, or testing concern
+- a `T2` / `T3` task depends on a concrete API, state, schema, message, storage,
+  domain, agent I/O, or security boundary, but its linked authoritative owner
+  lacks `shape`, `rules`, `edge cases/errors`, or a `verification target`
 - the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
 - the task, packet summary, feature, implementation plan, linked specs, or
   acceptance criteria are objectively contradictory, underspecified for safe
@@ -144,6 +168,10 @@ Stop with an explicit error if:
 Do not block `T0` / `T1` only because SDD spec links are absent.
 Authoritative routing is only `task.tier`. Do not use legacy `risk` /
 `risk.level`.
+
+For a feature-local SDD readiness gap, stop and route the planning/scheduler
+owner to `/prd-to-tasks FT-<NNN>` reconciliation. For a shared/global design
+gap, route to `/spec-design`. Do not settle either gap locally in `/execute`.
 
 If a packet exists, treat it as derivative context. If it contradicts the task
 record or linked specs in a way that affects implementation semantics, stop with

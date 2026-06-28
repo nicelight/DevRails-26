@@ -35,8 +35,10 @@ req_ids: [REQ-XXX]
 - When design is complete, linked specs must be listed in `spec_design_links`.
 - If feature-level design is not needed, record `spec_design_status: not_required` with a short rationale.
 - If design is blocked, record `spec_design_status: blocked` and the blocker before creating weak task records.
-- Use `/spec-improve FT-XXX` only to repair or refresh feature design outside the happy path.
-- Until `/prd-to-tasks`, repair `/spec-improve`, or an authoritative existing design establishes one of those outcomes, omit `spec_design_status`.
+- Rerun `/prd-to-tasks FT-XXX` to repair/reconcile feature-local specs, task
+  cards, plans, and required packets.
+- Until `/prd-to-tasks` or an authoritative existing design establishes one of
+  those outcomes, omit `spec_design_status`.
 
 ## Constraints / invariants (optional)
 - MUST: ...

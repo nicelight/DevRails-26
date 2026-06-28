@@ -5,7 +5,8 @@ status: active
 # /spec-auto - Autonomous SDD design
 
 <objective>
-Run the autonomous equivalent of pre-PRD `/spec-init`, mandatory `/spec-design`, and `/spec-improve` without user interview.
+Run autonomous pre-PRD framing, mandatory global backbone design, and
+feature-level SDD preparation without user interview.
 
 Supported arguments:
 - `--init`
@@ -67,7 +68,7 @@ Before any feature design:
 For each targeted feature:
 1. Read `.memory-bank/spec-index.md` and relevant existing specs first.
 2. Check whether the feature is simple enough for `spec_design_status: not_required`.
-3. If design is needed, update only the minimal necessary artifacts.
+3. If design is needed, generate or update the minimal necessary SDD specs.
 4. Update `.memory-bank/spec-index.md` only as a registry/planned-spec index.
 5. Update target feature frontmatter with `spec_design_status` and `spec_design_links`.
 
@@ -78,6 +79,17 @@ Autonomous decision rules:
 - record assumptions in the feature design hub or linked authoritative spec; keep `.memory-bank/spec-index.md` to registry rows, planned specs, and broken/missing links
 - for global architecture docs, use one `.memory-bank/architecture/system-architecture.md` only when it is the best readable scaffold shape; split `architecture/*` only when existing docs, project size, or boundary complexity makes the split clearly useful
 - keep `architecture/*` to global architecture invariants; put detailed API schemas/contracts in `contracts/*`, lifecycle state machines in `states/*`, domain schemas in `domains/*`, and feature-local design in `tech-specs/*`
+- for non-simple feature design, cover the relevant families in the simplest
+  natural owner: Architecture Specification, API / Interface Specification, Data
+  Specification, Contracts, and Verification
+- when relevant, generate/update Component Contract, API Contract, Event
+  Contract, and Data Contract specs in the natural owner instead of hiding those
+  details in task records
+- prefer one concise feature hub for feature-local detail; update existing
+  shared/global architecture, contract, domain, state, testing, or runbook specs
+  when they are the natural home
+- do not add a separate coverage-map artifact, validator, or empty family
+  sections/files just to satisfy a template
 - for shared-boundary, contract, state/data/runtime/security, or strict pressure, update `.memory-bank/architecture/system-architecture.md#Architecture Spine` with compact executable `AD-*` rules using the same KISS format as `/spec-design`
 - do not create `AD-*` for local/simple implementation details, and do not invent `AD-*` entries when evidence is absent
 - if a required shared-boundary, contract, state/data/runtime/security, or strict architecture decision is missing, contradictory, or not checkable, record a blocker instead of completing feature design

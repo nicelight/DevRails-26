@@ -29,6 +29,7 @@ const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'd
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
 const COMPLETE_BACKBONE_AREA_STATUSES = new Set(['authoritative', 'not_applicable']);
+const FOUNDATION_ONLY_DEFERRED_BACKBONE_STATUSES = new Set(['needed_before_tasks']);
 const COMPACT_TIERS = new Set(['T0', 'T1']);
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
@@ -248,6 +249,7 @@ function checkBackboneReadiness() {
   if (status === 'complete') {
     const matrix = analyzeBackboneAreaMatrix(text);
     if (matrix.ready) return;
+    if (matrixAllowsFoundationOnlyStrictGate(matrix) && isFoundationOnlyTaskQueue()) return;
 
     addFinding(
       severity,
@@ -279,7 +281,7 @@ function checkBackboneReadiness() {
         path: SPEC_BACKBONE_REL,
         details,
         suggested_fix:
-          'Continue with /prd, then run /spec-design before /spec-improve, /prd-to-tasks, /autopilot, or autonomous scheduler mode.',
+          'Continue with /prd, then run /spec-design before /prd-to-tasks, /autopilot, or autonomous scheduler mode.',
       }
     );
     return;
@@ -390,6 +392,37 @@ function analyzeBackboneAreaMatrix(text) {
     .filter(Boolean);
 
   return { ready: issues.length === 0, issues };
+}
+
+function matrixAllowsFoundationOnlyStrictGate(matrix) {
+  if (!options.strict) return false;
+  if (!Array.isArray(matrix?.issues) || matrix.issues.length === 0) return false;
+  return matrix.issues.every((issue) => FOUNDATION_ONLY_DEFERRED_BACKBONE_STATUSES.has(issue.status));
+}
+
+function isFoundationOnlyTaskQueue() {
+  const indexRead = readJson(TASK_INDEX_REL);
+  if (!indexRead.ok) return false;
+
+  const index = indexRead.value;
+  if (!index || typeof index !== 'object' || Array.isArray(index) || !Array.isArray(index.tasks)) return false;
+  if (index.tasks.length === 0) return false;
+
+  for (const entry of index.tasks) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+    if (typeof entry.id !== 'string' || !TASK_ID_RE.test(entry.id)) return false;
+    if (typeof entry.file !== 'string' || !entry.file.endsWith('.task.json')) return false;
+
+    const rel = normalizeRel(path.join('.memory-bank/tasks', entry.file));
+    if (!isFile(path.join(ROOT, rel))) return false;
+
+    const taskRead = readJson(rel);
+    if (!taskRead.ok || !taskRead.value || typeof taskRead.value !== 'object' || Array.isArray(taskRead.value)) return false;
+    if (taskRead.value.id !== entry.id) return false;
+    if (taskRead.value.feature !== 'FT-000') return false;
+  }
+
+  return true;
 }
 
 function extractBackboneAreaMatrixSection(text) {
@@ -986,7 +1019,7 @@ function checkSddSpecLinkage(record) {
       feature_spec_design_links: featureSpec?.links.existing ?? [],
       missing_feature_spec_design_links: featureSpec?.links.missing ?? [],
     },
-    suggested_fix: `Run /spec-improve ${featureId ?? 'FT-<NNN>'} or /spec-auto, then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
+    suggested_fix: `Rerun /prd-to-tasks ${featureId ?? 'FT-<NNN>'} to repair/reconcile feature specs, task cards, and required packets, or run /spec-auto for autonomous design; then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
   });
 }
 

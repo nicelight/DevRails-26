@@ -14,10 +14,20 @@ status: active
 - После `/red-verify`, если выполнялась семантическая adversarial-проверка и она изменила или требует reconcile task/docs state.
 - После task run с Execution Packet, если task record/protocol/evidence уже
   содержит `runtime_context.packet_ref` или packet-related evidence links.
+- После changes to linked SDD specs for tasks with required packets, record a
+  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff or refresh packets only when
+  packet refresh is explicitly in scope. Task-record hash freshness does not
+  prove packet freshness after spec-only changes.
 - После changes that materially affect responsibility boundaries or HOW docs,
   reconcile existing `.memory-bank/contracts/boundary-map.md`, related
   `.memory-bank/contracts/*`, or `.memory-bank/guides/*` as normal Memory Bank
   docs; do not introduce a new boundary lifecycle.
+- После changes to `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
+  feature `spec_design_status`, feature `spec_design_links`, or linked SDD specs,
+  reconcile the design routing state before review/task execution handoff.
+- После changes to optional `.memory-bank/behavior-specs/*.behavior.json`, or
+  feature clarifications that make behavior examples stale, reconcile only links
+  and notes. Behavior specs are not gates or done criteria.
 - После значимых рефакторингов или архитектурных изменений.
 - Перед `/review-feat-plan` или `/review-tasks-plan` (чтобы reviewer видел
   актуальное состояние нужной поверхности).
@@ -67,17 +77,36 @@ Manual mode:
   `contracts/boundary-map.md` or related contracts are updated/recommended;
   task records still use existing link fields plus `runtime_context`.
 
-### 2) RTM (traceability)
+### 2) SDD design state
+- [ ] `.memory-bank/spec-backbone.md` Global Backbone Status and Backbone Area
+  Matrix are still truthful. Stale `needed_before_tasks` rows are resolved,
+  reported, or routed to `/spec-design` / `/prd-to-tasks`; do not guess design
+  decisions during sync.
+- [ ] `.memory-bank/spec-index.md` remains a pure registry/planned-spec index.
+  It does not contain backbone status, feature status maps, decision bodies, API
+  rules, state machines, data schemas, or contract details.
+- [ ] Feature frontmatter `spec_design_status` and `spec_design_links` match the
+  actual linked specs. Stale or contradictory feature design is marked/reported
+  as `blocked` and routed to `/prd-to-tasks FT-<NNN>` for feature-local repair
+  or `/spec-design` for shared/global repair; no new `stale` lifecycle/status
+  value is introduced.
+- [ ] Changed SDD docs under `tech-specs/`, `architecture/`, `contracts/`,
+  `domains/`, `states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/` are
+  linked from the relevant feature, backbone, or registry.
+- [ ] Architecture Spine `AD-*` anchors referenced from task records,
+  verification targets, constraints, invariants, or protocol notes still exist.
+
+### 3) RTM (traceability)
 - [ ] `requirements.md` RTM таблица отражает реальный `Lifecycle` (planned/implemented/verified).
 - [ ] Нет REQ без привязки к Epic/Feature.
 - [ ] Нет Feature без привязки к REQ.
 
-### 3) Entity lifecycle vs document status
+### 4) Entity lifecycle vs document status
 - [ ] У feature/epic **document `status`** остаётся в допустимой таксономии (`draft|active|deprecated|archived`).
 - [ ] У feature/epic **`lifecycle`** отражает реальную стадию реализации (`planned|implemented|verified`).
 - [ ] Acceptance criteria не расходятся с реализацией.
 
-### 4) Task registry
+### 5) Task registry
 - [ ] `.memory-bank/tasks/index.json` отражает актуальный набор задач.
 - [ ] `.memory-bank/tasks/TASK-*.task.json` records отражают актуальные статусы задач.
 - [ ] Новые задачи (из багов, из новых требований) добавлены как schema-backed task records.
@@ -89,18 +118,33 @@ Manual mode:
   `runtime_context.packet_ref`, protocol links и evidence paths. Не строить
   packet, не обновлять его статус и не выводить closure/promotion decision из
   packet status.
+- [ ] If linked specs changed for tasks with required packets, record
+  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff, or refresh packets only
+  when this sync explicitly owns packet repair.
+- [ ] If behavior specs are linked from feature docs or task `source_artifacts`,
+  verify linked files exist. Report stale behavior examples as notes unless a
+  normal AC/spec/verification source also fails.
 - [ ] Promotion/dependent block/unblock не выполняется внутри `/mb-sync`; это отдельный scheduler pass после sync + strict doctor.
 
-### 5) Changelog
+### 6) Changelog
 - [ ] `.memory-bank/changelog.md` содержит запись о текущей wave/change.
 - [ ] Формат: `## [YYYY-MM-DD] Wave N / описание` → список изменений.
 
-### 6) Lint
+### 7) Lint
 - [ ] `node scripts/mb-lint.mjs` — 0 errors.
 - [ ] Все `.memory-bank/**/*.md` имеют frontmatter.
 - [ ] Ссылки не битые.
 
-### 7) Index
+### 8) Readiness gates
+- [ ] `/mb-doctor --strict` passes after sync for `/autonomous` and
+  `/autopilot` handoff.
+- [ ] `/mb-doctor --strict` is also run for T3, complex T2,
+  foundation/dependency/packet/stale-doc/risky-link cases before execution
+  handoff.
+- [ ] Strict mode is not required for a bare generated skeleton or simple manual
+  T0/T1 local closure.
+
+### 9) Index
 - [ ] `.memory-bank/index.md` содержит аннотированные ссылки на все новые/изменённые документы.
 - [ ] Router-индексы в папках с >3 документами присутствуют.
 

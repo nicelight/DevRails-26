@@ -62,7 +62,10 @@ Manual mode:
 - Quality gates were already run (or failures were recorded).
 - For non-trivial tasks, `mb-verify` should usually run first.
 - The indexed task record contains `tier`. Authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid.
-- For `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/prd-to-tasks` feature design, standalone `/spec-improve` repair, or `/spec-auto`.
+- For `T2` / `T3`, linked SDD specs are present in task richer fields, feature
+  `spec_design_links`, or `spec-index.md`; if absent, stop and route
+  feature-local repair to `/prd-to-tasks`, shared/global repair to
+  `/spec-design`, or autonomous design to `/spec-auto`.
 - For `T2` / `T3`, the packet must exist, be usable (`ready` or
   `ready_with_gaps`), and match the current task record hash regardless of
   whether older task records omit `runtime_context.packet_required`.

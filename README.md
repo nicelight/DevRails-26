@@ -47,9 +47,9 @@ DevRails ведет проект через три фазы.
 
 `/prd` раскладывает clarified PRD на продуктовую структуру: requirements, epics и функциональные спецификации features (`FT-*`). Для крупной или рискованной работы `/review-feat-plan` проверяет traceability и границы до архитектурного design gate.
 
-`/spec-design` - обязательный SDD gate после `/prd` и до task decomposition. Он не обязан быть тяжелым: для простой локальной работы может зафиксировать minimal backbone и пометить лишние области `not_applicable`. Для shared-boundary, contract, state/data/runtime/security или strict pressure он создает или обновляет SDD спецификации: архитектурный backbone, source-of-truth, boundary/contracts, state/domain/runtime/testing decisions. Короткие executable architecture rules живут в `Architecture Spine` как `AD-*` внутри `.memory-bank/architecture/system-architecture.md`.
+`/spec-design` - обязательный SDD gate после `/prd` и до task decomposition. Он генерирует или обновляет core SDD specs по relevant families: Architecture Specification, Interface Specification, Data Specification и Contracts. Interface/Contracts specs включают Component Contract, API Contract, Event Contract и Data Contract, когда эти границы есть в scope. Для простой локальной работы может зафиксировать minimal backbone и пометить лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure создает/обновляет архитектурный backbone, source-of-truth, boundary/contracts, state/domain/runtime/testing decisions. Короткие executable architecture rules живут в `Architecture Spine` как `AD-*` внутри `.memory-bank/architecture/system-architecture.md`.
 
-Если проекту нужен executable baseline до продуктовых задач, `/spec-design` фиксирует Foundation Dev Path в `.memory-bank/foundation.md`. Тогда `/foundation-to-tasks` создает `REQ-000`, pseudo-feature `FT-000`, normal JSON tasks и final foundation gate. `FT-000` не является продуктовой feature: это walking skeleton / baseline proof, который нужно закрыть через `/execute` и `/verify` до генерации обычных product tasks. Fresh bootstrap сам `FT-000` не создает.
+Если проекту нужен executable baseline до продуктовых задач, `/spec-design` фиксирует Foundation Dev Path в `.memory-bank/foundation.md`. Тогда `/foundation-to-tasks` создает/обновляет фундаментальные scaffold substrate specs для walking skeleton: Architecture, Interface, Data и нужные Component/API/Event/Data contracts только в объеме baseline proof. После этого создаются `REQ-000`, pseudo-feature `FT-000`, normal JSON tasks и final foundation gate. `FT-000` не является продуктовой feature: это walking skeleton / baseline proof, который нужно закрыть через `/execute` и `/verify` до генерации обычных product tasks. Детальные product specs дорабатываются в `/prd-to-tasks`. Fresh bootstrap сам `FT-000` не создает.
 
 После backbone и foundation decisions команда `/prd-to-tasks FT-<NNN>` закрывает feature-level SDD design и формирует план реализации: implementation plan, JSON task records `TASK-NNN-TN-FT-NNN-WN`, индекс `.memory-bank/tasks/index.json` и required Execution Packets для T2/T3. Для T2/T3 она не должна создавать task record, если реализация требует угадывать API/state/schema/message/storage/domain/agent I/O/security contract: сначала нужен linked authoritative spec с минимальным concrete block. Там же могут появиться behavior specs - маленькие JSON `given / when / then` примеры для неоднозначного поведения. Они помогают агенту понять ожидаемый результат, но не являются отдельным test runner, registry или обязательным verification gate.
 
@@ -108,12 +108,11 @@ DevRails ведет проект через три фазы.
 - `/spec-init` - готовит pre-PRD domain/scenario/boundary framing и чистый spec registry.
 - `/prd` - декомпозирует clarified PRD в product, requirements, epics, features и testing index.
 - `/review-feat-plan` - проверяет PRD -&gt; REQ/EP/FT decomposition перед `/spec-design`.
-- `/spec-design` - обязательный global SDD backbone gate и решение по Foundation Dev Path.
-- `/foundation-to-tasks` - создает `FT-000` foundation JSON tasks или фиксирует, что brownfield baseline уже доказан.
+- `/spec-design` - обязательный global SDD backbone gate, генерация/обновление core SDD specs и решение по Foundation Dev Path.
+- `/foundation-to-tasks` - создает/обновляет нужные фундаментальные scaffold substrate specs для Architecture/Interface/Data/Contracts в объеме baseline proof, затем `FT-000` foundation JSON tasks, или фиксирует, что brownfield baseline уже доказан.
 - `/clarify-feature FT-<NNN>` - снимает feature-level blockers перед task decomposition.
-- `/spec-improve FT-<NNN>` - ремонтирует или обновляет feature-level SDD design без создания tasks.
 - `/spec-auto` - autonomous equivalent для SDD init/design, используется в unattended flows.
-- `/prd-to-tasks FT-<NNN>` - создает feature implementation plan, JSON task records, optional behavior specs и required packets; для T2/T3 требует concrete linked contract specs до task creation.
+- `/prd-to-tasks FT-<NNN>` - генерирует или согласует существующие feature-level SDD specs, implementation plan, JSON task records, optional behavior specs и required packets; repair-режим сохраняет task identity, lifecycle и evidence, а для T2/T3 требует concrete linked contract specs.
 - `/review-tasks-plan FT-<NNN>` - проверяет task queue план одной feature перед `/execute` или scheduler mode, включая отсутствие contract guessing для T2/T3.
 - `/mb-packet TASK-...` - repair/refresh derivative Execution Packet после изменения task/spec context или task record hash mismatch.
 
@@ -187,7 +186,3 @@ runtime scripts и может синхронизировать `AGENTS.md`.
 Если запускали только install-only и `.memory-bank/` еще нет, сначала выполните
 
 `/mb-init`.
-
-
-
-

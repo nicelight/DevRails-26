@@ -114,7 +114,7 @@ foundation path when relevant:
 - `analysis.md`, `brainstorm.md`, `brief.md`, `cold-start.md`,
   `constitution.md`, `discuss.md`, `mb-init.md`, `map-codebase.md`,
   `clarify-feature.md`, `prd.md`, `spec-init.md`, `spec-auto.md`,
-  `spec-improve.md`, and `review.md`.
+  `prd-to-tasks.md`, and `review.md`.
 
 Update task execution and closure specs only where they mention feature
 completion or packet readiness:
@@ -237,7 +237,6 @@ Command specs:
 - `skills/_shared/references/commands/spec-init.md`
 - `skills/_shared/references/commands/spec-design.md`
 - `skills/_shared/references/commands/spec-auto.md`
-- `skills/_shared/references/commands/spec-improve.md`
 - `skills/_shared/references/commands/prd-to-tasks.md`
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/commands/autopilot.md`

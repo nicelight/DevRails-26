@@ -11,7 +11,9 @@ status: active
 - `/spec-design` is mandatory after `/prd`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.
 - `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
 - `/prd-to-tasks FT-<NNN>` performs full feature-level SDD design before task slicing, then creates the implementation plan, JSON task records, and required initial Execution Packets.
-- Standalone `/spec-improve FT-<NNN>` and `/mb-packet TASK-NNN-TN-FT-NNN-WN` remain repair/advanced commands when design or packets must be refreshed outside the happy path.
+- Rerun `/prd-to-tasks FT-<NNN>` to reconcile feature-local specs, task cards,
+  plans, and required packets. Use `/mb-packet TASK-NNN-TN-FT-NNN-WN` for a
+  packet-only refresh.
 - After the current feature task set is decomposed, run
   `/review-tasks-plan FT-<NNN>` in a fresh-context reviewer / separate fresh
   session. Then run `/mb-doctor` at the feature/task-queue boundary when the

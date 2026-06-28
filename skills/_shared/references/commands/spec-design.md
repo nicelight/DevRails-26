@@ -19,7 +19,12 @@ The gate is mandatory by workflow, but adaptive by depth:
 - shared-boundary, contract, state/data/runtime/security, or strict pressure gets staged architecture decisions and normal backbone specs;
 - unresolved key decisions are recorded as blockers and downstream commands must stop.
 
-`/spec-design` does not create TASK records, implementation plans, or feature-local tech specs. Feature-local design is handled inside `/prd-to-tasks`; standalone `/spec-improve` is for repair/refresh. When a project needs a minimum executable baseline before business features, `/spec-design` records the Foundation Dev Path decision and Feature Pressure Map in `.memory-bank/foundation.md`; executable foundation work is generated later by `/foundation-to-tasks`.
+`/spec-design` does not create TASK records, implementation plans, or
+feature-local tech specs. Initial and repair feature-local design is handled
+inside `/prd-to-tasks`. When a project needs a minimum executable baseline
+before business features, `/spec-design` records the Foundation Dev Path
+decision and Feature Pressure Map in `.memory-bank/foundation.md`; executable
+foundation work is generated later by `/foundation-to-tasks`.
 </objective>
 
 <process>
@@ -168,9 +173,64 @@ Required areas:
 - `open_questions`
 
 Allowed area statuses: `authoritative`, `needed_before_tasks`, `not_applicable`, `blocked`.
-Use `needed_before_tasks` only for concrete contract details that are not yet written but are safely routed to a natural owner for `/prd-to-tasks` or `/spec-improve`. It must name the candidate authoritative source, affected features, and missing concrete block in the Notes column. It does not block entering `/prd-to-tasks`, but it blocks creation of dependent T2/T3 task records until resolved to `authoritative` or `not_applicable`.
+Use `needed_before_tasks` only for concrete contract details that are not yet
+written but are safely routed to a natural owner for `/prd-to-tasks`. It must
+name the candidate authoritative source, affected features, and missing concrete
+block in the Notes column. It does not block entering `/prd-to-tasks`, but it
+blocks creation of dependent T2/T3 task records until resolved to
+`authoritative` or `not_applicable`.
 
-Strict/autonomous readiness cannot contain `needed_before_tasks`; `/prd-to-tasks` must resolve any affected rows before execution handoff.
+Strict/autonomous product readiness cannot contain `needed_before_tasks`; `/prd-to-tasks` must resolve any affected rows before product execution handoff. A foundation-only strict gate may pass with product contract rows still `needed_before_tasks` so the `FT-000` foundation queue can execute before product tasking.
+
+## 6.1) Core SDD spec generation
+While updating the Backbone Area Matrix, generate or update the core SDD
+specifications needed by the current PRD across four families:
+- `architecture`
+- `api_interface`
+- `data`
+- `contracts`
+
+Family outputs:
+- `architecture` / Architecture Specification: system shape, source-of-truth, module/bounded-context
+  boundaries, runtime/deployment constraints, and Architecture Spine `AD-*`
+  guardrails. Normal owners live under `.memory-bank/architecture/*` or
+  `.memory-bank/adrs/*`.
+- `api_interface` / Interface Specification: API, events, protocols, and
+  interaction contracts. Generate/update the relevant contract types:
+  Component Contract (module guarantees and responsibility boundaries), API
+  Contract (REST/gRPC/GraphQL inputs, outputs, auth/status/error behavior),
+  Event Contract (event/message/queue envelope, ordering, retry/idempotency),
+  and protocol/agent/tool I/O contracts. Normal owners live under
+  `.memory-bank/contracts/*`; stack-native schemas may be linked as the
+  implementation source when present.
+- `data` / Data Specification: domain model, storage ownership,
+  persistence/session/UoW/migrations, DB schemas, lifecycle/state-machine rules,
+  message/data formats, validation and serialization rules, retention, seed
+  data, runtime data paths, and Data Contract details such as versions and
+  required fields. Normal owners live under `.memory-bank/domains/*` and
+  `.memory-bank/states/*`.
+- `contracts`: cross-boundary responsibility, compatibility, Data Contract
+  ownership, evidence, redaction, safety/security, testing/runbook handoff, and
+  executable verification contracts. Normal owners live under
+  `.memory-bank/contracts/*`, `.memory-bank/testing/*`, and
+  `.memory-bank/runbooks/*`.
+
+KISS rules:
+- Create or update the natural owner for each relevant family. Prefer updating
+  an existing spec over creating a new file.
+- Use existing Backbone Area Matrix rows such as `module_boundaries`,
+  `data_flow`, `storage`, `api_contracts`, `event_message_contracts`,
+  `agent_io_contracts`, `security_safety`, and `testing_strategy` to show where
+  the generated family specs live.
+- Do not add a second mandatory readiness gate, validator, or coverage-map
+  artifact.
+- If a family is genuinely irrelevant to the current PRD, mark the relevant
+  area `not_applicable` with rationale; do not create an empty placeholder spec.
+- If a family needs concrete feature-local detail, route that to
+  `/prd-to-tasks` through existing `needed_before_tasks` notes; `/spec-design`
+  still creates or updates the global/shared owner when one is relevant.
+- Register specs in `spec-index.md`, but keep decision bodies in the natural
+  architecture/contract/domain/state/testing/runbook owner.
 
 ## 7) Spec-index and spec-backbone content boundary
 `.memory-bank/spec-index.md` is a pure spec registry/index, not an authoritative design spec or readiness/status file.
@@ -462,6 +522,8 @@ If the answer is unavailable and a safe assumption is not possible, mark backbon
 Update `.memory-bank/spec-backbone.md`:
 - exact `## Global Backbone Status` section and `- Status: complete|minimal|blocked` line
 - Backbone Area Matrix with authoritative links or explicit `not_applicable` rationale
+- generated or updated core SDD specs for the four families: architecture,
+  API/interface, data, and contracts
 - source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` when single-file is selected, or `source-of-truth.md` when split)
 - global backbone blockers and next command routing
 - architecture artifact strategy and baseline backbone specs with their scope
@@ -487,6 +549,8 @@ Report:
 - architecture artifact strategy: single-file, split core docs, or split by boundary/topic
 - specs created/updated
 - Backbone Area Matrix summary
+- generated/updated SDD family specs and any family areas marked
+  `not_applicable` with rationale
 - not_applicable areas and rationale for local/simple feature-set pressure
 - affected features and normative links
 - foundation decision: `required`, `not_required`, or `blocked`

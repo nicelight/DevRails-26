@@ -457,7 +457,6 @@ entrypoints, deterministic validators, CI smoke coverage, and user docs.
 - `skills/_shared/references/commands/spec-init.md`
 - `skills/_shared/references/commands/spec-design.md`
 - `skills/_shared/references/commands/spec-auto.md`
-- `skills/_shared/references/commands/spec-improve.md`
 - `skills/_shared/references/commands/prd-to-tasks.md`
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/commands/autopilot.md`

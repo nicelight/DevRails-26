@@ -15,7 +15,7 @@ Default scope is one product feature:
   indexed product features, excluding `FT-000`
 
 Feature-scoped review is the normal manual gate after `/prd-to-tasks FT-<NNN>`.
-`--all` or explicit per-feature coverage for every task-linked product feature
+`--all` or an explicit review for every task-linked product feature
 is required before `/autopilot` / autonomous scheduler execution.
 
 Reviewed surface:
@@ -139,10 +139,8 @@ Must check:
   gate is blocking.
 
 Contract-readiness routing for `REJECT`:
-- route back to `/prd-to-tasks FT-<NNN>` when the command can complete the
-  missing concrete block from existing evidence and update the natural owner;
-- route to `/spec-improve FT-<NNN>` when a focused manual repair or
-  clarification pass is needed;
+- route back to `/prd-to-tasks FT-<NNN>` for feature-local spec repair,
+  focused design questions, task-card reconciliation, and packet refresh;
 - route to `/spec-design` when the duplicated/unclear owner or missing decision
   is shared/global.
 
@@ -155,7 +153,8 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 ```
 
 For `--all`, run one fresh-context reviewer per feature. A synthesized summary
-may list coverage and verdicts, but each feature verdict remains independent.
+may list reviewed features and verdicts, but each feature verdict remains
+independent.
 
 ## 6) Handoff
 When approved:

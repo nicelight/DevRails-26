@@ -96,6 +96,96 @@ Use the Feature Pressure Map in `.memory-bank/foundation.md` to decide the
 minimum task set. If the map is missing, stale, or not grounded in current
 features/specs, route back to `/spec-design`.
 
+## 2.1) Foundation substrate spec audit
+When `Foundation Required: true`, run a foundation substrate spec audit before
+creating FT-000 task records. The walking skeleton must not be planned from
+implicit platform assumptions.
+
+Generate or update only the fundamental scaffold-level specifications needed to
+define and prove the executable substrate. Use evidence from
+`.memory-bank/foundation.md`, the Feature Pressure Map, PRD/features, and linked
+backbone specs. Do not invent future product behavior.
+
+The output is a foundation-level spec owner plus the minimal substrate block
+needed by `FT-000` tasks, not the final product specification for every future
+feature. A good foundation block records:
+- what the spec owns and does not own
+- the substrate shape or boundary used by the walking skeleton
+- the basic rules/invariants that foundation tasks must preserve
+- the verification target proving the baseline
+- where `/prd-to-tasks` should extend the same owner or create feature-local
+  specs later
+
+Audit the key SDD families as foundation substrate concerns. Create or update
+the natural owner when the foundation path touches the family:
+- Architecture Specification: minimal runtime shape, entrypoints, core
+  components/modules, dependency direction, source-of-truth boundary, and the
+  smallest vertical path through real layers.
+- Interface Specification: API, event, protocol, CLI, agent/tool, or
+  frontend/backend boundary used by the substrate proof path. Include the
+  relevant fundamental contracts:
+  - Component Contract: module/component guarantees and ownership boundaries
+    required by the walking skeleton.
+  - API Contract: substrate-level REST/gRPC/GraphQL or other request/response
+    inputs, outputs, status/error behavior, and compatibility expectation for
+    the smoke path.
+  - Event Contract: event/message/queue envelope, required fields, ordering,
+    retry/idempotency, and failure behavior only when the foundation path uses an
+    event/message boundary.
+  - Data Contract: payload/data structure, versions, required fields,
+    validation/serialization, and compatibility expectations for substrate data
+    crossing a boundary.
+- Data Specification: data model/storage ownership needed by the baseline, DB
+  schema or migration path when persistence is part of foundation, session/UoW
+  lifetime, seed/bootstrap behavior, runtime data paths, message/data formats,
+  and validation/serialization rules used by the substrate proof.
+- Test Harness Specification: test command, smoke/integration target, required
+  fixtures, and evidence expected from foundation verification.
+- Local Runtime / Bootstrap Runbook: setup/start commands, environment
+  variables, local service dependencies, smoke path, and troubleshooting notes
+  needed to prove the baseline.
+- Redaction / Evidence Contract: what logs, screenshots, traces, DB dumps, or
+  artifacts may be captured; what secrets/PII must be redacted; where evidence is
+  stored.
+
+A substrate spec looks missing when the Foundation Feature Pressure Map names
+the area, when a foundation task would need to guess build/start/runtime/storage
+or evidence behavior, when future T2/T3 product tasks will depend on the
+substrate rule already selected by the foundation path, or when `/spec-design`
+routed a relevant Backbone Area Matrix row to foundation proof.
+
+Natural owners:
+- architecture/runtime shape -> `.memory-bank/architecture/*`
+- interface/API/message/agent/tool substrate proof and fundamental contracts ->
+  `.memory-bank/contracts/*`
+- DB/session/UoW/migration/seed/storage ownership -> `.memory-bank/domains/*` or
+  `.memory-bank/contracts/*`
+- test harness and evidence requirements -> `.memory-bank/testing/*`
+- local runtime/bootstrap/troubleshooting -> `.memory-bank/runbooks/*`
+
+Rules:
+- Prefer updating existing owners over creating new files.
+- Do not create empty placeholder specs for scaffold areas that the foundation
+  path does not touch.
+- Foundation tasks must link scaffold specs through normal task fields when
+  those specs constrain the task: `source_artifacts`, `normative_inputs`,
+  `constraints`, `invariants`, or `verification_targets`.
+- Scaffold specs are reusable normative inputs for later T2/T3 product tasks.
+  They prove the selected substrate path; they must not define complete future
+  product APIs, domain behavior, event payloads, state machines, or migrations
+  by guessing.
+- Leave product-level endpoint shapes, feature data schemas, event payloads,
+  domain rules, state transitions, and edge-case/error matrices for
+  `/prd-to-tasks` unless they are required to prove the foundation baseline.
+  `/prd-to-tasks` may extend the same spec owner or create feature-local specs
+  without duplicating the foundation owner.
+- When this command creates or materially updates scaffold specs, update
+  `.memory-bank/spec-index.md` as a registry only. Do not store decision bodies
+  in the index.
+- If the selected substrate requires an unresolved product/API/data/security
+  decision, stop and route back to `/spec-design` instead of creating weak
+  foundation tasks.
+
 ## 3) Create or update REQ-000 and FT-000
 When foundation is required:
 1. Add/update `REQ-000` in `.memory-bank/requirements.md`:
@@ -154,6 +244,10 @@ Task rules:
 - choose `tier` by `.memory-bank/workflows/tier-policy.md`
 - fill the normal task schema fields; use empty arrays only when no evidence
   exists
+- include scaffold-level spec links from section 2.1 when they constrain
+  foundation architecture, primary runtime/backend scaffold, interface smoke,
+  component/API/event/data contracts, DB/session/UoW/migration, test harness,
+  runtime/bootstrap, or redaction/evidence behavior
 - never add foundation-specific task fields or lifecycle values
 
 Brownfield `--verify-existing` mode should not create `FT-000` by default. If

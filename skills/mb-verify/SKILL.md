@@ -130,7 +130,10 @@ Before verifying, validate the authoritative task record:
   if missing or unusable, return `VERDICT: NEEDS-CLARIFICATION` or
   `VERDICT: FAIL`
   according to the active workflow ownership
-- for `T2` / `T3`, linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`; if absent, stop and route back to `/prd-to-tasks` feature design, standalone `/spec-improve` repair, or `/spec-auto`
+- for `T2` / `T3`, linked SDD specs are present in task richer fields, feature
+  `spec_design_links`, or `spec-index.md`; if absent, stop and route
+  feature-local repair to `/prd-to-tasks`, shared/global repair to
+  `/spec-design`, or autonomous design to `/spec-auto`
 
 Do not block `T0` / `T1` only because SDD spec links are absent.
 If the authoritative task record is missing or invalid, stop and report the issue instead of verifying from protocol docs alone.

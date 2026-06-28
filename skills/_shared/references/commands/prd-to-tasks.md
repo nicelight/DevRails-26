@@ -1,17 +1,22 @@
 ---
-description: Декомпозиция фичи в implementation plan и атомарные задачи (waves).
+description: Декомпозиция или repair product feature: SDD design, implementation plan, JSON tasks и required packets.
 status: active
 ---
 # /prd-to-tasks — Feature → Implementation plan → JSON tasks
 
 <objective>
-Взять конкретную фичу (FT-XXX), полноценно закрыть feature-level SDD design и превратить её в:
+Взять конкретную фичу (FT-XXX), полноценно закрыть или починить feature-level
+SDD design и привести её planning surface к согласованному состоянию:
 - feature design status/spec links
 - Implementation Plan
 - schema-backed JSON task records (waves)
 - optional behavior specs for concrete ambiguous behavior
 - required derivative Execution Packets
 - критерии done + тесты + verify
+
+Before each final task record is written, run a task-by-task design pass: refresh
+the relevant spec inventory, resolve missing design evidence, update the natural
+authoritative owners, and only then materialize that task card.
 </objective>
 
 <process>
@@ -20,6 +25,10 @@ status: active
 Ожидается `$ARGUMENTS`:
 - `FT-<NNN>` для одной фичи
 - `--all` для декомпозиции всех `FT-*` по приоритету
+
+The user may also explicitly ask the command to repair/reconcile existing
+feature specs and task cards, or to fully re-decompose a feature. Do not add a
+persisted mode field or a separate repair command.
 
 Если аргумент не дан:
 - interactive → попроси выбрать фичу
@@ -33,9 +42,9 @@ from the product feature target set.
 Перед созданием или обновлением implementation plan и JSON task records проверь, что feature can be decomposed.
 `/prd-to-tasks` does not require feature clarification metadata. The normal manual path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/packet/stale-doc/risky-link cases → tier-routed `/execute TASK`.
 
-`/prd-to-tasks` owns the full feature-level SDD design phase before task slicing.
-Standalone `/spec-improve FT-<NNN>` remains a repair/advanced command for rerunning
-only feature design without task decomposition.
+`/prd-to-tasks` is the single owner for feature-local SDD design, initial task
+decomposition, and later reconciliation of feature specs, task cards, plans,
+and required packets.
 
 Для `FT-<NNN>`:
 1. Reject `FT-000` and route to `/foundation-to-tasks`.
@@ -49,6 +58,11 @@ clarification_status: pending|blocked
 
 Missing clarification metadata does not block decomposition.
 `clarification_status: complete` is allowed but not required.
+
+Before changing the feature planning surface, read `.memory-bank/tasks/index.json`
+and all indexed task records whose `feature` is the target `FT-<NNN>`. If such
+records exist, apply the existing-queue reconciliation rules below instead of
+creating duplicate tasks.
 
 Block if relevant unresolved markers appear in behavior / acceptance / data / contracts / security / UX / operations / verification sections:
 - `NEEDS CLARIFICATION`
@@ -94,9 +108,36 @@ created or updated by this command must include that gate task in `depends_on`
 unless it already depends on another task that transitively depends on the gate.
 Do not add the gate to `FT-000` tasks.
 
+## 1.0a) Existing queue reconciliation
+
+When indexed task records already exist for the target feature, default to a
+bounded reconciliation pass. A prompt such as "repair specs and task cards"
+selects this behavior; full task re-slicing requires an explicit request.
+
+Reconciliation rules:
+- do not create duplicate task records or silently renumber the queue
+- preserve task `id`, `feature`, `wave`, `tier`, `depends_on`, `status`, recorded
+  `verify` evidence, and existing protocol/evidence references
+- for `planned`, `ready`, or `blocked` records, update only the implementation
+  plan, authoritative specs, behavior-spec links, task content/gates/runtime
+  context, and richer design fields needed to restore consistency; preserve
+  lifecycle status for the scheduler or explicit owner
+- do not semantically rewrite `in_progress`, `done`, or `failed` task goals,
+  acceptance basis, or evidence; report the impact and require an explicit
+  owner decision, follow-up task, or controlled re-decomposition
+- if repair requires changing task identity, tier, wave, dependencies,
+  acceptance criteria, or material scope, stop and report that explicit
+  re-decomposition is required instead of hiding the change inside repair
+- refresh every affected required packet after task or linked-spec changes,
+  including spec-only changes whose task-record hash did not change
+- rerun `/review-tasks-plan FT-<NNN>` after reconciliation before execution or
+  scheduler handoff
+
+These rules do not add a new task status or persisted workflow mode.
+
 ## 1.1) Full feature SDD design phase
-Before decomposition, complete the same feature-level design work that standalone
-`/spec-improve FT-<NNN>` would do.
+Before initial decomposition or existing-queue reconciliation, complete or
+repair the required feature-level design directly in this command.
 
 Read existing design surface first:
 1. Read `.memory-bank/spec-index.md`.
@@ -144,6 +185,36 @@ Decide required design depth:
 - feature hub only: a small `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` is enough
 - linked specs: update or create specific architecture/contracts/domains/states/ADR/testing/runbook docs
 
+For every non-simple feature, generate or update the SDD specs needed to make
+the feature implementable without guessing. Cover the relevant families in the
+simplest natural owner:
+- Architecture Specification: module/runtime/source-of-truth implications.
+- API / Interface Specification: endpoint, CLI, event/message, agent I/O, tool,
+  external, or frontend/backend boundaries.
+- Data Specification: domain model, storage ownership, persistence, migration,
+  session/UoW, lifecycle, retention, seed data, or runtime data path.
+- Contracts: compatibility, responsibility boundaries, evidence/redaction,
+  security/safety, testing, runbook, or verification contracts.
+
+When relevant, generate/update these concrete contract/spec types in the natural
+owner:
+- Component Contract: guarantees, responsibilities, allowed/forbidden calls, and
+  ownership boundaries for each affected module/component.
+- API Contract: REST/gRPC/GraphQL inputs, outputs, auth/status/error behavior,
+  compatibility, pagination/upload rules when applicable.
+- Event Contract: event/message/queue envelope, required fields, ordering,
+  retry/idempotency, delivery and failure behavior.
+- Data Contract: data/payload structure, versions, required fields,
+  validation/serialization rules, and compatibility expectations.
+
+For feature-local design, prefer one feature hub
+`.memory-bank/tech-specs/FT-<NNN>-<slug>.md` with only the relevant sections
+from `Architecture Specification`, `API / Interface Specification`,
+`Data Specification`, `Contracts`, and `Verification`. Use separate
+feature-local files under `.memory-bank/contracts/` or `.memory-bank/domains/`
+only when a separate owner is clearer. Update shared/global specs instead when
+they are the natural home.
+
 If simple, mark the feature:
 
 ```yaml
@@ -178,6 +249,7 @@ Allowed artifacts:
 Keep KISS:
 - update existing specs when that is the natural home
 - do not fork duplicate specs
+- do not create empty family sections or files just to satisfy a template
 - do not add schema, migration, hook, or governance machinery just for design routing
 - write decisions, constraints, invariants, and verification targets only when grounded in PRD/user/spec evidence
 - use backbone specs from `/spec-design` as primary normative inputs
@@ -211,13 +283,19 @@ Use `blocked` only when design cannot be made truthful without user or external 
 If the result is `blocked`, stop before creating or updating implementation plans,
 task records, or packets.
 
+Treat an existing or initial `spec_design_status: complete` as a feature-level
+baseline during this command. Confirm it after the task-by-task loop; if that
+loop exposes an unresolved feature-relevant gap, the final status cannot remain
+`complete`.
+
 For `--all`, run this full feature SDD design phase for each targeted feature
 before task generation. If any targeted feature is blocked, halt before creating
 or updating task records for any feature and report all blocked features.
 
-## 1.2) Concrete contract readiness before T2/T3 task creation
-Before creating or updating any `T2` / `T3` task record, decide whether the task
-depends on a concrete boundary:
+## 1.2) Task-by-task concrete design readiness
+Apply this policy inside the per-task loop in section 5. Before creating or
+updating each `T2` / `T3` task record, decide whether that task depends on a
+concrete boundary:
 - HTTP/API endpoint, request/response shape, status/error/auth behavior, or
   compatibility contract
 - state/lifecycle transition, guard, rollback, or failure mode
@@ -305,9 +383,11 @@ boundary, update the shared owner. If the shared owner or decision is unclear,
 route back to `/spec-design` instead of creating duplicate feature-local blocks.
 
 If the concrete block cannot be truthfully completed without manual
-repair/clarification, stop before task generation and route to
-`/spec-improve FT-<NNN>`. If the ambiguity is shared/global, route to
-`/spec-design`.
+repair/clarification, stop before writing the affected task record, mark/report
+the feature design as blocked, and do not build packets or hand off execution.
+Resolve feature-local repair by rerunning `/prd-to-tasks FT-<NNN>` after the
+missing evidence or user decision is available; if the ambiguity is
+shared/global, route to `/spec-design`.
 
 Do not duplicate concrete contract blocks in task records, implementation plans,
 or packets. Copy only task-relevant links into existing fields such as
@@ -319,6 +399,13 @@ or packets. Copy only task-relevant links into existing fields such as
 - `.protocols/FT-<NNN>/decision-log.md`
 
 Do not remove the current `.protocols/FT-<NNN>/decision-log.md` behavior; the no-extra-protocol-files rule applies to `/clarify-feature`.
+
+Use the existing feature protocol files as lightweight resumable state:
+- `plan.md` keeps the concise ordered provisional task outline and the current
+  task-design iteration checkpoint; it is not a second task registry
+- `decision-log.md` records accepted user answers and design decisions that
+  affect task/spec generation
+- do not create another draft-task artifact family
 
 ## 3) Прочитай контекст
 - `.memory-bank/features/FT-<NNN>-*.md`
@@ -358,6 +445,12 @@ Constitution Check rules:
 - Do not add `.memory-bank/constitution.md` to every task `normative_inputs` automatically.
 - Add Constitution to a task `normative_inputs` only when a specific principle is materially relevant to execution or verification of that task.
 - Do not introduce alternatives to the required `tier: T0|T1|T2|T3` routing model.
+
+Before writing JSON task records, add a concise ordered provisional task outline
+to `.protocols/FT-<NNN>/plan.md`. For each provisional task, record only its
+purpose, likely wave/dependencies/tier, and expected design pressure. Keep the
+outline compact: it is a checkpoint for the loop below, not an alternative task
+model and not a place to duplicate final task cards.
 
 ## 4.5) Optional behavior specs
 Decide whether the feature needs concrete behavior examples before slicing tasks.
@@ -418,6 +511,66 @@ JSON task records are the source of truth:
 - `.memory-bank/schemas/task.schema.json`
 - `.memory-bank/tasks/index.json`
 - `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`
+
+### 5.1) Run the task-by-task design loop
+
+Process the provisional outline in dependency/wave order. Do not write all task
+records first and attempt to repair their design inputs afterward.
+
+For each provisional task:
+1. Refresh the current design inventory. Reread `.memory-bank/spec-index.md`,
+   relevant backbone routes, feature `spec_design_links`, and specs created or
+   updated by earlier iterations in this same run. Do not rely only on the
+   inventory remembered at the start of the feature.
+2. Build a working inventory for this task, without creating a new artifact:
+   - existing authoritative specs required by the task
+   - missing or insufficient specs/contract blocks
+   - unresolved design decisions that would force implementation guessing
+3. Give every task a quick design-needs check. For simple `T0` / `T1`, continue
+   without artificial specs or questions when no design pressure exists. For
+   `T2` / `T3`, apply the concrete readiness rules in section 1.2.
+4. If a meaningful choice cannot be resolved from PRD, feature, backbone, or
+   existing spec evidence, use the question gate below before writing specs or
+   the task record.
+5. Create or update only the minimum necessary authoritative spec owners. Keep
+   one owner per concrete contract, update `.memory-bank/spec-index.md` and
+   feature `spec_design_links` when needed, then reread the changed sources. Name
+   and scope specs by the boundary or behavior they own, not by task id, unless
+   the design is genuinely feature-local and the existing feature hub is the
+   natural owner.
+6. Write the final JSON task record only when its design context is sufficient.
+   Link relevant specs through existing richer fields and copy only
+   task-relevant executable constraints, invariants, and verification targets.
+   When a record already exists, reconcile it under section 1.0a rather than
+   replacing its identity/lifecycle/evidence fields.
+7. Update the current iteration checkpoint in `.protocols/FT-<NNN>/plan.md` and
+   continue to the next provisional task. Do not build its Execution Packet yet.
+
+Question gate:
+- ask `0-3` focused questions in one pass; questions are conditional, not a
+  mandatory quota for every task
+- ask only when the answer can materially change API/interface shape, component
+  ownership, event semantics, data/storage behavior, state transitions,
+  compatibility, security, or the verification contract
+- group related questions for the current task/design boundary and explain the
+  concrete decision they unblock
+- when one answer affects several provisional tasks, ask once before the first
+  affected task, record it in `decision-log.md`, and reuse it
+- do not ask questions merely to fill a template or reconfirm evidence already
+  present in authoritative sources
+- in autonomous mode, do not invent an unsafe missing product/design decision;
+  record the blocker and stop according to the active workflow
+
+After all provisional tasks have records, run one feature consistency pass:
+- reread all generated/updated task records and their linked authoritative specs
+- repair earlier task links, constraints, invariants, or verification targets
+  if a later iteration changed a shared spec
+- confirm every `T2` / `T3` task remains implementable without guessing and no
+  concrete contract has competing authoritative owners
+- confirm feature acceptance criteria are covered and finalize truthful
+  `spec_design_status` / `spec_design_links`
+- if the feature remains design-blocked, do not build packets or hand off
+  execution
 
 Создай или обнови отдельные `.task.json` файлы:
 - Wave 1: enabling/product setup for this feature (`W1`, not project `W0`)
@@ -505,8 +658,8 @@ Rules for optional purpose/runtime fields:
   `invariants`, and add a concrete check to `verification_targets`
 - if required T2/T3 boundary, concrete contract, or architecture decisions are
   missing, contradictory, or not checkable, stop with a design blocker and route
-  back to `/spec-design` or `/spec-improve` instead of creating a weak task
-  record
+  shared/global gaps back to `/spec-design`; keep feature-local repair inside
+  `/prd-to-tasks` instead of creating a weak task record
 - `T0` / `T1` tasks may omit runtime context entirely
 - `T0` / `T1` tasks require packets only when there is explicit evidence that
   compact executable runtime context is needed; in that case set
@@ -574,7 +727,7 @@ Persistence rule:
 - if a planned `T2` / `T3` task depends on a concrete boundary but the linked
   authoritative spec lacks `shape`, `rules`, `edge cases/errors`, or
   `verification target`, stop before creating the task record and repair the
-  natural owner or route to `/spec-improve FT-<NNN>`
+  natural owner inside this command
 
 Обнови `.memory-bank/tasks/index.json` только ссылками:
 ```json
@@ -599,12 +752,16 @@ Persistence rule:
 - dependent task может быть `ready`, если все её dependencies уже `done`
 
 ## 6) Build required Execution Packets
-After task records are written, build initial derivative Execution Packets while
-the feature/task/spec context is still loaded.
+Only after all task records are written and the feature consistency pass in
+section 5 succeeds, build initial derivative Execution Packets while the
+feature/task/spec context is still loaded. Do not create packets inside the
+per-task design loop.
 
 Create or refresh `.memory-bank/packets/<task.id>.packet.json` for:
 - every generated `T2` / `T3` task
 - every `T0` / `T1` task with `runtime_context.packet_required: true`
+- every existing required-packet task affected by task-card or linked-spec
+  reconciliation, including spec-only changes
 
 Use `skills/_shared/references/protocols/packet-template.json` shape when
 available. Each packet is derivative only; task records, feature docs, linked
@@ -636,6 +793,8 @@ whose `source_task_hash` no longer matches the indexed task record.
 ## 7) Readiness handoff
 Before handoff:
 - проверь что acceptance criteria из FT покрыты задачами
+- verify that every provisional task completed the task-by-task design loop and
+  the final feature consistency pass succeeded
 - обнови RTM при необходимости
 - если richer fields были добавлены, проверь что они не противоречат feature doc и RTM
 - for `T2` / `T3`, verify that `runtime_context.packet_required: true` and
@@ -656,7 +815,9 @@ Before handoff:
 
 Final report:
 - feature id and final `spec_design_status`
+- queue action: `created|reconciled|rebuild_required`
 - linked specs created/used
+- task-by-task design coverage: `complete|blocked`
 - implementation plan path
 - behavior specs created/linked, or `none`
 - task records created/updated

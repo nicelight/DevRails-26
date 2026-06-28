@@ -63,16 +63,52 @@ Manual mode:
   `runtime_context.packet_ref`, packet evidence references, and protocol links.
   It does not build packets, refresh packets, decide packet status, or infer task
   closure from packet status.
+- If linked SDD specs changed for tasks with required packets, record an explicit
+  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff, or refresh the packet only
+  when the current operator explicitly scoped packet refresh into this sync.
+  Task-record hash freshness is not enough to prove packet freshness after
+  spec-only changes.
 - If boundary responsibilities or guide-level HOW changed materially, recommend
   updating existing `.memory-bank/contracts/boundary-map.md`, related
   `.memory-bank/contracts/*`, or `.memory-bank/guides/*`. Do not create a new
   boundary lifecycle, status model, or artifact family.
+- If SDD design docs changed, reconcile existing design state only:
+  `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, feature
+  `spec_design_status`, feature `spec_design_links`, linked
+  `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
+  `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
+  `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, and
+  `.memory-bank/runbooks/`. Do not move decision bodies into
+  `.memory-bank/spec-index.md`; it remains a registry.
+- If behavior specs were added, removed, or made stale by clarification/spec
+  changes, reconcile only their feature links and task `source_artifacts` links.
+  Behavior specs remain optional examples, not gates, registries, schemas,
+  verification targets, or done criteria.
 
 Минимальный чеклист:
 - [ ] Обновить релевантные `.memory-bank/*` (WHY/WHERE, без псевдокода)
 - [ ] Если есть `.memory-bank/analysis/*`, синхронизировать durable discovery artifacts как часть Memory Bank; если их нет, не создавать их автоматически
 - [ ] Обновить `.memory-bank/index.md` и подпапочные роутеры
 - [ ] Если менялись governance/workflow/routing/agent instructions/tier policy, проверить consistency с `.memory-bank/constitution.md`
+- [ ] If SDD design state changed, reconcile `.memory-bank/spec-backbone.md`
+      Global Backbone Status and Backbone Area Matrix, including stale
+      `needed_before_tasks` rows, without inventing new design decisions.
+- [ ] Keep `.memory-bank/spec-index.md` as a pure registry/planned-spec index;
+      add or remove registry links for changed specs, but do not write
+      backbone status, feature status maps, decision bodies, or contract rules
+      there.
+- [ ] Reconcile feature frontmatter `spec_design_status` and
+      `spec_design_links` with actual linked specs. If a design is stale or
+      contradictory, mark/report it as `blocked` and route feature-local repair
+      to `/prd-to-tasks` or shared/global repair to `/spec-design`; do not invent
+      a `stale` lifecycle value.
+- [ ] Ensure changed SDD docs are routed from the relevant feature, registry, or
+      backbone: `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
+      `.memory-bank/contracts/`, `.memory-bank/domains/`,
+      `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`,
+      `.memory-bank/guides/`, and `.memory-bank/runbooks/`.
+- [ ] If task records or verification targets reference Architecture Spine
+      `AD-*` anchors, verify the anchors still exist after sync.
 - [ ] Обновить RTM/REQ lifecycle в `.memory-bank/requirements.md`
 - [ ] Если у EP/FT есть `lifecycle`, синхронизировать его отдельно от document `status`
 - [ ] Проверить, что task records не ссылаются на features с `clarification_status: pending|blocked`
@@ -83,10 +119,19 @@ Manual mode:
 - [ ] If packet flow was used, reconcile existing `runtime_context.packet_ref`,
       protocol links, and evidence paths; do not run `/mb-packet` or create a
       closure decision from packet data
+- [ ] If linked specs changed for tasks with required packets, record a
+      `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff, or refresh packets only
+      when the current sync was explicitly asked to repair packets.
 - [ ] If boundary/guide docs were materially affected, update or recommend
       updates to existing contracts/guides only; no new boundary status/lifecycle
+- [ ] If behavior specs are linked from feature docs or task `source_artifacts`,
+      verify the files exist and report stale examples as notes unless an
+      ordinary acceptance/spec/verification source also fails.
 - [ ] Записать changelog `.memory-bank/changelog.md`
-- [ ] Для `/autonomous` и `/autopilot`: `/mb-doctor --strict` после sync — blocking gate, не optional
+- [ ] Run `/mb-doctor --strict` after sync for `/autonomous` and `/autopilot`
+      handoff. Also run it for T3, complex T2, foundation/dependency/packet/
+      stale-doc/risky-link cases before execution handoff. Do not require
+      strict mode for a bare skeleton or simple manual T0/T1 closure.
 
 Task synchronization rule:
 - Discovery artifacts in `.memory-bank/analysis/` are durable Memory Bank artifacts, but optional.
@@ -95,6 +140,13 @@ Task synchronization rule:
 - When governance, workflow, routing, AGENTS.md, MBB, spec-backbone, spec-index, invariants, task schema, or tier policy changes, compare affected docs with `.memory-bank/constitution.md`.
 - If the change contradicts the Constitution, stop sync and require either a minimal doc correction or explicit `/constitution` amendment.
 - Do not use `/mb-sync` to invent new governing principles; only reconcile documented changes and evidence.
+- `.memory-bank/spec-backbone.md` owns global backbone/readiness state.
+  `.memory-bank/spec-index.md` owns registry/planned-spec links only. Feature
+  `spec_design_status` and `spec_design_links` live in feature frontmatter.
+- `/mb-sync` may reconcile these fields after an already-made design/task
+  decision, but unresolved or contradictory design state must route to
+  `/prd-to-tasks` feature reconciliation or `/spec-design` shared/global repair
+  rather than being guessed during sync.
 - JSON task records are authoritative for task status, dependencies, tier, gates, verification targets, and evidence markers.
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
 - RTM and changelog should be reconciled from JSON task records.

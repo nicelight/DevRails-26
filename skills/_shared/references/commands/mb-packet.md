@@ -10,10 +10,11 @@ The packet helps `/execute`, `/verify`, `/red-verify`, `/autopilot`, and
 `/autonomous` load the right runtime context without replacing task records or
 linked specs as source of truth.
 
-Normal manual flow creates initial required packets inside
-`/prd-to-tasks FT-<NNN>` while feature/task/spec context is already loaded. Use
-standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` after task records or linked specs changed, or
-when `/mb-doctor` reports a packet readiness problem.
+Normal manual flow creates initial required packets inside `/foundation-to-tasks`
+for `FT-000` foundation tasks and inside `/prd-to-tasks FT-<NNN>` for product
+feature tasks while foundation/feature/task/spec context is already loaded. Use
+standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` after task records or linked
+specs changed, or when `/mb-doctor` reports a packet readiness problem.
 </objective>
 
 <process>

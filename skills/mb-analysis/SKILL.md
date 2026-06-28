@@ -25,7 +25,14 @@ The normal planning path through task handoff is:
 
 Use `/brainstorm` before `/brief` when the idea is raw. `/constitution` should read the Product Brief when present and run the governing-principles interview; if the user explicitly skips it, downstream PRD work may continue with framework-default/skipped principles.
 
-Discovery commands never create task records. `/spec-design` also does not create task records or feature-local implementation design; it updates backbone SDD specs, `spec-index`, and `.memory-bank/foundation.md` when needed. `/foundation-to-tasks` creates normal `FT-000` foundation task records when required, while `/prd-to-tasks FT-<NNN>` performs product feature-level design before task slicing. `/clarify-feature FT-<NNN>` is optional and only for a specific feature that is explicitly pending/blocked or has decomposition-affecting unresolved markers. `/spec-improve FT-<NNN>` is repair/refresh only, not a happy-path prerequisite.
+Discovery commands never create task records. `/spec-design` also does not
+create task records or feature-local implementation design; it updates backbone
+SDD specs, `spec-index`, and `.memory-bank/foundation.md` when needed.
+`/foundation-to-tasks` creates normal `FT-000` foundation task records when
+required, while `/prd-to-tasks FT-<NNN>` owns initial product feature design,
+task slicing, and later feature-local spec/task reconciliation.
+`/clarify-feature FT-<NNN>` is optional and only for a specific feature that is
+explicitly pending/blocked or has decomposition-affecting unresolved markers.
 
 ## Artifacts
 

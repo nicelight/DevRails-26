@@ -51,7 +51,10 @@ If any indexed task record is missing `feature`, references a missing feature fi
 If any non-`FT-000` product task uses `W0`, or foundation is required and a
 product task lacks the final foundation gate dependency, stop with
 `HALT_QUALITY_GATES`.
-If backbone status is missing/blocked, or any indexed `T2` / `T3` task lacks linked SDD specs, stop with `HALT_QUALITY_GATES` and route back to `/spec-design`, then `/prd-to-tasks FT-<NNN>` for manual repair, standalone `/spec-improve FT-<NNN>` for design-only repair, or `/spec-auto --all`.
+If backbone status is missing/blocked, or any indexed `T2` / `T3` task lacks
+linked SDD specs, stop with `HALT_QUALITY_GATES` and route shared/global repair
+to `/spec-design`, feature-local specs/task-card/packet reconciliation to
+`/prd-to-tasks FT-<NNN>`, or autonomous design to `/spec-auto --all`.
 Read the task queue and task metadata only from JSON task records.
 Before task selection and before progression after a task closes, run `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`. Treat a missing doctor command/script, non-zero exit, or readiness error as `HALT_QUALITY_GATES`. Explicit pending/blocked feature clarification and tasks linked to those features are readiness errors. `mb-doctor` runs `mb-lint` as its first gate; do not fall back to plain `mb-lint` for autonomous readiness.
 

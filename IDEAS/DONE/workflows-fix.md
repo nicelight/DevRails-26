@@ -25,37 +25,37 @@
 -> /mb-sync at boundary when broader durable state must reconcile
 ```
 
-## Finding 1: Analysis index template routes through stale `/spec-improve`
+## Finding 1: Analysis index template routes through a stale repair step
 
 File:
 - `skills/mb-analysis/assets/analysis-index-template.md`
 
 Problem:
-- The template says: after `/write-prd`, run `/spec-init`, `/prd`, `/spec-improve FT-<NNN>`, then `/prd-to-tasks FT-<NNN>`.
-- This makes `/spec-improve` look like a normal happy-path step.
+- The template inserted a legacy standalone feature-design repair command between `/prd` and `/prd-to-tasks FT-<NNN>`.
+- This made a repair command look like a normal happy-path step.
 
 Fix plan:
 - Replace that line with the current planning route:
   `/spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN>`.
 - Add `/review-tasks-plan FT-<NNN>` after `/prd-to-tasks`.
-- State that `/spec-improve FT-<NNN>` is repair/refresh only.
+- Keep feature-local design and repair in `/prd-to-tasks`.
 
-## Finding 2: Feature template requires `/spec-improve` before `/prd-to-tasks`
+## Finding 2: Feature template requires a standalone repair step before `/prd-to-tasks`
 
 File:
 - `skills/mb-from-prd/references/feature-template.md`
 
 Problem:
-- `## SDD Design Gate` says to run `/spec-improve FT-XXX` before `/prd-to-tasks FT-XXX`.
-- Current model: `/prd-to-tasks` owns feature-level SDD design before task slicing; `/spec-improve` is standalone repair/advanced.
+- `## SDD Design Gate` says to run a legacy standalone feature-design repair command before `/prd-to-tasks FT-XXX`.
+- Current model: `/prd-to-tasks` owns feature-level SDD design and repair before task slicing.
 
 Fix plan:
 - Replace the section with:
   - run mandatory `/spec-design` after `/prd`;
   - if foundation is required, close `/foundation-to-tasks` final gate first;
   - run `/prd-to-tasks FT-XXX`, which sets `spec_design_status: complete|not_required|blocked`;
-  - use `/spec-improve FT-XXX` only to repair/refresh feature design outside the happy path.
-- Keep notes about `spec_design_links`, `not_required` rationale, and blocked design, but attribute them to `/prd-to-tasks` or repair `/spec-improve` as appropriate.
+  - use `/prd-to-tasks FT-XXX` reconciliation to repair or refresh existing feature design.
+- Keep notes about `spec_design_links`, `not_required` rationale, and blocked design under `/prd-to-tasks` ownership.
 
 ## Finding 3: Legacy package execution skills still imply required `/verify` for T0/T1
 
@@ -122,7 +122,7 @@ Fix plan:
 - Either rename the chain wording to "planning path until task decomposition", or extend it with:
   `/review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute`.
 - Prefer concise wording so discovery commands do not become full workflow encyclopedias.
-- Ensure `/spec-improve` is mentioned only as repair/refresh, not happy path.
+- Ensure feature-local design repair routes to `/prd-to-tasks`, not a separate command.
 
 ## Finding 7: Project map references missing README files
 

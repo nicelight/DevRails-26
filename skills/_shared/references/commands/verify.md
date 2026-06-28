@@ -61,7 +61,28 @@ Manual mode:
   any tier
 
 If the task record is missing, stop with an explicit error.
-If the task record has no `tier`, stop with an explicit error. Authoritative verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
+Before reading protocol evidence or running verification commands, validate the
+verification-critical task fields:
+- indexed task record `id` matches the requested `TASK_ID`
+- `status` is one of `planned|ready|in_progress|blocked|done|failed`
+- `feature` is a non-empty string and matches the `FT-<NNN>` segment in
+  `TASK_ID`
+- `reqs` and `depends_on` are arrays of strings
+- `gates` is an array whose entries follow the task schema with `name`,
+  `command`, and boolean `required`
+- `verify` is an array whose entries are strings or structured objects
+- `tier` is one of `T0|T1|T2|T3`
+
+Empty arrays remain valid where the task schema allows them. Missing or
+malformed verification-critical fields are not empty evidence: do not infer,
+repair, or reconstruct them from protocol files. Stop before a functional
+PASS/FAIL verdict, return `VERDICT: NEEDS-CLARIFICATION`, list the invalid
+fields, and route task-record repair to the planning/scheduler owner. This
+point-of-use guard does not replace full task-schema checks in
+`/review-tasks-plan` or `/mb-doctor`.
+
+Authoritative verification routing is only `task.tier`; the old `risk` /
+`risk.level` model is invalid and must not be used.
 Task records and linked authoritative specs remain source of truth. Execution
 Packets are derivative runtime context and must not override task/spec evidence.
 Packet requirement is `T2` / `T3` by tier, or `T0` / `T1` only when
@@ -123,7 +144,9 @@ Status ownership:
 - отсутствие richer verification fields не является ошибкой
 - absence of SDD spec links is not a blocker for `T0` / `T1`; in that case the
   verifier should use the classic AC/REQ model
-- for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route back to `/prd-to-tasks` feature design, standalone `/spec-improve` repair, or `/spec-auto` when absent
+- for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route
+  feature-local repair to `/prd-to-tasks` reconciliation, shared/global repair
+  to `/spec-design`, or autonomous design to `/spec-auto` when absent
 - linked SDD specs are the primary normative basis when present; conflicting task records must be blocked, not locally reinterpreted
 - `evidence_required` и `verification_targets` описывают требования/цели проверки; сами по себе они не являются proof
 - behavior specs are not `verification_targets`, `evidence_required`, gates, or
@@ -153,6 +176,26 @@ If purpose/runtime fields are present:
   `evidence_required` were covered or record a blocker for each gap
 - when an optional advisory packet is usable, cover relevant packet checks as
   cross-checks; when it is not usable, warn and continue without it
+
+If the task changes UI/browser behavior, or an AC/verification target requires
+a browser flow:
+- prefer the project's existing browser automation harness; use Playwright when
+  it is configured, otherwise use an available agent-browser or CDP-driven
+  flow; do not add a new browser framework only to satisfy `/verify`
+- run the smallest reproducible browser flow that proves the relevant AC,
+  including required state, error, responsive, or navigation behavior when it
+  is in scope
+- record the command or exact automated flow, runtime/base URL, relevant
+  viewport/device, result, and artifact paths in verification evidence
+- store screenshots and, when useful, Playwright traces or videos under
+  `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`; keep only links and concise
+  conclusions in Memory Bank/protocol records
+- follow linked redaction/evidence rules and do not capture secrets or PII
+- do not use an informal manual click-through as primary evidence when browser
+  automation is available
+- if browser automation is unavailable, record the reason and reproducible
+  manual steps with artifacts; return `VERDICT: NEEDS-CLARIFICATION` instead of
+  claiming PASS when the browser AC cannot be proved credibly
 
 Если richer verification targets заданы:
 - сначала проверь их
