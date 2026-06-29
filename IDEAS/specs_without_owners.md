@@ -1,4 +1,4 @@
-# Handoff: SDD specs без feature/file owners
+# Handoff: subject-based canonical SDD specs
 
 ## Назначение документа
 
@@ -40,6 +40,25 @@ https://github.com/nicelight/DevRails-26.git
 - рабочее дерево `/home/serg/Projects/DevRails 26` уже содержит несвязанные
   изменения. Их нельзя сбрасывать или перезаписывать.
 
+## Prerequisite: single-card task model
+
+Сначала должен быть выполнен отдельный план
+`IDEAS/packet-reformation.md`. Этот документ исходит из уже действующей модели:
+
+```text
+task planning/design
+  -> .memory-bank/tasks/<TASK_ID>.task.json
+  -> /review-tasks-plan
+  -> /execute
+  -> /verify
+```
+
+Persisted Execution Packets, `/mb-packet`, packet fields/status/hash/freshness и
+packet refresh branches уже отсутствуют. Эта реформа не повторяет их удаление и
+не вводит новый execution-context artifact. T2/T3 task card должна сохранять
+single-card handoff completeness contract и напрямую ссылаться на применимые
+SDD specs.
+
 ## Цель переработки
 
 Перевести SDD design с модели:
@@ -54,14 +73,14 @@ feature -> feature tech-spec hub -> concrete blocks inside hub
 feature -> required system concerns -> discover existing specs by path/index
         -> reuse or extend existing specs
         -> create only missing subject-based specs
-        -> link exact specs back to feature and tasks
+        -> link exact specs back to feature and indexed task cards
 ```
 
 Спецификации должны называться и размещаться по системной области, которую они
-описывают. Они не должны принадлежать фиче, называться по `FT-XXX` или
-создаваться как контейнер всех решений одной фичи.
+описывают. Feature связывает применимые specs, но не становится контейнером для
+нескольких независимых architecture/contract/data concerns.
 
-## Текущая модель
+## Исходная SDD модель после prerequisite
 
 ### Global design
 
@@ -96,13 +115,8 @@ feature -> required system concerns -> discover existing specs by path/index
 5. Сначала расширять существующего owner.
 6. Создавать новый owner только когда существующий файл не подходит.
 7. Записать ссылки в feature `spec_design_links`.
-8. Передать эти links в implementation plan, tasks и packets.
-
-В более старых deployments та же логика присутствует также в standalone
-`/spec-improve`. В текущем source framework feature repair уже объединён с
-`/prd-to-tasks`. Агент должен проверить актуальную ветку и обновить все реально
-поставляемые compatibility-команды, но не восстанавливать `/spec-improve`
-только ради этой переработки.
+8. Передать task-relevant subset этих links в implementation plan и indexed
+   task cards.
 
 ### Scaffold
 
@@ -117,13 +131,6 @@ feature -> required system concerns -> discover existing specs by path/index
 
 - создаёт в `spec-index.md` колонку `Owner command`;
 - описывает interface/data specs через natural-owner terminology.
-
-### Validation
-
-Текущие `mb-lint` и `mb-doctor` считают `tech-specs/` нормальным SDD spec
-каталогом и проверяют существование feature `spec_design_links`, но не
-предотвращают появление большого feature hub с несколькими независимыми
-contract families.
 
 ## Почему текущая модель приводит к монолитам
 
@@ -147,9 +154,9 @@ contract families.
 - ActorContext и permission interface;
 - verification matrix.
 
-Файл вырос с 373 до 735 строк. Workflow не имел trigger, после которого hub
-обязан стать router или быть разбитым. MBB ограничение примерно в 500 строк
-оставалось рекомендацией для периодического `/mb-garden`, а не design gate.
+Файл вырос с 373 до 735 строк, но размер здесь только симптом. Основная проблема
+в том, что workflow не имел concern-based правила, отделяющего независимые
+канонические contracts/data/state specs от feature composition.
 
 ## Целевая модель
 
@@ -178,22 +185,22 @@ spec_design_links:
 Вторая фича должна повторно использовать тот же path, а не создавать
 `FT-002-actor-context.md`.
 
-### Что означает `without owners`
+### Canonicality и routing
 
-Нужно убрать file-owner модель как механизм routing:
+Feature/file ownership убирается, но SSOT-инвариант остаётся: каждый concrete
+concern должен иметь ровно одну canonical spec. Для routing используются:
 
-- не требовать `owner` в frontmatter для выбора спецификации;
-- не требовать `## Ownership` с `Owns` / `Does not own`;
-- убрать `Owner command` из `spec-index.md`;
-- заменить terminology `authoritative owner` / `natural owner` на
-  `canonical spec` / `canonical path` / `spec scope`;
-- использовать `## Scope`, `## Out of scope` и `## Related specs`, когда такие
-  секции действительно нужны;
-- optional metadata о человеческом maintainer-е допустимо, но не должно
-  участвовать в SDD routing и readiness.
+- зарегистрированный canonical path;
+- type и предметный scope спецификации;
+- `## Scope`, `## Out of scope` и `## Related specs`, когда они нужны;
+- `Change route` в `spec-index.md` для защищённых или workflow-owned документов.
 
-При этом SSOT не исчезает. Canonicality задаётся не owner-ом, а уникальным
-предметным path, зарегистрированным в `spec-index.md`.
+Не требуется `owner` в frontmatter или `## Ownership` с `Owns` /
+`Does not own`. Terminology `authoritative owner` / `natural owner` в file
+routing заменяется на `canonical spec` / `canonical path` / `spec scope`.
+Optional metadata о человеческом maintainer-е допустимо, но не участвует в SDD
+routing и readiness. Task lifecycle ownership, scheduler ownership и явная
+человеческая ответственность остаются отдельными понятиями и не переименовываются.
 
 Пример:
 
@@ -201,8 +208,8 @@ spec_design_links:
 .memory-bank/contracts/access/actor-context.md
 ```
 
-— единственная каноническая спецификация ActorContext потому, что registry и
-validator разрешают только один active path для этого spec key.
+— каноническая спецификация ActorContext, потому что этот path зарегистрирован
+для данного concrete concern, а её scope явно отделён от соседних contracts.
 
 ## Целевая структура каталогов
 
@@ -264,14 +271,12 @@ validator разрешают только один active path для этого
 - Truly feature-specific acceptance/use-case detail остаётся в feature doc.
 - Если feature впервые вводит новый системный boundary, spec всё равно получает
   предметное имя и canonical system path.
-- Path является spec key:
-
-  ```text
-  contracts/auth/session-http
-  contracts/access/actor-context
-  domains/auth/session-storage
-  states/auth/session-lifecycle
-  ```
+- Specs разделяются по самостоятельному boundary, change cadence и потенциалу
+  reuse, а не механически по каждой taxonomy-категории.
+- Несколько тесно связанных правил могут оставаться в одной spec, если они
+  изменяются и используются как один concern.
+- Редкий cohesive feature-local technical concern также получает предметное
+  имя и canonical path; это не разрешение создавать новый FT hub.
 
 ## Новый `spec-index.md`
 
@@ -281,25 +286,24 @@ validator разрешают только один active path для этого
 Рекомендуемая таблица:
 
 ```markdown
-| Spec key | Type | Path | Status | Scope |
+| Type | Path | Status | Scope | Change route |
 |---|---|---|---|---|
-| contracts/access/actor-context | interface_contract | .memory-bank/contracts/access/actor-context.md | active | Request actor identity and Plant permission envelope |
-| contracts/auth/session-http | api_contract | .memory-bank/contracts/auth/session-http.md | active | Login, logout and current-session HTTP boundary |
-| domains/auth/session-storage | data_spec | .memory-bank/domains/auth/session-storage.md | active | Local session persistence and migration rules |
-| states/auth/session-lifecycle | state_spec | .memory-bank/states/auth/session-lifecycle.md | active | Session activation, expiry and revocation lifecycle |
+| interface_contract | .memory-bank/contracts/access/actor-context.md | active | Request actor identity and Plant permission envelope | /spec-design or /prd-to-tasks |
+| api_contract | .memory-bank/contracts/auth/session-http.md | active | Login, logout and current-session HTTP boundary | /spec-design or /prd-to-tasks |
+| data_spec | .memory-bank/domains/auth/session-storage.md | active | Local session persistence and migration rules | /spec-design or /prd-to-tasks |
+| state_spec | .memory-bank/states/auth/session-lifecycle.md | active | Session activation, expiry and revocation lifecycle | /spec-design or /prd-to-tasks |
 ```
 
 Правила registry:
 
-- `Spec key` выводится из relative path без `.memory-bank/` и `.md`;
-- один active key соответствует одному path;
-- в registry нет `Owner command`, `feature_id` или `used_by`;
+- canonical identity задаётся `Path`; отдельный дублирующий `Spec key` не нужен;
+- один concrete concern имеет один active canonical path;
+- `Change route` описывает допустимый workflow изменения, а не владение файлом;
+- в registry нет `feature_id` или `used_by`;
 - reverse usage определяется feature/task links и поиском, а не хранится ещё
   одной копией в registry;
 - index не хранит readiness, feature status или длинные решения;
-- index должен совпадать с фактическими spec files; drift является lint error;
-- отдельный YAML registry не нужен, если Markdown table можно надёжно
-  валидировать. Не следует вводить второй registry без доказанной необходимости.
+- отдельный YAML/JSON registry не создаётся.
 
 ## Новый алгоритм создания SDD design specs
 
@@ -362,6 +366,10 @@ Coverage table остаётся в protocol/working state и не станови
 specs, skill не создаёт третью. Он блокирует handoff и запрашивает решение либо
 возвращает shared/global ambiguity в `/spec-design`.
 
+Atomic здесь означает один cohesive concern, а не один файл на каждый тип из
+SDD taxonomy. Split оправдан, когда части имеют разные boundaries, change
+cadence, consumers или reuse; размер файла сам по себе не является design gate.
+
 ### 4. Feature становится composition root
 
 Feature doc хранит:
@@ -377,7 +385,9 @@ Feature doc хранит:
 Feature doc не повторяет concrete fields, endpoint schemas, error catalog,
 state transitions, DB indexes или security constants из linked specs.
 
-Новый workflow не создаёт `.memory-bank/tech-specs/FT-*.md`.
+Новый workflow не создаёт default `.memory-bank/tech-specs/FT-*.md`. Если
+возникает редкий feature-local technical concern, он всё равно оформляется как
+subject-based canonical spec, а не как контейнер всех решений feature.
 
 ### 5. Tasks получают прямые ссылки
 
@@ -393,8 +403,10 @@ canonical specs, а не один feature hub.
 - integration gate получает `testing/auth/session-and-access.md` и необходимые
   boundary specs.
 
-Required packets после изменения links должны быть refreshed. Task/packet
-records не должны копировать полные contract blocks.
+Indexed task card остаётся единственным authoritative execution context. Она
+ссылается на применимые canonical specs через существующие task fields и копирует
+только task-relevant executable constraints, invariants и verification targets,
+но не полные contract blocks.
 
 ## Изменения в canonical framework source
 
@@ -404,10 +416,11 @@ records не должны копировать полные contract blocks.
 
 - `skills/_shared/references/commands/prd-to-tasks.md`
   - удалить preference для feature hub;
-  - заменить owner-selection на registry-first discovery/gap audit;
-  - запретить новые `tech-specs/FT-*`;
+  - заменить owner-selection на registry-first canonical-spec discovery/gap audit;
+  - не создавать новые default `tech-specs/FT-*`;
   - описать feature как composition root;
-  - передавать direct canonical spec links в tasks/packets.
+  - передавать direct relevant canonical spec links в indexed task cards;
+  - сохранять T2/T3 single-card handoff completeness contract.
 - `skills/_shared/references/commands/spec-design.md`
   - заменить feature-local tech-spec routing на subject-based system specs;
   - убрать `natural owner`/`authoritative owner` terminology там, где она
@@ -422,10 +435,16 @@ records не должны копировать полные contract blocks.
   - handoff должен говорить о missing canonical specs, не feature spec owner.
 - `skills/_shared/references/commands/review-tasks-plan.md`
   - проверять direct canonical spec links и отсутствие hub-only coverage.
+- `skills/_shared/references/commands/execute.md`
+  - читать применимые task-linked canonical specs напрямую из single-card
+    task context;
+  - заменить file-owner terminology, не затрагивая lifecycle/closure ownership.
+- `skills/_shared/references/commands/verify.md`
+  - строить task-scoped verification basis по direct canonical specs из task
+    card и feature links;
+  - сохранить distinction между design blocker и functional FAIL.
 - `skills/_shared/references/commands/mb-sync.md`
   - синхронизировать registry/folder links, не создавать owner metadata.
-- `skills/_shared/references/commands/mb-garden.md`
-  - находить legacy feature hubs, oversized specs и duplicate subject specs.
 - Все другие command docs, найденные через:
 
   ```bash
@@ -441,8 +460,8 @@ records не должны копировать полные contract blocks.
 - `skills/_shared/scripts/init-mb.js`
   - не создавать `tech-specs/` для новых проектов;
   - убрать planned family `feature_design -> tech-specs/FT-*`;
-  - обновить initial `spec-index.md` table без `Owner command`;
-  - добавить path/spec-key правила;
+  - заменить `Owner command` на `Change route` в initial `spec-index.md`;
+  - добавить canonical path/scope правила;
   - обновить MBB: feature links specs, но не владеет ими;
   - сохранить `spec_design_links` в feature frontmatter.
 - `skills/_shared/references/structure-template.md`
@@ -453,79 +472,17 @@ records не должны копировать полные contract blocks.
 - README/how-it-works/project-map docs source framework — обновить после
   стабилизации command contract.
 
-### Validators
-
-- `skills/mb-garden/assets/mb-lint.mjs`
-- `skills/mb-garden/assets/mb-doctor.mjs`
-
-Новые проверки:
-
-1. Каждый active spec в canonical directories зарегистрирован в
-   `spec-index.md`.
-2. Каждая registry path существует.
-3. `Spec key` соответствует path и уникален.
-4. Новые specs в `contracts/`, `domains/`, `states/`, `testing/`, `runbooks/`,
-   `guides/` не используют `FT-<NNN>` basename и `feature_id` frontmatter.
-5. Feature `spec_design_status: complete` содержит существующие direct
-   `spec_design_links` либо обоснованно `not_required`.
-6. T2/T3 task содержит direct relevant canonical spec links; один legacy hub
-   без concrete direct links не считается достаточным для new-layout project.
-7. Folder с более чем тремя docs имеет `index.md`.
-8. Atomic doc size:
-   - warning около 400 строк;
-   - error после 500 строк, если framework не введёт явное редкое исключение.
-9. Registry не содержит feature status, owner command или feature usage maps.
-10. Duplicate/suspicious subject names должны хотя бы давать actionable
-    warning; semantic duplicate detection не следует притворно объявлять
-    полностью решённым.
-
-Validator messages должны объяснять безопасное исправление агенту.
-
-## Backward compatibility и миграция существующих проектов
-
-Нельзя одномоментно сломать проекты, где tasks и packets уже ссылаются на
-`.memory-bank/tech-specs/FT-*.md`.
-
-Предлагаемый rollout:
-
-### Phase 1: framework writes new layout
-
-- Fresh projects не получают `tech-specs/`.
-- Новые `/prd-to-tasks` runs создают только subject-based specs.
-- Validators продолжают читать legacy `tech-specs/` как compatibility input,
-  но выдают migration warning.
-
-### Phase 2: explicit garden migration
-
-- `/mb-garden` умеет провести audit legacy hubs:
-  - перечислить содержащиеся concerns;
-  - предложить canonical paths;
-  - найти existing specs;
-  - сформировать migration plan;
-  - не переносить contracts автоматически без проверки смысла.
-- Миграция выполняется feature-by-feature или boundary-by-boundary.
-- Feature links, task records, plans и packets обновляются на direct specs.
-- Старый hub может временно оставаться compatibility facade.
-
-### Phase 3: retire legacy hub
-
-- После отсутствия runtime/task/packet references hub архивируется или
-  удаляется controlled change-ом.
-- `tech-specs/` остаётся только legacy-readable либо полностью удаляется в
-  следующей major framework version.
-
-Не следует автоматически превращать каждый heading старого hub в отдельный
-файл: границы должны определяться specification concern, а не Markdown
-структурой.
-
 ## Acceptance criteria
 
 Переработка считается успешной, если выполнены все условия.
 
 ### Fresh project
 
+- Single-card task model из `packet-reformation.md` остаётся неизменной и не
+  получает нового derivative execution-context artifact.
 - `init-mb` не создаёт `.memory-bank/tech-specs/`.
-- Initial `spec-index.md` не содержит `Owner command` и planned FT tech-spec.
+- Initial `spec-index.md` использует `Change route`, не содержит planned FT
+  tech-spec и не вводит отдельный `Spec key`.
 - Generated Codex/Claude skills описывают одинаковую новую модель.
 
 ### Reuse
@@ -562,29 +519,23 @@ Then создаётся только:
 
 ### Task context
 
-Каждая T2/T3 task получает direct links только на применимые specs. Migration
+Каждая T2/T3 indexed task card получает direct links только на применимые specs
+и сохраняет single-card handoff completeness contract. Storage или DB-migration
 task не обязана загружать весь набор API/UI contracts фичи.
-
-### Validation
-
-- framework tests проходят;
-- generated fixture проходит `mb-lint` и `mb-doctor`;
-- deliberate duplicate/missing-index/oversized fixtures дают ожидаемые ошибки;
-- legacy fixture остаётся читаемым и получает controlled migration warnings,
-  а не необъяснимый hard failure.
 
 ## Рекомендуемый порядок реализации
 
-1. Снять baseline tests source framework и сохранить evidence.
-2. Зафиксировать target taxonomy и registry row format.
-3. Обновить `prd-to-tasks.md` как главный contract новой модели.
-4. Согласовать `spec-design`, `spec-auto`, foundation и review commands.
-5. Обновить `init-mb.js` и structure templates.
-6. Добавить/обновить validators и fixtures.
+1. Подтвердить prerequisite: single-card task model установлена, generated
+   skills актуальны, packet layer отсутствует.
+2. Снять baseline tests source framework и сохранить evidence.
+3. Зафиксировать target taxonomy и registry row format.
+4. Обновить `prd-to-tasks.md` как главный contract новой модели.
+5. Согласовать `spec-design`, `spec-auto`, foundation, review, `execute` и
+   `verify` commands.
+6. Обновить `init-mb.js` и structure templates.
 7. Сгенерировать чистый тестовый проект через installer.
-8. Прогнать happy-path reuse, missing-only, conflict и legacy scenarios.
+8. Прогнать happy-path reuse, missing-only и conflict scenarios.
 9. Обновить framework docs.
-10. Только после этого проверять migration на копии реального проекта.
 
 ## Non-goals
 
@@ -595,21 +546,19 @@ task не обязана загружать весь набор API/UI contracts
 - Не делать semantic vector search обязательной зависимостью framework.
 - Не создавать заранее пустые каталоги/спеки для всех возможных типов.
 - Не смешивать эту работу с task status ownership или scheduler ownership.
-- Не мигрировать Agro Intellect автоматически как часть изменения reusable
-  framework.
+- Не добавлять новые `mb-lint` / `mb-doctor` rules в рамках этой переработки.
+- Не возвращать persisted packet, packet-like task object или другой derivative
+  execution-context layer.
 
 ## Риски и вопросы, которые агент должен закрыть
 
-1. Нужен ли hard error для документа >500 строк или warning + explicit
-   exception metadata.
-2. Насколько глубокой должна быть folder taxonomy по умолчанию; не допустить
+1. Насколько глубокой должна быть folder taxonomy по умолчанию; не допустить
    пустой enterprise-структуры в маленьких проектах.
-3. Как отличить старый project layout от new layout для compatibility checks.
-4. Достаточно ли Markdown registry parser или нужен generated index. Default
-   recommendation: сохранить один Markdown registry и усилить validation.
-5. Как refresh packets после spec-only link changes выполняется в текущем
-   `/prd-to-tasks` contract.
-6. Какие текущие source docs используют слово `owner` в другом смысле и не
+2. Какие boundaries/change-cadence/reuse признаки требуют отдельной spec, чтобы
+   не заменить feature hub набором микроспеков.
+3. Какие значения `Change route` нужны для shared/global specs и established
+   feature detail без возвращения file-owner модели.
+4. Какие текущие source docs используют слово `owner` в другом смысле и не
    должны быть изменены.
 
 ## Ожидаемый handoff от implementing agent
@@ -619,10 +568,10 @@ Implementing agent должен вернуть:
 - список изменённых canonical framework files;
 - краткое описание нового discovery/gap algorithm;
 - final folder/index conventions;
-- validator rules и fixture coverage;
-- backward-compatibility policy;
 - generated clean-project evidence;
-- legacy-project evidence;
+- результаты reuse, missing-only и conflict scenarios;
+- подтверждение, что single-card task model сохранена и packet layer не
+  возвращён;
 - известные ограничения и follow-up work;
 - подтверждение, что generated project copies не редактировались как source of
   truth.
