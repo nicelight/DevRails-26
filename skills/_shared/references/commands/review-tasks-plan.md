@@ -144,12 +144,27 @@ Contract-readiness routing for `REJECT`:
 - route to `/spec-design` when the duplicated/unclear owner or missing decision
   is shared/global.
 
-## 5) Concrete reviewer prompt
-Use a fresh-context reviewer / separate fresh session. Example:
+## 5) Reviewer handoff
+Use the active harness's configured fresh-context reviewer or a separate fresh
+session. Do not pin a provider, CLI, or model in this command. Pass this payload:
 
-```bash
-codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS-FT-001. TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md, .memory-bank/spec-backbone.md, .memory-bank/spec-index.md, .memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md, .memory-bank/tasks/index.json, indexed task records whose feature is FT-001, dependency task records referenced by those tasks, .memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks, and mb-doctor readiness findings relevant to FT-001. Check target feature waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links, concrete contract readiness for API/state/schema/message/storage/domain/agent I/O/security boundaries, duplicated/conflicting contract owners, Architecture Spine/boundary link routing for shared-boundary work, packet readiness, and Foundation Dev Path dependency invariants for reviewed tasks. Write report to .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT if any T2/T3 task requires guessing contract details or if concrete contract ownership is duplicated/conflicting.'
+```text
+TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS-FT-001.
+TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md,
+.memory-bank/spec-backbone.md, .memory-bank/spec-index.md,
+.memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md,
+.memory-bank/tasks/index.json, indexed task records whose feature is FT-001,
+dependency task records referenced by those tasks,
+.memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks,
+and mb-doctor readiness findings relevant to FT-001. Check target feature
+waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links,
+concrete contract readiness for API/state/schema/message/storage/domain/agent
+I/O/security boundaries, duplicated/conflicting contract owners, Architecture
+Spine/boundary link routing for shared-boundary work, packet readiness, and
+Foundation Dev Path dependency invariants for reviewed tasks. Write report to
+.tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md.
+VERDICT: APPROVE/REJECT; REJECT if any T2/T3 task requires guessing contract
+details or if concrete contract ownership is duplicated/conflicting.
 ```
 
 For `--all`, run one fresh-context reviewer per feature. A synthesized summary

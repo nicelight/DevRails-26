@@ -43,8 +43,10 @@ use `/mb-doctor --strict` before autonomous handoff
    - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete
    - start `/execute` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
    - `/execute` reads packet/spec context only when required by tier/policy or linked by the task/feature; structural packet readiness is owned by `/mb-doctor`, not by the implementer
-13) After each wave: `/review-tasks-plan FT-<NNN>` for the current or affected
-feature, using a fresh-context reviewer / separate fresh session
+13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
+the planning surface: task cards, specs, dependencies, tier, scope, required
+packets, or unresolved plan assumptions. Status/evidence-only closure does not
+trigger another task-plan review.
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
@@ -53,8 +55,9 @@ feature, using a fresh-context reviewer / separate fresh session
 4) before `/execute`, scheduler checks required packets for every T2/T3 task and explicit T0/T1 packet requirement; missing/blocked/stale/invalid packets stop execution and require `/mb-packet TASK-NNN-TN-FT-NNN-WN` or blocker resolution
 5) each TASK runs in **fresh CLI sessions**
 6) after each `/mb-sync`, run `/mb-doctor --strict` before promoting dependents
-7) after each wave: `/review-tasks-plan FT-<NNN>` for affected product features,
-or every task-linked product feature if affected-feature scope is ambiguous
+7) after a wave, rerun `/review-tasks-plan FT-<NNN>` only for product features
+whose task/spec/dependency/tier/scope/packet planning surface changed; do not
+rerun it for status/evidence-only closure
 8) final success only if every task-linked product feature has latest
 `/review-tasks-plan FT-<NNN>` = `APPROVE`, `/mb-doctor --strict` passes, and no
 blocking tasks remain

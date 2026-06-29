@@ -1,5 +1,5 @@
 ---
-description: Fresh-context review of PRD -> REQ/EP/FT decomposition before SDD design and tasking.
+description: Fresh-context review of PRD decomposition into requirements, epics, and features before SDD design and tasking.
 status: active
 ---
 # /review-feat-plan - Feature plan review
@@ -78,12 +78,21 @@ For high-risk, large, or autonomous flows, `APPROVE` is required before
 `/spec-design`. For small/manual flows, this command is recommended but not a
 mandatory stop unless the user or Constitution requires it.
 
-## 4) Concrete reviewer prompt
-Use fresh context. Example:
+## 4) Reviewer handoff
+Use the active harness's configured fresh-context reviewer or a separate fresh
+session. Do not pin a provider, CLI, or model in this command. Pass this payload:
 
-```bash
-codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-MB-REVIEW-FEAT-PLAN. STAGE_ID=S-FEAT. Review .memory-bank/constitution.md, .memory-bank/prd.md, .memory-bank/requirements.md, .memory-bank/epics/*.md, .memory-bank/features/*.md, and analysis/product brief artifacts when present. Check PRD->REQ->EP->FT traceability, feature sizing, blocked clarification metadata, Constitution contradictions, and that FT-000 is reserved for foundation only. Do not review JSON task records except for obvious stale contradictions. Write report to .tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md. VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.'
+```text
+TASK_ID=TASK-MB-REVIEW-FEAT-PLAN. STAGE_ID=S-FEAT. Review
+.memory-bank/constitution.md, .memory-bank/prd.md,
+.memory-bank/requirements.md, .memory-bank/epics/*.md,
+.memory-bank/features/*.md, and analysis/product brief artifacts when present.
+Check PRD->REQ->EP->FT traceability, feature sizing, blocked clarification
+metadata, Constitution contradictions, and that FT-000 is reserved for
+foundation only. Do not review JSON task records except for obvious stale
+contradictions. Write report to
+.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md.
+VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.
 ```
 
 ## 5) Handoff

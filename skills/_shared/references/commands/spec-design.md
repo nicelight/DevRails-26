@@ -184,49 +184,49 @@ Strict/autonomous product readiness cannot contain `needed_before_tasks`; `/prd-
 
 ## 6.1) Core SDD spec generation
 While updating the Backbone Area Matrix, generate or update the core SDD
-specifications needed by the current PRD across four families:
+specifications needed by the current PRD through three design lenses:
 - `architecture`
-- `api_interface`
+- `interfaces_contracts`
 - `data`
-- `contracts`
 
 Family outputs:
 - `architecture` / Architecture Specification: system shape, source-of-truth, module/bounded-context
   boundaries, runtime/deployment constraints, and Architecture Spine `AD-*`
   guardrails. Normal owners live under `.memory-bank/architecture/*` or
   `.memory-bank/adrs/*`.
-- `api_interface` / Interface Specification: API, events, protocols, and
-  interaction contracts. Generate/update the relevant contract types:
-  Component Contract (module guarantees and responsibility boundaries), API
-  Contract (REST/gRPC/GraphQL inputs, outputs, auth/status/error behavior),
-  Event Contract (event/message/queue envelope, ordering, retry/idempotency),
-  and protocol/agent/tool I/O contracts. Normal owners live under
-  `.memory-bank/contracts/*`; stack-native schemas may be linked as the
+- `interfaces_contracts` / Interface Specification and Contracts: API, events,
+  protocols, component and interaction boundaries. Generate/update only the
+  relevant concrete contract types: Component Contract (module guarantees
+  within fixed architecture boundaries), API Contract (REST/gRPC/GraphQL
+  inputs, outputs, auth/status/error behavior), Event Contract
+  (event/message/queue envelope, ordering, retry/idempotency), Data Contract
+  (boundary payload shape, versions, required fields, serialization and
+  compatibility), and protocol/agent/tool I/O contracts. Cross-boundary
+  responsibility, evidence/redaction, safety/security, testing/runbook handoff,
+  and executable verification contracts also live in this lens. Normal owners
+  live under `.memory-bank/contracts/*`, `.memory-bank/testing/*`, and
+  `.memory-bank/runbooks/*`; stack-native schemas may be linked as the
   implementation source when present.
 - `data` / Data Specification: domain model, storage ownership,
   persistence/session/UoW/migrations, DB schemas, lifecycle/state-machine rules,
-  message/data formats, validation and serialization rules, retention, seed
-  data, runtime data paths, and Data Contract details such as versions and
-  required fields. Normal owners live under `.memory-bank/domains/*` and
-  `.memory-bank/states/*`.
-- `contracts`: cross-boundary responsibility, compatibility, Data Contract
-  ownership, evidence, redaction, safety/security, testing/runbook handoff, and
-  executable verification contracts. Normal owners live under
-  `.memory-bank/contracts/*`, `.memory-bank/testing/*`, and
-  `.memory-bank/runbooks/*`.
+  internal data formats, validation and serialization rules, retention, seed
+  data, and runtime data paths. It does not own payload compatibility across a
+  component/API/event/protocol boundary; that belongs to a Data Contract in the
+  interfaces/contracts lens. Normal owners live under
+  `.memory-bank/domains/*` and `.memory-bank/states/*`.
 
 KISS rules:
-- Create or update the natural owner for each relevant family. Prefer updating
+- Create or update the natural owner for each relevant lens. Prefer updating
   an existing spec over creating a new file.
 - Use existing Backbone Area Matrix rows such as `module_boundaries`,
   `data_flow`, `storage`, `api_contracts`, `event_message_contracts`,
   `agent_io_contracts`, `security_safety`, and `testing_strategy` to show where
-  the generated family specs live.
+  the relevant specs live.
 - Do not add a second mandatory readiness gate, validator, or coverage-map
   artifact.
-- If a family is genuinely irrelevant to the current PRD, mark the relevant
+- If a lens is genuinely irrelevant to the current PRD, mark the relevant
   area `not_applicable` with rationale; do not create an empty placeholder spec.
-- If a family needs concrete feature-local detail, route that to
+- If a lens needs concrete feature-local detail, route that to
   `/prd-to-tasks` through existing `needed_before_tasks` notes; `/spec-design`
   still creates or updates the global/shared owner when one is relevant.
 - Register specs in `spec-index.md`, but keep decision bodies in the natural
@@ -522,8 +522,8 @@ If the answer is unavailable and a safe assumption is not possible, mark backbon
 Update `.memory-bank/spec-backbone.md`:
 - exact `## Global Backbone Status` section and `- Status: complete|minimal|blocked` line
 - Backbone Area Matrix with authoritative links or explicit `not_applicable` rationale
-- generated or updated core SDD specs for the four families: architecture,
-  API/interface, data, and contracts
+- generated or updated core SDD specs through the three design lenses:
+  architecture, interfaces/contracts, and data
 - source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` when single-file is selected, or `source-of-truth.md` when split)
 - global backbone blockers and next command routing
 - architecture artifact strategy and baseline backbone specs with their scope
@@ -549,7 +549,7 @@ Report:
 - architecture artifact strategy: single-file, split core docs, or split by boundary/topic
 - specs created/updated
 - Backbone Area Matrix summary
-- generated/updated SDD family specs and any family areas marked
+- generated/updated specs by design lens and any areas marked
   `not_applicable` with rationale
 - not_applicable areas and rationale for local/simple feature-set pressure
 - affected features and normative links

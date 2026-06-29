@@ -2,457 +2,180 @@
 description: Декомпозиция или repair product feature: SDD design, implementation plan, JSON tasks и required packets.
 status: active
 ---
-# /prd-to-tasks — Feature → Implementation plan → JSON tasks
+# /prd-to-tasks - Feature design -> implementation plan -> JSON tasks
 
 <objective>
-Взять конкретную фичу (FT-XXX), полноценно закрыть или починить feature-level
-SDD design и привести её planning surface к согласованному состоянию:
-- feature design status/spec links
-- Implementation Plan
-- schema-backed JSON task records (waves)
-- optional behavior specs for concrete ambiguous behavior
+Close or repair one product feature's planning surface:
+- feature-level SDD design and spec links
+- implementation plan
+- schema-backed JSON task records
+- optional behavior specs
 - required derivative Execution Packets
-- критерии done + тесты + verify
+- verification-ready handoff
 
-Before each final task record is written, run a task-by-task design pass: refresh
-the relevant spec inventory, resolve missing design evidence, update the natural
-authoritative owners, and only then materialize that task card.
+Read the task schema before drafting tasks. Then process provisional tasks in
+dependency order: inspect design needs, close grounded spec gaps, and only then
+write each final task record.
 </objective>
 
 <process>
 
-## 0) Вход
-Ожидается `$ARGUMENTS`:
-- `FT-<NNN>` для одной фичи
-- `--all` для декомпозиции всех `FT-*` по приоритету
+## 0) Target
 
-The user may also explicitly ask the command to repair/reconcile existing
-feature specs and task cards, or to fully re-decompose a feature. Do not add a
-persisted mode field or a separate repair command.
+`$ARGUMENTS`:
+- `FT-<NNN>`: one product feature
+- `--all`: all product features in priority order
 
-Если аргумент не дан:
-- interactive → попроси выбрать фичу
-- autonomous → используй `--all`
+Without arguments, ask the user to select a feature in interactive mode; use
+`--all` in autonomous mode.
 
-`FT-000` is reserved for the Foundation Dev Path. `/prd-to-tasks FT-000` is
-invalid; use `/foundation-to-tasks` instead. In `--all` mode, exclude `FT-000`
-from the product feature target set.
+The user may ask to repair/reconcile existing specs and task cards or explicitly
+request full re-decomposition. Do not add a persisted mode field or another
+repair command.
 
-## 1) Decomposition preflight
-Перед созданием или обновлением implementation plan и JSON task records проверь, что feature can be decomposed.
-`/prd-to-tasks` does not require feature clarification metadata. The normal manual path is `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/packet/stale-doc/risky-link cases → tier-routed `/execute TASK`.
+Reject `FT-000`. It is reserved for the Foundation Dev Path and belongs to
+`/foundation-to-tasks`. Exclude it from `--all`.
 
-`/prd-to-tasks` is the single owner for feature-local SDD design, initial task
-decomposition, and later reconciliation of feature specs, task cards, plans,
-and required packets.
+## 1) Preflight, context, and schema
 
-Для `FT-<NNN>`:
-1. Reject `FT-000` and route to `/foundation-to-tasks`.
-2. Найди `.memory-bank/features/FT-<NNN>-*.md`.
-3. Прочитай frontmatter.
-4. Block only if the feature explicitly says clarification is not complete:
+Complete this section before creating an implementation plan, provisional task
+outline, task record, or packet.
 
-```yaml
-clarification_status: pending|blocked
-```
+### 1.1 Feature and queue preflight
 
-Missing clarification metadata does not block decomposition.
-`clarification_status: complete` is allowed but not required.
+For every target feature:
+1. Find `.memory-bank/features/FT-<NNN>-*.md` and read its frontmatter.
+2. Read `.memory-bank/tasks/index.json` and all indexed records whose `feature`
+   is the target. Existing records select reconciliation; do not duplicate them.
+3. Block only when `clarification_status` is explicitly `pending|blocked`, or
+   when decomposition-relevant behavior, acceptance, data, contract, security,
+   UX, operations, or verification text contains unresolved `TBD`, `TODO`,
+   `NEEDS CLARIFICATION`, or `???` markers.
+4. Treat explicit `spec_design_status: blocked` as a blocker to task drafting.
+   A direct repair request may continue only to resolve a feature-local design
+   blocker from current evidence or focused user answers before the provisional
+   outline. If it remains unresolved, stop; route shared/global blockers to
+   `/spec-design`.
+5. Ignore unresolved-marker words in historical/unrelated notes.
 
-Before changing the feature planning surface, read `.memory-bank/tasks/index.json`
-and all indexed task records whose `feature` is the target `FT-<NNN>`. If such
-records exist, apply the existing-queue reconciliation rules below instead of
-creating duplicate tasks.
+Missing clarification metadata is allowed. `/clarify-feature` does not assign
+tier; tier is selected here under the tier policy.
 
-Block if relevant unresolved markers appear in behavior / acceptance / data / contracts / security / UX / operations / verification sections:
-- `NEEDS CLARIFICATION`
-- `TBD`
-- `TODO`
-- `???`
+For unresolved blockers:
+- interactive: report the exact blocker; route product ambiguity to
+  `/clarify-feature FT-<NNN>` or direct feature-source repair, feature-local
+  design ambiguity to a focused decision in this repair run, and shared/global
+  design ambiguity to `/spec-design`
+- autonomous: return `HALT_CLARIFICATION_REQUIRED` for product clarification or
+  `HALT_BLOCKING_QUESTIONS` for unresolved design
+- do not create or update plans, task records, or packets
 
-Do not block on those words in unrelated notes, changelog-like text, or historical context unless they affect task decomposition or verification.
+For `--all`, resolve and preflight the whole target set before planning writes.
+If any target is missing or remains blocked, report all blockers and halt.
 
-If blocked:
-- interactive mode: report the feature and tell the user to run `/clarify-feature FT-<NNN>` or resolve the marker directly
-- autonomous mode: set terminal state `HALT_CLARIFICATION_REQUIRED`
-- stop immediately before decomposition
-- do not create or update implementation plans
-- do not create, update, or index task records
+### 1.2 Global design and foundation gates
 
-For `--all`:
-- resolve the full targeted feature set first
-- exclude `.memory-bank/features/FT-000-foundation.md` and any other `FT-000`
-  pseudo-feature doc from product task generation
-- if any targeted feature is missing, has `clarification_status: pending|blocked`, or has blocking unresolved markers, halt before creating or updating task records for any feature
-- report all blocked feature IDs and their blockers
+Read `.memory-bank/spec-backbone.md`. Its `Global Backbone Status` must be:
+- `complete`; or
+- `minimal` with explicit `not_applicable` global/shared areas.
 
-`/clarify-feature` does not assign tier. Tier remains mandatory here and is assigned during task decomposition.
+If missing, bare `minimal`, or `blocked`, stop and route to `/spec-design`.
 
-## 1.0) Foundation gate preflight
-Before product feature task generation, read `.memory-bank/foundation.md`.
+Read `.memory-bank/foundation.md`:
+- `Foundation Required: false` requires
+  `Foundation Gate Task: not_required` and a rationale.
+- `Foundation Required: true` requires a concrete indexed
+  `TASK-<NNN>-T<N>-FT-000-W<N>` gate record with `feature: "FT-000"` and
+  `status: "done"`.
 
-Allowed states:
-- `Foundation Required: false` with `Foundation Gate Task: not_required` and a
-  rationale in `.memory-bank/foundation.md`
-- `Foundation Required: true` with a concrete `Foundation Gate Task: TASK-<NNN>-T<N>-FT-000-W<N>`
-  whose indexed task record has `feature: "FT-000"` and `status: "done"`
+If the foundation file or valid decision is missing, route to `/spec-design`.
+If required foundation work is pending, route to `/foundation-to-tasks`,
+`/mb-doctor`, `/execute`, and `/verify`; stop product task generation.
 
-If `.memory-bank/foundation.md` is missing, route to `/spec-design` and stop.
-If foundation is required but `Foundation Gate Task` is
-`pending_foundation_to_tasks`, missing, not indexed, not `done`, or not an
-`FT-000` task, stop and route to `/foundation-to-tasks`, `/mb-doctor`,
-`/execute`, and `/verify` for the foundation queue.
+Remember the final foundation gate ID. Every created/updated product task must
+depend on it directly or transitively when foundation is required.
 
-When foundation is required and the gate task is `done`, every product task
-created or updated by this command must include that gate task in `depends_on`
-unless it already depends on another task that transitively depends on the gate.
-Do not add the gate to `FT-000` tasks.
+### 1.3 Read planning context
 
-## 1.0a) Existing queue reconciliation
+Read once before task drafting:
+- target feature, linked epic, requirements/RTM, and Constitution when present
+- `.memory-bank/spec-index.md` as a registry only
+- `.memory-bank/spec-backbone.md` as shared/global route and readiness state
+- feature `spec_design_links` and their authoritative specs
+- relevant existing architecture, contract, domain, state, ADR, testing, guide,
+  and runbook owners routed by those sources
+- existing implementation plan, protocols, behavior specs, tasks, and packets
+  for reconciliation
 
-When indexed task records already exist for the target feature, default to a
-bounded reconciliation pass. A prompt such as "repair specs and task cards"
-selects this behavior; full task re-slicing requires an explicit request.
+Do not create a spec before checking the index and existing owners. A conflict
+with a higher/global source is a blocker, not a local choice.
 
-Reconciliation rules:
-- do not create duplicate task records or silently renumber the queue
-- preserve task `id`, `feature`, `wave`, `tier`, `depends_on`, `status`, recorded
-  `verify` evidence, and existing protocol/evidence references
-- for `planned`, `ready`, or `blocked` records, update only the implementation
-  plan, authoritative specs, behavior-spec links, task content/gates/runtime
-  context, and richer design fields needed to restore consistency; preserve
-  lifecycle status for the scheduler or explicit owner
-- do not semantically rewrite `in_progress`, `done`, or `failed` task goals,
-  acceptance basis, or evidence; report the impact and require an explicit
-  owner decision, follow-up task, or controlled re-decomposition
-- if repair requires changing task identity, tier, wave, dependencies,
-  acceptance criteria, or material scope, stop and report that explicit
-  re-decomposition is required instead of hiding the change inside repair
-- refresh every affected required packet after task or linked-spec changes,
-  including spec-only changes whose task-record hash did not change
-- rerun `/review-tasks-plan FT-<NNN>` after reconciliation before execution or
-  scheduler handoff
+### 1.4 Schema-first invariant
 
-These rules do not add a new task status or persisted workflow mode.
+Before inventing even in-memory or provisional task drafts:
+1. Read and parse `.memory-bank/schemas/task.schema.json`.
+2. Read `.memory-bank/workflows/tier-policy.md`.
+3. Confirm the schema can represent the required task ID, fields, enums, arrays,
+   dependencies, tier, and runtime context used by this workflow.
 
-## 1.1) Full feature SDD design phase
-Before initial decomposition or existing-queue reconciliation, complete or
-repair the required feature-level design directly in this command.
+Use the loaded schema while thinking through task candidates. Do not reconstruct
+it from memory. If it is missing, invalid JSON, or incompatible with required
+task semantics, stop before drafting tasks and report the blocker.
 
-Read existing design surface first:
-1. Read `.memory-bank/spec-index.md`.
-2. Read `.memory-bank/spec-backbone.md`.
-3. Confirm global backbone status in `.memory-bank/spec-backbone.md` is `complete`,
-   or `minimal` with explicit `not_applicable` areas. If missing, bare `minimal`,
-   or `blocked`, route to `/spec-design` and stop before task generation.
-4. Read the target `.memory-bank/features/FT-<NNN>-*.md`.
-5. Read linked epic, requirements, Constitution, backbone specs, and any existing
-   specs routed by the index/backbone.
-6. Search existing `.memory-bank/architecture/`, `.memory-bank/tech-specs/`,
-   `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
-   `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, and
-   `.memory-bank/runbooks/` for overlapping decisions.
+Only after this point may the command create a provisional task outline.
 
-Rule: do not create a new spec before checking existing specs through the index.
-If several features need the same missing domain/contract/state/API/security/data/runtime/testing decision, stop and route to `/spec-design` instead of creating duplicate feature-local specs.
-If a task/feature interpretation conflicts with a backbone spec, stop with a blocker instead of choosing locally.
+## 2) Existing queue reconciliation
 
-Feature frontmatter may include:
+When indexed tasks already exist, default to bounded reconciliation. Full
+re-slicing requires an explicit user request.
 
-```yaml
-spec_design_status: complete|not_required|blocked
-spec_design_links:
-  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
-```
+Preserve:
+- `id`, `feature`, `wave`, `tier`, `depends_on`, and lifecycle `status`
+- recorded `verify` evidence and protocol/evidence references
+- the semantic goal and acceptance basis of `in_progress|done|failed` records
 
-Rules:
-- `spec_design_status: blocked` always blocks task decomposition.
-- `spec_design_status: not_required` is allowed only for simple T0/T1-like features with a concise rationale in the feature doc.
-- `spec_design_status: complete` requires at least one concrete linked spec when the feature implies T2/T3 work.
-- missing or incomplete `spec_design_status` means this command must complete or block the feature-level design phase before task slicing.
-- Design specs are normative source of truth for task records. If feature/task interpretation conflicts with linked SDD specs, stop with a blocker instead of resolving locally.
+For `planned|ready|blocked` tasks, repair only grounded specs, implementation
+plan, task content/context, links, gates, and required packets; lifecycle
+transitions remain with the scheduler or explicit owner.
 
-T2/T3 indicators include:
-- cross-module behavior
-- API/contract/schema/state/data/domain model changes
-- migrations or persistence behavior
-- security/auth/secrets/compliance/payments
-- deploy/runtime/production impact
-- changes where tests can pass while the substance is wrong
+If repair requires changing identity, tier, wave, dependencies, acceptance
+criteria, or material scope, report `rebuild_required` and require controlled
+re-decomposition or a follow-up task. Do not hide re-slicing inside repair.
 
-Decide required design depth:
-- none: simple T0/T1-like work with no runtime, contract, state, data, security, migration, or cross-module design impact
-- feature hub only: a small `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` is enough
-- linked specs: update or create specific architecture/contracts/domains/states/ADR/testing/runbook docs
+Refresh every affected required packet after task or linked-spec changes,
+including spec-only changes whose task-record hash is unchanged. Rerun
+`/review-tasks-plan FT-<NNN>` after reconciliation.
 
-For every non-simple feature, generate or update the SDD specs needed to make
-the feature implementable without guessing. Cover the relevant families in the
-simplest natural owner:
-- Architecture Specification: module/runtime/source-of-truth implications.
-- API / Interface Specification: endpoint, CLI, event/message, agent I/O, tool,
-  external, or frontend/backend boundaries.
-- Data Specification: domain model, storage ownership, persistence, migration,
-  session/UoW, lifecycle, retention, seed data, or runtime data path.
-- Contracts: compatibility, responsibility boundaries, evidence/redaction,
-  security/safety, testing, runbook, or verification contracts.
+## 3) Planning artifacts and provisional outline
 
-When relevant, generate/update these concrete contract/spec types in the natural
-owner:
-- Component Contract: guarantees, responsibilities, allowed/forbidden calls, and
-  ownership boundaries for each affected module/component.
-- API Contract: REST/gRPC/GraphQL inputs, outputs, auth/status/error behavior,
-  compatibility, pagination/upload rules when applicable.
-- Event Contract: event/message/queue envelope, required fields, ordering,
-  retry/idempotency, delivery and failure behavior.
-- Data Contract: data/payload structure, versions, required fields,
-  validation/serialization rules, and compatibility expectations.
-
-For feature-local design, prefer one feature hub
-`.memory-bank/tech-specs/FT-<NNN>-<slug>.md` with only the relevant sections
-from `Architecture Specification`, `API / Interface Specification`,
-`Data Specification`, `Contracts`, and `Verification`. Use separate
-feature-local files under `.memory-bank/contracts/` or `.memory-bank/domains/`
-only when a separate owner is clearer. Update shared/global specs instead when
-they are the natural home.
-
-If simple, mark the feature:
-
-```yaml
-spec_design_status: not_required
-spec_design_links: []
-```
-
-Add a concise rationale in the feature doc and update `.memory-bank/spec-index.md`.
-
-Before writing specs, explicitly look for:
-- duplicate or conflicting existing specs
-- inconsistent boundaries, contracts, state transitions, or data ownership
-- hidden coupling or complexity growth
-- unclear acceptance criteria that would make tasks unverifiable
-- security/compliance/runtime risks
-- places where tests could pass while substance remains wrong
-
-If design is blocked or multiple meaningful options exist, ask the user. Ask only
-questions needed to make the spec truthful. If contradiction or major complexity
-increase exists, stop until resolved.
-
-Allowed artifacts:
-- feature design hub: `.memory-bank/tech-specs/FT-<NNN>-<slug>.md`
-- architecture notes: `.memory-bank/architecture/<topic>.md`
-- contracts: `.memory-bank/contracts/<boundary>.md`
-- domain/data model notes: `.memory-bank/domains/<domain>.md`
-- states: `.memory-bank/states/<lifecycle>.md`
-- ADRs for significant decisions: `.memory-bank/adrs/ADR-<NNN>-<slug>.md`
-- frontend component guide: `.memory-bank/guides/frontend-component-guide.md` when UI component/design behavior is normative
-- testing/runbooks when needed: `.memory-bank/testing/`, `.memory-bank/runbooks/`
-
-Keep KISS:
-- update existing specs when that is the natural home
-- do not fork duplicate specs
-- do not create empty family sections or files just to satisfy a template
-- do not add schema, migration, hook, or governance machinery just for design routing
-- write decisions, constraints, invariants, and verification targets only when grounded in PRD/user/spec evidence
-- use backbone specs from `/spec-design` as primary normative inputs
-
-Update `.memory-bank/spec-index.md`:
-- keep the spec registry/planned specs current
-- add linked specs created or used for the feature
-- record broken/missing links only when relevant
-
-Do not write feature status maps into `.memory-bank/spec-index.md`; feature `spec_design_status` lives in feature frontmatter. If a global/shared gap appears, update `.memory-bank/spec-backbone.md` or route back to `/spec-design`.
-
-Invariant for `spec_design_status: complete`:
-- set `complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
-- do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved
-- if unresolved feature-relevant planned/candidate/unknown/conflicting areas remain, set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in the feature doc or relevant spec; use `.memory-bank/spec-backbone.md` only for shared/global gaps
-
-Update target feature frontmatter:
-
-```yaml
-spec_design_status: complete
-spec_design_links:
-  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
-```
-
-Allowed statuses:
-- `complete`
-- `not_required`
-- `blocked`
-
-Use `blocked` only when design cannot be made truthful without user or external evidence.
-If the result is `blocked`, stop before creating or updating implementation plans,
-task records, or packets.
-
-Treat an existing or initial `spec_design_status: complete` as a feature-level
-baseline during this command. Confirm it after the task-by-task loop; if that
-loop exposes an unresolved feature-relevant gap, the final status cannot remain
-`complete`.
-
-For `--all`, run this full feature SDD design phase for each targeted feature
-before task generation. If any targeted feature is blocked, halt before creating
-or updating task records for any feature and report all blocked features.
-
-## 1.2) Task-by-task concrete design readiness
-Apply this policy inside the per-task loop in section 5. Before creating or
-updating each `T2` / `T3` task record, decide whether that task depends on a
-concrete boundary:
-- HTTP/API endpoint, request/response shape, status/error/auth behavior, or
-  compatibility contract
-- state/lifecycle transition, guard, rollback, or failure mode
-- schema/model fields, storage ownership, migration, retention, seed data, or
-  runtime data path
-- event/message envelope, ordering, idempotency, retry, or delivery behavior
-- domain vocabulary, invariant, business rule, or cross-module ownership
-- agent input/output contract, tool payload, or handoff envelope
-- security/safety behavior, secrets/auth/compliance, or irreversible operation
-- frontend component/UI behavior or operating procedure when a guide is the
-  normative source
-
-If a task depends on one of these boundaries, a linked authoritative spec must
-be implementable without guessing. The concrete block may live in the simplest
-natural owner:
-- `.memory-bank/contracts/*`
-- `.memory-bank/states/*`
-- `.memory-bank/domains/*`
-- `.memory-bank/tech-specs/FT-<NNN>-*.md`
-- `.memory-bank/testing/*`
-- `.memory-bank/guides/*` only when the guide is the normative source for UI or
-  operating behavior
-
-Minimum concrete block:
-- `shape`: fields, endpoint, states, message/envelope, storage entity/path, or
-  boundary shape
-- `rules`: `MUST` / `MUST NOT`
-- `edge cases/errors`
-- `verification target`
-
-Before writing or repairing a concrete block, resolve the authoritative owner:
-1. Find candidate specs from `.memory-bank/spec-index.md`,
-   `.memory-bank/spec-backbone.md`, feature `spec_design_links`, and existing
-   spec folders.
-2. Prefer updating the existing authoritative owner. If ownership is unclear,
-   do not create a new spec.
-3. Create a new spec only with a short rationale, then link it back from
-   `.memory-bank/spec-index.md` and the feature.
-
-Each concrete contract block has exactly one authoritative owner. Other docs may
-summarize or link to that owner, but must not restate `shape`, `rules`, `edge
-cases/errors`, or `verification target` as a second source of truth. When this
-command creates or materially updates a concrete contract spec, add or repair a
-short ownership statement near the top:
-
-```markdown
-## Ownership
-- Owns:
-- Does not own:
-- Related specs:
-```
-
-Owner hints:
-- `.memory-bank/contracts/api-guidelines.md` owns cross-cutting API naming,
-  status/error/auth/pagination/upload/compatibility rules.
-- `.memory-bank/contracts/http-api.md`, `.memory-bank/contracts/openapi.md`, or
-  stack-native schema docs own concrete HTTP boundary shapes when that boundary
-  exists.
-- `.memory-bank/contracts/message-envelope.md` or an existing event contract
-  owns event/message envelope rules.
-- `.memory-bank/contracts/<agent-boundary>.md` owns agent I/O contracts.
-- `.memory-bank/domains/<domain>.md` owns domain vocabulary and business
-  invariants.
-- `.memory-bank/domains/runtime-data-model.md` or an existing storage spec owns
-  runtime data/storage ownership, migrations, retention, and seed data.
-- `.memory-bank/states/<lifecycle>.md` owns lifecycle/state-machine transition
-  guards.
-- `.memory-bank/architecture/system-architecture.md#Architecture Spine` owns
-  short cross-cutting guardrails only; detailed contract/state/domain blocks
-  live in the relevant spec.
-- `.memory-bank/tech-specs/FT-<NNN>-<slug>.md` owns only genuinely
-  feature-local behavior with no shared reuse.
-
-If `.memory-bank/spec-backbone.md` marks a relevant area `needed_before_tasks`,
-resolve it before creating any dependent T2/T3 task:
-- update the routed authoritative owner with the minimum concrete block when
-  evidence is sufficient;
-- update `.memory-bank/spec-index.md` as a registry only;
-- link the authoritative owner from feature `spec_design_links`;
-- update the Backbone Area Matrix row to `authoritative` or `not_applicable`
-  when the concrete readiness gap is resolved.
-
-If the missing contract is needed by multiple features or changes a shared
-boundary, update the shared owner. If the shared owner or decision is unclear,
-route back to `/spec-design` instead of creating duplicate feature-local blocks.
-
-If the concrete block cannot be truthfully completed without manual
-repair/clarification, stop before writing the affected task record, mark/report
-the feature design as blocked, and do not build packets or hand off execution.
-Resolve feature-local repair by rerunning `/prd-to-tasks FT-<NNN>` after the
-missing evidence or user decision is available; if the ambiguity is
-shared/global, route to `/spec-design`.
-
-Do not duplicate concrete contract blocks in task records, implementation plans,
-or packets. Copy only task-relevant links into existing fields such as
-`source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
-`verification_targets`.
-
-## 2) Создай протокол фичи
+Create or update:
 - `.protocols/FT-<NNN>/plan.md`
 - `.protocols/FT-<NNN>/decision-log.md`
+- `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
 
-Do not remove the current `.protocols/FT-<NNN>/decision-log.md` behavior; the no-extra-protocol-files rule applies to `/clarify-feature`.
+The implementation plan contains:
+- goals, scope/non-goals, ordered implementation strategy, dependencies
+- expected touched files, tests, quality gates, and UAT
+- a short Constitution Check with relevant principles and blockers
+- grounded Source Artifacts, Normative Inputs, Constraints, Invariants,
+  Verification Targets, and `spec_design_links` when useful
 
-Use the existing feature protocol files as lightweight resumable state:
-- `plan.md` keeps the concise ordered provisional task outline and the current
-  task-design iteration checkpoint; it is not a second task registry
-- `decision-log.md` records accepted user answers and design decisions that
-  affect task/spec generation
-- do not create another draft-task artifact family
+Do not copy the whole Constitution or invent richer fields. Link it only when a
+specific principle constrains execution or verification.
+If the proposed feature plan conflicts with the Constitution, stop before task
+records and report the blocker.
 
-## 3) Прочитай контекст
-- `.memory-bank/features/FT-<NNN>-*.md`
-- соответствующий epic
-- requirements RTM
-- `.memory-bank/constitution.md`, если есть
-- `.memory-bank/spec-backbone.md`, если есть
-- `.memory-bank/spec-index.md`, если есть
-- linked SDD design specs from the feature, spec-backbone, and spec-index, if any
-- `.memory-bank/workflows/tier-policy.md`, если есть
+After the schema and tier policy are loaded, add a concise dependency-ordered
+provisional outline to `plan.md`. For each candidate record only its purpose,
+likely dependencies/wave/tier, and expected design pressure. This is resumable
+planning state, not another task model.
 
-## 4) Напиши Implementation Plan
-Создай `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`:
-- цели
-- short `Constitution Check`: relevant principles, conflicts/blockers, and tier-policy consistency
-- шаги
-- expected touched files
-- тесты
-- гейты качества
-- UAT steps
+Update the outline only when its structure changes, a material decision is
+accepted, or the run pauses. Do not write an iteration checkpoint after every
+task.
 
-Если в feature doc уже есть richer spec-driven inputs, **предпочитай** включить их в план:
-- `Source Artifacts`
-- `Normative Inputs`
-- `Constraints`
-- `Invariants`
-- `Verification Targets`
-- `spec_design_links`
+## 4) Optional behavior specs
 
-Если этих секций нет:
-- не считай это ошибкой
-- используй классический вход: feature doc + epic + RTM + duo docs
-
-Constitution Check rules:
-- Keep the check short; it is a planning gate, not a copy of the Constitution.
-- If the feature or proposed implementation conflicts with `.memory-bank/constitution.md`, stop and report the blocker before creating or updating task records.
-- Do not add `.memory-bank/constitution.md` to every task `normative_inputs` automatically.
-- Add Constitution to a task `normative_inputs` only when a specific principle is materially relevant to execution or verification of that task.
-- Do not introduce alternatives to the required `tier: T0|T1|T2|T3` routing model.
-
-Before writing JSON task records, add a concise ordered provisional task outline
-to `.protocols/FT-<NNN>/plan.md`. For each provisional task, record only its
-purpose, likely wave/dependencies/tier, and expected design pressure. Keep the
-outline compact: it is a checkpoint for the loop below, not an alternative task
-model and not a place to duplicate final task cards.
-
-## 4.5) Optional behavior specs
 Decide whether the feature needs concrete behavior examples before slicing tasks.
 Creating `0` behavior specs is the correct result for simple, mechanical, or
 obvious features.
@@ -506,329 +229,238 @@ Rules:
 - behavior specs are implementation context examples, not readiness,
   verification, or done gates
 
-## 5) Нарежь на schema-backed tasks (waves)
-JSON task records are the source of truth:
-- `.memory-bank/schemas/task.schema.json`
-- `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`
+## 5) Unified design-and-task loop
 
-### 5.1) Run the task-by-task design loop
+### 5.1 Feature design baseline
 
-Process the provisional outline in dependency/wave order. Do not write all task
-records first and attempt to repair their design inputs afterward.
+Build an initial feature-wide inventory from the sources loaded in section 1:
+- existing authoritative specs needed by the feature
+- `needed_before_tasks` routes and feature-local gaps
+- duplicate/conflicting owners
+- unresolved choices that would force implementation guessing
 
-For each provisional task:
-1. Refresh the current design inventory. Reread `.memory-bank/spec-index.md`,
-   relevant backbone routes, feature `spec_design_links`, and specs created or
-   updated by earlier iterations in this same run. Do not rely only on the
-   inventory remembered at the start of the feature.
-2. Build a working inventory for this task, without creating a new artifact:
-   - existing authoritative specs required by the task
-   - missing or insufficient specs/contract blocks
-   - unresolved design decisions that would force implementation guessing
-3. Give every task a quick design-needs check. For simple `T0` / `T1`, continue
-   without artificial specs or questions when no design pressure exists. For
-   `T2` / `T3`, apply the concrete readiness rules in section 1.2.
-4. If a meaningful choice cannot be resolved from PRD, feature, backbone, or
-   existing spec evidence, use the question gate below before writing specs or
-   the task record.
-5. Create or update only the minimum necessary authoritative spec owners. Keep
-   one owner per concrete contract, update `.memory-bank/spec-index.md` and
-   feature `spec_design_links` when needed, then reread the changed sources. Name
-   and scope specs by the boundary or behavior they own, not by task id, unless
-   the design is genuinely feature-local and the existing feature hub is the
-   natural owner.
-6. Write the final JSON task record only when its design context is sufficient.
-   Link relevant specs through existing richer fields and copy only
-   task-relevant executable constraints, invariants, and verification targets.
-   When a record already exists, reconcile it under section 1.0a rather than
-   replacing its identity/lifecycle/evidence fields.
-7. Update the current iteration checkpoint in `.protocols/FT-<NNN>/plan.md` and
-   continue to the next provisional task. Do not build its Execution Packet yet.
+Feature frontmatter may contain:
 
-Question gate:
-- ask `0-3` focused questions in one pass; questions are conditional, not a
-  mandatory quota for every task
-- ask only when the answer can materially change API/interface shape, component
-  ownership, event semantics, data/storage behavior, state transitions,
-  compatibility, security, or the verification contract
-- group related questions for the current task/design boundary and explain the
-  concrete decision they unblock
-- when one answer affects several provisional tasks, ask once before the first
-  affected task, record it in `decision-log.md`, and reuse it
-- do not ask questions merely to fill a template or reconfirm evidence already
-  present in authoritative sources
-- in autonomous mode, do not invent an unsafe missing product/design decision;
-  record the blocker and stop according to the active workflow
-
-After all provisional tasks have records, run one feature consistency pass:
-- reread all generated/updated task records and their linked authoritative specs
-- repair earlier task links, constraints, invariants, or verification targets
-  if a later iteration changed a shared spec
-- confirm every `T2` / `T3` task remains implementable without guessing and no
-  concrete contract has competing authoritative owners
-- confirm feature acceptance criteria are covered and finalize truthful
-  `spec_design_status` / `spec_design_links`
-- if the feature remains design-blocked, do not build packets or hand off
-  execution
-
-Создай или обнови отдельные `.task.json` файлы:
-- Wave 1: enabling/product setup for this feature (`W1`, not project `W0`)
-- Wave 2: core logic
-- Wave 3: integration & polish
-
-Task id format is mandatory:
-- `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-- the `T<N>` segment must match the task record `tier`
-- the `FT-<NNN>` segment must match the task record `feature`
-- the `W<N>` segment must match the task record `wave` (`W1` -> `W1`)
-- the task file must be `<task.id>.task.json`
-
-Правила:
-- каждая задача должна быть достаточно маленькой (обычно 1–2 часа)
-- каждая задача описывает:
-  - что сделать
-  - какие файлы трогаем
-  - какие тесты написать
-  - как проверить
-  - какие MB документы обновить (Docs First)
-
-Минимальный JSON record (обязательно для `/autopilot` и `/autonomous`):
-```json
-{
-  "id": "TASK-001-T1-FT-001-W1",
-  "title": "Short task title",
-  "status": "planned",
-  "wave": "W1",
-  "feature": "FT-001",
-  "reqs": ["REQ-001"],
-  "depends_on": [],
-  "touched_files": [],
-  "tier": "T1",
-  "gates": [
-    {
-      "name": "unit tests",
-      "command": "npm test",
-      "required": true
-    }
-  ],
-  "verify": [],
-  "docs": [],
-  "evidence_required": [],
-  "source_artifacts": [],
-  "normative_inputs": [],
-  "constraints": [],
-  "invariants": [],
-  "verification_targets": []
-}
+```yaml
+spec_design_status: complete|not_required|blocked
+spec_design_links:
+  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
 ```
 
-Optional runtime context fields may be added only when there is evidence in the
-PRD, feature docs, linked specs, baseline docs, contracts, states, runbooks, or
-testing docs:
+Rules:
+- An unresolved explicit `blocked` status must stop task drafting in preflight.
+  A successful direct repair must replace it with a truthful status before the
+  provisional outline. If the loop discovers a new blocker, record it and stop
+  affected task/packet/handoff writes instead of pretending the feature remains
+  ready.
+- `not_required` is valid only for simple work with no meaningful architecture,
+  interface/contract, data, state, security, migration, runtime, or cross-module
+  pressure; record a concise rationale, use empty `spec_design_links`, and create
+  no fake specs.
+- `complete` requires every relevant design area to have a concrete
+  authoritative link or an explicit feature-level `not_applicable` rationale;
+  treat an existing `complete` as a baseline to reconfirm after the loop.
+- Missing/incomplete status means the loop must complete or block feature design.
 
-```json
-{
-  "purpose": "Why this task exists.",
-  "success_outcome": "Observable result that proves real success.",
-  "anti_goals": [
-    "What must not be changed or optimized away."
-  ],
-  "runtime_context": {
-    "allowed_write_scope": [],
-    "forbidden_scope": [],
-    "stop_conditions": []
-  }
-}
+Prefer one feature hub at
+`.memory-bank/tech-specs/FT-<NNN>-<slug>.md` with only relevant Architecture
+impact, Interfaces/Contracts, Data impact, and Verification sections. Use a
+separate natural owner only when it reduces ambiguity. Keep `spec-index.md`
+registry links current; shared/global readiness remains in `spec-backbone.md`.
+
+### 5.2 Canonical concrete readiness and ownership
+
+When a task changes or depends on a concrete boundary, exactly one linked
+authoritative owner must define its:
+- shape
+- `MUST` / `MUST NOT` rules
+- edge cases/errors
+- verification target
+
+The block must make implementation possible without guessing. This single rule
+governs T2/T3 concrete design readiness throughout the command.
+
+Select the owner in this order:
+1. Extend an existing authoritative owner within its established rules.
+2. Fill a concrete owner routed by `/spec-design` as `needed_before_tasks`.
+3. Use the feature hub for genuinely feature-local behavior with no shared reuse.
+4. Route a new/unclear shared owner or global decision to `/spec-design`.
+
+Create a new feature-local owner only when no existing owner is suitable; record
+a short rationale and register/link it from `spec-index.md` and the feature.
+
+When a routed `needed_before_tasks` concrete block becomes sufficient, update
+its Backbone Area Matrix row to `authoritative`, or to `not_applicable` with a
+rationale when evidence proves the area irrelevant. Product handoff must leave
+no `needed_before_tasks` row unresolved.
+
+Examples:
+- HTTP/RPC boundary -> API Contract or stack-native schema owner
+- event/message boundary -> Event Contract and boundary Data Contract when
+  payload compatibility matters
+- internal DB/storage/migration/state -> Data Specification
+- feature-local/UI behavior -> feature tech-spec hub or established guide
+
+Data Contract owns payloads crossing component/API/event/protocol boundaries.
+Internal models, DB/storage, persistence, and migrations belong to Data
+Specification. Component Contract is needed only when a component boundary is
+crossed or changed.
+
+Applicable concrete owners cover:
+- Component Contract: guarantees, responsibilities, dependencies, forbidden
+  calls, ownership, and failure boundaries.
+- API Contract: inputs/outputs, auth, status/error behavior, compatibility, and
+  protocol-specific concerns such as pagination or upload when relevant.
+- Event Contract: producer/consumer, envelope/fields, ordering, versioning,
+  retry/idempotency, delivery, and failure behavior.
+- Data Contract: boundary payload structure, versions, required fields,
+  validation/serialization, and compatibility.
+
+When creating/materially changing a concrete owner, make ownership explicit:
+
+```markdown
+## Ownership
+- Owns:
+- Does not own:
+- Related specs:
 ```
 
-Rules for optional purpose/runtime fields:
-- do not invent `purpose`, `success_outcome`, `anti_goals`, or
-  `runtime_context` without evidence
-- when boundary evidence exists in `.memory-bank/contracts/boundary-map.md` or
-  other contracts/specs, link those docs through existing fields such as
-  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
-  `verification_targets`; do not add boundary-specific task fields
-- for `T2` / `T3` or shared-boundary work, read relevant
-  `.memory-bank/architecture/system-architecture.md#Architecture Spine`
-  decisions and `.memory-bank/contracts/boundary-map.md` boundary cards before
-  slicing tasks
-- when an `AD-*` or boundary card constrains the task, copy the doc link into
-  `normative_inputs`, copy the executable rule into `constraints` or
-  `invariants`, and add a concrete check to `verification_targets`
-- if required T2/T3 boundary, concrete contract, or architecture decisions are
-  missing, contradictory, or not checkable, stop with a design blocker and route
-  shared/global gaps back to `/spec-design`; keep feature-local repair inside
-  `/prd-to-tasks` instead of creating a weak task record
-- `T0` / `T1` tasks may omit runtime context entirely
-- `T0` / `T1` tasks require packets only when there is explicit evidence that
-  compact executable runtime context is needed; in that case set
-  `runtime_context.packet_required: true`
-- do not infer packets for `T0` / `T1`; if `packet_ref` exists without
-  `packet_required: true`, it is advisory only
-- `T2` / `T3` tasks always require an Execution Packet before implementation
-- for every generated `T2` / `T3` task, set
-  `runtime_context.packet_required: true` and `packet_ref` to
-  `.memory-bank/packets/<task.id>.packet.json`
-- if a planned `T2` / `T3` task is downgraded to `T0` / `T1`, remove the
-  automatic packet requirement unless explicit T0/T1 packet evidence remains
-- `allowed_write_scope` may default from `touched_files` when that scope is
-  already evidenced by the task plan
-- `allowed_write_scope`, `forbidden_scope`, and `stop_conditions` may be copied
-  from linked boundary notes/contracts only when the task needs executable
-  scope constraints
-- use `forbidden_scope` only for concrete risks
-- keep `stop_conditions` short, for example:
-  - linked spec contradicts task goal
-  - needed public contract is missing
-  - implementation requires scope outside `allowed_write_scope`
-  - verification cannot prove `success_outcome`
-  - security/runtime decision is unclear
+Do not duplicate concrete blocks in task records, plans, packets, or secondary
+docs; link the owner and copy only task-relevant executable constraints,
+invariants, and verification targets.
 
-Required enums:
-- `status`: `planned|ready|in_progress|blocked|done|failed`
-- `tier`: `T0|T1|T2|T3`
+Keep `spec-index.md` a pure registry. Feature design status belongs only in
+feature frontmatter; shared/global readiness belongs in `spec-backbone.md`.
 
-Tier is mandatory. Do not create or index a task record without `tier`.
-Authoritative execution, verification, red-verification, and autonomous routing are determined only by `task.tier`.
-The old `risk` / `risk.level` model is invalid and removed.
+### 5.3 Question gate
 
-Tier assignment:
-- `T0`: trivial docs-only or formatting/link fixes with no runtime, contract, state, data, security, or test impact.
-- `T1`: local code or local behavior with low blast radius.
-- `T2`: cross-module, API/contract/schema/state/data/migration/domain behavior, or changes where tests can pass while the substance is wrong.
-- `T3`: auth, security, secrets, deploy/runtime/production impact, irreversible/data-loss, payments, compliance, or other critical changes.
-- If uncertain between two tiers, choose the higher tier.
-- If scope grows during planning, update `tier` before handing the task to execution.
+Ask `0-3` focused questions in one pass only when the answer can materially
+change architecture impact, component/API/event/data contracts, storage/state,
+compatibility, security, or verification.
 
-Persistence rule:
-- If the feature includes mutable runtime state, storage, persistence, read-model authority, seed data, or migrations, create at least one task that explicitly names the DB-backed storage path, not only schema or migration files.
-- That task must include a runtime smoke or repository integration verification target that exercises read/write through the persistence boundary.
-- If persistence is truly not needed, mark the storage/persistence area `not_applicable` in the relevant spec instead of creating a fake DB task.
+Group related questions around the current boundary and state what decision they
+unblock. If one answer affects several provisional tasks, ask once before the
+first, record it in `decision-log.md`, and reuse it. Do not ask to fill a
+template or reconfirm authoritative evidence.
 
-Эти ключи обязательны в task records; когда есть достаточно evidence и это реально помогает downstream deterministic execution, заполняй их содержимым:
-- `source_artifacts`
-- `normative_inputs`
-- `constraints`
-- `invariants`
-- `verification_targets`
+In autonomous mode, do not invent unsafe product/design decisions. Record the
+blocker and stop according to the active workflow.
 
-Важно:
-- ключи обязательны, но значения могут быть пустыми массивами, если evidence нет
-- не выдумывай содержимое без evidence из PRD / feature docs / baseline docs / contracts / states / runbooks
-- when task-relevant behavior specs exist, include their file paths only in
-  `source_artifacts`; never copy them into verification/gate/constraint fields
-- for `T2` / `T3`, include relevant linked SDD specs from `spec_design_links`, `.memory-bank/spec-backbone.md`, and `spec-index.md` in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
-- include relevant backbone specs from `.memory-bank/spec-backbone.md` and `spec-index.md` whenever they constrain source of truth, module boundaries, runtime data model, API behavior, events/messages, frontend component behavior, invariants, or testing gates
-- include relevant Architecture Spine `AD-*`, ADR, and boundary-map links for
-  T2/T3 or shared-boundary work when they constrain implementation or
-  verification
-- if a planned `T2` / `T3` task still has no relevant linked SDD spec after the feature design phase, stop with a design blocker; route shared/global gaps to `/spec-design`, or repair feature-local gaps before creating a weak task record
-- if a planned `T2` / `T3` task depends on a concrete boundary but the linked
-  authoritative spec lacks `shape`, `rules`, `edge cases/errors`, or
-  `verification target`, stop before creating the task record and repair the
-  natural owner inside this command
+### 5.4 Process each provisional task
 
-Обнови `.memory-bank/tasks/index.json` только ссылками:
-```json
-{
-  "version": 1,
-  "tasks": [
-    {
-      "id": "TASK-001-T1-FT-001-W1",
-      "file": "TASK-001-T1-FT-001-W1.task.json"
-    }
-  ]
-}
-```
+For each candidate in dependency order:
+1. Refresh only specs/routes changed by earlier iterations or newly relevant to
+   this task.
+2. Apply three design lenses:
+   - Architecture impact: constraining boundary/source-of-truth/runtime rules
+     including security/safety constraints and any new shared/global decision.
+   - Interfaces/Contracts: actual component, API, event, protocol, agent/tool,
+     external, or frontend/backend boundary and its concrete owner.
+   - Data impact: domain rules/invariants, internal model, DB/storage,
+     persistence/migration, validation/serialization, lifecycle, retention,
+     seed, or runtime data path.
+3. Use the question gate for material unresolved choices.
+4. Update only the minimum grounded authoritative owners and registry links.
+5. Apply canonical concrete readiness.
+6. Write the final task record in
+   `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and validate it
+   against the already-loaded task schema before indexing it.
 
-Правила ready-state:
-- product feature tasks must not use `W0`; `W0` is reserved for `FT-000`
-  foundation work created by `/foundation-to-tasks`
-- product tasks with no deps may start as `ready` only when all preflight gates
-  are satisfied, including the foundation gate when required
-- downstream tasks по умолчанию `planned`
-- `planned -> ready` происходит явно, когда все prerequisites/dependencies уже `done` или отсутствуют, и нет blockers / blocking review rejects
-- dependent task может быть `ready`, если все её dependencies уже `done`
+If design remains blocked, set/report feature design `blocked` and do not write
+the affected task or build packets/handoff execution.
+Use `blocked` only when the design cannot be made truthful without a user
+decision or external evidence.
 
-## 6) Build required Execution Packets
-Only after all task records are written and the feature consistency pass in
-section 5 succeeds, build initial derivative Execution Packets while the
-feature/task/spec context is still loaded. Do not create packets inside the
-per-task design loop.
+### 5.5 Task record semantic invariants
 
-Create or refresh `.memory-bank/packets/<task.id>.packet.json` for:
-- every generated `T2` / `T3` task
-- every `T0` / `T1` task with `runtime_context.packet_required: true`
-- every existing required-packet task affected by task-card or linked-spec
-  reconciliation, including spec-only changes
+The loaded schema and tier policy are authoritative. Additionally:
+- task ID tier/feature/wave segments match `tier`, `feature`, and `wave`
+- every task has one independently verifiable outcome and grounded files/tests
+- every T1/T2/T3 task links concrete governing `REQ-*` IDs in `reqs`; never use
+  placeholder requirement or feature IDs
+- assign tier before writing; never use the removed `risk` model
+- use only dependency-driven product waves `W1+`; `W0` belongs only to `FT-000`
+- downstream tasks start `planned`; `ready` requires satisfied dependencies and
+  no blockers/rejects
+- add the final foundation gate dependency directly or transitively when required
+- populate `source_artifacts`, `normative_inputs`, `constraints`, `invariants`,
+  `verification_targets`, purpose/outcome, and runtime context only from
+  PRD/feature/spec/baseline evidence; use empty schema-allowed values when no
+  evidence exists
+- keep runtime allowed/forbidden scope and stop conditions concrete and grounded
+- link behavior specs only through `source_artifacts`
+- include task-relevant SDD/AD/ADR/boundary links and executable constraints
+- T2/T3 records set `runtime_context.packet_required: true` and canonical
+  `packet_ref`; T0/T1 require packets only with explicit evidence, and a
+  `packet_ref` without `packet_required: true` is advisory
+- if mutable runtime data/persistence is in scope, name the real DB-backed path
+  and require a read/write smoke or repository integration verification target
+- if persistence is not needed, record `not_applicable` in the relevant spec
+  instead of creating a fake DB task
 
-Use `skills/_shared/references/protocols/packet-template.json` shape when
-available. Each packet is derivative only; task records, feature docs, linked
-SDD specs, and tier policy remain authoritative.
+Update `.memory-bank/tasks/index.json` with references only. Do not add another
+task model or task-specific fields outside the schema.
 
-For each required packet:
-1. Use the just-written task record as the source task.
-2. Compute `source_task_hash` as `sha256:<64-lowercase-hex>` over the raw task
-   record bytes.
-3. Fill source refs, purpose fields, scope, verification checks, evidence
-   requirements, stop conditions, and required handoff from the task record,
-   implementation plan, linked feature, and linked specs.
-4. Use status `ready` when usable, `ready_with_gaps` for bounded non-blocking
-   gaps, or `blocked` when required inputs are missing, contradictory, or
-   insufficient for safe execution.
+### 5.6 Feature consistency
 
-For T2/T3 required packet use, missing linked SDD specs, missing verification
-basis, contradictory scope, or unresolved public contract/state/data/security
-decisions are packet blockers, not `ready_with_gaps`.
+After all records exist:
+- reread generated/updated records and authoritative owners
+- repair earlier task links if a later iteration changed shared feature detail
+- confirm acceptance criteria coverage, coherent dependencies/waves, and one
+  owner per concrete boundary
+- confirm every T2/T3 task remains implementable without guessing
+- finalize truthful `spec_design_status` and `spec_design_links`
 
-Standalone `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` remains the repair/refresh command when task
-records or specs change after decomposition.
+Do not leave `complete` while a relevant area is planned, candidate, unknown,
+conflicting, or unresolved. Do not build packets when final consistency is
+blocked.
 
-If a task record changes after its packet was generated, run
-`/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` again before `/execute`, `/verify`,
-`/autopilot`, or strict readiness handoff. Do not hand off a required packet
-whose `source_task_hash` no longer matches the indexed task record.
+For `--all`, process features in priority order, reread `tasks/index.json` after
+each feature, avoid duplicate IDs, and never start execution from this command.
 
-## 7) Readiness handoff
+## 6) Required Execution Packets
+
+After feature consistency succeeds, create or refresh
+`.memory-bank/packets/<task.id>.packet.json` for:
+- every T2/T3 task
+- every T0/T1 task with `runtime_context.packet_required: true`
+- every existing required-packet task affected by task/spec reconciliation
+
+Use `source_task_hash: sha256:<64-lowercase-hex>` over raw task-record bytes.
+Packet status is `ready|ready_with_gaps|blocked`. Missing/contradictory task,
+scope, verification, or required spec evidence blocks the packet; unresolved
+public contract/state/data/security gaps are never `ready_with_gaps`.
+
+Use the installed `/mb-packet` content contract and packet template when
+available to fill source refs, purpose/scope, verification, stop conditions,
+and handoff. Do not invent a second packet shape here.
+
+Task records and linked specs remain authoritative; packets are derivative.
+Refresh required packets after task or linked-spec changes, including spec-only
+changes. `/mb-packet TASK-...` remains the packet-only repair/refresh command.
+
+## 7) Final handoff
+
 Before handoff:
-- проверь что acceptance criteria из FT покрыты задачами
-- verify that every provisional task completed the task-by-task design loop and
-  the final feature consistency pass succeeded
-- обнови RTM при необходимости
-- если richer fields были добавлены, проверь что они не противоречат feature doc и RTM
-- for `T2` / `T3`, verify that `runtime_context.packet_required: true` and
-  canonical `packet_ref` are present before handing off task records
-- if `runtime_context.packet_required` is set for any tier, verify that
-  `packet_ref` points to expected `.memory-bank/packets/<task.id>.packet.json`
-- required packet files exist and have `status: ready|ready_with_gaps`; if any
-  required packet is `blocked`, report the blocker and do not hand off execution
-- if any required task record was changed after packet generation, refresh the
-  packet with `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` before handoff
-- when foundation is required, every created/updated non-`FT-000` product task
-  has the final foundation gate task in `depends_on` directly or transitively
-
-Если используется `--all`:
-- пройдись по всем product `FT-*` в порядке приоритета, excluding `FT-000`
-- после каждой фичи перечитай `tasks/index.json` и избегай дублирования `TASK-*`
-- не запускай execution отсюда; только готовь autonomous-ready JSON task queue
+- validate every created/updated task against `task.schema.json` and its index
+  reference
+- confirm feature acceptance coverage and final design status
+- confirm foundation dependencies and required usable canonical packets whose
+  `source_task_hash` matches the current raw indexed task record
+- update RTM/docs only where planning changed durable state
+- report blockers explicitly
 
 Final report:
-- feature id and final `spec_design_status`
-- queue action: `created|reconciled|rebuild_required`
-- linked specs created/used
-- task-by-task design coverage: `complete|blocked`
-- implementation plan path
-- behavior specs created/linked, or `none`
-- task records created/updated
-- packet files created/updated and their statuses
-- foundation gate dependency: `not_required` or `TASK-<NNN>-T<N>-FT-000-W<N>`
-- blockers/open questions, or `none`
-- next gate:
-  - for `FT-<NNN>`: run `/review-tasks-plan FT-<NNN>`, then conditional
-    `/mb-doctor` for T3, autonomous/autopilot handoff, or complex
-    T2/foundation/dependency/packet/stale-doc/risky-link cases before
-    tier-routed `/execute TASK`
-  - for `--all`: run `/review-tasks-plan FT-<NNN>` for every task-linked
-    product feature before scheduler execution
+- feature ID and queue action: `created|reconciled|rebuild_required`
+- final design status and authoritative specs created/updated/used
+- task records and packets created/updated
+- blockers/questions, or `none`
+- next step
+
+Next step:
+- one feature: `/review-tasks-plan FT-<NNN>`, then conditional `/mb-doctor`
+- `--all`: review every task-linked product feature before scheduler execution
+
+Do not execute tasks from this command.
+
 </process>

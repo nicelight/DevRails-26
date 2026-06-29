@@ -326,21 +326,22 @@ runtime context.
 
 Все переходы записывай в соответствующий `.task.json`. Queue state в `.protocols/AUTONOMOUS-RUN/status.md` должен ссылаться на task record paths, а не дублировать authoritative state.
 
-## 9) Wave review
+## 9) Wave boundary
 После завершения каждой wave:
 - убедись, что все `semantic-concern` этой wave имеют явное решение (blocked status, human review required, or follow-up); без subsequent `semantic-pass` affected tasks are not closed
 - обнови `.protocols/AUTONOMOUS-RUN/status.md`
 - запусти `node scripts/mb-lint.mjs`, затем `/mb-doctor --strict`; если gate падает, не закрывай wave и не переходи к следующей wave
-- запусти `/review-tasks-plan FT-<NNN>` по каждой product feature, затронутой
-  завершенной wave; если wave affected-feature set cannot be determined
-  safely, review every task-linked product feature one by one
+- запусти `/review-tasks-plan FT-<NNN>` только для product features, где wave
+  изменила task cards, specs, dependencies, tier, scope, required packets или
+  вскрыла unresolved plan assumptions. Изменения только status, verify evidence
+  или protocol progress не требуют нового task-plan review
 
 Если доступны **оба** движка:
 - prefer engine A for execution
-- prefer engine B for final wave/final task-plan review
+- prefer engine B for a required task-plan review
 - не ревьюй критичный результат тем же freshest writer-context, если есть альтернатива
 
-Если review после wave даёт `REJECT`:
+Если conditional review после wave даёт `REJECT`:
 - исправь и повтори
 - если budget исчерпан → `HALT_REVIEW_REJECT`
 

@@ -47,6 +47,17 @@ Required reads:
 `/spec-design` must run first. If `.memory-bank/foundation.md` is missing, route
 back to `/spec-design` and stop before task generation.
 
+Before reading foundation anchors or writing any artifact, require
+`.memory-bank/spec-backbone.md` `## Global Backbone Status` to be:
+- `complete`; or
+- `minimal` with the explicit `Not applicable areas` entries and rationales
+  required by the `/spec-design` status contract.
+
+If the section or status is missing/malformed, the status is `blocked`, or
+`minimal` lacks explicit not-applicable rationale, stop and route back to
+`/spec-design`. Do not create or update foundation specs, `REQ-000`, `FT-000`,
+task records, protocols, plans, or packets.
+
 ## 1) Foundation contract
 Read `.memory-bank/foundation.md` and require this parseable section:
 
@@ -116,14 +127,16 @@ feature. A good foundation block records:
 - where `/prd-to-tasks` should extend the same owner or create feature-local
   specs later
 
-Audit the key SDD families as foundation substrate concerns. Create or update
-the natural owner when the foundation path touches the family:
-- Architecture Specification: minimal runtime shape, entrypoints, core
+Apply the same three design lenses used by `/spec-design` and `/prd-to-tasks`,
+but only to the substrate proof path:
+- Architecture impact: minimal runtime shape, entrypoints, core
   components/modules, dependency direction, source-of-truth boundary, and the
-  smallest vertical path through real layers.
-- Interface Specification: API, event, protocol, CLI, agent/tool, or
-  frontend/backend boundary used by the substrate proof path. Include the
-  relevant fundamental contracts:
+  smallest vertical path through real layers. Update the existing Architecture
+  Specification owner; do not introduce product architecture here.
+- Interfaces / Contracts: API, event, protocol, CLI, agent/tool, component, or
+  frontend/backend boundary actually crossed by the substrate proof path.
+  Interface Specification is the lens; create or update only the applicable
+  fundamental contract owners:
   - Component Contract: module/component guarantees and ownership boundaries
     required by the walking skeleton.
   - API Contract: substrate-level REST/gRPC/GraphQL or other request/response
@@ -134,11 +147,16 @@ the natural owner when the foundation path touches the family:
     event/message boundary.
   - Data Contract: payload/data structure, versions, required fields,
     validation/serialization, and compatibility expectations for substrate data
-    crossing a boundary.
-- Data Specification: data model/storage ownership needed by the baseline, DB
+    crossing a component/API/event/protocol boundary. It does not own internal
+    DB/storage models.
+- Data impact: update the Data Specification only for internal data
+  model/storage ownership needed by the baseline, DB
   schema or migration path when persistence is part of foundation, session/UoW
-  lifetime, seed/bootstrap behavior, runtime data paths, message/data formats,
-  and validation/serialization rules used by the substrate proof.
+  lifetime, seed/bootstrap behavior, runtime data paths, internal stored or
+  serialized formats, and internal validation/serialization rules used by the
+  substrate proof.
+
+Create supporting substrate specs only when the proof path needs them:
 - Test Harness Specification: test command, smoke/integration target, required
   fixtures, and evidence expected from foundation verification.
 - Local Runtime / Bootstrap Runbook: setup/start commands, environment
@@ -156,10 +174,11 @@ routed a relevant Backbone Area Matrix row to foundation proof.
 
 Natural owners:
 - architecture/runtime shape -> `.memory-bank/architecture/*`
-- interface/API/message/agent/tool substrate proof and fundamental contracts ->
-  `.memory-bank/contracts/*`
-- DB/session/UoW/migration/seed/storage ownership -> `.memory-bank/domains/*` or
-  `.memory-bank/contracts/*`
+- interface/component/API/event/protocol/agent/tool boundaries and payloads
+  crossing them -> `.memory-bank/contracts/*`
+- internal DB/session/UoW/migration/seed/storage ownership ->
+  `.memory-bank/domains/*`, `.memory-bank/states/*`, or the stack-native schema
+  and migration source
 - test harness and evidence requirements -> `.memory-bank/testing/*`
 - local runtime/bootstrap/troubleshooting -> `.memory-bank/runbooks/*`
 
@@ -245,8 +264,7 @@ Task rules:
 - fill the normal task schema fields; use empty arrays only when no evidence
   exists
 - include scaffold-level spec links from section 2.1 when they constrain
-  foundation architecture, primary runtime/backend scaffold, interface smoke,
-  component/API/event/data contracts, DB/session/UoW/migration, test harness,
+  foundation Architecture, Interfaces / Contracts, Data, test harness,
   runtime/bootstrap, or redaction/evidence behavior
 - never add foundation-specific task fields or lifecycle values
 
