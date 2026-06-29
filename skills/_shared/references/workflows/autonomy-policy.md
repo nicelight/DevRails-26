@@ -25,12 +25,12 @@ Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOM
 - mandatory `/mb-doctor --strict` before autonomous/autopilot task selection, after `/mb-sync` before promotion, and before final success
 - tier-appropriate verification per TASK:
   - T0/T1: compact evidence may be enough
-  - Scheduler mode T2: full protocol, required packet/spec gates, and `/verify` PASS are required before scheduler marks the task done; per-task `/red-verify` is not required
+  - Scheduler mode T2: full protocol, applicable task/spec gates, and `/verify` PASS are required before scheduler marks the task done; per-task `/red-verify` is not required
   - T2 feature completion: feature-level `/red-verify --feature FT-<ID>` semantic-pass is required after all feature tasks are implemented and must be recorded in the feature doc
   - `FT-000`: foundation pseudo-feature; do not apply product feature-completion semantics
   - Scheduler mode T3: `/verify` PASS and per-task `/red-verify` semantic-pass are required before scheduler marks the task done
   - Manual mode T0/T1: `/verify` PASS may close only with explicit closure ownership and completed evidence
-  - Manual mode T2: `/verify` PASS plus full protocol and required packet/spec
+  - Manual mode T2: `/verify` PASS plus full protocol and applicable task/spec
     gates makes the task closure-eligible; the explicit owner writes the
     lifecycle decision, and T2 feature completion still requires feature-level
     semantic-pass recorded in the feature doc

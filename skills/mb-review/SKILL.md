@@ -22,7 +22,7 @@ Use:
 - `/review-feat-plan` to check PRD -> REQ/EP/FT decomposition before
   `/spec-design`
 - `/review-tasks-plan FT-<NNN>` to check one feature's JSON task records, waves,
-  dependencies, packets, tier routing, and Foundation Dev Path dependencies
+  dependencies, single-card handoff, tier routing, and Foundation Dev Path dependencies
   before execution
 - `/review-tasks-plan --all` only as a convenience expansion into independent
   per-feature reviews for every task-linked product feature before

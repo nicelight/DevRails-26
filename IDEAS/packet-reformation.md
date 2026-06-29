@@ -2,8 +2,8 @@
 
 ## Статус
 
-Направление одобрено и уточнено после проверки полного workflow и текущих
-packet dependencies. Документ готов служить implementation plan.
+Реализовано: framework переведён на single-card task handoff, persisted packet
+family и `/mb-packet` удалены, downstream contracts и проверки согласованы.
 
 ## Flow до рефакторинга
 

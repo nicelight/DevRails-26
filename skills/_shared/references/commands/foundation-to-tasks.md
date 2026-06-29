@@ -15,7 +15,6 @@ Foundation uses the same execution model as product work:
 - `.memory-bank/tasks/index.json`
 - `.protocols/TASK-*`
 - `.tasks/TASK-*`
-- `.memory-bank/packets/TASK-*.packet.json`
 
 Do not create a separate foundation registry, task lifecycle, protocol family, or
 task schema.
@@ -56,7 +55,7 @@ Before reading foundation anchors or writing any artifact, require
 If the section or status is missing/malformed, the status is `blocked`, or
 `minimal` lacks explicit not-applicable rationale, stop and route back to
 `/spec-design`. Do not create or update foundation specs, `REQ-000`, `FT-000`,
-task records, protocols, plans, or packets.
+task records, protocols, or plans.
 
 ## 1) Foundation contract
 Read `.memory-bank/foundation.md` and require this parseable section:
@@ -266,13 +265,21 @@ Task rules:
 - include scaffold-level spec links from section 2.1 when they constrain
   foundation Architecture, Interfaces / Contracts, Data, test harness,
   runtime/bootstrap, or redaction/evidence behavior
+- every T2/T3 record has non-empty `purpose` and one scalar
+  `success_outcome`, at least one existing task-linked authoritative SDD spec
+  path, grounded scope in `touched_files` and/or
+  `runtime_context.allowed_write_scope`, and at least one verification path
+  through a real gate command and/or non-empty `verification_target`
+- leave `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
+  `invariants`, `evidence_required`, and `runtime_context.stop_conditions`
+  empty or absent when current evidence does not justify them
 - never add foundation-specific task fields or lifecycle values
 
 Brownfield `--verify-existing` mode should not create `FT-000` by default. If
 existing baseline evidence is already verified and no task is needed, update
 `.memory-bank/foundation.md` to `Foundation Required: false` and
 `Foundation Gate Task: not_required` with concise evidence/rationale, then stop
-without creating `REQ-000`, `FT-000`, protocols, packets, or task records. If
+without creating `REQ-000`, `FT-000`, protocols, or task records. If
 evidence is insufficient, keep `Foundation Required: true` and create only the
 minimum probe/verification tasks needed to prove the existing baseline before
 product feature tasking.
@@ -296,19 +303,21 @@ Do not mark the gate `done` during this command. Execution and verification go
 through `/execute`, `/verify`, `/red-verify` when tier requires it, and
 `/mb-sync`.
 
-## 6) Execution Packets
-Create or refresh required initial Execution Packets for:
-- every foundation `T2` / `T3` task
-- every foundation `T0` / `T1` task with
-  `runtime_context.packet_required: true`
+## 6) T2/T3 single-card handoff completeness
 
-Use the same packet rules as `/prd-to-tasks`:
-- canonical path `.memory-bank/packets/<task.id>.packet.json`
-- `source_task_hash` over the raw task record bytes
-- packet is derivative and never overrides task/spec/foundation truth
-- use `status: ready`, `ready_with_gaps`, or `blocked`
+Before handoff, apply the same single-card completeness contract as
+`/prd-to-tasks` to every foundation T2/T3 record:
+- schema/index/ID segments are valid
+- `REQ-000` and any additional governing requirements exist
+- `purpose` and scalar `success_outcome` are non-empty
+- at least one existing task-linked authoritative SDD spec path is present
+- scope is grounded by `touched_files` and/or
+  `runtime_context.allowed_write_scope`
+- a real gate command and/or non-empty `verification_target` exists
+- dependencies exist and remain acyclic
 
-If a packet is blocked, keep the task queue but do not hand off to execution.
+This does not add a new status, artifact, nested object, or semantic doctor
+rule. Optional evidence-driven fields remain grounded-only.
 
 ## 7) Handoff
 Before finishing:

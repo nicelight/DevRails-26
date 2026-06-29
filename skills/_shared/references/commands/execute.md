@@ -28,22 +28,22 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, no required packet is involved, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
+- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
 - When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
 - When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and required packet/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
 - `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done` or `/mb-sync`; if semantic-pass is absent, leave closure pending or blocked, not done.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -59,8 +59,6 @@ Required sources:
 - `.memory-bank/workflows/tier-policy.md`
 - task-relevant feature, epic, requirements, or normative docs only when they
   are needed to interpret the selected task or are referenced by the task
-- `.memory-bank/packets/<TASK_ID>.packet.json` only when required by tier/policy
-  or explicitly needed as advisory context
 - linked authoritative SDD specs only when the task record or linked feature
   actually references them
 
@@ -68,8 +66,8 @@ Do not load planning/global docs by default for manual execution. For `T0` /
 `T1`, avoid `.memory-bank/constitution.md`, `.memory-bank/mbb/index.md`,
 `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
 `.memory-bank/index.md`, role docs, and broad planning docs unless the selected
-task, feature, tier, packet, or linked specs route to them. For `T2` / `T3`,
-load required packet/spec context according to tier policy.
+task, feature, tier, or linked specs route to them. For `T2` / `T3`, load
+task-linked authoritative spec context according to tier policy.
 
 Use richer task fields when present:
 - `purpose`
@@ -81,23 +79,6 @@ Use richer task fields when present:
 - `invariants`
 - `verification_targets`
 - `runtime_context`
-
-Packet context:
-- `/foundation-to-tasks` creates initial required Execution Packets for
-  `FT-000` foundation tasks, `/prd-to-tasks` creates them for product tasks, and
-  `/mb-doctor` validates packet readiness at the foundation/task-queue or
-  feature/task-queue boundary.
-- A canonical `.memory-bank/packets/<TASK_ID>.packet.json` is required for every
-  `T2` / `T3` task, regardless of an absent or false
-  `runtime_context.packet_required`; it is required for `T0` / `T1` only when
-  `runtime_context.packet_required: true`.
-- `/execute` checks only that a required canonical packet exists before
-  implementation. It does not validate `packet_ref`, packet shape/status,
-  `source_task_hash`, or freshness; those readiness checks remain owned by the
-  planning command, `/mb-doctor`, `/mb-packet`, or scheduler gate.
-- When a packet is optional/advisory or only explicitly linked for context,
-  `/execute` may read it. If that optional context is absent, continue from the
-  authoritative task/spec inputs unless implementation is semantically unsafe.
 
 Boundary notes are not a separate artifact flow. If the task links
 `.memory-bank/contracts/boundary-map.md` or other boundary/contract specs
@@ -162,9 +143,6 @@ Stop with an explicit error if:
 - `tier` is not `T0`, `T1`, `T2`, or `T3`
 - task `status` is `blocked`, `failed`, or `done`
 - any `depends_on` task is missing or has status other than `done`
-- the canonical `.memory-bank/packets/<TASK_ID>.packet.json` is missing for a
-  `T2` / `T3` task, or for a `T0` / `T1` task with
-  `runtime_context.packet_required: true`
 - `tier` is `T2` or `T3` and neither richer task fields nor linked feature
   `spec_design_links` route through the backbone/index to a relevant concrete
   SDD spec
@@ -176,7 +154,7 @@ Stop with an explicit error if:
   the SDD taxonomy above, or that owner lacks `shape`, `rules`,
   `edge cases/errors`, or a `verification target`
 - the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
-- the task, packet summary, feature, implementation plan, linked specs, or
+- the task, feature, implementation plan, linked specs, or
   acceptance criteria are objectively contradictory, underspecified for safe
   implementation, or logically inconsistent
 - success cannot be verified from the provided acceptance criteria,
@@ -195,11 +173,6 @@ For a feature-local SDD readiness gap, stop and route the planning/scheduler
 owner to `/prd-to-tasks FT-<NNN>` reconciliation. For a shared/global design
 gap, route to `/spec-design`. Do not settle either gap locally in `/execute`.
 
-If a packet exists, treat it as derivative context. If it contradicts the task
-record or linked specs in a way that affects implementation semantics, stop with
-a blocker and report the contradiction; do not repair or validate the packet
-inside `/execute`.
-
 ### Tier escalation handoff
 
 If preflight or implementation evidence shows that the task requires a higher
@@ -209,7 +182,7 @@ tier:
    changes/evidence, and whether splitting is preferable in the protocol and
    handoff.
 3. Do not update `task.tier` in place: the tier is part of task ID, task path,
-   packet path, index references, and dependency references.
+   index references, and dependency references.
 4. Route `/prd-to-tasks FT-<NNN>` to rebuild or split the target task under its
    existing-queue reconciliation rules. Name the original task ID explicitly.
 5. Rerun `/review-tasks-plan FT-<NNN>`, then the applicable `/mb-doctor` gate,
@@ -248,8 +221,6 @@ Use protocol templates when available. In `plan.md` or compact `run.md`, record:
 - task tier and authoritative task record path
 - richer inputs found
 - fallback basis used when richer inputs are absent
-- packet context path/status/gaps when required by tier/policy or explicitly
-  linked by the task/feature
 - Goal Interpretation:
   - Purpose:
   - Success outcome:
@@ -306,8 +277,7 @@ Run local implementation gates relevant to the touched code:
 - lint / typecheck when applicable
 - unit tests for touched behavior
 - integration/e2e checks only when relevant
-- packet-sourced `verification.commands` and `verification.success_checks` when
-  packet context is present and the checks apply to this task
+- task `gates` and task/spec `verification_targets` that apply to this task
 
 Record for each gate:
 - command
@@ -334,7 +304,7 @@ Return a concise handoff report containing:
 - verification targets and notes for `/verify` or `/red-verify`
 - scope compliance: yes/no
 - forbidden scope touched: yes/no
-- packet-sourced commands/checks used or explicitly skipped with reason
+- task/spec commands and checks used or explicitly skipped with reason
 - MB-SYNC handoff notes for scheduler or explicit standalone owner
 - blockers, unresolved questions, or FAIL reason if any
 - recommended next owner
@@ -345,7 +315,7 @@ If manual `T0` / `T1` fast-lane closure was used, also report:
 - explicit closure owner basis
 - exact compact evidence written to task `verify`
 - whether any runnable check was run, or why none was meaningful
-- confirmation that no required packet, wider scope, or T2/T3 trigger appeared
+- confirmation that no wider scope or T2/T3 trigger appeared
 
 ## 6) Do Not Own
 Except for manual `T0` / `T1` fast-lane closure under the conditions above,

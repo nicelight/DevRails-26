@@ -10,14 +10,8 @@ status: active
 - Не запускать full `/mb-sync` по умолчанию для local manual `T0` / `T1`
   closure, если authoritative `.task.json` уже содержит `status`/`verify`,
   compact `.protocols/<TASK>/run.md` записан, and no RTM/lifecycle/index/
-  changelog/spec/contract/guide/packet/dependency state changed.
+  changelog/spec/contract/guide/dependency state changed.
 - После `/red-verify`, если выполнялась семантическая adversarial-проверка и она изменила или требует reconcile task/docs state.
-- После task run с Execution Packet, если task record/protocol/evidence уже
-  содержит `runtime_context.packet_ref` или packet-related evidence links.
-- После changes to linked SDD specs for tasks with required packets, record a
-  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff or refresh packets only when
-  packet refresh is explicitly in scope. Task-record hash freshness does not
-  prove packet freshness after spec-only changes.
 - После changes that materially affect responsibility boundaries or HOW docs,
   reconcile existing `.memory-bank/contracts/boundary-map.md`, related
   `.memory-bank/contracts/*`, or `.memory-bank/guides/*` as normal Memory Bank
@@ -49,10 +43,10 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
@@ -61,7 +55,7 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T2` manual task closure requires full protocol, applicable task/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
 - `T3` manual task closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -114,13 +108,6 @@ Manual mode:
 - [ ] В manual mode manual closure sync имеет already-recorded explicit owner decision в task record или direct instruction for this sync; иначе report consistency gap and do not infer closure.
 - [ ] Local manual `T0` / `T1` closure with only task `status`, task `verify`,
       and compact `.protocols/<TASK>/run.md` does not require full sync.
-- [ ] Если использовался Execution Packet, reconcile только уже записанные
-  `runtime_context.packet_ref`, protocol links и evidence paths. Не строить
-  packet, не обновлять его статус и не выводить closure/promotion decision из
-  packet status.
-- [ ] If linked specs changed for tasks with required packets, record
-  `/mb-packet TASK-<NNN>-T<N>-FT-<NNN>-W<N>` handoff, or refresh packets only
-  when this sync explicitly owns packet repair.
 - [ ] If behavior specs are linked from feature docs or task `source_artifacts`,
   verify linked files exist. Report stale behavior examples as notes unless a
   normal AC/spec/verification source also fails.
@@ -139,7 +126,7 @@ Manual mode:
 - [ ] `/mb-doctor --strict` passes after sync for `/autonomous` and
   `/autopilot` handoff.
 - [ ] `/mb-doctor --strict` is also run for T3, complex T2,
-  foundation/dependency/packet/stale-doc/risky-link cases before execution
+  foundation/dependency/stale-doc/risky-link cases before execution
   handoff.
 - [ ] Strict mode is not required for a bare generated skeleton or simple manual
   T0/T1 local closure.

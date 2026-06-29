@@ -184,7 +184,7 @@ design is completed before task slicing.
 
 If clarification invalidated feature-local `spec_design_links`, run
 `/prd-to-tasks FT-<NNN>` to reconcile feature specs, task cards, plans, and
-required packets before execution.
+complete task cards before execution.
 
 If clarification invalidated shared/global backbone, concrete contract
 ownership, Architecture Spine, or cross-feature design decisions, route back to

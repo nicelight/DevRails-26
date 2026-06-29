@@ -20,7 +20,7 @@ status: active
 - в установленном target repo запусти `/mb-init`, затем вернись к `/cold-start`;
 - из source repo используй installer bootstrap:
   `node scripts/install-framework.mjs --bootstrap --target <target-repo> --yes`;
-- не создавай roadmap docs, features, packets, or task records до skeleton.
+- не создавай roadmap docs, features, or task records до skeleton.
 
 ## 1) Определи сценарий (не угадывай)
 Проверь:

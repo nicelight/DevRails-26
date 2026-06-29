@@ -61,7 +61,7 @@ Canonical shared source:
 
 - `skills/_shared/agents/*.md`: shared worker/reviewer prompts.
 - `skills/_shared/references/commands/*.md`: canonical command specs copied into generated runtime skills by the installer.
-- `skills/_shared/references/protocols/*`: protocol templates and derivative artifact templates such as `packet-template.json`.
+- `skills/_shared/references/protocols/*`: protocol and handoff templates.
 - `skills/_shared/references/structure-template.md`: Memory Bank structure reference.
 - `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator.
 
@@ -99,7 +99,6 @@ For updates that change the JSON-only task registry or indexed task record model
 - `skills/_shared/references/commands/write-prd.md`
 - `skills/_shared/references/commands/clarify-feature.md`
 - `skills/_shared/references/commands/prd-to-tasks.md`
-- `skills/_shared/references/commands/mb-packet.md`
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/commands/execute.md`
@@ -121,7 +120,7 @@ Primary source files:
 - `skills/_shared/references/commands/spec-design.md` for writing
   `.memory-bank/foundation.md` and the Feature Pressure Map
 - `skills/_shared/references/commands/foundation-to-tasks.md` for `REQ-000`,
-  `FT-000`, foundation task records, packets, and the final foundation gate
+  `FT-000`, foundation task records, and the final foundation gate
 - `skills/_shared/references/commands/prd-to-tasks.md` for rejecting `FT-000`,
   excluding it from `--all`, and adding final gate dependencies to product tasks
 - `skills/_shared/references/commands/autonomous.md`
@@ -161,24 +160,21 @@ Primary source files for this behavior:
 Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
 mandatory ADRs for local/simple work.
 
-## Task Runtime Context / Execution Packet Hotspots
+## Task Runtime Context / Single-Card Handoff Hotspots
 
-Execution Packets are derivative runtime artifacts under
-`.memory-bank/packets/TASK-*.packet.json`, with concrete file names following
-`TASK-NNN-TN-FT-NNN-WN.packet.json`. They summarize task/spec context for one run
-but never replace JSON task records or linked SDD specs as source of truth.
-T2/T3 tasks require a canonical `.memory-bank/packets/<task.id>.packet.json`
-before execute/scheduler
-implementation. T0/T1 tasks require packets only when
-`runtime_context.packet_required: true`.
+The indexed `.memory-bank/tasks/TASK-*.task.json` record is the only durable
+task-scoped planning, execution, and verification handoff. T2/T3 records must
+carry purpose/outcome, a task-linked authoritative SDD path, grounded scope,
+and a verification path before execution. `/mb-doctor` checks only mechanical
+completeness; `/review-tasks-plan` owns semantic applicability and sufficiency.
 
 Primary source files for this behavior:
 
 - `skills/_shared/references/commands/prd-to-tasks.md` for copying
   boundary-map/contract evidence into existing task link fields and
   `runtime_context`
-- `skills/_shared/references/commands/mb-packet.md`
-- `skills/_shared/references/protocols/packet-template.json`
+- `skills/_shared/references/commands/review-tasks-plan.md`
+- `skills/_shared/references/commands/mb-doctor.md`
 - `skills/_shared/references/commands/execute.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/red-verify.md`
@@ -189,9 +185,9 @@ Primary source files for this behavior:
 - `skills/mb-verify/SKILL.md`
 - `skills/mb-red-verify/SKILL.md`
 
-Do not add `.memory-bank/modules/`, `.memory-bank/graph/`,
-`.memory-bank/verification/`, Failure Packet artifacts, or new task lifecycle
-statuses for this flow.
+Do not add a second durable task-context artifact, nested duplicate context
+object, `.memory-bank/modules/`, `.memory-bank/graph/`,
+`.memory-bank/verification/`, or new task lifecycle statuses for this flow.
 
 Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-TN-FT-NNN-WN`, the ID tier/feature/wave segments must match `task.tier`, `task.feature`, and `task.wave`, and commands must treat those records as the only task model.
 
@@ -226,7 +222,6 @@ Fast syntax/source-only check:
 
 ```bash
 npm run check:syntax --silent
-node -e 'JSON.parse(require("node:fs").readFileSync("skills/_shared/references/protocols/packet-template.json", "utf8")); console.log("packet template ok")'
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
 ```
 

@@ -8,7 +8,7 @@ status: active
 Prove or disprove one task's independently verifiable outcome against its
 task-scoped normative basis and reproducible evidence.
 
-`/verify` is not an implementer, planner, scheduler, packet repair command, or
+`/verify` is not an implementer, planner, scheduler, or
 adversarial semantic review. It records functional evidence and one verdict:
 `PASS`, `FAIL`, or `NEEDS-CLARIFICATION`. Use `/red-verify` where required by
 tier policy after functional verification succeeds.
@@ -27,8 +27,6 @@ Read first:
 - the task-linked feature and concrete `REQ-*` sources needed to interpret this
   task's outcome
 - task-linked authoritative SDD specs when present
-- the required packet for every T2/T3 task and for T0/T1 only when
-  `runtime_context.packet_required: true`
 
 Read execution evidence by tier:
 - T0/T1: `.protocols/<TASK_ID>/run.md` and the task's implementation report or
@@ -67,22 +65,6 @@ active scheduler owner.
 
 Authoritative routing uses only `task.tier`; never use legacy `risk` fields.
 
-### Required packet context
-
-Task records and linked specs are authoritative; packets are derivative.
-
-- T2/T3 require canonical `.memory-bank/packets/<TASK_ID>.packet.json`.
-- T0/T1 require it only when `runtime_context.packet_required: true`.
-- Assume structural readiness was checked before execution by
-  `/prd-to-tasks`, `/review-tasks-plan`, `/mb-doctor`, or the scheduler.
-- Read required packet verification, scope, and stop conditions, but do not
-  repair the packet or repeat raw-hash/status/schema validation after task
-  lifecycle or evidence fields may have changed.
-- If required packet context is now absent or semantically contradicts the task
-  or linked specs, stop with `NEEDS-CLARIFICATION` and route `/mb-packet` or the
-  planning owner. Do not report a functional `FAIL` without testing behavior.
-- Ignore advisory T0/T1 packets unless the user explicitly asks to inspect one.
-
 ## 2) Build the task-scoped verification basis
 
 Verify this task, not the whole feature. Derive the minimum complete basis in
@@ -92,8 +74,7 @@ this precedence order:
    and `verification_targets`
 3. only the feature acceptance criteria and concrete `REQ-*` behavior mapped to
    this task's independently verifiable outcome
-4. required packet verification checks, commands, evidence, scope, and stop
-   conditions
+4. task `gates`, `evidence_required`, and `runtime_context` scope/stop conditions
 5. execution handoff, changed files, local-gate results, and artifacts
 
 Do not require one task to satisfy acceptance criteria intentionally assigned to
@@ -149,7 +130,7 @@ tier or materially different task scope:
 2. Record current tier, required tier, triggering evidence, affected files, and
    whether split/rebuild is preferable.
 3. Do not edit `task.tier` in place; tier is embedded in task identity, paths,
-   packet references, index entries, and dependencies.
+   index entries, and dependencies.
 4. Return `VERDICT: NEEDS-CLARIFICATION` and route the original task through
    `/prd-to-tasks FT-<NNN>` for controlled rebuild/split.
 5. Require `/review-tasks-plan`, the applicable `/mb-doctor` gate, and
@@ -163,7 +144,8 @@ applicable contract rule:
 - run the command or reproducible flow independently when practical
 - record what was checked, command/flow, result, and evidence path under
   `.tasks/<TASK_ID>/`
-- cover required packet verification checks or record the exact blocker
+- cover task gates, verification targets, and evidence requirements or record
+  the exact blocker
 
 When runtime context exists, verify:
 - `success_outcome` is observable, not merely that files changed
@@ -202,7 +184,7 @@ Use exactly one verdict:
 Append the completed verdict/evidence summary to the task record `verify` array
 when that field is structurally valid. If the record itself is malformed, keep
 the evidence in protocol/artifacts and hand task-card repair to the owner.
-Do not create or edit specs, packets, BUG records, follow-up tasks, dependencies,
+Do not create or edit specs, BUG records, follow-up tasks, dependencies,
 tier, wave, acceptance criteria, or material task scope from `/verify`.
 
 ## 6) Lifecycle and handoff
@@ -226,7 +208,6 @@ dependents, and records failure-budget impact. New task planning routes through
 On NEEDS-CLARIFICATION, name one repair owner:
 - task scope/tier/feature-local spec -> `/prd-to-tasks FT-<NNN>`
 - shared/global spec owner -> `/spec-design`
-- packet-only issue -> `/mb-packet <TASK_ID>`
 - missing implementation evidence -> `/execute <TASK_ID>`
 
 Do not run `/red-verify`, `/mb-sync`, task-plan repair, or scheduler transitions

@@ -24,7 +24,7 @@ task in manual mode, GENERAL is the explicit standalone owner for that requested
 scope.
 
 This ownership does not bypass task tier policy, command docs, required task
-records, linked specs, required packets, protocols, or quality gates. If the
+records, linked specs, protocols, or quality gates. If the
 operator requested only implementation, stop at the implementation handoff
 instead of inferring verification, sync, or closure ownership.
 

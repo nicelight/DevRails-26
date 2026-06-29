@@ -34,10 +34,10 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, and the verdict must be recorded in the feature doc itself.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
@@ -47,7 +47,7 @@ Manual mode:
 - `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and required packet/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
 - `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done` or `/mb-sync`; if semantic-pass is absent, leave closure pending or blocked, not done.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -111,9 +111,6 @@ Modes:
 1) Не anchor слишком рано на full spec surface
 Сначала прочитай в таком порядке:
 - task intent из `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` через `.memory-bank/tasks/index.json`
-- packet intent/scope from `.memory-bank/packets/<TASK_ID>.packet.json` when
-  required by tier/policy: all `T2` / `T3`, and `T0` / `T1` only when
-  `runtime_context.packet_required` is true
 - linked FT/REQ и `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/plan.md`
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/progress.md`
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`, если уже есть
@@ -138,12 +135,6 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 Важно:
 - if the task record has no `tier`, stop with an explicit error
 - authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used
-- if required packet context is absent or semantically inconsistent with the
-  current task/specs, stop with `semantic-concern` and record the packet
-  blocker; assume the pre-execution gate checked structure/hash/status and do
-  not repair or structurally revalidate the packet here
-- for `T2` / `T3`, `runtime_context.packet_required: false` is a policy
-  violation, not permission to skip the packet
 - if `task.tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop with a blocker; semantic verification must not bless serious work against AC alone
 - if the task record, implementation, or verify verdict conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with `semantic-concern` or `semantic-fail` instead of choosing locally
 - не начинай с предположения, что task record и verify verdict уже доказывают correctness
@@ -156,14 +147,14 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 - не создала ли реализация false success: local AC passed, but
   `purpose` / `success_outcome` is still not actually achieved
 - не нарушены ли `anti_goals`
-- не вышла ли реализация за допустимую autonomy/scope boundary from task or
-  packet `allowed_write_scope`
+- не вышла ли реализация за допустимую autonomy/scope boundary from task
+  `runtime_context.allowed_write_scope`
 - не был ли затронут `forbidden_scope`
 - не сдвинула ли реализация responsibility boundary from linked
   `.memory-bank/contracts/boundary-map.md` or contracts without an explicit spec
   update
 - не спрятан ли boundary drift behind passing tests or narrow AC
-- не скрывает ли weak task/packet context semantic problem, который нельзя
+- не скрывает ли weak task context semantic problem, который нельзя
   честно принять без уточнения
 - нет ли local optimization с системным вредом
 - не нарушены ли linked boundaries, invariants, contracts, or state transitions
@@ -203,7 +194,7 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 - "how this could still be wrong"
 - counterproposal / escalation path
 
-Do not create a separate Failure Packet. When a packet/spec/task gap blocks a
+Do not create a separate failure artifact. When a spec/task gap blocks a
 credible semantic verdict, use the existing report plus this block:
 
 ```md
@@ -212,7 +203,7 @@ credible semantic verdict, use the existing report plus this block:
 - Where: command/protocol/file
 - Expected:
 - Observed:
-- Likely category: code|spec|task|packet|verification|tool|unknown
+- Likely category: code|spec|task|verification|tool|unknown
 - Recommended next action:
 - Requires replan: yes/no
 ```

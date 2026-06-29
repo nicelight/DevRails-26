@@ -22,7 +22,7 @@ flowchart TD
   foundation -- "нет" --> tasking
 
   tasking --> reviewTasks["/review-tasks-plan<br/>FT-001<br/>contract readiness"]
-  reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>packet/stale-doc/risky-link?"}
+  reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>stale-doc/risky-link?"}
   doctorNeeded -- "да" --> doctor["/mb-doctor<br/>feature/task-queue"]
   doctorNeeded -- "нет" --> mode
   doctor --> mode{"Как выполнять JSON task queue?"}
@@ -44,9 +44,9 @@ flowchart TD
   more -- "нет" --> done["Готово"]
 
   mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Scheduler loop:<br/>packet gate -> execute -> verify -> red-verify для T3 -> mb-sync"]
+  autopilot --> scheduler["Scheduler loop:<br/>strict readiness -> execute -> verify -> red-verify для T3 -> mb-sync"]
   scheduler --> terminal{"Queue terminal?"}
   terminal -- "done" --> done
-  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / packets / specs"]
+  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
   repair --> reviewTasks
 ```

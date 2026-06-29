@@ -53,8 +53,6 @@ const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const GATE_KEYS = new Set(['name', 'command', 'required']);
 const RUNTIME_CONTEXT_KEYS = new Set([
-  'packet_required',
-  'packet_ref',
   'allowed_write_scope',
   'forbidden_scope',
   'stop_conditions',
@@ -602,14 +600,6 @@ function checkOptionalStringArrayField(rel, object, field, label = field) {
   });
 }
 
-function normalizePacketRef(value) {
-  return normalizeRel(String(value ?? '').trim()).replace(/^\.\//, '');
-}
-
-function canonicalPacketRef(taskId) {
-  return `.memory-bank/packets/${taskId}.packet.json`;
-}
-
 function taskIdParts(taskId) {
   const match = TASK_ID_RE.exec(taskId);
   if (!match) return null;
@@ -659,28 +649,8 @@ function checkOptionalTaskRuntimeContext(rel, task) {
 
   checkExactKeys(rel, runtimeContext, RUNTIME_CONTEXT_KEYS, 'runtime_context');
 
-  if (hasOwn(runtimeContext, 'packet_required') && typeof runtimeContext.packet_required !== 'boolean') {
-    errors.push(`${rel}: 'runtime_context.packet_required' must be a boolean when present`);
-  }
-  if (hasOwn(runtimeContext, 'packet_ref') && typeof runtimeContext.packet_ref !== 'string') {
-    errors.push(`${rel}: 'runtime_context.packet_ref' must be a string when present`);
-  }
   for (const field of RUNTIME_CONTEXT_ARRAY_FIELDS) {
     checkOptionalStringArrayField(rel, runtimeContext, field, `runtime_context.${field}`);
-  }
-
-  if (runtimeContext.packet_required !== true) return;
-
-  if (typeof runtimeContext.packet_ref !== 'string' || !runtimeContext.packet_ref.trim()) {
-    errors.push(`${rel}: runtime_context.packet_required true requires non-empty runtime_context.packet_ref`);
-    return;
-  }
-
-  const packetRef = normalizePacketRef(runtimeContext.packet_ref);
-  if (packetRef !== canonicalPacketRef(task.id)) {
-    errors.push(
-      `${rel}: runtime_context.packet_ref for required packet must be ${canonicalPacketRef(task.id)}`
-    );
   }
 }
 

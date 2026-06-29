@@ -1,5 +1,5 @@
 ---
-description: Декомпозиция или repair product feature: SDD design, implementation plan, JSON tasks и required packets.
+description: Декомпозиция или repair product feature: SDD design, implementation plan и complete JSON task cards.
 status: active
 ---
 # /prd-to-tasks - Feature design -> implementation plan -> JSON tasks
@@ -10,8 +10,7 @@ Close or repair one product feature's planning surface:
 - implementation plan
 - schema-backed JSON task records
 - optional behavior specs
-- required derivative Execution Packets
-- verification-ready handoff
+- verification-ready single-card handoff
 
 Read the task schema before drafting tasks. Then process provisional tasks in
 dependency order: inspect design needs, close grounded spec gaps, and only then
@@ -39,7 +38,7 @@ Reject `FT-000`. It is reserved for the Foundation Dev Path and belongs to
 ## 1) Preflight, context, and schema
 
 Complete this section before creating an implementation plan, provisional task
-outline, task record, or packet.
+outline, or task record.
 
 ### 1.1 Feature and queue preflight
 
@@ -68,7 +67,7 @@ For unresolved blockers:
   design ambiguity to `/spec-design`
 - autonomous: return `HALT_CLARIFICATION_REQUIRED` for product clarification or
   `HALT_BLOCKING_QUESTIONS` for unresolved design
-- do not create or update plans, task records, or packets
+- do not create or update plans or task records
 
 For `--all`, resolve and preflight the whole target set before planning writes.
 If any target is missing or remains blocked, report all blockers and halt.
@@ -104,7 +103,7 @@ Read once before task drafting:
 - feature `spec_design_links` and their authoritative specs
 - relevant existing architecture, contract, domain, state, ADR, testing, guide,
   and runbook owners routed by those sources
-- existing implementation plan, protocols, behavior specs, tasks, and packets
+- existing implementation plan, protocols, behavior specs, and tasks
   for reconciliation
 
 Do not create a spec before checking the index and existing owners. A conflict
@@ -135,16 +134,14 @@ Preserve:
 - the semantic goal and acceptance basis of `in_progress|done|failed` records
 
 For `planned|ready|blocked` tasks, repair only grounded specs, implementation
-plan, task content/context, links, gates, and required packets; lifecycle
+plan, task content/context, links, and gates; lifecycle
 transitions remain with the scheduler or explicit owner.
 
 If repair requires changing identity, tier, wave, dependencies, acceptance
 criteria, or material scope, report `rebuild_required` and require controlled
 re-decomposition or a follow-up task. Do not hide re-slicing inside repair.
 
-Refresh every affected required packet after task or linked-spec changes,
-including spec-only changes whose task-record hash is unchanged. Rerun
-`/review-tasks-plan FT-<NNN>` after reconciliation.
+Rerun `/review-tasks-plan FT-<NNN>` after reconciliation.
 
 ## 3) Planning artifacts and provisional outline
 
@@ -251,7 +248,7 @@ Rules:
 - An unresolved explicit `blocked` status must stop task drafting in preflight.
   A successful direct repair must replace it with a truthful status before the
   provisional outline. If the loop discovers a new blocker, record it and stop
-  affected task/packet/handoff writes instead of pretending the feature remains
+  affected task/handoff writes instead of pretending the feature remains
   ready.
 - `not_required` is valid only for simple work with no meaningful architecture,
   interface/contract, data, state, security, migration, runtime, or cross-module
@@ -325,7 +322,7 @@ When creating/materially changing a concrete owner, make ownership explicit:
 - Related specs:
 ```
 
-Do not duplicate concrete blocks in task records, plans, packets, or secondary
+Do not duplicate concrete blocks in task records, plans, or secondary
 docs; link the owner and copy only task-relevant executable constraints,
 invariants, and verification targets.
 
@@ -367,7 +364,7 @@ For each candidate in dependency order:
    against the already-loaded task schema before indexing it.
 
 If design remains blocked, set/report feature design `blocked` and do not write
-the affected task or build packets/handoff execution.
+the affected task or hand off execution.
 Use `blocked` only when the design cannot be made truthful without a user
 decision or external evidence.
 
@@ -385,14 +382,24 @@ The loaded schema and tier policy are authoritative. Additionally:
 - add the final foundation gate dependency directly or transitively when required
 - populate `source_artifacts`, `normative_inputs`, `constraints`, `invariants`,
   `verification_targets`, purpose/outcome, and runtime context only from
-  PRD/feature/spec/baseline evidence; use empty schema-allowed values when no
-  evidence exists
+  PRD/feature/spec/baseline evidence; use empty schema-allowed values only for
+  optional fields when no evidence exists
+- every T2/T3 task has non-empty `purpose` and one non-empty scalar
+  `success_outcome`
+- every T2/T3 task links at least one existing task-relevant authoritative SDD
+  spec through its existing link-bearing fields; a registry-only
+  `spec-index.md` reference is not sufficient task context
+- every T2/T3 task grounds execution scope in non-empty `touched_files` and/or
+  `runtime_context.allowed_write_scope`
+- every T2/T3 task has at least one executable verification path: a gate with a
+  real command and/or a non-empty `verification_target`
 - keep runtime allowed/forbidden scope and stop conditions concrete and grounded
+- keep `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
+  `invariants`, `evidence_required`, and `runtime_context.stop_conditions`
+  empty or absent when current evidence does not justify them; do not invent
+  completeness filler
 - link behavior specs only through `source_artifacts`
 - include task-relevant SDD/AD/ADR/boundary links and executable constraints
-- T2/T3 records set `runtime_context.packet_required: true` and canonical
-  `packet_ref`; T0/T1 require packets only with explicit evidence, and a
-  `packet_ref` without `packet_required: true` is advisory
 - if mutable runtime data/persistence is in scope, name the real DB-backed path
   and require a read/write smoke or repository integration verification target
 - if persistence is not needed, record `not_applicable` in the relevant spec
@@ -412,32 +419,39 @@ After all records exist:
 - finalize truthful `spec_design_status` and `spec_design_links`
 
 Do not leave `complete` while a relevant area is planned, candidate, unknown,
-conflicting, or unresolved. Do not build packets when final consistency is
+conflicting, or unresolved. Do not hand off tasks when final consistency is
 blocked.
 
 For `--all`, process features in priority order, reread `tasks/index.json` after
 each feature, avoid duplicate IDs, and never start execution from this command.
 
-## 6) Required Execution Packets
+## 6) T2/T3 single-card handoff completeness
 
-After feature consistency succeeds, create or refresh
-`.memory-bank/packets/<task.id>.packet.json` for:
-- every T2/T3 task
-- every T0/T1 task with `runtime_context.packet_required: true`
-- every existing required-packet task affected by task/spec reconciliation
+After feature consistency succeeds, confirm every T2/T3 task card is complete
+enough to execute directly from the indexed task plus its linked authoritative
+specs:
+- the record validates against `task.schema.json`, is indexed exactly once, and
+  its ID tier/feature/wave segments match the record
+- `reqs` contains concrete existing governing `REQ-*` IDs without placeholders
+- `purpose` and the scalar `success_outcome` are non-empty
+- at least one existing task-relevant authoritative SDD spec path is linked;
+  `spec-index.md` alone does not count
+- scope is grounded by non-empty `touched_files` and/or
+  `runtime_context.allowed_write_scope`
+- at least one verification path exists through a gate with a real command
+  and/or a non-empty `verification_target`
+- every dependency exists and the dependency graph is acyclic
 
-Use `source_task_hash: sha256:<64-lowercase-hex>` over raw task-record bytes.
-Packet status is `ready|ready_with_gaps|blocked`. Missing/contradictory task,
-scope, verification, or required spec evidence blocks the packet; unresolved
-public contract/state/data/security gaps are never `ready_with_gaps`.
+This is a completeness contract for the existing task card, not a new status,
+artifact, nested packet, or general readiness layer. Deterministic checks prove
+only structure and presence. Semantic applicability of linked specs,
+independent verifiability of `success_outcome`, concrete-block sufficiency, and
+task/spec conflicts remain owned by fresh-context `/review-tasks-plan`.
 
-Use the installed `/mb-packet` content contract and packet template when
-available to fill source refs, purpose/scope, verification, stop conditions,
-and handoff. Do not invent a second packet shape here.
-
-Task records and linked specs remain authoritative; packets are derivative.
-Refresh required packets after task or linked-spec changes, including spec-only
-changes. `/mb-packet TASK-...` remains the packet-only repair/refresh command.
+Do not require non-empty optional evidence-driven fields merely to satisfy this
+contract: `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
+`invariants`, `evidence_required`, and `runtime_context.stop_conditions` remain
+grounded-only.
 
 ## 7) Final handoff
 
@@ -445,15 +459,14 @@ Before handoff:
 - validate every created/updated task against `task.schema.json` and its index
   reference
 - confirm feature acceptance coverage and final design status
-- confirm foundation dependencies and required usable canonical packets whose
-  `source_task_hash` matches the current raw indexed task record
+- confirm foundation dependencies and T2/T3 single-card handoff completeness
 - update RTM/docs only where planning changed durable state
 - report blockers explicitly
 
 Final report:
 - feature ID and queue action: `created|reconciled|rebuild_required`
 - final design status and authoritative specs created/updated/used
-- task records and packets created/updated
+- task records created/updated
 - blockers/questions, or `none`
 - next step
 

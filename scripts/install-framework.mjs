@@ -41,7 +41,7 @@ const LEGACY_ALIAS_COMMANDS = new Set([
   'mb-review',
   'mb-verify',
 ]);
-const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set(['mb-execute']);
+const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set(['mb-execute', 'mb-packet']);
 const PREPARE_EXCLUDED_ROOTS = new Set([
   '.agents',
   '.claude',

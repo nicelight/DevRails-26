@@ -15,7 +15,6 @@
 .claude/skills/<command>/SKILL.md  full Claude runtime command skills
 .memory-bank/  durable project knowledge/state
 .memory-bank/contracts/boundary-map.md lightweight responsibility/scope boundary notes
-.memory-bank/packets/ derivative Execution Packets for task runtime context (required for T2/T3; explicit-only for T0/T1)
 .memory-bank/behavior-specs/ optional JSON given/when/then examples linked through task source_artifacts
 .protocols/   resumable execution и verification protocols
 .tasks/       runtime evidence, reports и handoff material
@@ -150,7 +149,6 @@ node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes
   index.md
   invariants.md
   mbb/index.md
-  packets/
   product.md
   quality/
   requirements.md
@@ -232,7 +230,7 @@ idea / rough draft
 
 `/spec-design` является обязательным gate после `/prd`: он потребляет `spec-backbone` и чистый `spec-index` из `/spec-init`, генерирует или обновляет core SDD specs через три design lenses — Architecture, Interfaces/Contracts и Data — и маршрутизирует concrete feature-local gaps как `needed_before_tasks`. Data Contract описывает payload, пересекающий component/API/event/protocol boundary; Data Specification описывает внутренние модели, БД, persistence, migrations и internal validation/serialization. Для local/simple feature-set pressure gate может записать minimal backbone и `not_applicable`, а для shared-boundary, contract, state/data/runtime/security или strict pressure фиксирует source-of-truth, boundaries, data/contracts/testing decisions или blockers. Для такого serious design pressure он держит короткий `Architecture Spine` с `AD-*` executable rules внутри `architecture/system-architecture.md`, без отдельного architecture workflow. Когда нужен executable baseline, `/spec-design` пишет `.memory-bank/foundation.md`, а `/foundation-to-tasks` создает/обновляет фундаментальные scaffold substrate specs для walking skeleton только в объеме baseline proof; затем создает normal `FT-000` JSON tasks и final foundation gate. Product task generation waits until that gate is `done`. Architecture может остаться в одном `architecture/system-architecture.md` только когда это лучший readable scaffold shape; split architecture docs создаются только когда split снижает реальную сложность или нужен как authoritative reference.
 
-`/prd-to-tasks` полноценно закрывает feature-level SDD design и для новой, и для уже разложенной feature. До любого provisional или мысленного draft task cards команда читает и парсит `.memory-bank/schemas/task.schema.json`, затем загружает tier policy. Перед каждой task команда использует три вопроса: какие architecture constraints действуют, какая конкретная interface/contract boundary затронута и есть ли data-model/storage impact. Она обновляет только применимые feature-local specs, feature detail в уже authoritative shared owner или concrete `needed_before_tasks` block; новые shared/global решения и owners возвращаются в `/spec-design`. При значимой развилке команда задает до трех конкретных вопросов, затем обновляет design и карточку. Если task queue уже существует, команда по умолчанию согласует specs, plan, task records и packets без смены task identity, lifecycle status или verification evidence; изменения identity, tier, wave, dependencies, acceptance criteria или material scope требуют явной полной передекомпозиции. Для T2/T3 concrete boundary должен иметь linked authoritative spec с `shape`, `rules`, `edge cases/errors` и `verification target`, а нерешенная неоднозначность блокирует task creation. После этого `/review-tasks-plan FT-<NNN>` независимо проверяет structural integrity, acceptance/REQ coverage и slicing, final design readiness и execution readiness; он не исправляет planning surface, а возвращает `APPROVE|REJECT` и repair owner. Standalone `/mb-packet` остается только repair/refresh командой для производного Execution Packet.
+`/prd-to-tasks` полноценно закрывает feature-level SDD design и для новой, и для уже разложенной feature. До любого provisional или мысленного draft task cards команда читает и парсит `.memory-bank/schemas/task.schema.json`, затем загружает tier policy. Перед каждой task команда использует три вопроса: какие architecture constraints действуют, какая конкретная interface/contract boundary затронута и есть ли data-model/storage impact. Она обновляет только применимые feature-local specs, feature detail в уже authoritative shared owner или concrete `needed_before_tasks` block; новые shared/global решения и owners возвращаются в `/spec-design`. При значимой развилке команда задает до трех конкретных вопросов, затем обновляет design и карточку. Если task queue уже существует, команда по умолчанию согласует specs, plan и task records без смены task identity, lifecycle status или verification evidence; изменения identity, tier, wave, dependencies, acceptance criteria или material scope требуют явной полной передекомпозиции. Для T2/T3 concrete boundary должен иметь linked authoritative spec с `shape`, `rules`, `edge cases/errors` и `verification target`, а task card — purpose/outcome, grounded scope и verification path; нерешенная неоднозначность блокирует task creation. После этого `/review-tasks-plan FT-<NNN>` независимо проверяет structural integrity, acceptance/REQ coverage и slicing, final design readiness и execution readiness; он не исправляет planning surface, а возвращает `APPROVE|REJECT` и repair owner.
 
 ### Понятный PRD или concept
 
@@ -270,16 +268,11 @@ T2: /execute TASK -> /verify TASK -> /mb-sync at wave/feature boundary
 T3: /execute TASK -> /verify TASK -> /red-verify TASK -> /mb-sync
 ```
 
-В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, no required packet, task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. Если фактический scope требует higher tier, `/execute` записывает escalation evidence и останавливается; исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, required packet/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`; для T3 сохраняются human/recovery markers.
-Initial required packets создаются в `/prd-to-tasks` для всех T2/T3 задач и для
-T0/T1 только если task record явно содержит
-`runtime_context.packet_required: true`; packet является производным runtime
-контекстом и не заменяет task/specs. `/mb-packet` используется для
-repair/refresh после task/spec изменений или readiness finding.
+В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. Если фактический scope требует higher tier, `/execute` записывает escalation evidence и останавливается; исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`; для T3 сохраняются human/recovery markers.
 
 Для manual feature work `node scripts/mb-doctor.mjs` is conditional, not a
 default gate for simple T0/T1. Запускайте его для T3, autonomous/autopilot
-handoff, and complex T2/foundation/dependency/packet/stale-doc/risky-link
+handoff, and complex T2/foundation/dependency/stale-doc/risky-link
 cases. `--strict` остается precondition для autopilot/autonomous handoff.
 
 ### Scheduler mode: `/autopilot`
@@ -294,8 +287,7 @@ Preconditions:
   `APPROVE`;
 - `node scripts/mb-doctor.mjs --strict` проходит;
 - ни одна task-linked feature не имеет pending или blocked clarification.
-- required packets are usable for every T2/T3 task and for T0/T1 tasks that
-  explicitly set `runtime_context.packet_required: true`.
+- every T2/T3 task satisfies the single-card handoff contract.
 
 `/autopilot` не запускает `/write-prd`, `/prd`, `/prd-to-tasks` и не создает task queue.
 
@@ -393,13 +385,12 @@ evidence:
 }
 ```
 
-For T0/T1, `packet_required` defaults to false/absent and `packet_ref` without
-`packet_required: true` is advisory only. For T2/T3, `/prd-to-tasks` stores
-`runtime_context.packet_required: true` and canonical
-`packet_ref: ".memory-bank/packets/<task.id>.packet.json"`; downstream gates
-also require the packet for older T2/T3 records that omit the flag. A T2/T3
-record with `packet_required: false` is a policy violation, not permission to
-skip the packet.
+For T2/T3, `/prd-to-tasks` and `/foundation-to-tasks` require a complete single
+task card before execution: non-empty `purpose` and scalar `success_outcome`, an
+existing task-linked authoritative SDD path, grounded scope in `touched_files`
+and/or `runtime_context.allowed_write_scope`, and a real gate command and/or
+non-empty `verification_target`. Optional evidence-driven fields remain empty
+when no grounded value exists.
 
 Boundary notes live in `.memory-bank/contracts/boundary-map.md` as a normal
 contract/spec document. Tasks reference it through existing source/normative/
@@ -413,9 +404,9 @@ constraint/verification fields and copy executable limits into
 Manual mode:
 
 - `/execute` реализует task и записывает evidence/handoff;
-- T0/T1 task можно закрыть прямо в `/execute` только при явном top-level closure owner, no required packet, task-local scope, no T2/T3 trigger и compact evidence;
+- T0/T1 task можно закрыть прямо в `/execute` только при явном top-level closure owner, task-local scope, no T2/T3 trigger и compact evidence;
 - standalone `/verify` для T0/T1 optional и нужен для uncertainty, widened scope или explicit request;
-- T2 task можно считать финально `done` после full protocol, required packet/spec gates и `/verify PASS`; per-task `/red-verify` не требуется для T2 task closure;
+- T2 task можно считать финально `done` после full protocol, applicable task/spec gates и `/verify PASS`; per-task `/red-verify` не требуется для T2 task closure;
 - T2 feature нельзя считать complete, пока после всех feature tasks не прошел `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанным в feature doc;
 - T3 task нельзя считать финально `done` по одному `/verify PASS`; перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`;
 - `/mb-sync` синхронизирует Memory Bank, RTM, changelog и task records после уже записанного closure/failure/blocking decision; сам sync не выводит решение о закрытии и не нужен для local T0/T1 closure, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
@@ -427,9 +418,8 @@ Scheduler mode (`/autopilot`, `/autonomous`):
 - `/verify` не закрывает, не fail-ит и не promote-ит dependents;
 - `/red-verify` не закрывает, не fail-ит и не promote-ит dependents;
 - scheduler записывает closure/failure/blocking decision, final status и evidence links в authoritative `.task.json` до `/mb-sync`;
-- before `/execute`, scheduler ensures a usable packet for every T2/T3 task and
-  explicit T0/T1 packet requirement; missing/stale/blocked/malformed/hash-
-  mismatched required packets are `HALT_QUALITY_GATES`;
+- before `/execute`, scheduler requires a green `/mb-doctor --strict`; an
+  incomplete T2/T3 single-card handoff is `HALT_QUALITY_GATES`;
 - `/mb-sync` только synchronizes/reconciles already-written task state и не принимает closure/promotion decisions сам;
 - после `/mb-sync` и strict doctor scheduler выполняет отдельный promotion/dependent blocking pass.
 
@@ -446,8 +436,6 @@ Scheduler mode (`/autopilot`, `/autonomous`):
 
 Если scope растет, поднимите tier перед передачей task дальше. Если сомневаетесь между двумя tiers, выбирайте более высокий.
 
-Execution Packet statuses are local to packet files only:
-`ready|ready_with_gaps|blocked|stale`. They are not task lifecycle statuses.
 The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 
 ## 10. Generated command reference
@@ -464,14 +452,13 @@ The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 | `/spec-init` | Bootstrap lightweight pre-PRD framing | `.memory-bank/spec-backbone.md` pre-PRD status, decomposition inputs, gaps, handoff; `.memory-bank/spec-index.md` as pure spec registry/index | не проводит architecture interview; не создает authoritative specs или global backbone; не пишет readiness/status state в `spec-index.md` | `/prd` |
 | `/prd` | Clarified PRD -> L1-L3 Memory Bank | product, requirements, epics, features, testing/index | не создает всю task queue вслепую | `/review-feat-plan` for high-risk/large work, then `/spec-design`; `/clarify-feature` если blocked |
 | `/spec-design` | Mandatory adaptive architecture scaffold and foundation decision | consumes lightweight spec-index; writes backbone status; generates/updates core SDD specs through Architecture, Interfaces/Contracts, and Data lenses; writes serious design-pressure `Architecture Spine` AD rules and `.memory-bank/foundation.md` when needed; routes contract areas as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`; uses one `architecture/system-architecture.md` hub only when it is the best readable scaffold shape, with split architecture docs only when they reduce real complexity or are needed as authoritative references | не создает tasks/plans/feature-local tech-specs; не routes by task tier before task records exist; не дублирует detailed API/state/message contracts в `architecture/*`; не вводит отдельный architecture workflow | `/foundation-to-tasks` only if foundation proof is required, close the `FT-000` foundation gate when one exists, then `/prd-to-tasks FT-*` или `/spec-auto --all` |
-| `/foundation-to-tasks` | Foundation Dev Path -> FT-000 JSON tasks or brownfield verified-baseline no-op | baseline-proof Architecture, Interfaces/Contracts, and Data substrate specs plus applicable Component/API/Event/Data contracts and supporting Test Harness/Runbook/Evidence specs; `REQ-000`, `FT-000`, `.protocols/FT-000/*`, `IMPL-FT-000.md`, indexed foundation `TASK-NNN-TN-FT-000-WN` records, required packets; or `Foundation Required: false` with `Foundation Gate Task: not_required` | не создает product feature tasks; не вводит отдельную task schema/lifecycle protocol family; не реализует features; не заполняет будущие product endpoints/schemas/event payloads/domain details вместо `/prd-to-tasks`; brownfield не создает `FT-000`, если baseline уже доказан | `/mb-doctor` at foundation/task-queue boundary when tasks were created, then `/execute`/`/verify`; otherwise `/prd-to-tasks` |
+| `/foundation-to-tasks` | Foundation Dev Path -> FT-000 JSON tasks or brownfield verified-baseline no-op | baseline-proof Architecture, Interfaces/Contracts, and Data substrate specs plus applicable Component/API/Event/Data contracts and supporting Test Harness/Runbook/Evidence specs; `REQ-000`, `FT-000`, `.protocols/FT-000/*`, `IMPL-FT-000.md`, indexed complete foundation `TASK-NNN-TN-FT-000-WN` records; or `Foundation Required: false` with `Foundation Gate Task: not_required` | не создает product feature tasks; не вводит отдельную task schema/lifecycle protocol family; не реализует features; не заполняет будущие product endpoints/schemas/event payloads/domain details вместо `/prd-to-tasks`; brownfield не создает `FT-000`, если baseline уже доказан | `/mb-doctor` at foundation/task-queue boundary when tasks were created, then `/execute`/`/verify`; otherwise `/prd-to-tasks` |
 | `/spec-auto` | Autonomous SDD init/design | spec-index, feature design status, assumptions/blockers | не спрашивает пользователя; не игнорирует unsafe ambiguity; не обрабатывает `FT-000` как product feature | `/prd`, `/foundation-to-tasks` + foundation gate closure, или `/prd-to-tasks --all` |
 | `/clarify-feature` | Resolve feature-level blockers | target `.memory-bank/features/FT-*.md` clarification metadata/answers | не назначает tier; не создает task records | `/spec-design`, required foundation gate closure, then `/prd-to-tasks FT-*` |
-| `/prd-to-tasks` | Initial product feature design or safe reconciliation -> implementation plan + JSON tasks + required packets | generated/updated feature-local SDD specs, feature detail in established authoritative owners, or concrete shared `needed_before_tasks` blocks; per-task Architecture / Interfaces-Contracts / Data inventory and conditional questions; optional `.memory-bank/behavior-specs/*.behavior.json`; `.memory-bank/tasks/plans/IMPL-FT-*.md`; indexed product `TASK-NNN-TN-FT-NNN-WN` records; linked concrete contract specs for T2/T3 boundaries; refreshed `.memory-bank/packets/<task.id>.packet.json` when required | не принимает новые shared/global design decisions; не запускает execution; при reconciliation не меняет task identity/lifecycle/evidence; не проходит pending blockers, missing T2/T3 SDD specs or concrete contract blocks, `FT-000`, or missing required foundation gate; material re-decomposition требует явного решения | `/review-tasks-plan FT-*`, conditional `/mb-doctor` for complex/T3/autonomous boundaries, then tier-routed `/execute`; or `/autopilot` |
-| `/review-tasks-plan` | Fresh-context gate for one feature's runnable planning surface | `APPROVE|REJECT` report over structural integrity, acceptance/REQ coverage and slicing, design readiness, and execution readiness | не исправляет specs/plans/tasks/packets; behavior specs не являются readiness gate; не заменяет `/review-feat-plan` или `/mb-doctor` | feature-local repair через `/prd-to-tasks`, shared/global repair через `/spec-design`, либо conditional `/mb-doctor` и execution |
-| `/mb-packet` | Repair or refresh derivative task runtime context | `.memory-bank/packets/<task.id>.packet.json` with current `source_task_hash` | не создает tasks/specs, не реализует code, не закрывает task, не вводит module graph/Failure Packet | rerun `/mb-doctor` или resolve packet blocker |
+| `/prd-to-tasks` | Initial product feature design or safe reconciliation -> implementation plan + complete JSON tasks | generated/updated feature-local SDD specs, feature detail in established authoritative owners, or concrete shared `needed_before_tasks` blocks; per-task Architecture / Interfaces-Contracts / Data inventory and conditional questions; optional `.memory-bank/behavior-specs/*.behavior.json`; `.memory-bank/tasks/plans/IMPL-FT-*.md`; indexed product `TASK-NNN-TN-FT-NNN-WN` records with T2/T3 single-card handoff; linked concrete contract specs for T2/T3 boundaries | не принимает новые shared/global design decisions; не запускает execution; при reconciliation не меняет task identity/lifecycle/evidence; не проходит pending blockers, missing T2/T3 SDD specs or concrete contract blocks, `FT-000`, or missing required foundation gate; material re-decomposition требует явного решения | `/review-tasks-plan FT-*`, conditional `/mb-doctor` for complex/T3/autonomous boundaries, then tier-routed `/execute`; or `/autopilot` |
+| `/review-tasks-plan` | Fresh-context gate for one feature's runnable planning surface | `APPROVE|REJECT` report over structural integrity, acceptance/REQ coverage and slicing, design readiness, and execution readiness | не исправляет specs/plans/tasks; behavior specs не являются readiness gate; не заменяет `/review-feat-plan` или `/mb-doctor` | feature-local repair через `/prd-to-tasks`, shared/global repair через `/spec-design`, либо conditional `/mb-doctor` и execution |
 | `/execute` | Implement one scoped task using applicable Architecture, Component/API/Event/Data Contract, and Data Specification owners | `.protocols/<TASK>/...`, `.tasks/<TASK>/...`, code/docs в task scope; for manual T0/T1 may update task `verify`/`status` only under fast-lane owner conditions | не закрывает scheduler tasks; не запускает verify/red-verify/mb-sync; не меняет tier-encoded task identity in place | compact T0/T1 closure, `/verify`, or higher-tier handoff through `/prd-to-tasks FT-*` |
-| `/verify` | Task-scoped functional verification одной реализованной task | tier-selected verification protocol, task `verify` evidence и `PASS|FAIL|NEEDS-CLARIFICATION`; checks only mapped AC/REQ and applicable Architecture/Component/API/Event/Data owners | не чинит specs/packets/tasks, не создает BUG/follow-up task, не меняет tier identity; T2/T3 lifecycle остаётся explicit owner/scheduler | T0/T1 explicit-owner closure, T2 closure recommendation, T3 `/red-verify`, либо repair route в `/prd-to-tasks`/`/spec-design`/`/mb-packet` |
+| `/verify` | Task-scoped functional verification одной реализованной task | tier-selected verification protocol, task `verify` evidence и `PASS|FAIL|NEEDS-CLARIFICATION`; checks only mapped AC/REQ and applicable Architecture/Component/API/Event/Data owners | не чинит specs/tasks, не создает BUG/follow-up task, не меняет tier identity; T2/T3 lifecycle остаётся explicit owner/scheduler | T0/T1 explicit-owner closure, T2 closure recommendation, T3 `/red-verify`, либо repair route в `/prd-to-tasks`/`/spec-design` |
 | `/red-verify` | Adversarial semantic verification | `.protocols/<TASK>/red-verification.md`, `.tasks/<TASK>/...`, bugs/follow-ups при необходимости | не дублирует `/verify`; в scheduler mode не закрывает | `/mb-sync` или scheduler decision |
 | `/review-feat-plan` | Fresh-context feature plan review | `.tasks/TASK-MB-REVIEW-FEAT-PLAN/*`, fix list/verdict | не ревьюит JSON task queue | `/spec-design` или исправить PRD/REQ/EP/FT |
 | `/review-tasks-plan` | Fresh-context feature task-plan review; no args infer latest decomposed product feature; `--all` expands to per-feature reviews | `.tasks/TASK-MB-REVIEW-TASKS-PLAN/*`, per-feature fix list/verdict, concrete contract readiness answer for T2/T3 | не заменяет `/mb-doctor`, `/verify`, `/red-verify`; не ревьюит PRD decomposition как основной surface; не схлопывает batch features в один широкий prompt | исправить rejected feature task plan или manual `/mb-doctor`; every task-linked product feature needs `APPROVE` для `/autopilot`/`/autonomous` |

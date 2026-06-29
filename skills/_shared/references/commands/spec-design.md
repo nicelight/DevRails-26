@@ -473,7 +473,7 @@ Rules:
   still needed before product feature work
 - keep the Feature Pressure Map grounded in current PRD/features/specs; do not
   convert product behavior into foundation work
-- do not create `REQ-000`, `FT-000`, task records, packets, protocols, or
+- do not create `REQ-000`, `FT-000`, task records, protocols, or
   implementation plans in `/spec-design`
 - route required executable work to `/foundation-to-tasks`
 

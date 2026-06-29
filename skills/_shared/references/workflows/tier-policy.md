@@ -31,22 +31,22 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, no required packet is involved, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
+- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
 - When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
 - When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires full protocol, required packet/spec gates,
+- `T2` manual task closure requires full protocol, applicable task/spec gates,
   `/verify PASS`, and an explicit owner that writes the lifecycle decision;
   `/verify` only makes the task closure-eligible. Per-task `/red-verify` is
   optional, while T2 feature completion requires feature-level
@@ -59,54 +59,20 @@ Manual mode:
 
 Tier summary:
 - T0/T1: compact allowed.
-- T2 tasks: full protocol + required packet/spec gates + verify PASS before scheduler marks done; T2 feature completion then requires feature-level red-verify.
+- T2 tasks: full protocol + applicable task/spec gates + verify PASS before scheduler marks done; T2 feature completion then requires feature-level red-verify.
 - T3 tasks: verify + per-task red-verify before scheduler marks done.
 - T3: human checkpoint + rollback/recovery before scheduler marks done.
 - Manual mode: T0/T1 may close in `/execute` with compact evidence when the explicit manual top-level owner conditions are met, or through `/verify PASS` when independent verification is requested; T2 tasks do not require per-task /red-verify for closure; T2 feature completion requires feature-level /red-verify semantic-pass recorded in the feature doc; T3 tasks require per-task /red-verify semantic-pass before closure.
 
-## Execution Packets
+## Single-card execution context
 
-Execution Packets are derivative runtime artifacts:
+The indexed task card carries task-scoped execution and verification context.
+T2/T3 cards must satisfy the single-card handoff completeness contract before
+execution: purpose/outcome, a task-linked authoritative SDD path, grounded
+scope, a verification path, concrete REQ linkage, and valid dependencies.
 
-```text
-.memory-bank/packets/TASK-NNN-TN-FT-NNN-WN.packet.json
-```
-
-They summarize task purpose, linked specs, allowed/forbidden scope,
-verification checks, and stop conditions for one run. They never replace the
-indexed task record, linked SDD specs, or this tier policy as source of truth.
-
-Rules:
-- `T0` / `T1` tasks require packets only when the indexed task record sets
-  `runtime_context.packet_required: true`. If a `T0` / `T1` task has
-  `packet_ref` without `packet_required: true`, the packet is advisory only.
-- `T2` / `T3` tasks require a usable packet before implementation regardless
-  of whether older task records omit `runtime_context.packet_required`.
-- `/foundation-to-tasks` and `/prd-to-tasks` must set `runtime_context.packet_required: true` and
-  `runtime_context.packet_ref: ".memory-bank/packets/<task.id>.packet.json"`
-  for generated `T2` / `T3` task records. If a task is downgraded to `T0` /
-  `T1`, do not infer or add packet requirement from the old planned tier.
-- If a `T2` / `T3` task record has `runtime_context.packet_required: false`,
-  treat it as a policy violation, not permission to skip the packet.
-- Required packet gates use canonical
-  `.memory-bank/packets/<task.id>.packet.json` when `packet_ref` is absent.
-- Before execution, `/prd-to-tasks`, `/review-tasks-plan`, `/mb-doctor`,
-  `/autopilot`, and `/autonomous` own structural packet readiness and must block
-  on missing, malformed, stale, blocked, or hash-mismatched packets.
-- `/execute` reads packet context only when required by tier/policy or explicitly
-  linked by the task/feature; structural packet readiness is owned by
-  `/foundation-to-tasks`, `/prd-to-tasks`, `/mb-doctor`, and scheduler gates.
-  `/execute` stops on semantic packet/task/spec contradictions, not on packet
-  freshness/hash/status checks.
-- `/verify` and `/red-verify` consume required packet scope/verification context
-  and stop when it is absent or semantically contradictory. They do not repeat
-  raw-hash/status/schema validation after lifecycle/evidence fields may have
-  changed, and they never repair packets.
-- Packet statuses are local packet statuses only:
-  `ready|ready_with_gaps|blocked|stale`.
-- Packet statuses are not task lifecycle statuses and must not be added to the
-  task `status` enum.
-
+This contract does not add a status or artifact. Semantic applicability and
+spec sufficiency remain fresh-context review concerns.
 ## T0 - trivial / docs-only
 
 Use for typos, formatting, broken links, or safe documentation changes with no runtime, contract, state, data, security, or test impact.
@@ -137,8 +103,8 @@ Use for APIs, contracts, events, schemas, state machines, lifecycle changes, dat
 - Protocol: full protocol files are required
 - Compact-only protocol: invalid
 - `/verify`: required
-- Scheduler mode: full protocol, required packet/spec gates, and `/verify` `VERDICT: PASS` before scheduler marks the task done; per-task `/red-verify` is not required
-- Manual mode: T2 requires explicit closure ownership plus full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional
+- Scheduler mode: full protocol, applicable task/spec gates, and `/verify` `VERDICT: PASS` before scheduler marks the task done; per-task `/red-verify` is not required
+- Manual mode: T2 requires explicit closure ownership plus full protocol, applicable task/spec gates, and `/verify PASS`; per-task `/red-verify` is optional
 - Feature completion: after all tasks for the feature are implemented, run `/red-verify --feature FT-<ID>` and require `SEMANTIC_VERDICT: semantic-pass` before treating the feature as complete
 - Evidence: store substantive artifacts under `.tasks/<TASK_ID>/`
 - MB-SYNC: required at T2 wave/feature boundary or earlier when broader state must be reconciled; do not require full sync after every ordinary linear manual T2 task if the next step does not depend on reconciled state beyond the task record.

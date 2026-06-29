@@ -39,10 +39,10 @@ Use `--strict` before `/autopilot` or the scheduler phase of `/autonomous`, befo
 In manual greenfield, `/mb-doctor` is conditional readiness checking, not a
 default gate for simple `T0` / `T1` execution. Skip it by default for local
 manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
-freshness, and complex `T2`/foundation/dependency/packet/stale-doc/risky-link
+freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`. In manual mode, T0/T1 may close in `/execute` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus required packet/spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
+Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`. In manual mode, T0/T1 may close in `/execute` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus applicable spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
 
 ## Required checks
 `mb-doctor` must check only readiness-critical conditions:
@@ -95,24 +95,23 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - `T2` / `T3` tasks have relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
 - `guides/*` may count as linked SDD specs when the guide is the normative source for frontend component behavior or operating procedure; guides alone do not replace required T2/T3 architecture/contract/domain/state/testing specs when those concerns are in scope.
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
+- T2/T3 single-card handoff completeness is checked mechanically: non-empty
+  `purpose` and scalar `success_outcome`, at least one existing task-linked SDD
+  spec path, grounded scope in `touched_files` and/or
+  `runtime_context.allowed_write_scope`, and at least one verification path
+  through a real gate command and/or non-empty `verification_target`.
+- Schema/index/ID/REQ/dependency existence and cycle checks remain covered by
+  `mb-lint` and the normal doctor checks. `TASK_HANDOFF_INCOMPLETE` reports only
+  missing structural/presence evidence.
+- `/mb-doctor` does not judge whether a linked spec is semantically applicable,
+  whether its concrete block is sufficient, or whether `success_outcome` is a
+  good independent outcome. Fresh-context `/review-tasks-plan` owns those
+  judgments.
 - In `--strict`, T2/T3 tasks with no architecture/contract/ADR reference in
   richer task fields may report `TASK_ARCH_SPINE_LINK_ABSENT` as a warning. It
   is advisory: add relevant Architecture Spine, boundary-map, contract, or ADR
   links when the task touches shared boundaries; no action is required for
   feature-local tasks where no such link is relevant.
-- T2/T3 tasks require canonical Execution Packets even when older task records
-  omit `runtime_context.packet_required`; absent or false `packet_required` on
-  T2/T3 is reported as `TASK_PACKET_REQUIRED_POLICY`.
-- T0/T1 tasks require packets only when `runtime_context.packet_required: true`;
-  `packet_ref` without that flag is advisory only.
-- For required packets, packet validation checks:
-  - `TASK_PACKET_REQUIRED_POLICY` when a T2/T3 task does not explicitly store `runtime_context.packet_required: true`.
-  - `TASK_PACKET_REF_MISSING` when `runtime_context.packet_ref` is absent or empty.
-  - `TASK_PACKET_REF_INVALID` when `packet_ref` is not the safe canonical `.memory-bank/packets/<task.id>.packet.json` path.
-  - `TASK_PACKET_MISSING` when the required packet file does not exist.
-  - `TASK_PACKET_INVALID` when packet JSON, task id, status, or required packet shape is invalid.
-  - `TASK_PACKET_NOT_READY` when packet status is `blocked` or `stale`.
-  - `TASK_PACKET_STALE` when a usable packet has missing, malformed, or mismatched `source_task_hash`.
 - When `.memory-bank/requirements.md` exists, referenced `REQ-*` IDs appear in it.
 - When `.memory-bank/features/` contains markdown files, referenced `FT-*` IDs have a matching `.memory-bank/features/FT-<NNN>*.md` file.
 - Obsolete `.memory-bank/tasks/backlog.md` is absent. If present, report `TASK_BACKLOG_MD_PRESENT` as an error.
@@ -156,13 +155,7 @@ Errors block autonomous/autopilot progression:
 - `TASK_FEATURE_FILE_MISSING` in `--strict`
 - `TASK_SDD_SPEC_LINK_MISSING` in `--strict`
 - `TASK_SDD_SPEC_GUIDE_ONLY` in `--strict`
-- `TASK_PACKET_REQUIRED_POLICY` in `--strict`
-- `TASK_PACKET_REF_MISSING` in `--strict`
-- `TASK_PACKET_REF_INVALID` in `--strict`
-- `TASK_PACKET_MISSING` in `--strict`
-- `TASK_PACKET_INVALID` in `--strict`
-- `TASK_PACKET_NOT_READY` in `--strict`
-- `TASK_PACKET_STALE` in `--strict`
+- `TASK_HANDOFF_INCOMPLETE` in `--strict`
 - `TASK_BACKLOG_MD_PRESENT`
 - `SPEC_BACKBONE_NOT_READY` in `--strict`
 - `SPEC_BACKBONE_MATRIX_NOT_READY` in `--strict`
@@ -199,13 +192,7 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_SDD_SPEC_LINK_MISSING`
 - `TASK_SDD_SPEC_GUIDE_ONLY`
 - `TASK_ARCH_SPINE_LINK_ABSENT`
-- `TASK_PACKET_REQUIRED_POLICY`
-- `TASK_PACKET_REF_MISSING`
-- `TASK_PACKET_REF_INVALID`
-- `TASK_PACKET_MISSING`
-- `TASK_PACKET_INVALID`
-- `TASK_PACKET_NOT_READY`
-- `TASK_PACKET_STALE`
+- `TASK_HANDOFF_INCOMPLETE`
 - `SPEC_BACKBONE_NOT_READY`
 - `SPEC_BACKBONE_MATRIX_NOT_READY`
 - `SPEC_INDEX_NOT_PURE`

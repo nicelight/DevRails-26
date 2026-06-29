@@ -22,7 +22,7 @@ Reviewed surface:
 - structural integrity of the target feature's indexed task records
 - feature acceptance/REQ coverage and task slicing
 - final feature/design readiness and linked authoritative specs
-- execution readiness: tiers, dependencies, packets, and Foundation Gate
+- execution readiness: tiers, dependencies, single-card handoff, and Foundation Gate
 
 This command does not validate PRD -> feature decomposition as the primary
 surface. Use `/review-feat-plan` before `/spec-design` for that.
@@ -81,7 +81,6 @@ For a feature-scoped review, read only the feature-relevant planning surface:
 - indexed `.memory-bank/tasks/*.task.json` records where `feature` is target
   `FT-<NNN>`
 - indexed dependency records referenced by target tasks through `depends_on`
-- packet files required by reviewed tasks
 - other feature/spec docs only when linked by the reviewed tasks or needed to
   evaluate a dependency/blocker
 
@@ -90,7 +89,7 @@ For `--all`, repeat the feature-scoped input set for each product feature.
 ## 3) Review checks
 
 Evaluate the planning surface through four groups. Do not create or repair
-specs, plans, tasks, packets, or lifecycle state from this command.
+specs, plans, tasks, or lifecycle state from this command.
 
 ### 3.1 Structural integrity
 
@@ -124,6 +123,10 @@ specs, plans, tasks, packets, or lifecycle state from this command.
 - T2/T3 tasks link relevant authoritative SDD specs and can be implemented
   without guessing architecture, API, state, schema, message, storage, domain,
   agent I/O, security, or verification behavior.
+- Confirm each linked SDD spec is semantically applicable to the task and its
+  concrete block is sufficient for the boundary or behavior in scope.
+- Confirm each task `success_outcome` is independently verifiable and does not
+  conflict semantically with the feature, implementation plan, or linked specs.
 - Every changed/dependent concrete boundary has exactly one authoritative owner
   defining `shape`, `rules`, `edge cases/errors`, and `verification target`.
   Shared-boundary tasks link relevant Architecture Spine `AD-*`, boundary-map,
@@ -142,12 +145,15 @@ semantics must not cause `REJECT`.
   dependencies, blockers, blocking review rejects, or unresolved semantic gaps.
 - When foundation is required, the named indexed `FT-000` gate task is `done`
   and every reviewed product task depends on it directly or transitively.
-- Every T2/T3 task and every T0/T1 task with
-  `runtime_context.packet_required: true` has a canonical
-  `.memory-bank/packets/<task.id>.packet.json` with matching task ID/tier,
-  `status: ready|ready_with_gaps`, and `source_task_hash` matching the raw current
-  indexed task record. Public contract/state/data/security or verification gaps
-  cannot be treated as `ready_with_gaps`.
+- Every T2/T3 task satisfies the single-card handoff completeness contract:
+  schema/index/ID/REQ linkage is valid; `purpose` and scalar `success_outcome`
+  are non-empty; an existing task-linked authoritative SDD spec path is present;
+  scope is grounded by `touched_files` and/or
+  `runtime_context.allowed_write_scope`; a real gate command and/or non-empty
+  `verification_target` exists; dependencies exist and remain acyclic.
+- Treat this structural surface as necessary but not sufficient: semantic spec
+  applicability, concrete-block sufficiency, outcome quality, and task/spec
+  conflicts remain review judgments, not deterministic doctor claims.
 - Do not ignore available `mb-doctor` findings that contradict the review.
   Do not run or duplicate doctor here; autonomous readiness still requires the
   separate downstream `/mb-doctor --strict` gate.
@@ -169,7 +175,7 @@ semantics must not cause `REJECT`.
 
 Contract-readiness routing for `REJECT`:
 - route back to `/prd-to-tasks FT-<NNN>` for feature-local spec repair,
-  focused design questions, task-card reconciliation, and packet refresh;
+  focused design questions, and task-card reconciliation;
 - route to `/spec-design` when the duplicated/unclear owner or missing decision
   is shared/global.
 
@@ -185,14 +191,16 @@ TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md,
 .memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md,
 .memory-bank/tasks/index.json, indexed task records whose feature is FT-001,
 dependency task records referenced by those tasks,
-.memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks,
+.memory-bank/tasks/plans/IMPL-FT-001.md,
 .memory-bank/foundation.md when present, and mb-doctor findings relevant to
 FT-001. Review four groups: structural integrity; acceptance/REQ coverage and
 task slicing; final feature/design readiness; and execution readiness. Include
 schema/index/ID consistency, implementation-plan alignment, final design status,
 feature-relevant needed_before_tasks rows, concrete contract ownership,
 persistence verification when applicable, tier/dependency/foundation rules, and
-canonical packet status/hash freshness. Write report to
+T2/T3 single-card handoff completeness. Semantically assess linked-spec
+applicability, concrete-block sufficiency, independent outcome verifiability,
+and task/feature/spec conflicts. Write report to
 .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md.
 VERDICT: APPROVE/REJECT. APPROVE only when all four groups pass. For REJECT,
 name the failed group, evidence, and repair owner.

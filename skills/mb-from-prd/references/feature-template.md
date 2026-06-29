@@ -36,7 +36,7 @@ req_ids: [REQ-XXX]
 - If feature-level design is not needed, record `spec_design_status: not_required` with a short rationale.
 - If design is blocked, record `spec_design_status: blocked` and the blocker before creating weak task records.
 - Rerun `/prd-to-tasks FT-XXX` to repair/reconcile feature-local specs, task
-  cards, plans, and required packets.
+  cards and plans.
 - Until `/prd-to-tasks` or an authoritative existing design establishes one of
   those outcomes, omit `spec_design_status`.
 

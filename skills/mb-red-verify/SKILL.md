@@ -38,10 +38,10 @@ Scheduler mode:
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
+- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, and the verdict must be recorded in the feature doc itself.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
+- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
 - T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 
 Manual mode:
@@ -51,7 +51,7 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and required packet/spec gates; per-task `/red-verify` / `mb-red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` / `mb-red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
 - `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` / `mb-red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done` or `/mb-sync`; if semantic-pass is absent, leave closure pending or blocked, not done.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -66,13 +66,6 @@ Manual mode:
   `spec_design_links`, or `spec-index.md`; if absent, stop and route
   feature-local repair to `/prd-to-tasks`, shared/global repair to
   `/spec-design`, or autonomous design to `/spec-auto`.
-- For `T2` / `T3`, the packet must exist, be usable (`ready` or
-  `ready_with_gaps`), and match the current task record hash regardless of
-  whether older task records omit `runtime_context.packet_required`.
-- For `T0` / `T1`, packets are required only when
-  `runtime_context.packet_required` is true.
-- If a required packet is missing, malformed, stale, blocked, or
-  hash-mismatched, record a semantic blocker instead of blessing the work.
 - In scheduler mode, `T2` tasks do not require per-task `mb-red-verify` before
   scheduler marks the task `done`; the feature still requires feature-level
   `mb-red-verify --feature FT-<ID>` and a recorded feature-doc semantic verdict
@@ -117,7 +110,7 @@ Prime in this order:
 1. task intent and expected real-world outcome
 2. actual code changes / diff / touched runtime behavior
 3. tests, logs, screenshots, traces, and other evidence
-4. task/packet purpose, success outcome, anti-goals, allowed scope, forbidden
+4. task purpose, success outcome, anti-goals, allowed scope, forbidden
    scope, and stop conditions when present
 5. linked SDD specs and neighboring constraints only when they are linked
    through task provenance fields, feature `spec_design_links`, or
@@ -158,9 +151,9 @@ Challenge the solution from multiple angles:
 - wrong problem solved
 - false success: AC passed but `purpose` / `success_outcome` remains unmet
 - anti-goal violation
-- autonomy/scope violation beyond allowed task or packet scope
+- autonomy/scope violation beyond allowed task scope
 - forbidden scope touched
-- weak task/packet context hiding a semantic problem
+- weak task context hiding a semantic problem
 - local optimization with systemic harm
 - hidden assumptions
 - cross-boundary regression risk
@@ -205,7 +198,7 @@ The output must be concise and high-signal. Include:
 
 For `T3`, also cover critical/security/runtime/recovery concerns and confirm exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present` are present before closure.
 
-Do not create a separate Failure Packet. When a packet/spec/task gap blocks a
+Do not create a separate failure artifact. When a spec/task gap blocks a
 credible semantic verdict, use the existing red-verification report and add:
 
 ```md
@@ -214,7 +207,7 @@ credible semantic verdict, use the existing red-verification report and add:
 - Where: command/protocol/file
 - Expected:
 - Observed:
-- Likely category: code|spec|task|packet|verification|tool|unknown
+- Likely category: code|spec|task|verification|tool|unknown
 - Recommended next action:
 - Requires replan: yes/no
 ```

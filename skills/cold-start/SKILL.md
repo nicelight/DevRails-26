@@ -27,7 +27,7 @@ written into target `.agents/skills/cold-start/SKILL.md` and
 
 ## Non-Negotiables
 
-- Do not create epics, features, implementation plans, packets, or runnable task
+- Do not create epics, features, implementation plans, or runnable task
   records without a clarified PRD/delta.
 - Do not create `.memory-bank/commands/`; runtime command skills are installed
   directly into `.agents/skills/` and `.claude/skills/`.
