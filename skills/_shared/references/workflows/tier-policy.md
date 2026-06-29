@@ -12,11 +12,11 @@ Task records route execution by a single required field:
 
 Allowed values: `T0`, `T1`, `T2`, `T3`.
 
-Do not use a separate risk model in task records. If execution reveals a higher
-tier, stop scope growth and record the required tier. Because tier is embedded
-in task identity, route the target task through `/prd-to-tasks FT-<NNN>` for a
-controlled rebuild or split, then rerun task-plan review and applicable doctor
-gates before executing the replacement task ID.
+Do not use a separate risk model in task records. If execution or verification
+reveals a higher tier, stop scope growth and record the required tier. Because
+tier is embedded in task identity, route the target task through
+`/prd-to-tasks FT-<NNN>` for a controlled rebuild or split, then rerun task-plan
+review and applicable doctor gates before executing the replacement task ID.
 
 ## Status Transition Modes
 
@@ -46,7 +46,12 @@ Manual mode:
 - When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
+- `T2` manual task closure requires full protocol, required packet/spec gates,
+  `/verify PASS`, and an explicit owner that writes the lifecycle decision;
+  `/verify` only makes the task closure-eligible. Per-task `/red-verify` is
+  optional, while T2 feature completion requires feature-level
+  `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in
+  the feature doc.
 - `T3` manual task closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
@@ -85,14 +90,18 @@ Rules:
   treat it as a policy violation, not permission to skip the packet.
 - Required packet gates use canonical
   `.memory-bank/packets/<task.id>.packet.json` when `packet_ref` is absent.
-- For required packet gates, `/verify`, `/red-verify`, `/autopilot`, and
-  `/autonomous` must block on missing, malformed, stale, blocked, or
-  hash-mismatched packets.
+- Before execution, `/prd-to-tasks`, `/review-tasks-plan`, `/mb-doctor`,
+  `/autopilot`, and `/autonomous` own structural packet readiness and must block
+  on missing, malformed, stale, blocked, or hash-mismatched packets.
 - `/execute` reads packet context only when required by tier/policy or explicitly
   linked by the task/feature; structural packet readiness is owned by
   `/foundation-to-tasks`, `/prd-to-tasks`, `/mb-doctor`, and scheduler gates.
   `/execute` stops on semantic packet/task/spec contradictions, not on packet
   freshness/hash/status checks.
+- `/verify` and `/red-verify` consume required packet scope/verification context
+  and stop when it is absent or semantically contradictory. They do not repeat
+  raw-hash/status/schema validation after lifecycle/evidence fields may have
+  changed, and they never repair packets.
 - Packet statuses are local packet statuses only:
   `ready|ready_with_gaps|blocked|stale`.
 - Packet statuses are not task lifecycle statuses and must not be added to the

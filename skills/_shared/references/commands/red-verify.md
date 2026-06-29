@@ -138,9 +138,10 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 Важно:
 - if the task record has no `tier`, stop with an explicit error
 - authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used
-- if a packet is required by tier/policy and it is missing, malformed, stale,
-  blocked, or inconsistent with the current task record, stop with
-  `semantic-concern` and record the packet blocker
+- if required packet context is absent or semantically inconsistent with the
+  current task/specs, stop with `semantic-concern` and record the packet
+  blocker; assume the pre-execution gate checked structure/hash/status and do
+  not repair or structurally revalidate the packet here
 - for `T2` / `T3`, `runtime_context.packet_required: false` is a policy
   violation, not permission to skip the packet
 - if `task.tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop with a blocker; semantic verification must not bless serious work against AC alone

@@ -1,222 +1,235 @@
 ---
-description: Верификация выполненной задачи по acceptance criteria + evidence, итог PASS/FAIL.
+description: Независимая functional verification одной реализованной TASK по task-scoped outcome, acceptance basis, SDD contracts и evidence.
 status: active
 ---
-# /verify — Verify a TASK (acceptance → evidence → verdict)
+# /verify - Verify one implemented TASK
 
 <objective>
-Подтвердить, что реализованный функционал работает с точки зрения пользователя.
-Это **не** adversarial semantic verification: если решение может формально пройти AC, но быть неверным по существу, после `/verify` запусти `/red-verify`.
+Prove or disprove one task's independently verifiable outcome against its
+task-scoped normative basis and reproducible evidence.
+
+`/verify` is not an implementer, planner, scheduler, packet repair command, or
+adversarial semantic review. It records functional evidence and one verdict:
+`PASS`, `FAIL`, or `NEEDS-CLARIFICATION`. Use `/red-verify` where required by
+tier policy after functional verification succeeds.
 </objective>
 
 <process>
 
-## Status Transition Modes
+## 0) Input and ownership
 
-Status transitions have two modes.
-
-Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
-- Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- `/mb-sync` records/reconciles state after the scheduler-provided closure/failure/blocking decision. It does not decide closure itself.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, required packet/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, required packet/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
-
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- Standalone `/verify` is not the default for manual `T0` / `T1`; use it when the user explicitly asks for independent verification, acceptance criteria are unclear, implementation scope grew, `/execute` cannot produce credible evidence, or public contract/state/data/security/runtime/cross-module behavior changed.
-- T0/T1 may be marked `done` after functional `VERDICT: PASS` and completed evidence only with explicit closure ownership. Manual `/execute` may also close `T0` / `T1` directly when the tier-policy fast-lane conditions are met.
-- T2 task closure may rely on `/verify PASS` when full protocol, required packet/spec gates, and explicit closure ownership are satisfied; per-task `/red-verify` is optional for T2. T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc before the feature is treated complete. T3 must not treat `/verify PASS` alone as final `done`; run per-task `/red-verify` and require `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
-- If required T3 per-task `/red-verify` or T2 feature-level `/red-verify --feature FT-<ID>` returns anything other than `semantic-pass`, leave the relevant task or feature closure pending or blocked, not complete. Optional T0/T1/T2 per-task red-verify does not make normal verify-based task closure stricter.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
-
-0) Вход
-Ожидается `$ARGUMENTS`:
+Expected `$ARGUMENTS`:
 - `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
 
-1) Прочитай минимум:
-- `.memory-bank/tasks/index.json`
-- `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`
-- `.memory-bank/packets/<TASK_ID>.packet.json` when required by tier/policy:
-  all `T2` / `T3`, and `T0` / `T1` only when
-  `runtime_context.packet_required` is true
-- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/context.md`
-- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/plan.md`
-- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/progress.md`
-- acceptance criteria источник:
-  - `.memory-bank/features/FT-*` и/или
-  - `.memory-bank/requirements.md` (REQ IDs)
-- if the task record or linked feature contains authoritative SDD spec links,
-  read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all linked authoritative SDD specs, for
-  any tier
+Read first:
+- `.memory-bank/tasks/index.json` and the indexed task record
+- `.memory-bank/workflows/tier-policy.md`
+- the task-linked feature and concrete `REQ-*` sources needed to interpret this
+  task's outcome
+- task-linked authoritative SDD specs when present
+- the required packet for every T2/T3 task and for T0/T1 only when
+  `runtime_context.packet_required: true`
 
-If the task record is missing, stop with an explicit error.
-Before reading protocol evidence or running verification commands, validate the
-verification-critical task fields:
-- indexed task record `id` matches the requested `TASK_ID`
-- `status` is one of `planned|ready|in_progress|blocked|done|failed`
-- `feature` is a non-empty string and matches the `FT-<NNN>` segment in
-  `TASK_ID`
+Read execution evidence by tier:
+- T0/T1: `.protocols/<TASK_ID>/run.md` and the task's implementation report or
+  evidence under `.tasks/<TASK_ID>/` when present
+- T2/T3: `.protocols/<TASK_ID>/context.md`, `plan.md`, `progress.md`,
+  `handoff.md`, any existing `verification.md`, and the implementation report
+  or evidence under `.tasks/<TASK_ID>/`
+
+Do not load unrelated feature-wide or global planning documents. Read
+`spec-backbone.md` and `spec-index.md` only to resolve task/feature-linked owners
+or a relevant contradiction.
+
+Normal scheduler input is an `in_progress` task. In manual mode, another status
+is acceptable only when tier-appropriate execution handoff/evidence proves the
+implementation happened or the user explicitly requested re-verification. Do
+not verify a merely `planned|ready` task as implemented, and do not silently
+reinterpret `blocked|failed|done` lifecycle state.
+
+## 1) Point-of-use preflight
+
+Before reading evidence as proof or running commands, confirm:
+- the index resolves exactly one task record and its `id` matches `$ARGUMENTS`
+- ID tier/feature/wave segments match record `tier`, `feature`, and `wave`
+- `tier` is `T0|T1|T2|T3`
 - `reqs` and `depends_on` are arrays of strings
-- `gates` is an array whose entries follow the task schema with `name`,
-  `command`, and boolean `required`
-- `verify` is an array whose entries are strings or structured objects
-- `tier` is one of `T0|T1|T2|T3`
+- `gates` entries have `name`, `command`, and boolean `required`
+- `verify` is an array of strings or structured objects
+- the tier-selected execution protocol and implementation handoff/evidence
+  exist and describe the requested task
 
-Empty arrays remain valid where the task schema allows them. Missing or
-malformed verification-critical fields are not empty evidence: do not infer,
-repair, or reconstruct them from protocol files. Stop before a functional
-PASS/FAIL verdict, return `VERDICT: NEEDS-CLARIFICATION`, list the invalid
-fields, and route task-record repair to the planning/scheduler owner. This
-point-of-use guard does not replace full task-schema checks in
-`/review-tasks-plan` or `/mb-doctor`.
+This is a narrow point-of-use guard, not another full schema/review gate. Empty
+schema-allowed arrays are valid. Missing or malformed required inputs must not
+be reconstructed from protocol notes. Record `VERDICT: NEEDS-CLARIFICATION`,
+list the exact gap, and route task-card repair to `/prd-to-tasks FT-<NNN>` or the
+active scheduler owner.
 
-Authoritative verification routing is only `task.tier`; the old `risk` /
-`risk.level` model is invalid and must not be used.
-Task records and linked authoritative specs remain source of truth. Execution
-Packets are derivative runtime context and must not override task/spec evidence.
-Packet requirement is `T2` / `T3` by tier, or `T0` / `T1` only when
-`runtime_context.packet_required` is true. If a required packet is missing,
-malformed, stale, blocked, or has a missing/malformed/mismatched
-`source_task_hash`, do not verify as if context were complete. Return
-`VERDICT: NEEDS-CLARIFICATION` or `VERDICT: FAIL` according to active
-verification ownership/mode, with reason `packet required but absent/stale`.
-For `T2` / `T3`, `runtime_context.packet_required: false` is a policy
-violation, not permission to skip the packet. For `T0` / `T1`, when
-`packet_required` is false or absent, `packet_ref` should normally be omitted;
-do not make advisory packets part of the verification path unless the user
-explicitly asks for that packet to be inspected.
-Authoritative SDD spec links are links in task richer fields or linked feature
-`spec_design_links` that point to `.memory-bank/spec-index.md`,
-`.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
-`.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
-`.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
-Use `.memory-bank/contracts/boundary-map.md` and other boundary/contract docs
-only when they are linked through those existing fields or provide the source
-for `runtime_context` scope. Do not require or invent boundary-specific task
-fields.
-Behavior specs linked through task `source_artifacts` under
-`.memory-bank/behavior-specs/*.behavior.json` are optional implementation
-context examples. `/verify` may read them for orientation, but must not treat
-their presence, absence, coverage, or exact alignment with code as an
-independent verification gate. If the behavior must be verified, it must appear
-in ordinary acceptance criteria, `verification_targets`, linked contracts/states,
-tests, packet verification checks, or another normal verification source.
-If `tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop and report a blocker instead of verifying against classic AC alone.
-Do not block `T0` / `T1` only because SDD spec links are absent.
-If task/AC wording conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with a blocker instead of verifying against the task alone.
+Authoritative routing uses only `task.tier`; never use legacy `risk` fields.
 
-Tier policy:
-- `T0`: standalone `/verify` is normally not required; verification may be recorded in `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/run.md` by `/execute`.
-- `T1`: standalone `/verify` is optional for strictly local scope; compact `run.md` may contain the verification evidence and verdict from the cheapest relevant local check, or a no-runnable-check reason.
-- `T2` / `T3`: `/verify` is required before scheduler closure and must update `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`.
-- `T3`: include critical/security/runtime evidence where relevant. Exact markers are scheduler closure requirements, not loose text.
+### Required packet context
 
-Status ownership:
-- `/verify` owns verification evidence and `VERDICT: PASS|FAIL|NEEDS-CLARIFICATION`.
-- In scheduler mode (`/autopilot` / `/autonomous`), `/verify` must not close the task, set `status: done`, set `status: failed`, block dependents, or promote dependents. It reports the verdict and recommended next status to the scheduler.
-- In standalone/manual mode, `/verify` may mark a `T0` / `T1` task `done` after functional `VERDICT: PASS` only with explicit closure ownership.
-- For `T2`, `/verify PASS` records functional evidence and can make task closure eligible when full protocol and required packet/spec gates are satisfied; feature completion still requires feature-level `/red-verify --feature FT-<ID>` semantic-pass recorded in the feature doc. For `T3`, final task closure requires per-task `/red-verify` semantic-pass first.
+Task records and linked specs are authoritative; packets are derivative.
 
-Приоритет basis для verify:
-1. linked authoritative SDD specs for any tier, when present
-2. required packet verification commands/checks/evidence when the required
-   packet is usable
-3. `purpose`, `success_outcome`, and `anti_goals` when present in task record
-4. `verification_targets`, если они явно указаны в task record / IMPL plan / feature doc
-5. `normative_inputs`, если они явно перечислены и релевантны проверке
-6. classic acceptance criteria из feature doc
-7. RTM / REQ IDs
-8. required packet verification/scope checks when required by tier/policy
-9. tests, logs, screenshots и иные evidence artifacts в `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
+- T2/T3 require canonical `.memory-bank/packets/<TASK_ID>.packet.json`.
+- T0/T1 require it only when `runtime_context.packet_required: true`.
+- Assume structural readiness was checked before execution by
+  `/prd-to-tasks`, `/review-tasks-plan`, `/mb-doctor`, or the scheduler.
+- Read required packet verification, scope, and stop conditions, but do not
+  repair the packet or repeat raw-hash/status/schema validation after task
+  lifecycle or evidence fields may have changed.
+- If required packet context is now absent or semantically contradicts the task
+  or linked specs, stop with `NEEDS-CLARIFICATION` and route `/mb-packet` or the
+  planning owner. Do not report a functional `FAIL` without testing behavior.
+- Ignore advisory T0/T1 packets unless the user explicitly asks to inspect one.
 
-Важно:
-- отсутствие richer verification fields не является ошибкой
-- absence of SDD spec links is not a blocker for `T0` / `T1`; in that case the
-  verifier should use the classic AC/REQ model
-- for `T2` / `T3`, linked SDD specs are mandatory verification inputs; route
-  feature-local repair to `/prd-to-tasks` reconciliation, shared/global repair
-  to `/spec-design`, or autonomous design to `/spec-auto` when absent
-- linked SDD specs are the primary normative basis when present; conflicting task records must be blocked, not locally reinterpreted
-- `evidence_required` и `verification_targets` описывают требования/цели проверки; сами по себе они не являются proof
-- behavior specs are not `verification_targets`, `evidence_required`, gates, or
-  done criteria; report behavior-spec drift as a note unless a normal
-  verification source also fails
-- detailed verification report may live in `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`, with artifacts in `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
-- before any command sets `status: done`, the task record `verify` field must contain the completed evidence summary/marker (string or structured object)
-- in scheduler mode, `/verify` itself must not set `status: done`; for `T2`, PASS makes task closure eligible when full protocol and required packet/spec gates are satisfied; for `T3`, PASS leaves task closure pending per-task `/red-verify`
-- in manual mode, `/verify PASS` may close `T0` / `T1` when independent verification was requested, and may close `T2` when full protocol plus required packet/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` before final closure/`/mb-sync`
+## 2) Build the task-scoped verification basis
 
-2) Для каждого AC/REQ:
-- выполни минимальную проверку (предпочтительно детерминированную)
-- зафиксируй:
-  - что сделал
-  - команды
-  - где evidence (в `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`)
+Verify this task, not the whole feature. Derive the minimum complete basis in
+this precedence order:
+1. linked authoritative SDD specs and their executable rules
+2. task `purpose`, `success_outcome`, `anti_goals`, `constraints`, `invariants`,
+   and `verification_targets`
+3. only the feature acceptance criteria and concrete `REQ-*` behavior mapped to
+   this task's independently verifiable outcome
+4. required packet verification checks, commands, evidence, scope, and stop
+   conditions
+5. execution handoff, changed files, local-gate results, and artifacts
 
-If purpose/runtime fields are present:
-- verify `purpose` was actually served, not merely that local edits happened
-- verify `success_outcome` is observable from evidence
-- verify every `anti_goals` item was respected
-- verify changed files stayed within `allowed_write_scope` when present
-- verify `forbidden_scope` was not touched
-- verify linked boundary-map/contracts were respected when they are part of the
-  task's source/normative/constraint/verification basis
-- verify required packet `verification.commands`, `success_checks`, and
-  `evidence_required` were covered or record a blocker for each gap
-- when an optional advisory packet is usable, cover relevant packet checks as
-  cross-checks; when it is not usable, warn and continue without it
+Do not require one task to satisfy acceptance criteria intentionally assigned to
+other tasks. If the selected task cannot be mapped to one independently
+verifiable outcome and a task-scoped AC/REQ subset, return
+`NEEDS-CLARIFICATION` and route `/prd-to-tasks` reconciliation.
 
-If the task changes UI/browser behavior, or an AC/verification target requires
-a browser flow:
-- prefer the project's existing browser automation harness; use Playwright when
-  it is configured, otherwise use an available agent-browser or CDP-driven
-  flow; do not add a new browser framework only to satisfy `/verify`
-- run the smallest reproducible browser flow that proves the relevant AC,
-  including required state, error, responsive, or navigation behavior when it
-  is in scope
-- record the command or exact automated flow, runtime/base URL, relevant
-  viewport/device, result, and artifact paths in verification evidence
-- store screenshots and, when useful, Playwright traces or videos under
-  `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`; keep only links and concise
-  conclusions in Memory Bank/protocol records
-- follow linked redaction/evidence rules and do not capture secrets or PII
-- do not use an informal manual click-through as primary evidence when browser
-  automation is available
-- if browser automation is unavailable, record the reason and reproducible
-  manual steps with artifacts; return `VERDICT: NEEDS-CLARIFICATION` instead of
-  claiming PASS when the browser AC cannot be proved credibly
+`evidence_required` and `verification_targets` are proof requirements, not proof
+by themselves. An `/execute` local PASS is evidence input, not an automatic
+`/verify PASS`.
 
-Если richer verification targets заданы:
-- сначала проверь их
-- затем проверь, что они не противоречат classic acceptance criteria
+### Applicable SDD owners
 
-3) Заполни protocol evidence:
-- для `T0` / `T1`, если используется compact path, обнови `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/run.md`
-- для `T2` / `T3`, заполни `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md` (по шаблону, если он есть в проекте)
+An entry in `spec-index.md` alone is not a task link. For T2/T3, the task richer
+fields or feature `spec_design_links` must route to every relevant authoritative
+owner. Apply only the owner types demanded by actual task scope:
+- Architecture Specification for system/module shape, source of truth, runtime,
+  deployment, Architecture Spine, or ADR constraints
+- Component Contract for crossed/changed module guarantees and call/failure
+  boundaries
+- API Contract for API inputs, outputs, auth, status/errors, and compatibility
+- Event Contract for producer/consumer, envelope, ordering, versioning,
+  retry/idempotency, delivery, and failures
+- Data Contract for payloads crossing boundaries, including required fields,
+  validation/serialization, versions, and compatibility
+- Data Specification for internal models, DB/storage ownership, persistence,
+  migrations, lifecycle, retention, seed data, and runtime data paths
 
-4) Если проблемы:
-- зафиксируй BUG в `.memory-bank/bugs/`
-- in standalone/manual mode, add follow-up `.task.json` and update `.memory-bank/tasks/index.json` only if that is the explicit local workflow
-- record `VERDICT: FAIL` and recommend `status: failed`
-- in scheduler mode, do not write `failed` or `blocked`; return the recommendation so the scheduler owns failure handling and dependent blocking
+Verify implementation and evidence against each applicable owner's concrete
+`shape`, `rules`, `edge cases/errors`, and `verification target`. Do not require
+irrelevant spec families. A missing, conflicting, or wrong owner type is a
+planning/design blocker, not an implementation FAIL:
+- feature-local repair -> `/prd-to-tasks FT-<NNN>`
+- shared/global owner or decision -> `/spec-design`
 
-5) Если всё ок:
-- `VERDICT: PASS`
-- обнови текущий task record:
-  - add completed verification/evidence entries in `verify`
-- status by tier:
-  - scheduler mode: recommend the scheduler decision; do not close/fail/block/promote
-  - manual mode: may set `T0` / `T1` `status: done` after functional `VERDICT: PASS` with explicit closure ownership; for `T2`, recommend task closure when full protocol and required packet/spec gates are satisfied; for `T3`, leave closure pending per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass`
-- record RTM/feature lifecycle recommendations for `/mb-sync`; do not independently perform scheduler closure
+T0/T1 may use classic task-scoped AC/REQ evidence when no SDD owner is relevant.
+Behavior specs linked through `source_artifacts` are optional context examples;
+they are never independent gates or substitutes for AC, contracts, tests, or
+verification targets.
+
+## 3) Tier and scope guard
+
+- T0: standalone verification is normally unnecessary; compact evidence may be
+  enough when explicitly requested.
+- T1: standalone verification is optional for strictly local work.
+- T2/T3: functional `/verify` and full protocol evidence are required.
+- T3: functional PASS still requires per-task `/red-verify` and the closure
+  markers required by tier policy.
+
+If verification evidence shows that actual implementation requires a higher
+tier or materially different task scope:
+1. Stop before claiming PASS or extending verification into the wider scope.
+2. Record current tier, required tier, triggering evidence, affected files, and
+   whether split/rebuild is preferable.
+3. Do not edit `task.tier` in place; tier is embedded in task identity, paths,
+   packet references, index entries, and dependencies.
+4. Return `VERDICT: NEEDS-CLARIFICATION` and route the original task through
+   `/prd-to-tasks FT-<NNN>` for controlled rebuild/split.
+5. Require `/review-tasks-plan`, the applicable `/mb-doctor` gate, and
+   `/execute <replacement-task-id>` before verification resumes.
+
+## 4) Run functional verification
+
+For every task-scoped outcome, mapped AC/REQ item, verification target, and
+applicable contract rule:
+- choose the smallest credible deterministic check
+- run the command or reproducible flow independently when practical
+- record what was checked, command/flow, result, and evidence path under
+  `.tasks/<TASK_ID>/`
+- cover required packet verification checks or record the exact blocker
+
+When runtime context exists, verify:
+- `success_outcome` is observable, not merely that files changed
+- `anti_goals` and non-goals remain respected
+- changed files remain within `allowed_write_scope`
+- `forbidden_scope` was not touched
+- applicable architecture/component/API/event/data owners were respected
+- real persistence paths receive the required read/write or integration proof
+
+If UI/browser behavior is in scope:
+- use the project's existing browser automation; prefer configured Playwright,
+  otherwise use an available agent-browser or CDP flow
+- run the smallest reproducible flow proving the mapped task criterion,
+  including error, state, responsive, or navigation behavior only when relevant
+- record runtime/base URL, viewport/device, result, and screenshot/trace/video
+  paths under `.tasks/<TASK_ID>/`
+- follow redaction rules and never capture secrets or PII
+- when required browser behavior cannot be proved credibly, return
+  `NEEDS-CLARIFICATION`, not PASS
+
+## 5) Evidence and verdict
+
+Write evidence to:
+- T0/T1 compact path: `.protocols/<TASK_ID>/run.md`
+- T2/T3 full path: `.protocols/<TASK_ID>/verification.md`
+- substantive artifacts: `.tasks/<TASK_ID>/`
+
+Use exactly one verdict:
+- `VERDICT: PASS`: every task-scoped required check passed with credible evidence
+- `VERDICT: FAIL`: observed implementation behavior violates the task-scoped
+  normative basis or a required functional check fails
+- `VERDICT: NEEDS-CLARIFICATION`: a safe verdict is impossible because inputs,
+  execution evidence, scope/tier, required context, or normative ownership are
+  missing, stale, contradictory, or unverifiable
+
+Append the completed verdict/evidence summary to the task record `verify` array
+when that field is structurally valid. If the record itself is malformed, keep
+the evidence in protocol/artifacts and hand task-card repair to the owner.
+Do not create or edit specs, packets, BUG records, follow-up tasks, dependencies,
+tier, wave, acceptance criteria, or material task scope from `/verify`.
+
+## 6) Lifecycle and handoff
+
+Scheduler mode:
+- never close/fail/block/promote tasks or dependents
+- return the verdict, evidence links, and recommended scheduler action
+
+Manual mode:
+- T0/T1 PASS may set `status: done` only when the current top-level agent has
+  explicit closure ownership and completed evidence is in task `verify`
+- T2 PASS makes the task closure-eligible; the explicit owner writes the final
+  lifecycle decision
+- T3 PASS routes to per-task `/red-verify`; it is not closure-eligible yet
+
+On FAIL, report the defect and evidence. The scheduler or explicit owner decides
+`failed|blocked|retry`, creates any durable BUG/follow-up work, updates
+dependents, and records failure-budget impact. New task planning routes through
+`/prd-to-tasks`.
+
+On NEEDS-CLARIFICATION, name one repair owner:
+- task scope/tier/feature-local spec -> `/prd-to-tasks FT-<NNN>`
+- shared/global spec owner -> `/spec-design`
+- packet-only issue -> `/mb-packet <TASK_ID>`
+- missing implementation evidence -> `/execute <TASK_ID>`
+
+Do not run `/red-verify`, `/mb-sync`, task-plan repair, or scheduler transitions
+inside `/verify`. Report the next required owner/action.
+
 </process>

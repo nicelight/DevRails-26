@@ -61,7 +61,7 @@ DevRails ведет проект через три фазы.
 
 Когда JSON task queue уже создана, reviewed и проходит strict readiness checks, можно запускать `/autopilot`. Он не пишет PRD, не делает `/prd-to-tasks` и не придумывает task queue. Это scheduler/executor: берет существующие task records, последовательно переводит статусы, запускает `/execute`, `/verify`, T3 `/red-verify`, feature-level semantic checks и `/mb-sync` по tier policy. `/autopilot` обычно съедает заметно больше токенов, потому что работает через более чистые контексты, перечитывает packets/specs/evidence и пытается самостоятельно довести все доступные задачи до terminal state.
 
-После реализации кода можно усиливать тестовое покрытие. Внутри `/execute` агент запускает локальные project gates, если они есть. `/verify` проверяет acceptance criteria и evidence, а `/red-verify` ищет смысловые ошибки, которые могли пройти обычные проверки. Для отдельного улучшения покрытия используется `/add-tests`: команда добавляет unit/integration/e2e тесты там, где они реально ловят регрессии, обновляет `.memory-bank/testing/index.md` и записывает evidence. После добавления тестов нужно запускать реальные тестовые команды проекта и синхронизировать Memory Bank на boundary через `/mb-sync`.
+После реализации кода можно усиливать тестовое покрытие. Внутри `/execute` агент запускает локальные project gates, если они есть. `/verify` независимо проверяет outcome выбранной task, только связанные с ней acceptance criteria/REQ, применимые SDD contracts и evidence; он не проверяет всю feature и не создает follow-up tasks. `/red-verify` ищет смысловые ошибки, которые могли пройти обычные проверки. Для отдельного улучшения покрытия используется `/add-tests`: команда добавляет unit/integration/e2e тесты там, где они реально ловят регрессии, обновляет `.memory-bank/testing/index.md` и записывает evidence. После добавления тестов нужно запускать реальные тестовые команды проекта и синхронизировать Memory Bank на boundary через `/mb-sync`.
 
 
 
@@ -119,7 +119,7 @@ DevRails ведет проект через три фазы.
 ### 3. Реализация, проверки и синхронизация
 
 - `/execute TASK-...` - реализует одну scoped task и пишет protocol/evidence/handoff.
-- `/verify TASK-...` - проверяет результат по acceptance criteria и evidence, возвращает PASS/FAIL.
+- `/verify TASK-...` - независимо проверяет task-scoped outcome по mapped AC/REQ, applicable SDD contracts и evidence; возвращает PASS/FAIL/NEEDS-CLARIFICATION без создания новых tasks.
 - `/red-verify TASK-...` - adversarial semantic verification для случаев, где формально passing решение может быть неверным по сути.
 - `/add-tests` - добавляет полезные unit/integration/e2e тесты и evidence.
 - `/mb-sync` - синхронизирует durable Memory Bank state на boundary после уже принятого closure/failure/blocking decision.

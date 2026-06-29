@@ -259,7 +259,8 @@ Manual mode:
 Правила очереди:
 - независимые задачи (нет deps и shared files) можно запускать параллельно
 - зависимые или shared-file задачи — только последовательно
-- follow-up task, добавленная по итогам verify, должна попасть в **следующую итерацию того же run**
+- follow-up task, созданная scheduler/owner после verify FAIL, должна попасть в
+  **следующую итерацию того же run**; `/verify` сам task records не создает
 
 ## 8) Execution loop per TASK
 Для каждого выбранного `TASK-NNN-TN-FT-NNN-WN`:

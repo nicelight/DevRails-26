@@ -83,13 +83,13 @@ After finishing a meaningful unit of work:
 - Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc.
 - Scheduler mode: T3 requires full protocol state, required packet/spec gates, `/verify` `VERDICT: PASS`, and per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before the scheduler marks `done`.
 - Scheduler mode: T3 also requires exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
-- Manual mode: T0/T1 may close in `/execute` with compact evidence when the explicit manual top-level owner conditions are met; standalone `/verify` is optional for uncertainty, widened scope, or explicit request. T2 may close after `/verify PASS` when full protocol plus required packet/spec gates are satisfied; T3 must run per-task `/red-verify` before final closure/`/mb-sync`.
-- If `/execute` discovers a required higher tier, stop scope growth and route
+- Manual mode: T0/T1 may close in `/execute` with compact evidence when the explicit manual top-level owner conditions are met; standalone `/verify` is optional for uncertainty, widened scope, or explicit request. T2 becomes closure-eligible after `/verify PASS` when full protocol plus required packet/spec gates are satisfied; the explicit owner writes the lifecycle decision. T3 must run per-task `/red-verify` before final closure/`/mb-sync`.
+- If `/execute` or `/verify` discovers a required higher tier, stop scope growth and route
   the original task ID through `/prd-to-tasks FT-<NNN>` for controlled
   rebuild/split; rerun task-plan review and applicable doctor gates before
   executing the replacement task ID.
 - Packet requirement: T2/T3 require canonical `.memory-bank/packets/<task.id>.packet.json`; T0/T1 require packets only when `task.runtime_context.packet_required === true`.
-- Required packets are derivative runtime artifacts under `.memory-bank/packets/`; `/foundation-to-tasks` and `/prd-to-tasks` create initial required packets, and `/mb-doctor` validates readiness at the foundation/task-queue or feature/task-queue boundary. Use `/mb-packet TASK-NNN-TN-FT-NNN-WN` only to repair or refresh packets after task/spec changes.
+- Required packets are derivative runtime artifacts under `.memory-bank/packets/`; `/foundation-to-tasks` and `/prd-to-tasks` create initial required packets, and `/mb-doctor` validates structural readiness at the foundation/task-queue or feature/task-queue boundary. `/verify` consumes required packet verification/scope context without repeating hash validation after lifecycle changes. Use `/mb-packet TASK-NNN-TN-FT-NNN-WN` only to repair or refresh packets after task/spec changes.
 - If running in **Claude Code**: execute each `TASK-NNN-TN-FT-NNN-WN` in a **fresh Claude session** using tier-appropriate `.protocols/TASK-NNN-TN-FT-NNN-WN/` state.
 - If running in **Codex**: you can run each `TASK-NNN-TN-FT-NNN-WN` in a fresh session via `codex exec` (see `/execute`).
 - Sequencing: independent tasks may run in parallel clean sessions; dependent/shared-file tasks must run sequentially.

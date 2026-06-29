@@ -30,7 +30,10 @@ Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOM
   - `FT-000`: foundation pseudo-feature; do not apply product feature-completion semantics
   - Scheduler mode T3: `/verify` PASS and per-task `/red-verify` semantic-pass are required before scheduler marks the task done
   - Manual mode T0/T1: `/verify` PASS may close only with explicit closure ownership and completed evidence
-  - Manual mode T2: `/verify` PASS plus full protocol and required packet/spec gates may close the task with explicit closure ownership; T2 feature completion still requires feature-level semantic-pass recorded in the feature doc
+  - Manual mode T2: `/verify` PASS plus full protocol and required packet/spec
+    gates makes the task closure-eligible; the explicit owner writes the
+    lifecycle decision, and T2 feature completion still requires feature-level
+    semantic-pass recorded in the feature doc
   - Manual mode T3: `/verify` PASS is not final closure; per-task `/red-verify` semantic-pass is required before `done` or `/mb-sync`
   - T3: exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present` are required
 - mandatory `/mb-sync`
