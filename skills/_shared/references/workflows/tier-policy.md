@@ -12,7 +12,11 @@ Task records route execution by a single required field:
 
 Allowed values: `T0`, `T1`, `T2`, `T3`.
 
-Do not use a separate risk model in task records. If scope grows during execution, update the task to the higher tier and follow the higher-tier policy.
+Do not use a separate risk model in task records. If execution reveals a higher
+tier, stop scope growth and record the required tier. Because tier is embedded
+in task identity, route the target task through `/prd-to-tasks FT-<NNN>` for a
+controlled rebuild or split, then rerun task-plan review and applicable doctor
+gates before executing the replacement task ID.
 
 ## Status Transition Modes
 
@@ -39,7 +43,7 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, no required packet is involved, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
 - When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
-- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or retier/split if scope became T2/T3.
+- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires full protocol, required packet/spec gates, and `/verify PASS`; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.

@@ -72,7 +72,6 @@ Installable skill entrypoints:
 - `skills/mb-init/SKILL.md`
 - `skills/mb-from-prd/SKILL.md`
 - `skills/mb-map-codebase/SKILL.md`
-- `skills/mb-execute/SKILL.md`
 - `skills/mb-verify/SKILL.md`
 - `skills/mb-red-verify/SKILL.md`
 - `skills/mb-review/SKILL.md`
@@ -187,7 +186,6 @@ Primary source files for this behavior:
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/workflows/tier-policy.md`
 - `skills/_shared/references/workflows/mb-sync.md`
-- `skills/mb-execute/SKILL.md`
 - `skills/mb-verify/SKILL.md`
 - `skills/mb-red-verify/SKILL.md`
 

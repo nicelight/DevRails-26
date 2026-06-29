@@ -19,12 +19,10 @@ Feature-scoped review is the normal manual gate after `/prd-to-tasks FT-<NNN>`.
 is required before `/autopilot` / autonomous scheduler execution.
 
 Reviewed surface:
-- target feature's indexed JSON task records and task index entries
-- target feature waves, dependencies, readiness, gates, verification surface
-- target feature implementation plan and linked SDD specs
-- packet/runtime-context readiness for target T2/T3 tasks and explicit T0/T1
-  packet-required tasks
-- Foundation Dev Path dependency invariants for reviewed product tasks
+- structural integrity of the target feature's indexed task records
+- feature acceptance/REQ coverage and task slicing
+- final feature/design readiness and linked authoritative specs
+- execution readiness: tiers, dependencies, packets, and Foundation Gate
 
 This command does not validate PRD -> feature decomposition as the primary
 surface. Use `/review-feat-plan` before `/spec-design` for that.
@@ -68,10 +66,13 @@ each feature. Do not collapse all features into one broad reviewer prompt.
 ## 2) Inputs
 Read for every run:
 - `.memory-bank/constitution.md`
+- `.memory-bank/requirements.md`
 - `.memory-bank/spec-backbone.md`
 - `.memory-bank/spec-index.md`
+- `.memory-bank/schemas/task.schema.json`
 - `.memory-bank/workflows/tier-policy.md`
 - `.memory-bank/tasks/index.json`
+- `.memory-bank/foundation.md` when present
 - `mb-doctor` output when available
 
 For a feature-scoped review, read only the feature-relevant planning surface:
@@ -87,54 +88,82 @@ For a feature-scoped review, read only the feature-relevant planning surface:
 For `--all`, repeat the feature-scoped input set for each product feature.
 
 ## 3) Review checks
-Must check:
-- `.memory-bank/tasks/index.json` contains references to the reviewed task
-  records, and every reviewed record exists.
-- Every reviewed task has valid `status`, `wave`, `feature`, `depends_on`,
-  `touched_files`, `tier`, `gates`, `verify`, and richer context fields.
-- Every reviewed task's `feature` matches the target feature.
-- `ready` tasks have no unmet dependencies, blockers, blocking review rejects,
-  or unresolved semantic concerns.
-- Target feature task waves and dependencies are coherent and do not create
-  deadlocks.
-- Cross-feature dependencies referenced by target tasks exist and are compatible
-  with the reviewed tasks' readiness.
-- `tier` usage matches `.memory-bank/workflows/tier-policy.md`.
-- T2/T3 tasks have relevant linked SDD specs through `source_artifacts`,
-  `normative_inputs`, `constraints`, `invariants`, `verification_targets`, or
-  feature `spec_design_links`.
-- Every T2/T3 task can be implemented without guessing API, state, schema,
-  message, storage, domain, agent I/O, or security contracts.
-- If a T2/T3 task depends on a concrete boundary, a linked authoritative spec
-  contains the minimum concrete block: `shape`, `rules`, `edge cases/errors`,
-  and `verification target`.
-- T2/T3 tasks do not depend on duplicated or conflicting concrete contract
-  sources. If two docs both look authoritative for the same concrete contract,
-  the verdict must not be `APPROVE`.
-- Shared-boundary T2/T3 tasks have relevant Architecture Spine `AD-*`,
-  boundary-map, contract, or ADR links when those decisions constrain
-  implementation or verification. Feature-local T2/T3 tasks may rely on their
-  narrower linked SDD specs.
-- T2/T3 tasks and explicit packet-required T0/T1 tasks have usable canonical
-  `.memory-bank/packets/<task.id>.packet.json`.
-- Product tasks do not use `W0`; `W0` is reserved for `FT-000`.
-- If foundation is required, every reviewed non-`FT-000` product task depends
-  directly or transitively on the final foundation gate task, and that gate is
-  `done` before product execution.
-- `/mb-doctor --strict` findings from the reviewed surface are addressed before
-  `APPROVE` for autonomous/autopilot execution.
-- Constitution contradictions are blocking.
+
+Evaluate the planning surface through four groups. Do not create or repair
+specs, plans, tasks, packets, or lifecycle state from this command.
+
+### 3.1 Structural integrity
+
+- Parse `task.schema.json` and validate every target task record against it.
+- Confirm every reviewed task is referenced exactly once by `tasks/index.json`
+  and every index reference resolves to the matching file and task ID.
+- Confirm task ID tier/feature/wave segments match record `tier`, `feature`, and
+  `wave`; product tasks never use `W0`.
+- Confirm every task belongs to the target feature. Every T1/T2/T3 task has
+  concrete governing `REQ-*` entries present in `requirements.md`; placeholders
+  are invalid.
+
+### 3.2 Coverage and slicing
+
+- Map every feature acceptance criterion and governing requirement to at least
+  one task, and every task back to feature scope and requirements.
+- Reject missing coverage, orphan tasks, duplicated outcomes, or task slicing
+  that hides more than one independently verifiable outcome in one record.
+- Confirm the implementation plan, task queue, touched files, gates, and
+  verification targets describe one coherent implementation strategy.
+- Confirm waves and dependencies are necessary, acyclic, and executable;
+  referenced cross-feature dependencies exist and are compatible.
+
+### 3.3 Design readiness
+
+- Feature clarification is not explicitly `pending|blocked` and final
+  `spec_design_status` is `complete`, or `not_required` with a truthful rationale
+  for simple work and empty `spec_design_links`.
+- No feature-relevant Backbone Area Matrix row remains `needed_before_tasks` or
+  `blocked`; `spec-index.md` remains a registry and linked owners exist.
+- T2/T3 tasks link relevant authoritative SDD specs and can be implemented
+  without guessing architecture, API, state, schema, message, storage, domain,
+  agent I/O, security, or verification behavior.
+- Every changed/dependent concrete boundary has exactly one authoritative owner
+  defining `shape`, `rules`, `edge cases/errors`, and `verification target`.
+  Shared-boundary tasks link relevant Architecture Spine `AD-*`, boundary-map,
+  contract, or ADR decisions when those decisions constrain the work.
+- When mutable persistence is in scope, a task names the real runtime storage
+  path and requires a read/write smoke or repository integration check.
+- Constitution, feature, implementation plan, tasks, backbone, and linked specs
+  do not contradict each other.
+
+Behavior specs remain optional context examples. Their absence or non-gate
+semantics must not cause `REJECT`.
+
+### 3.4 Execution readiness
+
+- Tier assignment follows `tier-policy.md`; `ready` tasks have no unmet
+  dependencies, blockers, blocking review rejects, or unresolved semantic gaps.
+- When foundation is required, the named indexed `FT-000` gate task is `done`
+  and every reviewed product task depends on it directly or transitively.
+- Every T2/T3 task and every T0/T1 task with
+  `runtime_context.packet_required: true` has a canonical
+  `.memory-bank/packets/<task.id>.packet.json` with matching task ID/tier,
+  `status: ready|ready_with_gaps`, and `source_task_hash` matching the raw current
+  indexed task record. Public contract/state/data/security or verification gaps
+  cannot be treated as `ready_with_gaps`.
+- Do not ignore available `mb-doctor` findings that contradict the review.
+  Do not run or duplicate doctor here; autonomous readiness still requires the
+  separate downstream `/mb-doctor --strict` gate.
 
 ## 4) Decision rule
-- `APPROVE`: the target feature's task planning surface is safe to hand to
-  manual `/execute` subject to normal `/mb-doctor` passing when required.
+- `APPROVE`: all four groups pass and the target feature's task planning surface
+  is safe to hand to manual `/execute`, subject to normal `/mb-doctor` passing
+  when required.
 - `APPROVE` for `/autopilot` / autonomous scheduler requires either:
   - `--all` completed with every product feature approved, or
   - a latest `APPROVE` report for every task-linked product feature.
-- `REJECT`: task records, waves, dependencies, packets, tier routing,
-  contract readiness, foundation dependencies, or verification surface have
-  blocking gaps. Fix and rerun `/review-tasks-plan FT-<NNN>` for the rejected
-  feature.
+  This planning verdict is necessary but not sufficient; downstream
+  `/mb-doctor --strict` must also pass.
+- `REJECT`: any group has a blocking gap. Report the failed group, concrete
+  evidence, and repair owner; then rerun `/review-tasks-plan FT-<NNN>` after the
+  repair.
 - Non-blocking notes may be reported with `APPROVE`; `REJECT` always means the
   gate is blocking.
 
@@ -151,20 +180,22 @@ session. Do not pin a provider, CLI, or model in this command. Pass this payload
 ```text
 TASK_ID=TASK-MB-REVIEW-TASKS-PLAN. STAGE_ID=S-TASKS-FT-001.
 TARGET_FEATURE=FT-001. Review .memory-bank/constitution.md,
-.memory-bank/spec-backbone.md, .memory-bank/spec-index.md,
+.memory-bank/requirements.md, .memory-bank/spec-backbone.md,
+.memory-bank/spec-index.md, .memory-bank/schemas/task.schema.json,
 .memory-bank/workflows/tier-policy.md, .memory-bank/features/FT-001-*.md,
 .memory-bank/tasks/index.json, indexed task records whose feature is FT-001,
 dependency task records referenced by those tasks,
 .memory-bank/tasks/plans/IMPL-FT-001.md, required packets for reviewed tasks,
-and mb-doctor readiness findings relevant to FT-001. Check target feature
-waves, dependencies, readiness, gates, verification surface, T2/T3 SDD links,
-concrete contract readiness for API/state/schema/message/storage/domain/agent
-I/O/security boundaries, duplicated/conflicting contract owners, Architecture
-Spine/boundary link routing for shared-boundary work, packet readiness, and
-Foundation Dev Path dependency invariants for reviewed tasks. Write report to
+.memory-bank/foundation.md when present, and mb-doctor findings relevant to
+FT-001. Review four groups: structural integrity; acceptance/REQ coverage and
+task slicing; final feature/design readiness; and execution readiness. Include
+schema/index/ID consistency, implementation-plan alignment, final design status,
+feature-relevant needed_before_tasks rows, concrete contract ownership,
+persistence verification when applicable, tier/dependency/foundation rules, and
+canonical packet status/hash freshness. Write report to
 .tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-S-TASKS-FT-001-final-report-docs-01.md.
-VERDICT: APPROVE/REJECT; REJECT if any T2/T3 task requires guessing contract
-details or if concrete contract ownership is duplicated/conflicting.
+VERDICT: APPROVE/REJECT. APPROVE only when all four groups pass. For REJECT,
+name the failed group, evidence, and repair owner.
 ```
 
 For `--all`, run one fresh-context reviewer per feature. A synthesized summary

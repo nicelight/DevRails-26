@@ -1,5 +1,5 @@
 ---
-description: Выполнение одной TASK-NNN-TN-FT-NNN-WN как implementation handoff: read -> preflight -> protocol -> implement -> local gates -> evidence -> handoff.
+description: Выполнение одной TASK-NNN-TN-FT-NNN-WN как implementation handoff: read, preflight, protocol, implement, local gates, evidence, handoff.
 status: active
 ---
 
@@ -40,7 +40,7 @@ Manual mode:
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
 - `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, no required packet is involved, scope stayed task-local, no T2/T3 trigger appeared, and compact evidence was written.
 - When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
-- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or retier/split if scope became T2/T3.
+- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires `/verify PASS` plus full protocol and required packet/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
@@ -126,11 +126,31 @@ procedure. For `T2` / `T3`, guide-only context does not replace a relevant
 architecture, contract, domain, state, or testing spec when that concern is in
 scope.
 
+Apply the enhanced SDD taxonomy only to task-relevant design pressure:
+- Architecture Specification: system/module shape, source of truth, runtime or
+  deployment constraints, and applicable Architecture Spine/ADR decisions.
+- Component Contract: guarantees, responsibilities, dependencies,
+  allowed/forbidden calls, ownership, and failure boundaries for a changed or
+  crossed component/module boundary.
+- API Contract: inputs/outputs, auth, status/error behavior, compatibility, and
+  protocol-specific rules for a changed API boundary.
+- Event Contract: producer/consumer, envelope/fields, ordering, versioning,
+  retry/idempotency, delivery, and failure behavior for changed events/messages.
+- Data Contract: payload shape, required fields, versions,
+  validation/serialization, and compatibility when data crosses a boundary.
+- Data Specification: internal models, DB/storage ownership, persistence,
+  migrations, lifecycle, retention, seed data, and internal runtime data paths.
+
+Do not require irrelevant spec families. For each changed or depended-on design
+boundary, require exactly one applicable authoritative owner and follow its
+concrete block instead of treating any generic SDD link as sufficient.
+
 Missing richer fields or absent SDD spec links are not an error for `T0` /
 `T1`. Use classic feature/requirements/docs fallback when they are absent.
 For `T2` / `T3`, missing linked SDD specs are a blocker. A feature marked
-`spec_design_status: not_required` can support only work that remains `T0` /
-`T1`; retier the task before `/execute` instead of bypassing the SDD gate.
+`spec_design_status: not_required` can support only work whose actual scope
+remains `T0` / `T1`. Do not downgrade a serious task to bypass the SDD gate;
+route it to `/prd-to-tasks` for design repair or controlled re-decomposition.
 For any tier, linked SDD specs are primary normative inputs. If the task record conflicts with linked specs or the backbone, stop with a blocker instead of choosing locally.
 
 ## 1) Preflight
@@ -150,9 +170,11 @@ Stop with an explicit error if:
   SDD spec
 - `tier` is `T2` or `T3`, guides are the only linked SDD context, and the task
   has an in-scope architecture, contract, domain, state, or testing concern
-- a `T2` / `T3` task depends on a concrete API, state, schema, message, storage,
-  domain, agent I/O, or security boundary, but its linked authoritative owner
-  lacks `shape`, `rules`, `edge cases/errors`, or a `verification target`
+- a `T2` / `T3` task changes or depends on an architecture, component/module,
+  API, event/message, boundary-data, internal data/storage/state, domain, agent
+  I/O, or security concern, but lacks the applicable authoritative owner from
+  the SDD taxonomy above, or that owner lacks `shape`, `rules`,
+  `edge cases/errors`, or a `verification target`
 - the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
 - the task, packet summary, feature, implementation plan, linked specs, or
   acceptance criteria are objectively contradictory, underspecified for safe
@@ -177,6 +199,25 @@ If a packet exists, treat it as derivative context. If it contradicts the task
 record or linked specs in a way that affects implementation semantics, stop with
 a blocker and report the contradiction; do not repair or validate the packet
 inside `/execute`.
+
+### Tier escalation handoff
+
+If preflight or implementation evidence shows that the task requires a higher
+tier:
+1. Stop before making further changes outside the currently safe task scope.
+2. Record the current tier, required higher tier, triggering evidence, partial
+   changes/evidence, and whether splitting is preferable in the protocol and
+   handoff.
+3. Do not update `task.tier` in place: the tier is part of task ID, task path,
+   packet path, index references, and dependency references.
+4. Route `/prd-to-tasks FT-<NNN>` to rebuild or split the target task under its
+   existing-queue reconciliation rules. Name the original task ID explicitly.
+5. Rerun `/review-tasks-plan FT-<NNN>`, then the applicable `/mb-doctor` gate,
+   and resume with `/execute <replacement-task-id>`.
+
+In scheduler mode, return the escalation recommendation and let the scheduler
+block progression. In manual mode, leave the task open for the explicit owner;
+do not claim implementation or closure success from partial evidence.
 
 ## 2) Protocol By Tier
 Create `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/` for runtime evidence and reports.
@@ -218,6 +259,7 @@ Use protocol templates when available. In `plan.md` or compact `run.md`, record:
   - Stop conditions:
 - Boundary Notes:
   - Linked boundary/contracts:
+  - Applicable SDD owner types:
   - Responsibility boundary:
   - Boundary drift risk:
 - Behavior Specs:
@@ -243,6 +285,9 @@ Rules:
 - when linked boundary-map/contracts exist, keep implementation aligned with the
   recorded responsibility boundary; if the task needs a different boundary,
   stop and report the required spec/task update instead of widening locally
+- follow the applicable Architecture/Component/API/Event/Data Contract or Data
+  Specification owner; stop and route design repair when implementation exposes
+  a missing, conflicting, or wrong owner type
 - keep changed files inside `runtime_context.allowed_write_scope` when present;
   if implementation requires wider scope, stop and report the needed owner
 - do not touch `runtime_context.forbidden_scope`; if forbidden scope was touched
@@ -293,6 +338,8 @@ Return a concise handoff report containing:
 - MB-SYNC handoff notes for scheduler or explicit standalone owner
 - blockers, unresolved questions, or FAIL reason if any
 - recommended next owner
+- tier escalation details and `/prd-to-tasks FT-<NNN>` route when a higher tier
+  is required
 
 If manual `T0` / `T1` fast-lane closure was used, also report:
 - explicit closure owner basis

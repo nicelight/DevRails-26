@@ -73,8 +73,13 @@ jobs:
 
           mkdir -p "$TMP_DIR/project"
           cd "$TMP_DIR/project"
+          mkdir -p .agents/skills/mb-execute .claude/skills/mb-execute
+          printf '%s\n' '---' 'name: mb-execute' 'description: legacy' '---' '' '# mb-execute - Implementation Handoff' > .agents/skills/mb-execute/SKILL.md
+          cp .agents/skills/mb-execute/SKILL.md .claude/skills/mb-execute/SKILL.md
           node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --skill '*' --yes
 
+          test ! -e .agents/skills/mb-execute
+          test ! -e .claude/skills/mb-execute
           test -f .agents/skills/cold-start/SKILL.md
           test -f .claude/skills/cold-start/SKILL.md
           test -f .agents/skills/spec-design/SKILL.md

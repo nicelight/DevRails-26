@@ -11,11 +11,6 @@
       "sourceType": "local",
       "computedHash": "8930c0599e51fcea5213abea5ce21f85b226b195559cd935f382c3093f1c849f"
     },
-    "mb-execute": {
-      "source": "/tmp/memobank-skills-ze72bj/repo",
-      "sourceType": "local",
-      "computedHash": "3e839026accda0564bd82647ba17234c7027ee1353b28adc4510fbb79e31bde7"
-    },
     "mb-from-prd": {
       "source": "/tmp/memobank-skills-ze72bj/repo",
       "sourceType": "local",

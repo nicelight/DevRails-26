@@ -65,7 +65,8 @@ Required by tier and mode:
   plus a recorded feature-doc semantic verdict is required before T2 feature
   completion.
 - `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case update `task.tier` first.
+  beyond the recorded tier; in that case route the original task through the
+  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
 
 Status ownership:
 - `/red-verify` owns semantic evidence and `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
@@ -104,7 +105,8 @@ Modes:
 - Feature mode is required before a `T2` feature is treated as complete, after
   all tasks for that feature are implemented.
 - `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case update `task.tier` first.
+  beyond the recorded tier; in that case route the original task through the
+  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
 
 1) Не anchor слишком рано на full spec surface
 Сначала прочитай в таком порядке:

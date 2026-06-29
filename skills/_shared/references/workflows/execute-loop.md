@@ -43,6 +43,10 @@ use `/mb-doctor --strict` before autonomous handoff
    - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete
    - start `/execute` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
    - `/execute` reads packet/spec context only when required by tier/policy or linked by the task/feature; structural packet readiness is owned by `/mb-doctor`, not by the implementer
+   - if `/execute` discovers a required higher tier, stop the current run and
+     route the original task ID through `/prd-to-tasks FT-<NNN>` for controlled
+     rebuild/split; rerun `/review-tasks-plan`, applicable `/mb-doctor`, and
+     `/execute` with the replacement task ID
 13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
 the planning surface: task cards, specs, dependencies, tier, scope, required
 packets, or unresolved plan assumptions. Status/evidence-only closure does not

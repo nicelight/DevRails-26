@@ -58,7 +58,7 @@ Do not overengineer. Придерживайся KISS. Лучшнее враг х
 - В рабочем дереве намеренно нет package-local файлов `skills/*/{agents,references,scripts}/shared-*`.
 - В git намеренно нет tracked `.memory-bank/*` baseline; bootstrap/smoke проверяет generated Memory Bank во временной target-директории.
 - При установке фреймворка эти файлы разворачиваются автоматически во временной копии репозитория.
-- Ожидаемый масштаб разворота: 671 generated `shared-*` файлов.
+- Ожидаемый масштаб разворота: 610 generated `shared-*` файлов.
 - Разворот выполняется цепочкой `scripts/install-framework.mjs` → временная копия repo → `scripts/vendor-shared.mjs` → `npx -y skills add <prepared-temp-repo> ...`.
 - Прямой `npx skills add <repo>` для source-only форка использовать нельзя, если перед этим не был запущен vendoring.
 
@@ -80,9 +80,8 @@ find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | w
 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-Если нужно посмотреть временно развернутые 671 файлов, запускай:
+Если нужно посмотреть временно развернутые 610 файлов, запускай:
 
 ```bash
 MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 ```
-
