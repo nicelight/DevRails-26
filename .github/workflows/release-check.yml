@@ -59,7 +59,7 @@ jobs:
           test -f skills/mb-garden/assets/mb-lint.mjs
           test -f skills/mb-garden/assets/mb-doctor.mjs
           test "$(find skills -mindepth 2 -maxdepth 2 -type f -name SKILL.md -printf '%h\n' | sort)" = $'skills/cold-start\nskills/mb-garden\nskills/mb-harness\nskills/mb-init'
-          grep -q 'new default `FT-\*` spec hub' skills/_shared/agents/review-plan.md
+          grep -Fq 'new default `FT-*` spec hub' skills/_shared/agents/review-plan.md
 
       - name: Syntax check helper scripts
         shell: bash
