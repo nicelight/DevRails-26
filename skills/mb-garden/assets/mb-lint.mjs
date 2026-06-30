@@ -202,6 +202,7 @@ function isMetadataScopedDoc(rel) {
     n.startsWith('.memory-bank/architecture/') ||
     n.startsWith('.memory-bank/guides/') ||
     n.startsWith('.memory-bank/adrs/') ||
+    // Legacy brownfield spec paths remain lintable during subject-based migration.
     n.startsWith('.memory-bank/tech-specs/') ||
     n.startsWith('.memory-bank/domains/') ||
     n.startsWith('.memory-bank/contracts/') ||

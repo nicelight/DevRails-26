@@ -66,28 +66,53 @@ Before any feature design:
 - if the feature-set pressure is local/simple, the backbone may be `minimal` only with explicit `not_applicable` areas; bare `minimal` is not ready
 
 For each targeted feature:
-1. Read `.memory-bank/spec-index.md` and relevant existing specs first.
-2. Check whether the feature is simple enough for `spec_design_status: not_required`.
-3. If design is needed, generate or update the minimal necessary SDD specs.
-4. Update `.memory-bank/spec-index.md` only as a registry/planned-spec index.
-5. Update target feature frontmatter with `spec_design_status` and `spec_design_links`.
+1. Derive only applicable design concerns from the feature, requirements,
+   backbone, and Foundation evidence.
+2. Read `.memory-bank/spec-index.md`, relevant folder indexes, and plausible
+   subject-based spec candidates in full before any write.
+3. Build an in-memory concern audit and select exactly one action per concern:
+   `reuse|extend|create|not_applicable|block`.
+4. Check whether the feature is simple enough for
+   `spec_design_status: not_required`.
+5. If design is needed, reuse or extend canonical specs first and create only
+   missing subject-based specs.
+6. Update `.memory-bank/spec-index.md` only as a registry/discovery map.
+7. Update target feature frontmatter with `spec_design_status` and direct
+   canonical `spec_design_links`.
 
 Autonomous decision rules:
 - prefer existing specs over new files
 - choose the smallest reversible design that satisfies PRD/Constitution/requirements
 - do not ask user questions
-- record assumptions in the feature design hub or linked authoritative spec; keep `.memory-bank/spec-index.md` to registry rows, planned specs, and broken/missing links
+- record assumptions in the feature or relevant canonical spec; keep
+  `.memory-bank/spec-index.md` to registry rows, planned specs, and broken/missing links
+- treat the feature as a composition root for behavior and applicable spec
+  links, not as the owner of a design-spec hub
+- canonical identity is the registered path and subject scope; one concrete
+  concern has one active canonical path
+- for `create`, choose a subject slug without `FT-<NNN>` or feature identity,
+  recheck neighboring names for overlap, and use `Scope`, `Out of scope`, and
+  `Related specs` when needed to keep the boundary clear
+- split only for a distinct boundary, change cadence, consumers, or reuse; do
+  not create one file per taxonomy category and do not use file length as a gate
+- if two plausible canonical paths cover one concern, create no third file;
+  record `spec_design_status: blocked` and halt for reconciliation
 - for global architecture docs, use one `.memory-bank/architecture/system-architecture.md` only when it is the best readable scaffold shape; split `architecture/*` only when existing docs, project size, or boundary complexity makes the split clearly useful
-- keep `architecture/*` to global architecture invariants; put detailed API schemas/contracts in `contracts/*`, lifecycle state machines in `states/*`, domain schemas in `domains/*`, and feature-local design in `tech-specs/*`
-- for non-simple feature design, cover the relevant families in the simplest
-  natural owner: Architecture Specification, API / Interface Specification, Data
-  Specification, Contracts, and Verification
+- keep `architecture/*` to global architecture invariants; put detailed API
+  schemas/contracts in `contracts/*`, lifecycle state machines in `states/*`,
+  domain/storage schemas in `domains/*`, and verification/operations detail in
+  `testing/*`, `runbooks/*`, or `guides/*`
+- for non-simple feature design, cover only applicable Architecture,
+  Interfaces/Contracts, Data, and Verification concerns in their canonical specs
 - when relevant, generate/update Component Contract, API Contract, Event
-  Contract, and Data Contract specs in the natural owner instead of hiding those
+  Contract, and Data Contract specs at their canonical paths instead of hiding those
   details in task records
-- prefer one concise feature hub for feature-local detail; update existing
-  shared/global architecture, contract, domain, state, testing, or runbook specs
-  when they are the natural home
+- keep feature-specific acceptance/use-case detail in the feature doc; even a
+  concern first introduced by one feature gets a subject-based canonical path,
+  not a default `FT-*` spec
+- existing legacy `.memory-bank/tech-specs/FT-*.md` may be read as evidence but
+  must not be expanded as multi-concern hubs; migrate only affected concerns and
+  update links without duplicate active definitions
 - do not add a separate coverage-map artifact, validator, or empty family
   sections/files just to satisfy a template
 - for shared-boundary, contract, state/data/runtime/security, or strict pressure, update `.memory-bank/architecture/system-architecture.md#Architecture Spine` with compact executable `AD-*` rules using the same KISS format as `/spec-design`
@@ -95,10 +120,12 @@ Autonomous decision rules:
 - if a required shared-boundary, contract, state/data/runtime/security, or strict architecture decision is missing, contradictory, or not checkable, record a blocker instead of completing feature design
 - when serious design-pressure feature design is complete, include relevant
   Architecture Spine, ADR, contract, and boundary-map links in the feature
-  `spec_design_links` or linked authoritative specs so `/prd-to-tasks` can route
+  `spec_design_links` or linked canonical specs so `/prd-to-tasks` can route
   them into existing task fields
 - do not invent external contracts, security posture, migrations, or irreversible data behavior
-- set `spec_design_status: complete` only when every feature-relevant SDD design area either has a concrete linked spec file routed through `.memory-bank/spec-index.md` as an authoritative, evidence-backed source of truth, or is explicitly `not_applicable` for this feature
+- set `spec_design_status: complete` only when every feature-relevant SDD design
+  concern either has one concrete canonical spec path routed through
+  `.memory-bank/spec-index.md`, or is explicitly `not_applicable` for this feature
 - do not set `complete` while any feature-relevant design area remains planned, candidate, unknown, conflicting, or otherwise unresolved; instead set `spec_design_status: blocked` or leave the feature without `complete`, and record the gap/open question in the feature doc or linked spec; use `.memory-bank/spec-backbone.md` for shared/global gaps
 - if blocking ambiguity affects security/compliance/payments/external contracts/data loss, set `spec_design_status: blocked`, record the reason, and halt the autonomous run with `HALT_BLOCKING_QUESTIONS` or `HALT_CLARIFICATION_REQUIRED`
 

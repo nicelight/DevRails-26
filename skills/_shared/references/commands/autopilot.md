@@ -30,7 +30,9 @@ status: active
 - If `.memory-bank/foundation.md` says `Foundation Required: true`, every
   non-`FT-000` product task depends directly or transitively on the final
   foundation gate task named by `Foundation Gate Task: TASK-<NNN>-T<N>-FT-000-W<N>`.
-- Every `T2` / `T3` task has relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
+- Every `T2` / `T3` task directly links every relevant canonical SDD spec in
+  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
+  `verification_targets`; feature links or `spec-index.md` alone do not count.
 - `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas.
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
 - Every `T2` / `T3` task satisfies the deterministic single-card handoff
@@ -49,8 +51,8 @@ If any non-`FT-000` product task uses `W0`, or foundation is required and a
 product task lacks the final foundation gate dependency, stop with
 `HALT_QUALITY_GATES`.
 If backbone status is missing/blocked, or any indexed `T2` / `T3` task lacks
-linked SDD specs, stop with `HALT_QUALITY_GATES` and route shared/global repair
-to `/spec-design`, feature-local specs/task-card reconciliation to
+direct task-relevant canonical SDD links, stop with `HALT_QUALITY_GATES` and route shared/global repair
+to `/spec-design`, feature-level canonical specs/task-card reconciliation to
 `/prd-to-tasks FT-<NNN>`, or autonomous design to `/spec-auto --all`.
 Read the task queue and task metadata only from JSON task records.
 Before task selection and before progression after a task closes, run `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`. Treat a missing doctor command/script, non-zero exit, or readiness error as `HALT_QUALITY_GATES`. Explicit pending/blocked feature clarification and tasks linked to those features are readiness errors. `mb-doctor` runs `mb-lint` as its first gate; do not fall back to plain `mb-lint` for autonomous readiness.
@@ -170,29 +172,29 @@ implemented, run `/red-verify --feature FT-<ID>` and require
 ## Fresh-session task context
 Every fresh-session worker prompt must include:
 - read `runtime_context` from the indexed JSON task record
-- read task-linked authoritative specs before T2/T3 implementation/verification
+- read direct task-linked canonical specs before T2/T3 implementation/verification
 - respect task `gates`, `verification_targets`, `evidence_required`, allowed and
   forbidden scope, and stop conditions
-- treat the indexed task record and linked authoritative specs as source of truth
+- treat the indexed task record and direct task-linked canonical specs as source of truth
 
 ## Concrete task-level commands
 ### Codex (fresh session per TASK)
 
 ```bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and task-linked authoritative specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and task-linked authoritative specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
 ```
 
 ### Claude (fresh session per TASK)
 ```bash
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and task-linked authoritative specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and task-linked authoritative specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact markers HUMAN_CHECKPOINT: done and ROLLBACK_RECOVERY_NOTE: present. Run mb-doctor --strict before progression."
 ```
 
 ## Terminal states

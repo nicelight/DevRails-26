@@ -1,12 +1,12 @@
 ---
-description: Декомпозиция или repair product feature: SDD design, implementation plan и complete JSON task cards.
+description: Декомпозиция или repair product feature: subject-based canonical SDD specs, implementation plan и complete JSON task cards.
 status: active
 ---
 # /prd-to-tasks - Feature design -> implementation plan -> JSON tasks
 
 <objective>
 Close or repair one product feature's planning surface:
-- feature-level SDD design and spec links
+- feature-level SDD concern coverage and canonical spec links
 - implementation plan
 - schema-backed JSON task records
 - optional behavior specs
@@ -51,7 +51,7 @@ For every target feature:
    UX, operations, or verification text contains unresolved `TBD`, `TODO`,
    `NEEDS CLARIFICATION`, or `???` markers.
 4. Treat explicit `spec_design_status: blocked` as a blocker to task drafting.
-   A direct repair request may continue only to resolve a feature-local design
+   A direct repair request may continue only to resolve a feature-level design
    blocker from current evidence or focused user answers before the provisional
    outline. If it remains unresolved, stop; route shared/global blockers to
    `/spec-design`.
@@ -62,7 +62,7 @@ tier; tier is selected here under the tier policy.
 
 For unresolved blockers:
 - interactive: report the exact blocker; route product ambiguity to
-  `/clarify-feature FT-<NNN>` or direct feature-source repair, feature-local
+  `/clarify-feature FT-<NNN>` or direct feature-source repair, feature-level
   design ambiguity to a focused decision in this repair run, and shared/global
   design ambiguity to `/spec-design`
 - autonomous: return `HALT_CLARIFICATION_REQUIRED` for product clarification or
@@ -100,14 +100,15 @@ Read once before task drafting:
 - target feature, linked epic, requirements/RTM, and Constitution when present
 - `.memory-bank/spec-index.md` as a registry only
 - `.memory-bank/spec-backbone.md` as shared/global route and readiness state
-- feature `spec_design_links` and their authoritative specs
+- feature `spec_design_links` and their canonical specs
 - relevant existing architecture, contract, domain, state, ADR, testing, guide,
-  and runbook owners routed by those sources
+  and runbook specs routed by those sources
 - existing implementation plan, protocols, behavior specs, and tasks
   for reconciliation
 
-Do not create a spec before checking the index and existing owners. A conflict
-with a higher/global source is a blocker, not a local choice.
+Do not create a spec before checking the index, relevant folder indexes, and
+existing subject-based specs. A conflict with a higher/global source or two
+candidate canonical paths for one concern is a blocker, not a local choice.
 
 ### 1.4 Schema-first invariant
 
@@ -155,7 +156,7 @@ The implementation plan contains:
 - expected touched files, tests, quality gates, and UAT
 - a short Constitution Check with relevant principles and blockers
 - grounded Source Artifacts, Normative Inputs, Constraints, Invariants,
-  Verification Targets, and `spec_design_links` when useful
+  Verification Targets, and direct canonical `spec_design_links` when useful
 
 Do not copy the whole Constitution or invent richer fields. Link it only when a
 specific principle constrains execution or verification.
@@ -226,22 +227,59 @@ Rules:
 - behavior specs are implementation context examples, not readiness,
   verification, or done gates
 
-## 5) Unified design-and-task loop
+## 5) Unified canonical-design-and-task loop
 
-### 5.1 Feature design baseline
+### 5.1 Feature design baseline and discovery
 
-Build an initial feature-wide inventory from the sources loaded in section 1:
-- existing authoritative specs needed by the feature
-- `needed_before_tasks` routes and feature-local gaps
-- duplicate/conflicting owners
-- unresolved choices that would force implementation guessing
+Treat the feature as a composition root for product behavior and applicable
+system concerns. It links canonical specs; it does not own or contain a default
+feature tech-spec hub.
+
+Before creating or extending any spec, derive the feature's applicable design
+pressure from its requirements, epic, backbone, Foundation evidence, and
+existing links:
+- architecture/module/runtime impact
+- component or interface boundary
+- HTTP/RPC/CLI API
+- event/message/agent/tool I/O and boundary payloads
+- internal domain/storage/migration
+- state/lifecycle
+- security/access/safety
+- verification/runbook/operations
+
+Do not force every category to exist. A grounded `not_applicable` result is
+valid.
+
+Run discovery before writes:
+1. Read `spec-index.md`.
+2. Read relevant folder indexes when present.
+3. Scan the relevant architecture, contract, domain, state, testing, runbook,
+   guide, and ADR directories by subject-oriented filename and description.
+4. Read every plausible candidate spec in full.
+5. Build a temporary concern audit in protocol working state:
+
+   ```text
+   concern | canonical path candidate | sufficient | action
+   ```
+
+6. Select exactly one action for each applicable concern:
+   - `reuse`: one existing canonical spec fully covers it
+   - `extend`: one canonical spec exists but needs a grounded addition
+   - `create`: no suitable canonical spec exists
+   - `not_applicable`: evidence shows the concern is irrelevant
+   - `block`: paths conflict, scope is unclear, or a shared/global decision is
+     unresolved
+
+The audit is resumable protocol state, not another normative registry or task
+model. Never resolve competing paths by creating a third spec.
 
 Feature frontmatter may contain:
 
 ```yaml
 spec_design_status: complete|not_required|blocked
 spec_design_links:
-  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
+  - .memory-bank/contracts/<subject>.md
+  - .memory-bank/domains/<subject>.md
 ```
 
 Rules:
@@ -254,21 +292,26 @@ Rules:
   interface/contract, data, state, security, migration, runtime, or cross-module
   pressure; record a concise rationale, use empty `spec_design_links`, and create
   no fake specs.
-- `complete` requires every relevant design area to have a concrete
-  authoritative link or an explicit feature-level `not_applicable` rationale;
-  treat an existing `complete` as a baseline to reconfirm after the loop.
+- `complete` requires every relevant design concern to have one concrete
+  canonical link or an explicit feature-level `not_applicable` rationale; treat
+  an existing `complete` as a baseline to reconfirm after the loop.
 - Missing/incomplete status means the loop must complete or block feature design.
 
-Prefer one feature hub at
-`.memory-bank/tech-specs/FT-<NNN>-<slug>.md` with only relevant Architecture
-impact, Interfaces/Contracts, Data impact, and Verification sections. Use a
-separate natural owner only when it reduces ambiguity. Keep `spec-index.md`
-registry links current; shared/global readiness remains in `spec-backbone.md`.
+Keep feature-specific acceptance/use-case detail in the feature doc. Do not
+copy endpoint schemas, state transitions, storage details, error catalogs, or
+security constants into it. A rare cohesive concern introduced by one feature
+still receives a subject-based canonical path; it is not an `FT-*` hub.
 
-### 5.2 Canonical concrete readiness and ownership
+Existing legacy `.memory-bank/tech-specs/FT-*.md` files may be read as evidence
+during reconciliation, but do not create or expand them as multi-concern hubs.
+When an affected concern is moved to a subject-based canonical spec, update the
+registry and all affected feature/task links without leaving duplicate active
+definitions. Do not force unrelated legacy migration into the current feature.
+
+### 5.2 Canonical spec identity, scope, and concrete readiness
 
 When a task changes or depends on a concrete boundary, exactly one linked
-authoritative owner must define its:
+canonical spec must define its:
 - shape
 - `MUST` / `MUST NOT` rules
 - edge cases/errors
@@ -277,14 +320,28 @@ authoritative owner must define its:
 The block must make implementation possible without guessing. This single rule
 governs T2/T3 concrete design readiness throughout the command.
 
-Select the owner in this order:
-1. Extend an existing authoritative owner within its established rules.
-2. Fill a concrete owner routed by `/spec-design` as `needed_before_tasks`.
-3. Use the feature hub for genuinely feature-local behavior with no shared reuse.
-4. Route a new/unclear shared owner or global decision to `/spec-design`.
+Select the action in this order:
+1. Reuse a sufficient registered canonical path within its stated scope.
+2. Extend that path when the new detail is the same cohesive concern.
+3. Fill the clearly routed canonical path from a `/spec-design`
+   `needed_before_tasks` row.
+4. Create one missing subject-based spec when discovery found no suitable path.
+5. Route a new/unclear shared decision or competing canonical paths to
+   `/spec-design`.
 
-Create a new feature-local owner only when no existing owner is suitable; record
-a short rationale and register/link it from `spec-index.md` and the feature.
+For `create`:
+1. Choose the directory by specification type and concern.
+2. Choose a subject slug without an `FT-<NNN>` prefix or feature identity.
+3. Recheck the registry and neighboring filenames for synonyms or overlap.
+4. Write one cohesive spec with scope and the required concrete block.
+5. Update `spec-index.md` and a relevant folder index when one exists or the
+   folder now has more than three specs.
+6. Add the exact path to feature `spec_design_links` and only to relevant task
+   link fields.
+
+Split specs by independently meaningful boundary, change cadence, consumers,
+or cross-feature reuse. Do not split mechanically by taxonomy and do not use
+file length alone as a gate.
 
 When a routed `needed_before_tasks` concrete block becomes sufficient, update
 its Backbone Area Matrix row to `authoritative`, or to `not_applicable` with a
@@ -292,18 +349,19 @@ rationale when evidence proves the area irrelevant. Product handoff must leave
 no `needed_before_tasks` row unresolved.
 
 Examples:
-- HTTP/RPC boundary -> API Contract or stack-native schema owner
+- HTTP/RPC boundary -> API Contract or stack-native schema spec
 - event/message boundary -> Event Contract and boundary Data Contract when
   payload compatibility matters
 - internal DB/storage/migration/state -> Data Specification
-- feature-local/UI behavior -> feature tech-spec hub or established guide
+- normative UI/operational behavior -> established guide or one subject-based
+  guide/runbook
 
-Data Contract owns payloads crossing component/API/event/protocol boundaries.
+Data Contract defines payloads crossing component/API/event/protocol boundaries.
 Internal models, DB/storage, persistence, and migrations belong to Data
 Specification. Component Contract is needed only when a component boundary is
 crossed or changed.
 
-Applicable concrete owners cover:
+Applicable concrete specs cover:
 - Component Contract: guarantees, responsibilities, dependencies, forbidden
   calls, ownership, and failure boundaries.
 - API Contract: inputs/outputs, auth, status/error behavior, compatibility, and
@@ -313,20 +371,24 @@ Applicable concrete owners cover:
 - Data Contract: boundary payload structure, versions, required fields,
   validation/serialization, and compatibility.
 
-When creating/materially changing a concrete owner, make ownership explicit:
+When scope is not already unambiguous, use:
 
 ```markdown
-## Ownership
-- Owns:
-- Does not own:
-- Related specs:
+## Scope
+
+## Out of scope
+
+## Related specs
 ```
 
-Do not duplicate concrete blocks in task records, plans, or secondary
-docs; link the owner and copy only task-relevant executable constraints,
+Do not duplicate concrete blocks in task records, plans, or secondary docs;
+link the canonical spec and copy only task-relevant executable constraints,
 invariants, and verification targets.
 
-Keep `spec-index.md` a pure registry. Feature design status belongs only in
+Register canonical identity by path. `spec-index.md` stays a pure discovery map
+with `Type | Path | Status | Scope | Change route`; do not add a separate spec
+key, feature ownership, `used_by`, or file-owner metadata. Reverse usage comes
+from feature/task links and search. Feature design status belongs only in
 feature frontmatter; shared/global readiness belongs in `spec-backbone.md`.
 
 ### 5.3 Question gate
@@ -352,12 +414,13 @@ For each candidate in dependency order:
    - Architecture impact: constraining boundary/source-of-truth/runtime rules
      including security/safety constraints and any new shared/global decision.
    - Interfaces/Contracts: actual component, API, event, protocol, agent/tool,
-     external, or frontend/backend boundary and its concrete owner.
+     external, or frontend/backend boundary and its canonical spec.
    - Data impact: domain rules/invariants, internal model, DB/storage,
      persistence/migration, validation/serialization, lifecycle, retention,
      seed, or runtime data path.
 3. Use the question gate for material unresolved choices.
-4. Update only the minimum grounded authoritative owners and registry links.
+4. Apply the discovery action and update only the minimum grounded canonical
+   specs and registry links.
 5. Apply canonical concrete readiness.
 6. Write the final task record in
    `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and validate it
@@ -386,9 +449,11 @@ The loaded schema and tier policy are authoritative. Additionally:
   optional fields when no evidence exists
 - every T2/T3 task has non-empty `purpose` and one non-empty scalar
   `success_outcome`
-- every T2/T3 task links at least one existing task-relevant authoritative SDD
+- every T2/T3 task links at least one existing task-relevant canonical SDD
   spec through its existing link-bearing fields; a registry-only
   `spec-index.md` reference is not sufficient task context
+- every T2/T3 task links the direct task-relevant subset of canonical specs;
+  do not make it load every spec used by the feature
 - every T2/T3 task grounds execution scope in non-empty `touched_files` and/or
   `runtime_context.allowed_write_scope`
 - every T2/T3 task has at least one executable verification path: a gate with a
@@ -399,7 +464,8 @@ The loaded schema and tier policy are authoritative. Additionally:
   empty or absent when current evidence does not justify them; do not invent
   completeness filler
 - link behavior specs only through `source_artifacts`
-- include task-relevant SDD/AD/ADR/boundary links and executable constraints
+- include direct task-relevant canonical SDD/AD/ADR/boundary links and
+  executable constraints
 - if mutable runtime data/persistence is in scope, name the real DB-backed path
   and require a read/write smoke or repository integration verification target
 - if persistence is not needed, record `not_applicable` in the relevant spec
@@ -411,12 +477,14 @@ task model or task-specific fields outside the schema.
 ### 5.6 Feature consistency
 
 After all records exist:
-- reread generated/updated records and authoritative owners
+- reread generated/updated records and canonical specs
 - repair earlier task links if a later iteration changed shared feature detail
 - confirm acceptance criteria coverage, coherent dependencies/waves, and one
-  owner per concrete boundary
+  canonical path per concrete concern
 - confirm every T2/T3 task remains implementable without guessing
 - finalize truthful `spec_design_status` and `spec_design_links`
+- confirm the feature composes applicable specs without duplicating their
+  concrete fields/rules and each task links only its relevant subset
 
 Do not leave `complete` while a relevant area is planned, candidate, unknown,
 conflicting, or unresolved. Do not hand off tasks when final consistency is
@@ -428,13 +496,13 @@ each feature, avoid duplicate IDs, and never start execution from this command.
 ## 6) T2/T3 single-card handoff completeness
 
 After feature consistency succeeds, confirm every T2/T3 task card is complete
-enough to execute directly from the indexed task plus its linked authoritative
+enough to execute directly from the indexed task plus its linked canonical
 specs:
 - the record validates against `task.schema.json`, is indexed exactly once, and
   its ID tier/feature/wave segments match the record
 - `reqs` contains concrete existing governing `REQ-*` IDs without placeholders
 - `purpose` and the scalar `success_outcome` are non-empty
-- at least one existing task-relevant authoritative SDD spec path is linked;
+- at least one existing task-relevant canonical SDD spec path is linked;
   `spec-index.md` alone does not count
 - scope is grounded by non-empty `touched_files` and/or
   `runtime_context.allowed_write_scope`
@@ -465,7 +533,7 @@ Before handoff:
 
 Final report:
 - feature ID and queue action: `created|reconciled|rebuild_required`
-- final design status and authoritative specs created/updated/used
+- final design status and canonical specs reused/extended/created
 - task records created/updated
 - blockers/questions, or `none`
 - next step

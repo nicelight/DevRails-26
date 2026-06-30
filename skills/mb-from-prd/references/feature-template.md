@@ -31,11 +31,14 @@ req_ids: [REQ-XXX]
 ## SDD Design Gate
 - Run mandatory `/spec-design` after `/prd` before product feature tasking.
 - If foundation is required, close the `/foundation-to-tasks` final foundation gate before `/prd-to-tasks FT-XXX`.
-- Run `/prd-to-tasks FT-XXX`; it owns feature-level SDD design before task slicing and sets `spec_design_status: complete|not_required|blocked`.
-- When design is complete, linked specs must be listed in `spec_design_links`.
+- Run `/prd-to-tasks FT-XXX`; it resolves feature design concerns through
+  registry-first canonical spec discovery before task slicing and sets
+  `spec_design_status: complete|not_required|blocked`.
+- When design is complete, direct subject-based canonical specs must be listed
+  in `spec_design_links`; the feature is their composition root, not their owner.
 - If feature-level design is not needed, record `spec_design_status: not_required` with a short rationale.
 - If design is blocked, record `spec_design_status: blocked` and the blocker before creating weak task records.
-- Rerun `/prd-to-tasks FT-XXX` to repair/reconcile feature-local specs, task
+- Rerun `/prd-to-tasks FT-XXX` to repair/reconcile canonical spec links, task
   cards and plans.
 - Until `/prd-to-tasks` or an authoritative existing design establishes one of
   those outcomes, omit `spec_design_status`.

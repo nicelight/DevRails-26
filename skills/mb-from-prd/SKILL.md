@@ -79,7 +79,7 @@ Do **not** generate a full task queue “в лоб” for all features in one pa
 
 Instead:
 1) Ensure `.memory-bank/schemas/task.schema.json` and `.memory-bank/tasks/index.json` exist. A fresh skeleton may have `{ "version": 1, "tasks": [] }`.
-2) Run `/spec-design` after `/prd`. For local/simple feature-set pressure it may record a minimal backbone with irrelevant areas marked `not_applicable`; for shared-boundary, contract, state/data/runtime/security, or strict pressure it creates or updates the needed backbone SDD specs and `spec-index`. It creates no tasks and no feature-local implementation design; when foundation is needed it records `.memory-bank/foundation.md`.
+2) Run `/spec-design` after `/prd`. For local/simple feature-set pressure it may record a minimal backbone with irrelevant areas marked `not_applicable`; for shared-boundary, contract, state/data/runtime/security, or strict pressure it creates or updates the needed backbone SDD specs and `spec-index`. It creates no tasks and no feature-level implementation design; when foundation is needed it records `.memory-bank/foundation.md`.
 3) If foundation is required, run `/foundation-to-tasks` and close the final foundation gate before product feature tasking.
 4) For each selected feature, run `/prd-to-tasks FT-<NNN>` to produce feature-level design status, implementation plan, and complete JSON tasks:
    - `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`

@@ -65,8 +65,8 @@ Manual mode:
   boundary lifecycle, status model, or artifact family.
 - If SDD design docs changed, reconcile existing design state only:
   `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, feature
-  `spec_design_status`, feature `spec_design_links`, linked
-  `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
+  `spec_design_status`, feature `spec_design_links`, linked canonical
+  `.memory-bank/architecture/`,
   `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
   `.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, and
   `.memory-bank/runbooks/`. Do not move decision bodies into
@@ -84,17 +84,19 @@ Manual mode:
 - [ ] If SDD design state changed, reconcile `.memory-bank/spec-backbone.md`
       Global Backbone Status and Backbone Area Matrix, including stale
       `needed_before_tasks` rows, without inventing new design decisions.
-- [ ] Keep `.memory-bank/spec-index.md` as a pure registry/planned-spec index;
+- [ ] Keep `.memory-bank/spec-index.md` as a pure registry/planned-spec index
+      using `Type | Path | Status | Scope | Change route` for active specs;
       add or remove registry links for changed specs, but do not write
-      backbone status, feature status maps, decision bodies, or contract rules
-      there.
+      backbone status, feature status maps, decision bodies, contract rules,
+      feature ownership, or `used_by` there.
 - [ ] Reconcile feature frontmatter `spec_design_status` and
       `spec_design_links` with actual linked specs. If a design is stale or
-      contradictory, mark/report it as `blocked` and route feature-local repair
+      contradictory, mark/report it as `blocked` and route feature-level
+      canonical spec repair
       to `/prd-to-tasks` or shared/global repair to `/spec-design`; do not invent
       a `stale` lifecycle value.
 - [ ] Ensure changed SDD docs are routed from the relevant feature, registry, or
-      backbone: `.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
+      backbone: `.memory-bank/architecture/`,
       `.memory-bank/contracts/`, `.memory-bank/domains/`,
       `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`,
       `.memory-bank/guides/`, and `.memory-bank/runbooks/`.
@@ -125,8 +127,8 @@ Task synchronization rule:
 - When governance, workflow, routing, AGENTS.md, MBB, spec-backbone, spec-index, invariants, task schema, or tier policy changes, compare affected docs with `.memory-bank/constitution.md`.
 - If the change contradicts the Constitution, stop sync and require either a minimal doc correction or explicit `/constitution` amendment.
 - Do not use `/mb-sync` to invent new governing principles; only reconcile documented changes and evidence.
-- `.memory-bank/spec-backbone.md` owns global backbone/readiness state.
-  `.memory-bank/spec-index.md` owns registry/planned-spec links only. Feature
+- `.memory-bank/spec-backbone.md` stores global backbone/readiness state.
+  `.memory-bank/spec-index.md` stores canonical registry/planned-spec links only. Feature
   `spec_design_status` and `spec_design_links` live in feature frontmatter.
 - `/mb-sync` may reconcile these fields after an already-made design/task
   decision, but unresolved or contradictory design state must route to

@@ -38,6 +38,9 @@ const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const REQ_ID_RE = /^REQ-[0-9]{3,}$/;
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
+// `tech-specs` remains readable for brownfield migration evidence. New planning
+// uses subject-based canonical paths; semantic hub-only rejection belongs to
+// /review-tasks-plan, not this mechanical doctor.
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
 const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
@@ -997,7 +1000,7 @@ function checkSddSpecLinkage(record) {
           feature_spec_design_links: featureSpec?.links.existing ?? [],
         },
         suggested_fix:
-          'Keep guides as supplemental links, but add relevant architecture, contract, domain, state, testing, runbook, ADR, or tech-spec SDD links for T2/T3 work.',
+          'Keep guides as supplemental links, but add direct task-relevant canonical architecture, contract, domain, state, testing, runbook, or ADR links for T2/T3 work.',
       });
     }
     return;
@@ -1027,7 +1030,7 @@ function checkArchitectureReferencePresence(record) {
     path: rel,
     task_id: id,
     suggested_fix:
-      'If this task touches shared boundaries, add relevant Architecture Spine, boundary-map, contract, or ADR links to normative_inputs/constraints/invariants/verification_targets. If it is feature-local, no action is required.',
+      'If this task touches shared boundaries, add relevant Architecture Spine, boundary-map, contract, or ADR links to normative_inputs/constraints/invariants/verification_targets. If it is task-local, no action is required.',
   });
 }
 
@@ -1041,7 +1044,7 @@ function checkSingleCardHandoffCompleteness(record) {
 
   const taskSpecLinks = sddSpecLinkStatusFromTask(task);
   if (!taskSpecLinks.existing.length) {
-    issues.push('at least one existing task-linked authoritative SDD spec path is required');
+    issues.push('at least one existing direct task-linked canonical SDD spec path is required');
   }
 
   const runtimeContext = isPlainObject(task.runtime_context) ? task.runtime_context : null;

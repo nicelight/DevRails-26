@@ -147,9 +147,9 @@ Primary source files for this behavior:
   spine during the global SDD backbone gate
 - `skills/_shared/references/commands/spec-auto.md` for applying the same KISS
   AD rules during autonomous feature design
-- `skills/_shared/references/commands/prd-to-tasks.md` for initial feature-local
-  design, repair/reconciliation, and copying relevant AD/boundary links into
-  task fields
+- `skills/_shared/references/commands/prd-to-tasks.md` for registry-first
+  feature concern discovery, subject-based canonical spec reconciliation, and
+  copying relevant AD/boundary links into task fields
 - `skills/_shared/references/commands/review-tasks-plan.md` for fresh-context
   review of shared-boundary AD/boundary routing before execution
 - `skills/_shared/references/structure-template.md` and
@@ -160,11 +160,36 @@ Primary source files for this behavior:
 Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
 mandatory ADRs for local/simple work.
 
+## Subject-Based Canonical SDD Spec Hotspots
+
+Features compose product behavior and exact spec links; they do not own default
+`FT-*` design-spec hubs. New specs use subject-based canonical paths under
+`architecture/`, `contracts/`, `domains/`, `states/`, `testing/`, `runbooks/`,
+`guides/`, or `adrs/`. `spec-index.md` registers
+`Type | Path | Status | Scope | Change route`; reverse usage comes from
+feature/task links and search.
+
+Primary source files:
+
+- `skills/_shared/references/commands/prd-to-tasks.md`
+- `skills/_shared/references/commands/spec-design.md`
+- `skills/_shared/references/commands/spec-auto.md`
+- `skills/_shared/references/commands/foundation-to-tasks.md`
+- `skills/_shared/references/commands/review-tasks-plan.md`
+- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/verify.md`
+- `skills/_shared/scripts/init-mb.js`
+- `skills/_shared/references/structure-template.md`
+
+Fresh bootstrap must not create `.memory-bank/tech-specs/`. Lint/doctor may
+still recognize that legacy path as brownfield migration evidence; semantic
+hub-only rejection belongs to `/review-tasks-plan`.
+
 ## Task Runtime Context / Single-Card Handoff Hotspots
 
 The indexed `.memory-bank/tasks/TASK-*.task.json` record is the only durable
 task-scoped planning, execution, and verification handoff. T2/T3 records must
-carry purpose/outcome, a task-linked authoritative SDD path, grounded scope,
+carry purpose/outcome, direct task-relevant canonical SDD paths, grounded scope,
 and a verification path before execution. `/mb-doctor` checks only mechanical
 completeness; `/review-tasks-plan` owns semantic applicability and sufficiency.
 

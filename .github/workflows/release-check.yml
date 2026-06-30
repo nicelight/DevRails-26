@@ -118,6 +118,7 @@ jobs:
           test -f "$TARGET/.memory-bank/tasks/index.json"
           test -f "$TARGET/.memory-bank/schemas/task.schema.json"
           test ! -e "$TARGET/.memory-bank/packets"
+          test ! -e "$TARGET/.memory-bank/tech-specs"
           test -d "$TARGET/.memory-bank/behavior-specs"
           test -f "$TARGET/.memory-bank/architecture/system-architecture.md"
           test -f "$TARGET/.memory-bank/contracts/boundary-map.md"
@@ -142,6 +143,15 @@ jobs:
           test ! -e "$TARGET/.claude/skills/mb-packet/SKILL.md"
           test ! -e "$TARGET/.agents/skills/mb-packet/SKILL.md"
           cmp "$TARGET/.agents/skills/prd-to-tasks/SKILL.md" "$TARGET/.claude/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`reuse`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`extend`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`create`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`not_applicable`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`block`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -q 'subject-based canonical path' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -q 'Never resolve competing paths by creating a third spec' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -q 'direct task-relevant subset of canonical specs' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -q 'no suitable canonical spec exists' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           ! grep -R -E 'packet_required|packet_ref|source_task_hash|ready_with_gaps|/mb-packet|\.memory-bank/packets' "$TARGET/.agents/skills" "$TARGET/.claude/skills"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
           grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
@@ -157,6 +167,8 @@ jobs:
           grep -q '## Boundary: <producer> -> <consumer>' "$TARGET/.memory-bank/contracts/boundary-map.md"
           grep -q "^last_updated: $TODAY$" "$TARGET/.memory-bank/constitution.md"
           ! grep -q '{{TODAY}}' "$TARGET/.memory-bank/constitution.md"
+          grep -Fq '| Type | Path | Status | Scope | Change route |' "$TARGET/.memory-bank/spec-index.md"
+          ! grep -q 'Owner command\|feature_design.*tech-specs' "$TARGET/.memory-bank/spec-index.md"
 
           node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
           grep -Fq '^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$' "$TARGET/.memory-bank/schemas/task.schema.json"
@@ -179,6 +191,7 @@ jobs:
 
           node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$TARGET" --yes --sync
           test ! -e "$TARGET/.memory-bank/commands"
+          test ! -e "$TARGET/.memory-bank/tech-specs"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
 
       - name: Single-card handoff doctor fixtures
@@ -207,17 +220,17 @@ jobs:
           clarification_status: complete
           spec_design_status: complete
           spec_design_links:
-            - .memory-bank/tech-specs/FT-001-fixture.md
+            - .memory-bank/contracts/fixture-boundary.md
           ---
           # FT-001 Fixture
           ## Clarifications
           - No critical ambiguity found.
           `);
-          write('.memory-bank/tech-specs/FT-001-fixture.md', `---
-          description: Fixture authoritative SDD spec.
+          write('.memory-bank/contracts/fixture-boundary.md', `---
+          description: Fixture canonical boundary spec.
           status: active
           ---
-          # FT-001 Fixture Spec
+          # Fixture Boundary
           ## Shape
           - One fixture task.
           ## Rules
@@ -250,7 +263,7 @@ jobs:
               forbidden_scope: [],
               stop_conditions: []
             },
-            source_artifacts: ['.memory-bank/tech-specs/FT-001-fixture.md'],
+            source_artifacts: ['.memory-bank/contracts/fixture-boundary.md'],
             normative_inputs: [],
             constraints: [],
             invariants: [],

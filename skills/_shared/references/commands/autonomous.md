@@ -107,7 +107,8 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 - missing or `blocked` global backbone status
 - `.memory-bank/foundation.md` says foundation is required and the final
   foundation gate task is missing or not `done`
-- likely T2/T3 work with missing/incomplete `spec_design_status` or missing linked SDD specs
+- likely T2/T3 work with missing/incomplete `spec_design_status` or missing
+  canonical feature spec links
 - unresolved markers that affect decomposition, acceptance criteria, dependencies, verification, security/compliance, external contracts, data migration, or data-loss risk
 
 Правила:
@@ -116,7 +117,8 @@ Block `/prd-to-tasks --all` when any targeted feature has:
 - if feature blocker preflight finds blockers, record them in `.protocols/AUTONOMOUS-RUN/status.md`, set terminal state `HALT_CLARIFICATION_REQUIRED`, and stop
 - never invoke `/clarify-feature` automatically in autonomous mode; it is a manual or explicit follow-up command for feature blockers
 - missing clarification metadata is not a blocker
-- do not bypass `/spec-auto`; if T2/T3 work lacks linked SDD specs, record the blocker and stop before `/prd-to-tasks --all`
+- do not bypass `/spec-auto`; if T2/T3 feature concerns lack canonical specs,
+  record the blocker and stop before `/prd-to-tasks --all`
 - do not bypass `/spec-design`; missing or blocked backbone status stops before `/prd-to-tasks --all`
 - do not bypass `/foundation-to-tasks`; required foundation must be implemented
   and verified before product feature task generation
@@ -161,7 +163,9 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   - `verify`
   - `docs`
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
-- T2/T3 task records must include relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
+- T2/T3 task records must directly link every relevant canonical SDD spec in
+  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
+  `verification_targets`; feature links or `spec-index.md` alone do not count.
 - T2/T3 task records must satisfy the deterministic single-card handoff
   contract: purpose/outcome, task-linked SDD path, grounded scope, verification
   path, valid REQ/dependencies, and matching schema/index/ID segments.
@@ -195,14 +199,17 @@ feature-scoped `/review-tasks-plan` по каждой task-linked product featur
 - если doctor command/script отсутствует, падает, или возвращает readiness errors → terminal state `HALT_QUALITY_GATES`
 - after task queue exists, required ordering is `node scripts/mb-lint.mjs` + `mb-doctor --strict`; do not replace strict doctor with plain lint
 - explicit pending/blocked feature clarification or tasks linked to such features are readiness errors
-- T2/T3 tasks without linked SDD specs are readiness errors
+- T2/T3 tasks without direct task-relevant canonical SDD links are readiness errors
 - strict doctor должен быть зелёным до первого task selection pass
 
 ## 7) Scheduler loop
 Работай по `.memory-bank/tasks/index.json` и indexed `.task.json` records.
 If JSON task records are missing or empty, set terminal state `HALT_DEPENDENCY_DEADLOCK` with reason `no schema-backed task records`.
 If any indexed task record is missing `tier`, set terminal state `HALT_POLICY_VIOLATION` and stop.
-If any indexed `T2` / `T3` task lacks linked SDD specs, set terminal state `HALT_QUALITY_GATES` and route back to `/spec-auto --all`.
+If any indexed `T2` / `T3` task lacks direct task-relevant canonical SDD links,
+set terminal state `HALT_QUALITY_GATES` and route task-card reconciliation back
+to `/prd-to-tasks --all`; route only missing shared/global design decisions to
+`/spec-design --all`.
 Read the task queue and task metadata only from JSON task records.
 Before task selection and before progression after each closed task, run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict` using the repository's documented command or `node scripts/mb-doctor.mjs --strict`. Treat doctor absence, non-zero exit, or readiness errors as `HALT_QUALITY_GATES`.
 
@@ -288,10 +295,10 @@ implemented, run `/red-verify --feature FT-<ID>` and require
 `.memory-bank/features/FT-<ID>-*.md` before treating that feature as complete.
 
 Fresh-session worker prompts for Codex/Claude must include: read
-`runtime_context` from the indexed task record; read task-linked authoritative
+`runtime_context` from the indexed task record; read direct task-linked canonical
 specs for T2/T3; respect task `gates`, `verification_targets`,
 `evidence_required`, allowed and forbidden scope, and stop conditions; treat
-the task record and linked authoritative specs as source of truth.
+the task record and direct task-linked canonical specs as source of truth.
 
 Переходы состояния:
 - `ready -> in_progress`

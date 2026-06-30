@@ -116,26 +116,31 @@ define and prove the executable substrate. Use evidence from
 `.memory-bank/foundation.md`, the Feature Pressure Map, PRD/features, and linked
 backbone specs. Do not invent future product behavior.
 
-The output is a foundation-level spec owner plus the minimal substrate block
-needed by `FT-000` tasks, not the final product specification for every future
-feature. A good foundation block records:
-- what the spec owns and does not own
+The output is the smallest set of subject-based canonical specs and substrate
+blocks needed by `FT-000` tasks, not the final product specification for every
+future feature. A good foundation block records:
+- its scope and out-of-scope concerns when the boundary is not obvious
 - the substrate shape or boundary used by the walking skeleton
 - the basic rules/invariants that foundation tasks must preserve
 - the verification target proving the baseline
-- where `/prd-to-tasks` should extend the same owner or create feature-local
-  specs later
+- where `/prd-to-tasks` should reuse or extend the same canonical path later
+
+Before creating a substrate spec, read `spec-index.md`, relevant folder indexes,
+and plausible subject-based candidates in full. For each substrate concern use
+exactly one action: `reuse|extend|create|not_applicable|block`. If two paths
+compete for one concern, create no third file; route the conflict to
+`/spec-design`.
 
 Apply the same three design lenses used by `/spec-design` and `/prd-to-tasks`,
 but only to the substrate proof path:
 - Architecture impact: minimal runtime shape, entrypoints, core
   components/modules, dependency direction, source-of-truth boundary, and the
-  smallest vertical path through real layers. Update the existing Architecture
-  Specification owner; do not introduce product architecture here.
+  smallest vertical path through real layers. Update the existing canonical
+  Architecture Specification; do not introduce product architecture here.
 - Interfaces / Contracts: API, event, protocol, CLI, agent/tool, component, or
   frontend/backend boundary actually crossed by the substrate proof path.
   Interface Specification is the lens; create or update only the applicable
-  fundamental contract owners:
+  fundamental canonical contracts:
   - Component Contract: module/component guarantees and ownership boundaries
     required by the walking skeleton.
   - API Contract: substrate-level REST/gRPC/GraphQL or other request/response
@@ -146,7 +151,7 @@ but only to the substrate proof path:
     event/message boundary.
   - Data Contract: payload/data structure, versions, required fields,
     validation/serialization, and compatibility expectations for substrate data
-    crossing a component/API/event/protocol boundary. It does not own internal
+    crossing a component/API/event/protocol boundary. It does not define internal
     DB/storage models.
 - Data impact: update the Data Specification only for internal data
   model/storage ownership needed by the baseline, DB
@@ -171,7 +176,7 @@ or evidence behavior, when future T2/T3 product tasks will depend on the
 substrate rule already selected by the foundation path, or when `/spec-design`
 routed a relevant Backbone Area Matrix row to foundation proof.
 
-Natural owners:
+Canonical locations:
 - architecture/runtime shape -> `.memory-bank/architecture/*`
 - interface/component/API/event/protocol/agent/tool boundaries and payloads
   crossing them -> `.memory-bank/contracts/*`
@@ -182,7 +187,13 @@ Natural owners:
 - local runtime/bootstrap/troubleshooting -> `.memory-bank/runbooks/*`
 
 Rules:
-- Prefer updating existing owners over creating new files.
+- Prefer reusing or extending an existing registered canonical path over
+  creating a new file.
+- New substrate specs use subject-oriented paths and names without `FT-000`,
+  `FT-<NNN>`, or feature identity. Recheck neighboring filenames for synonyms
+  and overlap before creation.
+- Register canonical identity by path and scope. Do not add feature ownership,
+  `used_by`, or file-owner metadata to specs or `spec-index.md`.
 - Do not create empty placeholder specs for scaffold areas that the foundation
   path does not touch.
 - Foundation tasks must link scaffold specs through normal task fields when
@@ -195,11 +206,12 @@ Rules:
 - Leave product-level endpoint shapes, feature data schemas, event payloads,
   domain rules, state transitions, and edge-case/error matrices for
   `/prd-to-tasks` unless they are required to prove the foundation baseline.
-  `/prd-to-tasks` may extend the same spec owner or create feature-local specs
-  without duplicating the foundation owner.
+  `/prd-to-tasks` may reuse or extend the same canonical spec, or create only a
+  missing subject-based spec, without duplicating the foundation definition.
 - When this command creates or materially updates scaffold specs, update
-  `.memory-bank/spec-index.md` as a registry only. Do not store decision bodies
-  in the index.
+  `.memory-bank/spec-index.md` as a registry only using
+  `Type | Path | Status | Scope | Change route`. Do not store decision bodies
+  or reverse feature usage in the index.
 - If the selected substrate requires an unresolved product/API/data/security
   decision, stop and route back to `/spec-design` instead of creating weak
   foundation tasks.
@@ -266,7 +278,7 @@ Task rules:
   foundation Architecture, Interfaces / Contracts, Data, test harness,
   runtime/bootstrap, or redaction/evidence behavior
 - every T2/T3 record has non-empty `purpose` and one scalar
-  `success_outcome`, at least one existing task-linked authoritative SDD spec
+  `success_outcome`, at least one existing direct task-linked canonical SDD spec
   path, grounded scope in `touched_files` and/or
   `runtime_context.allowed_write_scope`, and at least one verification path
   through a real gate command and/or non-empty `verification_target`
@@ -310,7 +322,7 @@ Before handoff, apply the same single-card completeness contract as
 - schema/index/ID segments are valid
 - `REQ-000` and any additional governing requirements exist
 - `purpose` and scalar `success_outcome` are non-empty
-- at least one existing task-linked authoritative SDD spec path is present
+- at least one existing direct task-linked canonical SDD spec path is present
 - scope is grounded by `touched_files` and/or
   `runtime_context.allowed_write_scope`
 - a real gate command and/or non-empty `verification_target` exists

@@ -120,10 +120,12 @@ Modes:
   - логи, screenshots, traces и другие artifacts в `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
 
 Только после этого подтягивай the smallest sufficient provenance-linked context:
-- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and linked SDD specs for `T2` / `T3`
+- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and direct
+  task-linked canonical SDD specs for `T2` / `T3`
 - docs linked through existing task fields: `source_artifacts`,
   `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
-- feature `spec_design_links`
+- feature `spec_design_links` for composition/drift context; they do not replace
+  direct task links in per-task T2/T3 mode
 - docs used to populate `runtime_context` fields
 - `requirements.md` only for referenced `REQ-*` reconciliation
 
@@ -135,7 +137,9 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 Важно:
 - if the task record has no `tier`, stop with an explicit error
 - authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used
-- if `task.tier` is `T2` or `T3` and no linked SDD specs are present in task richer fields, feature `spec_design_links`, or `spec-index.md`, stop with a blocker; semantic verification must not bless serious work against AC alone
+- if `task.tier` is `T2` or `T3` and task richer fields do not directly link
+  every relevant canonical SDD spec, stop with a blocker; feature links or
+  `spec-index.md` alone must not let semantic verification bless serious work
 - if the task record, implementation, or verify verdict conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with `semantic-concern` or `semantic-fail` instead of choosing locally
 - не начинай с предположения, что task record и verify verdict уже доказывают correctness
 - сначала сформируй независимую hostile модель риска

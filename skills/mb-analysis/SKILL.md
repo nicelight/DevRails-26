@@ -30,7 +30,7 @@ create task records or feature-local implementation design; it updates backbone
 SDD specs, `spec-index`, and `.memory-bank/foundation.md` when needed.
 `/foundation-to-tasks` creates normal `FT-000` foundation task records when
 required, while `/prd-to-tasks FT-<NNN>` owns initial product feature design,
-task slicing, and later feature-local spec/task reconciliation.
+task slicing, and later feature-level canonical spec/task reconciliation.
 `/clarify-feature FT-<NNN>` is optional and only for a specific feature that is
 explicitly pending/blocked or has decomposition-affecting unresolved markers.
 

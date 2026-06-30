@@ -92,11 +92,13 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - `failed` tasks have either a bug doc in `.memory-bank/bugs/` mentioning the task id or an indexed follow-up task depending on/referencing the failed task.
 - Direct dependents of failed tasks are marked `blocked`.
 - `T1` / `T2` / `T3` tasks have concrete `REQ-*` and `FT-*` linkage. Placeholder values such as `REQ-XXX` and `FT-XXX` do not count.
-- `T2` / `T3` tasks have relevant SDD spec links in `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`.
+- `T2` / `T3` tasks have direct task-relevant canonical SDD spec links in
+  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
+  `verification_targets`; feature links or `spec-index.md` alone do not count.
 - `guides/*` may count as linked SDD specs when the guide is the normative source for frontend component behavior or operating procedure; guides alone do not replace required T2/T3 architecture/contract/domain/state/testing specs when those concerns are in scope.
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
 - T2/T3 single-card handoff completeness is checked mechanically: non-empty
-  `purpose` and scalar `success_outcome`, at least one existing task-linked SDD
+  `purpose` and scalar `success_outcome`, at least one existing direct task-linked canonical SDD
   spec path, grounded scope in `touched_files` and/or
   `runtime_context.allowed_write_scope`, and at least one verification path
   through a real gate command and/or non-empty `verification_target`.
@@ -111,7 +113,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   richer task fields may report `TASK_ARCH_SPINE_LINK_ABSENT` as a warning. It
   is advisory: add relevant Architecture Spine, boundary-map, contract, or ADR
   links when the task touches shared boundaries; no action is required for
-  feature-local tasks where no such link is relevant.
+  feature-level tasks where no such link is relevant.
 - When `.memory-bank/requirements.md` exists, referenced `REQ-*` IDs appear in it.
 - When `.memory-bank/features/` contains markdown files, referenced `FT-*` IDs have a matching `.memory-bank/features/FT-<NNN>*.md` file.
 - Obsolete `.memory-bank/tasks/backlog.md` is absent. If present, report `TASK_BACKLOG_MD_PRESENT` as an error.

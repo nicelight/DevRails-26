@@ -62,9 +62,10 @@ Manual mode:
 - Quality gates were already run (or failures were recorded).
 - For non-trivial tasks, `mb-verify` should usually run first.
 - The indexed task record contains `tier`. Authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid.
-- For `T2` / `T3`, linked SDD specs are present in task richer fields, feature
-  `spec_design_links`, or `spec-index.md`; if absent, stop and route
-  feature-local repair to `/prd-to-tasks`, shared/global repair to
+- For `T2` / `T3`, task richer fields directly link every relevant canonical
+  SDD spec; feature `spec_design_links` or `spec-index.md` alone do not count.
+  If absent, stop and route feature-level canonical spec repair to
+  `/prd-to-tasks`, shared/global canonical-path repair to
   `/spec-design`, or autonomous design to `/spec-auto`.
 - In scheduler mode, `T2` tasks do not require per-task `mb-red-verify` before
   scheduler marks the task `done`; the feature still requires feature-level
@@ -112,9 +113,8 @@ Prime in this order:
 3. tests, logs, screenshots, traces, and other evidence
 4. task purpose, success outcome, anti-goals, allowed scope, forbidden
    scope, and stop conditions when present
-5. linked SDD specs and neighboring constraints only when they are linked
-   through task provenance fields, feature `spec_design_links`, or
-   `runtime_context` evidence
+5. direct task-linked canonical SDD specs and neighboring constraints; feature
+   `spec_design_links` provide composition/drift context only
 6. broader spec reconciliation
 
 This keeps the verifier from merely confirming the workflow surface.

@@ -24,7 +24,7 @@ status: active
 - предлагай `/spec-init` после clarified `/write-prd` и до `/prd`, если SDD route map еще не готов;
 - после `/prd` всегда предлагай mandatory `/spec-design`; для local/simple feature-set pressure он записывает minimal status с explicit `not_applicable` areas;
 - предлагай `/spec-design`, затем `/foundation-to-tasks` if required, затем
-  `/prd-to-tasks FT-<NNN>` для initial decomposition или feature-local
+  `/prd-to-tasks FT-<NNN>` для initial decomposition или feature-level canonical
   spec/task repair;
 - предлагай `/prd-to-tasks FT-<NNN>` только если PRD complete, feature exists, feature is not explicitly pending/blocked, and SDD design status is complete/not_required;
 - предлагай `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>` только для существующего JSON task record `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json`, проиндексированного в `.memory-bank/tasks/index.json`.

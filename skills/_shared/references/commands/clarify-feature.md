@@ -45,7 +45,8 @@ accepted clarification answers:
 ```yaml
 spec_design_status: complete|not_required|blocked
 spec_design_links:
-  - .memory-bank/tech-specs/FT-<NNN>-<slug>.md
+  - .memory-bank/contracts/<subject>.md
+  - .memory-bank/domains/<subject>.md
 ```
 
 ## 2) Read minimal context
@@ -142,8 +143,10 @@ After every accepted answer:
    - if the existing feature design status would now be misleading, update the
      feature frontmatter to `spec_design_status: blocked`
    - preserve existing `spec_design_links`
-   - route feature-local spec/task reconciliation to `/prd-to-tasks FT-<NNN>`
-   - route shared/global backbone or contract-owner gaps to `/spec-design`
+   - route feature-level canonical spec/task reconciliation to
+     `/prd-to-tasks FT-<NNN>`
+   - route shared/global backbone gaps or competing canonical paths to
+     `/spec-design`
 7. If the feature links behavior specs and the accepted answer changes behavior
    described by those examples, record `Behavior spec impact:
    refresh_recommended` in the clarification protocol. Do not create, edit, or
@@ -168,7 +171,7 @@ If the feature has no unresolved decomposition ambiguity, the command may leave 
 
 Do not set or keep `spec_design_status: complete` when accepted clarification
 answers make linked design specs incomplete, contradictory, or unverifiable.
-Use the existing `blocked` design status and route feature-local repair to
+Use the existing `blocked` design status and route feature-level canonical spec repair to
 `/prd-to-tasks` or shared/global repair to `/spec-design`; do not invent a new
 `stale` design status.
 
@@ -182,11 +185,11 @@ If clarification changed only feature wording and no linked design surface was
 invalidated, continue to `/prd-to-tasks FT-<NNN>`, where feature-level SDD
 design is completed before task slicing.
 
-If clarification invalidated feature-local `spec_design_links`, run
-`/prd-to-tasks FT-<NNN>` to reconcile feature specs, task cards, plans, and
+If clarification invalidated feature-level `spec_design_links`, run
+`/prd-to-tasks FT-<NNN>` to reconcile canonical specs, task cards, plans, and
 complete task cards before execution.
 
-If clarification invalidated shared/global backbone, concrete contract
-ownership, Architecture Spine, or cross-feature design decisions, route back to
+If clarification invalidated shared/global backbone, a canonical contract path,
+Architecture Spine, or cross-feature design decisions, route back to
 `/spec-design` before `/prd-to-tasks`.
 </process>

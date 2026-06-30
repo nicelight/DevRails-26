@@ -59,15 +59,15 @@ Required sources:
 - `.memory-bank/workflows/tier-policy.md`
 - task-relevant feature, epic, requirements, or normative docs only when they
   are needed to interpret the selected task or are referenced by the task
-- linked authoritative SDD specs only when the task record or linked feature
-  actually references them
+- direct task-linked canonical SDD specs; linked feature specs only when needed
+  to detect drift or interpret feature composition
 
 Do not load planning/global docs by default for manual execution. For `T0` /
 `T1`, avoid `.memory-bank/constitution.md`, `.memory-bank/mbb/index.md`,
 `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
 `.memory-bank/index.md`, role docs, and broad planning docs unless the selected
-task, feature, tier, or linked specs route to them. For `T2` / `T3`, load
-task-linked authoritative spec context according to tier policy.
+  task, feature, tier, or linked specs route to them. For `T2` / `T3`, load
+task-linked canonical spec context according to tier policy.
 
 Use richer task fields when present:
 - `purpose`
@@ -94,11 +94,10 @@ or linked normative specs. If a behavior spec conflicts with authoritative
 inputs, note the drift and use the authoritative inputs; stop only when the
 remaining task context is unsafe or contradictory.
 
-Scan richer task fields and linked feature `spec_design_links` for authoritative
-SDD spec links. For this rule, authoritative SDD spec links are links to
-`.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`,
-`.memory-bank/tech-specs/`,
-`.memory-bank/architecture/`, `.memory-bank/contracts/`,
+Scan richer task fields first for direct canonical SDD spec links. Read linked
+feature `spec_design_links` to detect drift and composition context, but for
+T2/T3 they do not replace direct task links. Canonical SDD spec links are links
+to `.memory-bank/architecture/`, `.memory-bank/contracts/`,
 `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/adrs/`,
 `.memory-bank/testing/`, `.memory-bank/guides/`, or `.memory-bank/runbooks/`.
 
@@ -123,12 +122,12 @@ Apply the enhanced SDD taxonomy only to task-relevant design pressure:
   migrations, lifecycle, retention, seed data, and internal runtime data paths.
 
 Do not require irrelevant spec families. For each changed or depended-on design
-boundary, require exactly one applicable authoritative owner and follow its
+concern, require exactly one applicable canonical spec and follow its
 concrete block instead of treating any generic SDD link as sufficient.
 
 Missing richer fields or absent SDD spec links are not an error for `T0` /
 `T1`. Use classic feature/requirements/docs fallback when they are absent.
-For `T2` / `T3`, missing linked SDD specs are a blocker. A feature marked
+For `T2` / `T3`, missing direct task-linked canonical SDD specs are a blocker. A feature marked
 `spec_design_status: not_required` can support only work whose actual scope
 remains `T0` / `T1`. Do not downgrade a serious task to bypass the SDD gate;
 route it to `/prd-to-tasks` for design repair or controlled re-decomposition.
@@ -143,15 +142,15 @@ Stop with an explicit error if:
 - `tier` is not `T0`, `T1`, `T2`, or `T3`
 - task `status` is `blocked`, `failed`, or `done`
 - any `depends_on` task is missing or has status other than `done`
-- `tier` is `T2` or `T3` and neither richer task fields nor linked feature
-  `spec_design_links` route through the backbone/index to a relevant concrete
-  SDD spec
+- `tier` is `T2` or `T3` and richer task fields do not directly link every
+  relevant concrete canonical SDD spec; feature links and `spec-index.md` alone
+  are not execution context
 - `tier` is `T2` or `T3`, guides are the only linked SDD context, and the task
   has an in-scope architecture, contract, domain, state, or testing concern
 - a `T2` / `T3` task changes or depends on an architecture, component/module,
   API, event/message, boundary-data, internal data/storage/state, domain, agent
-  I/O, or security concern, but lacks the applicable authoritative owner from
-  the SDD taxonomy above, or that owner lacks `shape`, `rules`,
+  I/O, or security concern, but lacks the applicable canonical spec from the
+  SDD taxonomy above, or that spec lacks `shape`, `rules`,
   `edge cases/errors`, or a `verification target`
 - the task record, implementation plan, or feature doc contradicts linked SDD specs or a non-blocked global backbone decision
 - the task, feature, implementation plan, linked specs, or
@@ -169,7 +168,7 @@ Do not block `T0` / `T1` only because SDD spec links are absent.
 Authoritative routing is only `task.tier`. Do not use legacy `risk` /
 `risk.level`.
 
-For a feature-local SDD readiness gap, stop and route the planning/scheduler
+For a feature-level canonical SDD readiness gap, stop and route the planning/scheduler
 owner to `/prd-to-tasks FT-<NNN>` reconciliation. For a shared/global design
 gap, route to `/spec-design`. Do not settle either gap locally in `/execute`.
 
@@ -230,7 +229,7 @@ Use protocol templates when available. In `plan.md` or compact `run.md`, record:
   - Stop conditions:
 - Boundary Notes:
   - Linked boundary/contracts:
-  - Applicable SDD owner types:
+  - Applicable canonical SDD spec types:
   - Responsibility boundary:
   - Boundary drift risk:
 - Behavior Specs:
@@ -244,9 +243,9 @@ Implement only scoped task changes.
 
 Rules:
 - keep edits bounded to acceptance criteria and referenced specs
-- for any tier, if the task record or linked feature contains authoritative SDD
+- for any tier, if the task record or linked feature contains canonical SDD
   spec links, read `.memory-bank/spec-backbone.md`,
-  `.memory-bank/spec-index.md`, and all linked authoritative SDD specs before
+  `.memory-bank/spec-index.md`, and all linked canonical SDD specs before
   editing; treat them as normative inputs, not optional reading
 - when linked SDD specs exist, they outrank local task wording for architecture,
   contracts, data/state, invariants, and verification targets
@@ -256,9 +255,9 @@ Rules:
 - when linked boundary-map/contracts exist, keep implementation aligned with the
   recorded responsibility boundary; if the task needs a different boundary,
   stop and report the required spec/task update instead of widening locally
-- follow the applicable Architecture/Component/API/Event/Data Contract or Data
-  Specification owner; stop and route design repair when implementation exposes
-  a missing, conflicting, or wrong owner type
+- follow the applicable canonical Architecture/Component/API/Event/Data Contract
+  or Data Specification; stop and route design repair when implementation
+  exposes a missing, conflicting, or wrong spec type/path
 - keep changed files inside `runtime_context.allowed_write_scope` when present;
   if implementation requires wider scope, stop and report the needed owner
 - do not touch `runtime_context.forbidden_scope`; if forbidden scope was touched

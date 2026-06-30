@@ -33,7 +33,8 @@ Manual execution priming for `/execute TASK-NNN-TN-FT-NNN-WN`:
 2. Read the selected indexed `.memory-bank/tasks/TASK-*.task.json`
 3. Read `.memory-bank/workflows/tier-policy.md`
 4. Read linked feature/REQ/docs only when needed to interpret the task
-5. Read linked specs only when the task/feature actually references them
+5. Read direct task-linked canonical specs; use feature links only for
+   composition context or drift checks
 
 For manual `T0` / `T1` execution, do not load Constitution, MBB, full
 backbone/index docs, role docs, or broad planning docs by default unless the
@@ -58,11 +59,15 @@ Full role contracts live in:
 - If present, prefer explicit normative docs such as `.memory-bank/constitution.md`, `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, `.memory-bank/invariants.md`, `.memory-bank/glossary.md`, `.memory-bank/contracts/boundary-map.md`, `.memory-bank/contracts/*`, `.memory-bank/states/*`, `.memory-bank/runbooks/*`, and `.memory-bank/testing/*`.
 - Normative docs enrich the Memory Bank; they do not invalidate valid duo docs.
 - Before serious planning/design work, read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and follow linked SDD specs.
-- Do not create a new spec before checking existing specs through `.memory-bank/spec-index.md`.
-- For any tier, if the task record or linked feature contains authoritative SDD
+- Do not create a new spec before checking `.memory-bank/spec-index.md`,
+  relevant folder indexes, and plausible subject-based candidates.
+- New design specs use subject-based canonical paths without feature IDs; a
+  feature composes applicable spec links and does not own a default spec hub.
+- For any tier, if the task record or linked feature contains canonical SDD
   spec links, read `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and those linked specs before
   implementation or verification.
-- For `T2` / `T3` tasks, linked SDD specs are normative inputs; missing linked specs are a blocker for serious work.
+- For `T2` / `T3` tasks, direct task-linked canonical specs are normative
+  inputs; feature links or the registry alone do not replace them.
 
 ## Docs First
 After finishing a meaningful unit of work:
@@ -93,13 +98,13 @@ After finishing a meaningful unit of work:
 - Sequencing: independent tasks may run in parallel clean sessions; dependent/shared-file tasks must run sequentially.
 
 Codex (fresh session):
-- `codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and task-linked authoritative specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
+- `codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
 
 Claude (fresh session):
-- `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and task-linked authoritative specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
+- `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
 
 ## Two modes (manual vs scheduler)
-- **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/execute TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/execute TASK` → `/verify TASK` → `/red-verify TASK` → `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/prd-to-tasks` performs initial feature-level SDD design/task generation and later reconciles feature-local specs, task cards, and plans. `/spec-design` is mandatory after `/prd`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; when needed it records `.memory-bank/foundation.md`, and `/foundation-to-tasks` creates normal `FT-000` task records. Use `/clarify-feature FT-<NNN>` only for explicit feature blockers and rerun `/prd-to-tasks FT-<NNN>` for feature-local repair.
+- **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/execute TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/execute TASK` → `/verify TASK` → `/red-verify TASK` → `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/prd-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; when needed it records `.memory-bank/foundation.md`, and `/foundation-to-tasks` creates normal `FT-000` task records. Use `/clarify-feature FT-<NNN>` only for explicit feature blockers and rerun `/prd-to-tasks FT-<NNN>` for feature-level canonical spec repair.
 - **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/prd-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if JSON task records and required SDD spec links already exist and every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE`. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 `.tasks/` naming:
@@ -206,6 +211,7 @@ status: active
 - [.memory-bank/guides/](guides/): Valid HOW docs для использования, запуска и troubleshooting.
 - [.memory-bank/adrs/](adrs/): ADR-решения.
 
+- [.memory-bank/domains/](domains/): Subject-based domain models, storage, schemas, migrations, and persistence rules.
 - [.memory-bank/contracts/](contracts/): Контракты и boundary specs (prefer when present).
 - [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): Lightweight responsibility/scope boundary notes for decomposition and task runtime context.
 - [.memory-bank/states/](states/): Lifecycle/state rules (prefer when present).
@@ -242,7 +248,8 @@ status: active
 1. Every `.memory-bank/**/*.md` file MUST have frontmatter with `description:`.
 2. If a folder has >3 docs, add an `index.md` router.
 3. Use annotated links: `[.memory-bank/path](rel-path): короткое описание`.
-4. Atomic docs: one concept per doc; keep ~≤500 lines.
+4. Atomic docs: one cohesive concern per doc; split by boundary, change cadence,
+   consumers, or reuse, not by file length alone.
 5. Duo docs remain valid: `architecture/` (WHAT/WHY) + `guides/` (HOW), cross-link both ways for concepts that use the classic pair model.
 6. C4 layering: L1 product → L2 epics → L3 features → L4 plans/tasks.
 7. Docs First: update MB immediately after finishing a task.
@@ -251,6 +258,8 @@ status: active
 10. After merge/rebase conflicts: re-check MB consistency.
 11. MB-SYNC after each wave/significant change (see `workflows/mb-sync.md`).
 12. When present, `constitution.md`, `spec-backbone.md`, `spec-index.md`, `glossary.md`, `invariants.md`, `contracts/*`, `states/*`, `runbooks/*`, and `testing/*` act as an explicit normative layer and should be linked from relevant docs.
+13. Features compose product behavior and exact canonical spec links. New design
+    specs use subject-based paths without `FT-<NNN>` names or feature ownership.
 
 ## Forbidden
 - Copy-paste implementation details / pseudocode
@@ -282,13 +291,13 @@ status: active
 - Feature `spec_design_status` lives in feature frontmatter, not in this index.
 
 ## Spec Registry
-| Spec | Type | Path | Status | Owner command | Scope |
-|---|---|---|---|---|---|
-| Project Constitution | governance | [.memory-bank/constitution.md](constitution.md) | active | /constitution | Top governing policy. |
-| Invariants | invariants | [.memory-bank/invariants.md](invariants.md) | planned | /spec-init or /spec-design | Global MUST/NEVER rules when evidence exists. |
-| Glossary | glossary | [.memory-bank/glossary.md](glossary.md) | planned | /spec-init or /spec-design | Shared vocabulary when needed. |
-| Boundary Map | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | /spec-init or /spec-design | Lightweight responsibility/scope notes for task boundaries. |
-| Testing Index | testing | [.memory-bank/testing/index.md](testing/index.md) | planned | /prd or /spec-design | Verification strategy and quality gates. |
+| Type | Path | Status | Scope | Change route |
+|---|---|---|---|---|
+| governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
+| invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
+| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary when needed. | /spec-init or /spec-design |
+| contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Lightweight responsibility/scope notes for task boundaries. | /spec-init or /spec-design |
+| testing | [.memory-bank/testing/index.md](testing/index.md) | planned | Verification strategy and quality gates. | /prd or /spec-design |
 
 ## Planned Specs
 | Area | Expected path | Needed by | Notes |
@@ -298,16 +307,19 @@ status: active
 | boundary_hints | .memory-bank/contracts/boundary-map.md | /prd, /spec-design | Seeded lightweight template; fill only evidence-backed responsibility/scope notes, no endpoint/OpenAPI details. |
 | lifecycle_hints | .memory-bank/states/lifecycle-map.md | /prd, /spec-design | Create only when lifecycles affect feature boundaries. |
 | system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Candidate architecture hub; fill only when selected or needed by /spec-design. |
-| interface_contract_specs | .memory-bank/contracts/*, .memory-bank/testing/*, and .memory-bank/runbooks/* | /spec-design, /foundation-to-tasks, /prd-to-tasks | Generate/update Interface Specification and only applicable Component/API/Event/Data contracts, protocol/agent/tool I/O, boundary compatibility, evidence/redaction, safety/security, testing, runbook, or verification contracts. Data Contract owns payloads crossing a boundary. |
+| interface_contract_specs | .memory-bank/contracts/*, .memory-bank/testing/*, and .memory-bank/runbooks/* | /spec-design, /foundation-to-tasks, /prd-to-tasks | Generate/update Interface Specification and only applicable Component/API/Event/Data contracts, protocol/agent/tool I/O, boundary compatibility, evidence/redaction, safety/security, testing, runbook, or verification contracts. Data Contract defines payloads crossing a boundary. |
 | data_specs | .memory-bank/domains/* and .memory-bank/states/* | /spec-design, /prd-to-tasks | Generate/update Data Specification for internal models, DB schemas, storage/persistence/migrations, internal data formats, validation/serialization rules, lifecycle, retention, seed, or runtime data paths. |
-| foundation_substrate_specs | .memory-bank/architecture/*, .memory-bank/contracts/*, .memory-bank/domains/*, .memory-bank/states/*, .memory-bank/testing/*, .memory-bank/runbooks/* | /foundation-to-tasks | Apply Architecture, Interfaces/Contracts, and Data lenses to the walking-skeleton proof path. Generate only applicable substrate-level Component/API/Event/Data contracts, internal Data Specification, Test Harness, Local Runtime/Bootstrap, and Redaction/Evidence specs. Product-level detail is extended later by /prd-to-tasks. |
-| feature_design | .memory-bank/tech-specs/FT-<NNN>-<slug>.md | /prd-to-tasks | Feature-local specs only when needed before task decomposition. |
+| foundation_substrate_specs | .memory-bank/architecture/*, .memory-bank/contracts/*, .memory-bank/domains/*, .memory-bank/states/*, .memory-bank/testing/*, .memory-bank/runbooks/* | /foundation-to-tasks | Apply Architecture, Interfaces/Contracts, and Data lenses to the walking-skeleton proof path. Generate only applicable subject-based substrate contracts/specs. Product-level detail reuses or extends those paths later. |
+| subject_feature_concerns | .memory-bank/contracts/*, .memory-bank/domains/*, .memory-bank/states/*, .memory-bank/testing/*, .memory-bank/runbooks/*, or .memory-bank/guides/* | /prd-to-tasks | Discover existing canonical specs first; create only missing subject-based concerns and link exact paths from features/tasks. |
 
 ## Broken / Missing Links
 - TBD
 
 ## Update Rules
-- Keep this file as index/registry only: names, paths, statuses, owners, scopes, and broken links.
+- Keep this file as index/registry only: types, canonical paths, statuses,
+  scopes, change routes, and broken links.
+- Canonical identity is the path. Do not add a separate spec key, feature owner,
+  `used_by`, or reverse-usage copy; derive usage from feature/task links.
 - Do not add global backbone status, backbone matrices, feature status maps, long hard rules, or open design question dumps here.
 - Use [.memory-bank/spec-backbone.md](spec-backbone.md) for pre-PRD readiness, decomposition inputs, global backbone status, matrix, and handoffs.
 - Use linked specs or ADRs for detailed decisions, rationale, contracts, state transitions, schemas, invariants, and testing rules.
@@ -660,7 +672,7 @@ status: draft
 
 ## 6b) Example task record template
 
-The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`; the `T<N>`, `FT-<NNN>`, and `W<N>` ID segments must match the task record `tier`, `feature`, and `wave` fields. `/foundation-to-tasks` creates normal `FT-000` foundation `.task.json` records only when `.memory-bank/foundation.md` says foundation is required. `/prd-to-tasks FT-<NNN>` first completes feature-level SDD design, then creates real product feature `.memory-bank/tasks/TASK-*.task.json` records when the feature is ready and any required final foundation gate task is `done`, or marks design blocked and stops. Fresh bootstrap does not create `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable task records.
+The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`; the `T<N>`, `FT-<NNN>`, and `W<N>` ID segments must match the task record `tier`, `feature`, and `wave` fields. `/foundation-to-tasks` creates normal `FT-000` foundation `.task.json` records only when `.memory-bank/foundation.md` says foundation is required. `/prd-to-tasks FT-<NNN>` first resolves feature design concerns through subject-based canonical specs, then creates real product feature `.memory-bank/tasks/TASK-*.task.json` records with direct task-relevant spec links when the feature is ready and any required final foundation gate task is `done`, or marks design blocked and stops. Fresh bootstrap does not create `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable task records.
 
 ```json
 {

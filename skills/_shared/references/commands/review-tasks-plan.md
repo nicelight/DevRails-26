@@ -21,7 +21,7 @@ is required before `/autopilot` / autonomous scheduler execution.
 Reviewed surface:
 - structural integrity of the target feature's indexed task records
 - feature acceptance/REQ coverage and task slicing
-- final feature/design readiness and linked authoritative specs
+- final feature/design readiness and direct canonical spec links
 - execution readiness: tiers, dependencies, single-card handoff, and Foundation Gate
 
 This command does not validate PRD -> feature decomposition as the primary
@@ -119,15 +119,20 @@ specs, plans, tasks, or lifecycle state from this command.
   `spec_design_status` is `complete`, or `not_required` with a truthful rationale
   for simple work and empty `spec_design_links`.
 - No feature-relevant Backbone Area Matrix row remains `needed_before_tasks` or
-  `blocked`; `spec-index.md` remains a registry and linked owners exist.
-- T2/T3 tasks link relevant authoritative SDD specs and can be implemented
+  `blocked`; `spec-index.md` remains a registry and every linked canonical path
+  resolves.
+- T2/T3 tasks link the direct task-relevant subset of canonical SDD specs and
+  can be implemented
   without guessing architecture, API, state, schema, message, storage, domain,
   agent I/O, security, or verification behavior.
+- Reject a newly generated default `FT-*` design-spec hub or T2/T3 coverage that
+  relies only on a multi-concern legacy `.memory-bank/tech-specs/FT-*.md` instead
+  of direct subject-based canonical specs.
 - Confirm each linked SDD spec is semantically applicable to the task and its
   concrete block is sufficient for the boundary or behavior in scope.
 - Confirm each task `success_outcome` is independently verifiable and does not
   conflict semantically with the feature, implementation plan, or linked specs.
-- Every changed/dependent concrete boundary has exactly one authoritative owner
+- Every changed/dependent concrete concern has exactly one canonical spec
   defining `shape`, `rules`, `edge cases/errors`, and `verification target`.
   Shared-boundary tasks link relevant Architecture Spine `AD-*`, boundary-map,
   contract, or ADR decisions when those decisions constrain the work.
@@ -147,7 +152,7 @@ semantics must not cause `REJECT`.
   and every reviewed product task depends on it directly or transitively.
 - Every T2/T3 task satisfies the single-card handoff completeness contract:
   schema/index/ID/REQ linkage is valid; `purpose` and scalar `success_outcome`
-  are non-empty; an existing task-linked authoritative SDD spec path is present;
+  are non-empty; an existing task-linked canonical SDD spec path is present;
   scope is grounded by `touched_files` and/or
   `runtime_context.allowed_write_scope`; a real gate command and/or non-empty
   `verification_target` exists; dependencies exist and remain acyclic.
@@ -174,10 +179,10 @@ semantics must not cause `REJECT`.
   gate is blocking.
 
 Contract-readiness routing for `REJECT`:
-- route back to `/prd-to-tasks FT-<NNN>` for feature-local spec repair,
+- route back to `/prd-to-tasks FT-<NNN>` for feature-level canonical spec repair,
   focused design questions, and task-card reconciliation;
-- route to `/spec-design` when the duplicated/unclear owner or missing decision
-  is shared/global.
+- route to `/spec-design` when competing/unclear canonical paths or a missing
+  decision are shared/global.
 
 ## 5) Reviewer handoff
 Use the active harness's configured fresh-context reviewer or a separate fresh
@@ -196,7 +201,7 @@ dependency task records referenced by those tasks,
 FT-001. Review four groups: structural integrity; acceptance/REQ coverage and
 task slicing; final feature/design readiness; and execution readiness. Include
 schema/index/ID consistency, implementation-plan alignment, final design status,
-feature-relevant needed_before_tasks rows, concrete contract ownership,
+feature-relevant needed_before_tasks rows, canonical contract routing,
 persistence verification when applicable, tier/dependency/foundation rules, and
 T2/T3 single-card handoff completeness. Semantically assess linked-spec
 applicability, concrete-block sufficiency, independent outcome verifiability,

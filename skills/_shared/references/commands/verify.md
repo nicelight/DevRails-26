@@ -26,7 +26,7 @@ Read first:
 - `.memory-bank/workflows/tier-policy.md`
 - the task-linked feature and concrete `REQ-*` sources needed to interpret this
   task's outcome
-- task-linked authoritative SDD specs when present
+- direct task-linked canonical SDD specs when present
 
 Read execution evidence by tier:
 - T0/T1: `.protocols/<TASK_ID>/run.md` and the task's implementation report or
@@ -36,8 +36,9 @@ Read execution evidence by tier:
   or evidence under `.tasks/<TASK_ID>/`
 
 Do not load unrelated feature-wide or global planning documents. Read
-`spec-backbone.md` and `spec-index.md` only to resolve task/feature-linked owners
-or a relevant contradiction.
+`spec-backbone.md` and `spec-index.md` only to resolve canonical paths or a
+relevant contradiction. Feature `spec_design_links` provide composition/drift
+context; for T2/T3 they do not replace direct task links.
 
 Normal scheduler input is an `in_progress` task. In manual mode, another status
 is acceptable only when tier-appropriate execution handoff/evidence proves the
@@ -69,7 +70,7 @@ Authoritative routing uses only `task.tier`; never use legacy `risk` fields.
 
 Verify this task, not the whole feature. Derive the minimum complete basis in
 this precedence order:
-1. linked authoritative SDD specs and their executable rules
+1. direct task-linked canonical SDD specs and their executable rules
 2. task `purpose`, `success_outcome`, `anti_goals`, `constraints`, `invariants`,
    and `verification_targets`
 3. only the feature acceptance criteria and concrete `REQ-*` behavior mapped to
@@ -86,11 +87,11 @@ verifiable outcome and a task-scoped AC/REQ subset, return
 by themselves. An `/execute` local PASS is evidence input, not an automatic
 `/verify PASS`.
 
-### Applicable SDD owners
+### Applicable canonical SDD specs
 
-An entry in `spec-index.md` alone is not a task link. For T2/T3, the task richer
-fields or feature `spec_design_links` must route to every relevant authoritative
-owner. Apply only the owner types demanded by actual task scope:
+An entry in `spec-index.md` or feature `spec_design_links` alone is not a task
+link. For T2/T3, the task richer fields must directly route to every relevant
+canonical spec. Apply only the spec types demanded by actual task scope:
 - Architecture Specification for system/module shape, source of truth, runtime,
   deployment, Architecture Spine, or ADR constraints
 - Component Contract for crossed/changed module guarantees and call/failure
@@ -103,14 +104,14 @@ owner. Apply only the owner types demanded by actual task scope:
 - Data Specification for internal models, DB/storage ownership, persistence,
   migrations, lifecycle, retention, seed data, and runtime data paths
 
-Verify implementation and evidence against each applicable owner's concrete
+Verify implementation and evidence against each applicable spec's concrete
 `shape`, `rules`, `edge cases/errors`, and `verification target`. Do not require
-irrelevant spec families. A missing, conflicting, or wrong owner type is a
+irrelevant spec families. A missing, conflicting, or wrong spec type/path is a
 planning/design blocker, not an implementation FAIL:
-- feature-local repair -> `/prd-to-tasks FT-<NNN>`
-- shared/global owner or decision -> `/spec-design`
+- feature-level canonical spec repair -> `/prd-to-tasks FT-<NNN>`
+- shared/global canonical path or decision -> `/spec-design`
 
-T0/T1 may use classic task-scoped AC/REQ evidence when no SDD owner is relevant.
+T0/T1 may use classic task-scoped AC/REQ evidence when no SDD spec is relevant.
 Behavior specs linked through `source_artifacts` are optional context examples;
 they are never independent gates or substitutes for AC, contracts, tests, or
 verification targets.
@@ -152,7 +153,7 @@ When runtime context exists, verify:
 - `anti_goals` and non-goals remain respected
 - changed files remain within `allowed_write_scope`
 - `forbidden_scope` was not touched
-- applicable architecture/component/API/event/data owners were respected
+- applicable canonical architecture/component/API/event/data specs were respected
 - real persistence paths receive the required read/write or integration proof
 
 If UI/browser behavior is in scope:
@@ -178,7 +179,7 @@ Use exactly one verdict:
 - `VERDICT: FAIL`: observed implementation behavior violates the task-scoped
   normative basis or a required functional check fails
 - `VERDICT: NEEDS-CLARIFICATION`: a safe verdict is impossible because inputs,
-  execution evidence, scope/tier, required context, or normative ownership are
+  execution evidence, scope/tier, required context, or canonical spec coverage is
   missing, stale, contradictory, or unverifiable
 
 Append the completed verdict/evidence summary to the task record `verify` array
@@ -205,9 +206,9 @@ On FAIL, report the defect and evidence. The scheduler or explicit owner decides
 dependents, and records failure-budget impact. New task planning routes through
 `/prd-to-tasks`.
 
-On NEEDS-CLARIFICATION, name one repair owner:
-- task scope/tier/feature-local spec -> `/prd-to-tasks FT-<NNN>`
-- shared/global spec owner -> `/spec-design`
+On NEEDS-CLARIFICATION, name one repair route:
+- task scope/tier/feature-level canonical spec -> `/prd-to-tasks FT-<NNN>`
+- shared/global canonical path or decision -> `/spec-design`
 - missing implementation evidence -> `/execute <TASK_ID>`
 
 Do not run `/red-verify`, `/mb-sync`, task-plan repair, or scheduler transitions

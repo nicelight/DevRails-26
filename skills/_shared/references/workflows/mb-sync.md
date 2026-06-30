@@ -77,14 +77,16 @@ Manual mode:
   reported, or routed to `/spec-design` / `/prd-to-tasks`; do not guess design
   decisions during sync.
 - [ ] `.memory-bank/spec-index.md` remains a pure registry/planned-spec index.
-  It does not contain backbone status, feature status maps, decision bodies, API
-  rules, state machines, data schemas, or contract details.
+  Active rows use `Type | Path | Status | Scope | Change route`; it does not
+  contain backbone status, feature status maps, decision bodies, reverse
+  feature usage, API rules, state machines, data schemas, or contract details.
 - [ ] Feature frontmatter `spec_design_status` and `spec_design_links` match the
   actual linked specs. Stale or contradictory feature design is marked/reported
-  as `blocked` and routed to `/prd-to-tasks FT-<NNN>` for feature-local repair
+  as `blocked` and routed to `/prd-to-tasks FT-<NNN>` for feature-level
+  canonical spec repair
   or `/spec-design` for shared/global repair; no new `stale` lifecycle/status
   value is introduced.
-- [ ] Changed SDD docs under `tech-specs/`, `architecture/`, `contracts/`,
+- [ ] Changed canonical SDD docs under `architecture/`, `contracts/`,
   `domains/`, `states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/` are
   linked from the relevant feature, backbone, or registry.
 - [ ] Architecture Spine `AD-*` anchors referenced from task records,

@@ -58,7 +58,7 @@ Manual mode:
 - Link to protocol plan: `.protocols/<TASK_ID>/plan.md`
 
 If present, also use:
-- linked authoritative SDD specs for any tier
+- direct task-linked canonical SDD specs for any tier
 - `verification_targets`
 - `normative_inputs`
 - `constraints`
@@ -69,11 +69,12 @@ If present, also use:
 - `runtime_context`
 - task record references to source artifacts
 
-Authoritative SDD spec links are links in task richer fields or linked feature
-`spec_design_links` that point to `.memory-bank/spec-index.md`,
-`.memory-bank/tech-specs/`, `.memory-bank/architecture/`,
+Canonical SDD spec links are links in task richer fields that point to
+`.memory-bank/architecture/`,
 `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`,
-`.memory-bank/adrs/`, `.memory-bank/testing/`, or `.memory-bank/runbooks/`.
+`.memory-bank/adrs/`, `.memory-bank/testing/`, `.memory-bank/guides/`, or
+`.memory-bank/runbooks/`. Feature `spec_design_links` provide composition/drift
+context but do not replace direct T2/T3 task links.
 
 ## Preconditions
 - Implementation is done and gates were run (or failures recorded).
@@ -106,8 +107,8 @@ Read:
 - `.protocols/<TASK_ID>/plan.md`
 - `.protocols/<TASK_ID>/progress.md`
 - acceptance criteria source docs
-- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all linked
-  authoritative SDD specs when the task record or linked feature contains SDD
+- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and all direct
+  task-linked canonical SDD specs when the task record contains SDD
   spec links, for any tier
 
 Before verifying, validate the authoritative task record:
@@ -115,16 +116,17 @@ Before verifying, validate the authoritative task record:
 - the indexed record `id` matches `TASK_ID`
 - required fields for verification are present (`status`, `feature`, `reqs`, `depends_on`, `gates`, `verify`)
 - `tier` is present; if missing, stop
-- for `T2` / `T3`, linked SDD specs are present in task richer fields, feature
-  `spec_design_links`, or `spec-index.md`; if absent, stop and route
-  feature-local repair to `/prd-to-tasks`, shared/global repair to
+- for `T2` / `T3`, task richer fields directly link every relevant canonical
+  SDD spec; feature `spec_design_links` or `spec-index.md` alone do not count.
+  If absent, stop and route feature-level canonical spec repair to
+  `/prd-to-tasks`, shared/global canonical-path repair to
   `/spec-design`, or autonomous design to `/spec-auto`
 
 Do not block `T0` / `T1` only because SDD spec links are absent.
 If the authoritative task record is missing or invalid, stop and report the issue instead of verifying from protocol docs alone.
 
 Priority:
-1. linked authoritative SDD specs for any tier, when present
+1. direct task-linked canonical SDD specs for any tier, when present
 2. task `gates`, `evidence_required`, and `runtime_context` when present
 3. `purpose`, `success_outcome`, and `anti_goals` when present
 4. explicit `Verification Targets`

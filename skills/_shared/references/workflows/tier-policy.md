@@ -68,7 +68,7 @@ Tier summary:
 
 The indexed task card carries task-scoped execution and verification context.
 T2/T3 cards must satisfy the single-card handoff completeness contract before
-execution: purpose/outcome, a task-linked authoritative SDD path, grounded
+execution: purpose/outcome, direct task-relevant canonical SDD paths, grounded
 scope, a verification path, concrete REQ linkage, and valid dependencies.
 
 This contract does not add a status or artifact. Semantic applicability and
