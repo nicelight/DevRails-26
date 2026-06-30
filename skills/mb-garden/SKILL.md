@@ -53,37 +53,69 @@ node scripts/mb-doctor.mjs --strict
 Do not treat strict mode as required for a bare generated skeleton with an empty task registry.
 
 ### 2) Refactor for ergonomics
-- Split docs > ~700 lines into atomic docs + router index.
-- Ensure key concepts are covered either by classic duo docs (`architecture` WHAT/WHY + `guides` HOW) or by equivalent spec-driven support docs.
+- Treat docs above ~700 lines as a review signal, not a split gate. Split only
+  when the file mixes independently meaningful boundaries, change cadence,
+  consumers, or reuse; keep one cohesive concern together.
+- Discover existing specs through `spec-index.md`, relevant folder indexes, and
+  subject paths before splitting or creating docs. Keep one active canonical
+  path per concern and update exact feature/task links.
+- Classic duo docs (`architecture` WHAT/WHY + `guides` HOW) remain valid when
+  both documents have distinct value, but do not create a pair merely to satisfy
+  a coverage convention.
+- Keep `spec-index.md` as `Type | Path | Status | Scope | Change route`; do not
+  add feature ownership, `used_by`, decision bodies, or reverse-usage copies.
 - Replace copy-pasted code/config with links to source.
 
 ### 3) Archive stale or superseded docs
 - Move outdated docs to `.memory-bank/archive/`.
-- Leave a short tombstone stub in the original location with a link to the archive.
+- Before archiving a canonical spec, reconcile `spec-index.md`, folder indexes,
+  and all affected feature/task links so no duplicate active definition remains.
+- Leave a tombstone only when compatibility requires the old path. Mark it
+  `status: deprecated`, link the replacement/archive path, and ensure it cannot
+  be mistaken for the active canonical spec.
 
-### 4) Optional: add CI gate
+### 4) Reconcile installed skill routing
+- Compare `.memory-bank/skills/index.md` with actual `.agents/skills/*/SKILL.md`
+  and `.claude/skills/*/SKILL.md` entries.
+- Use installed canonical runtime command names in the registry; do not preserve
+  a second alias/package command surface.
+- For obsolete generated runtime entries, recommend installer sync. Do not
+  delete user-owned skills merely because they are outside DevRails.
+
+### 5) Optional: add CI gate
 If the repo uses GitHub Actions:
 - Create `.github/workflows/memory-bank-lint.yml` from `assets/memory-bank-lint.yml`.
 
-### 5) Produce a short report
+### 6) Produce a short report
 Write a summary (what changed + what remains) to:
 - `.tasks/TASK-MB-GARDEN/TASK-MB-GARDEN-S-01-final-report-docs-01.md`
 
-### 6) Weekly maintenance checklist
+### 7) Weekly maintenance checklist
 Run this checklist weekly (or every 5–10 meaningful changes):
 
 1. **Frontmatter audit**: every `.memory-bank/**/*.md` has `description` + `status`.
-2. **Stale docs**: scan for docs not updated in >2 weeks — archive or refresh.
-3. **Concept coverage check**: every key concept is covered either by a matching `architecture/<X>.md` + `guides/<X>.md` pair or by clearly routed equivalent spec-driven support docs.
+2. **Stale docs**: use age as a review signal; archive or refresh only after
+   evidence confirms the content is stale or superseded.
+3. **Canonical spec check**: every active concern has one registered subject
+   path; no default `FT-*` hub, duplicate active definition, file-owner routing,
+   or forced duo pair exists.
 4. **RTM sync**: `requirements.md` RTM matches actual feature/test status.
-5. **Task record hygiene**: completed tasks marked done in `.task.json`, every task has `tier`, and no orphaned tasks exist without a feature link.
+5. **Task record hygiene**: completed tasks are marked done in `.task.json`,
+   every task has `tier`, and T2/T3 cards keep purpose/outcome, direct relevant
+   canonical spec links, grounded scope, and a verification path.
 6. **Changelog**: `.memory-bank/changelog.md` has entries for recent changes.
 7. **Index links**: all links in `index.md` and router-indexes resolve correctly.
-8. **Archive tombstones**: every doc in `archive/` has a tombstone stub at original location.
+8. **Archive routing**: deprecated/tombstone paths cannot be mistaken for active
+   canonical specs and all replacement links resolve.
+9. **Skill routing**: the skill registry matches installed canonical runtime
+   commands and contains no duplicate alias surface.
 
 ## Definition of done
 - `node scripts/mb-lint.mjs` passes (0 errors).
 - `node scripts/mb-doctor.mjs` readiness gate passes in default mode; `--strict` passes post-queue before scheduler/autopilot execution.
 - Index navigation is coherent.
+- `spec-index.md`, feature links, task links, and archive/deprecation routes are
+  coherent and identify one active canonical path per concern.
+- Installed skill routing exposes one canonical command surface per workflow.
 - No obvious duplication or stale docs without archive.
 - Weekly checklist items are addressed.

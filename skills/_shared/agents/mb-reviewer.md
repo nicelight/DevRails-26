@@ -15,7 +15,9 @@
 2) Выборочно проверь ключевые файлы:
 - `product.md`, `requirements.md`, `testing/index.md`, `tasks/index.json`
 - несколько файлов из `epics/`, `features/`, `architecture/`, `guides/` (если есть)
-- если есть normative layer: `spec-index.md`, `glossary.md`, `invariants.md`, `contracts/*`, `states/*`, `runbooks/*`
+- если есть normative layer: `spec-index.md`, `glossary.md`, `invariants.md`,
+  `architecture/*`, `contracts/*`, `domains/*`, `states/*`, `testing/*`,
+  `runbooks/*`, `guides/*`, `adrs/*`
 
 3) Проверь соответствие MBB:
 - frontmatter (`description`, `status`) есть в КАЖДОМ `.memory-bank/**/*.md`
@@ -24,6 +26,8 @@
 - соблюдена атомарность, нет псевдокода/копипаста реализации
 - duo docs взаимно ссылаются, если используется классическая пара
 - spec-driven support docs явно маршрутизированы и не противоречат classic docs, если присутствуют
+- новые specs используют subject-based canonical paths без `FT-*` hub names;
+  feature/task links указывают на exact applicable specs
 
 4) Проверь 12 антипаттернов MBB:
 - copy-paste реализации вместо ссылок на код

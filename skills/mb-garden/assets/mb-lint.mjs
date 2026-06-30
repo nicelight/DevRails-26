@@ -359,7 +359,6 @@ function checkFrontmatter(filePath, text) {
     }
 
     if (isMetadataScopedDoc(rel) && status === 'active') {
-      if (!fm.owner || !String(fm.owner).trim()) warnings.push(`${rel}: missing 'owner' (recommended for active docs)`);
       if (!fm.last_updated || !String(fm.last_updated).trim()) {
         warnings.push(`${rel}: missing 'last_updated' (recommended for active docs, YYYY-MM-DD)`);
       } else if (!/^\d{4}-\d{2}-\d{2}$/.test(stripYamlQuotes(fm.last_updated))) {
@@ -504,7 +503,7 @@ function checkFileSize(filePath, text) {
   const rel = normalizeRel(path.relative(ROOT, filePath));
   const lines = text.split(/\r?\n/).length;
   if (lines > 2000) {
-    warnings.push(`${rel}: very large file (${lines} lines). Consider splitting.`);
+    warnings.push(`${rel}: very large file (${lines} lines). Review for mixed concerns; split only by boundary, change cadence, consumers, or reuse.`);
   }
 }
 
@@ -580,6 +579,13 @@ function checkArrayField(rel, task, field) {
   }
 }
 
+function checkRequiredStringField(rel, task, field) {
+  if (!hasOwn(task, field)) return;
+  if (typeof task[field] !== 'string') {
+    errors.push(`${rel}: '${field}' must be a string`);
+  }
+}
+
 function checkOptionalStringField(rel, object, field) {
   if (!hasOwn(object, field)) return;
   if (typeof object[field] !== 'string') {
@@ -597,6 +603,17 @@ function checkOptionalStringArrayField(rel, object, field, label = field) {
   object[field].forEach((item, index) => {
     if (typeof item !== 'string') {
       errors.push(`${rel}: '${label}[${index}]' must be a string`);
+    }
+  });
+}
+
+function checkVerifyItems(rel, task) {
+  if (!Array.isArray(task.verify)) return;
+
+  task.verify.forEach((item, index) => {
+    const isStructuredObject = item && typeof item === 'object' && !Array.isArray(item);
+    if (typeof item !== 'string' && !isStructuredObject) {
+      errors.push(`${rel}: 'verify[${index}]' must be a string or object`);
     }
   });
 }
@@ -1089,6 +1106,9 @@ function checkTaskRecords() {
     if (!ALLOWED_TASK_TIER.has(task.tier)) {
       errors.push(`${rel}: invalid tier '${task.tier}' (allowed: T0|T1|T2|T3)`);
     }
+    for (const field of ['title', 'wave', 'feature']) {
+      checkRequiredStringField(rel, task, field);
+    }
     checkLegacyTaskRiskKeys(rel, task);
     checkOptionalTaskRuntimeContext(rel, task);
 
@@ -1108,6 +1128,21 @@ function checkTaskRecords() {
     ]) {
       checkArrayField(rel, task, field);
     }
+    for (const field of [
+      'reqs',
+      'depends_on',
+      'touched_files',
+      'docs',
+      'evidence_required',
+      'source_artifacts',
+      'normative_inputs',
+      'constraints',
+      'invariants',
+      'verification_targets',
+    ]) {
+      checkOptionalStringArrayField(rel, task, field);
+    }
+    checkVerifyItems(rel, task);
     checkTaskArchitectureReferences(rel, task);
     checkGateItems(rel, task);
 

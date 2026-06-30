@@ -68,26 +68,16 @@ Canonical shared source:
 Installable skill entrypoints:
 
 - `skills/cold-start/SKILL.md`
-- `skills/mb-analysis/SKILL.md`
 - `skills/mb-init/SKILL.md`
-- `skills/mb-from-prd/SKILL.md`
-- `skills/mb-map-codebase/SKILL.md`
-- `skills/mb-verify/SKILL.md`
-- `skills/mb-red-verify/SKILL.md`
-- `skills/mb-review/SKILL.md`
 - `skills/mb-garden/SKILL.md`
 - `skills/mb-harness/SKILL.md`
 
 Skill-specific non-shared assets:
 
-- `skills/mb-analysis/assets/*.md`: analysis index, brainstorming, and product brief templates.
 - `skills/mb-garden/assets/mb-lint.mjs`: packaged deterministic Memory Bank structural/mechanical hygiene linter.
 - `skills/mb-garden/assets/mb-doctor.mjs`: current packaged location for the deterministic workflow/autonomous readiness check over `mb-lint`.
 - `skills/mb-garden/assets/memory-bank-lint.yml`: related lint config asset.
 - `skills/mb-harness/assets/codex-config.toml`: Codex harness config template.
-- `skills/mb-from-prd/references/*.md`: PRD decomposition templates.
-- `skills/mb-map-codebase/references/*.md`: mapping/synthesis references.
-- `skills/mb-verify/agents/verifier.md`: verifier-specific agent prompt.
 
 ## JSON Task Registry Work Hotspots
 
@@ -207,8 +197,6 @@ Primary source files for this behavior:
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/workflows/tier-policy.md`
 - `skills/_shared/references/workflows/mb-sync.md`
-- `skills/mb-verify/SKILL.md`
-- `skills/mb-red-verify/SKILL.md`
 
 Do not add a second durable task-context artifact, nested duplicate context
 object, `.memory-bank/modules/`, `.memory-bank/graph/`,
@@ -229,7 +217,6 @@ Primary source files for this behavior:
 
 - `skills/_shared/scripts/init-mb.js`
 - `skills/_shared/references/structure-template.md`
-- `skills/mb-from-prd/references/feature-template.md`
 - `skills/_shared/references/commands/prd.md`
 - `skills/_shared/references/commands/prd-to-tasks.md`
 - `skills/_shared/references/commands/execute.md`

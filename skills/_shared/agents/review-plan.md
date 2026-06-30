@@ -14,24 +14,40 @@
 - задачи сгруппированы в waves по зависимостям
 - каждая задача атомарна (1–2 часа)
 - у каждого task record есть `status`, `wave`, `depends_on`, `touched_files`, `gates`, `verify`, `docs`, `tier`
+- task record валиден по `.memory-bank/schemas/task.schema.json`, а ID segments
+  совпадают с `tier`, `feature` и `wave`
 
 2) **Definition of done per task**
 - явные outputs
 - тесты указаны (unit/integration/e2e)
 - verification steps (UAT)
 - docs-first update чеклист
+- для T2/T3: непустые `purpose`, один scalar `success_outcome`, grounded scope
+  через `touched_files` и/или `runtime_context.allowed_write_scope`, реальная
+  gate command и/или `verification_target`
+- optional `anti_goals`, `constraints`, `invariants`, `evidence_required`,
+  `forbidden_scope` и `stop_conditions` не заполнены фиктивными значениями
 
-3) **Dependency correctness**
+3) **Canonical SDD context**
+- каждая T2/T3 task напрямую ссылается только на применимый subset
+  subject-based canonical specs через существующие task fields
+- feature links или `spec-index.md` сами по себе не заменяют direct task links
+- linked spec действительно применима и содержит достаточные shape/rules/errors/
+  verification details для task scope
+- новый default `FT-*` spec hub или hub-only legacy coverage — REJECT
+- competing paths для одного concern не маскируются созданием третьей spec
+
+4) **Dependency correctness**
 - зависимости реалистичны
 - нет скрытых блокеров
 - `ready` помечены только задачи без незакрытых dependencies
 - нет задач, которые безопасно распараллелить, но они смешаны с shared-file задачами без явного порядка
 
-4) **Risk & sequencing**
+5) **Risk & sequencing**
 - ранние задачи снижают риск (spikes/POCs)
 - нет “big bang” интеграции в конце
 
-5) **MB-SYNC в плане**
+6) **MB-SYNC в плане**
 - план предусматривает MB-SYNC после каждой wave
 - есть шаг обновления RTM и changelog
 - Docs First не забыт (обновление MB идёт до коммита, не после)

@@ -28,7 +28,7 @@ status: active
 5) `/prd` (fills L1–L3)
 6) `/review-feat-plan` for high-risk, large, or autonomous-boundary work; optional/recommended for small manual flows
 7) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
-8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
+8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
 9) Pick one top feature; use `/clarify-feature FT-001` only for explicit feature blockers
 10) `/prd-to-tasks FT-001` (resolves feature design concerns through subject-based canonical specs and creates IMPL plan + complete `TASK-NNN-TN-FT-NNN-WN` records for this feature)
 11) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
@@ -58,7 +58,9 @@ trigger another task-plan review.
 3) run `/mb-doctor --strict` again before product scheduler execution; T2/T3 tasks without SDD spec links are blockers
 4) before `/execute`, scheduler requires `/mb-doctor --strict`; structurally incomplete T2/T3 task cards stop execution and require task-card repair
 5) each TASK runs in **fresh CLI sessions**
-6) after each `/mb-sync`, run `/mb-doctor --strict` before promoting dependents
+6) when the last task of a T2 product feature closes, run feature-level
+`/red-verify --feature FT-<ID>` before `/mb-sync` and the next strict doctor;
+after each `/mb-sync`, run `/mb-doctor --strict` before promoting dependents
 7) after a wave, rerun `/review-tasks-plan FT-<NNN>` only for product features
 whose task/spec/dependency/tier/scope planning surface changed; do not
 rerun it for status/evidence-only closure

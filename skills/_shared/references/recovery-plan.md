@@ -19,7 +19,7 @@
 
 **Симптомы**: MB описывает архитектуру/фичи, которые уже не соответствуют коду. RTM разошёлся. Support docs неполные, противоречивы или врут.
 
-**Действие**: запусти `mb-map-codebase` (re-scan).
+**Действие**: запусти `/map-codebase` (re-scan).
 1. Создай `.tasks/TASK-MB-RECOVERY/`.
 2. Запусти repo-scanner сабагентов по зонам.
 3. Сравни отчёты с текущим MB — найди расхождения.
@@ -36,8 +36,8 @@
 **Действие**: запусти `cold-start` заново.
 1. Сохрани старый MB в `.memory-bank/archive/pre-rebuild/`.
 2. Запусти `mb-init` для создания нового скелета.
-3. Для brownfield: запусти `mb-map-codebase`.
-4. Для greenfield: запусти `mb-from-prd`.
+3. Для brownfield: запусти `/map-codebase`.
+4. Для greenfield: запусти `/prd` после `/write-prd` и `/spec-init`.
 5. Перенеси salvageable контент из archive (ADRs, decision logs).
 6. Запусти `/review-feat-plan`, затем `/review-tasks-plan` после task planning.
 

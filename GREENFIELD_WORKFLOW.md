@@ -16,7 +16,7 @@ flowchart TD
 
   specDesign --> foundation{"Нужен executable baseline?"}
   foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
-  foundationTasks --> foundationDoctor["/mb-doctor<br/>foundation/task-queue"]
+  foundationTasks --> foundationDoctor["/mb-doctor --strict<br/>foundation/task-queue"]
   foundationDoctor --> foundationExec["/execute + /verify<br/>FT-000 до final gate done"]
   foundationExec --> tasking["/prd-to-tasks FT-001"]
   foundation -- "нет" --> tasking

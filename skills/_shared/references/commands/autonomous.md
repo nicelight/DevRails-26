@@ -279,18 +279,25 @@ Manual mode:
    - `T2`: not required for task closure; optional/manual per-task semantic review is allowed
    - `T3`: required before task closure
 7) scheduler records the closure/failure/blocking decision, final task status, and evidence links in the authoritative indexed `.memory-bank/tasks/TASK-*.task.json`
-8) run `/mb-sync` to synchronize the already-written task state; if the task record does not contain the scheduler decision/status/evidence, `/mb-sync` reports a consistency gap and stops
-9) run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict`
-10) scheduler performs a separate promotion/dependent blocking pass and writes any `planned -> ready` / downstream `blocked` changes to their `.task.json` records
+8) if this closure makes every task for a non-`FT-000` feature containing T2
+   work `done`, run `/red-verify --feature FT-<ID>` now and record exact
+   `SEMANTIC_VERDICT: semantic-pass` in the feature doc before `/mb-sync` and
+   the post-closure strict doctor. On `semantic-concern|semantic-fail`, record a
+   blocked/reopened/follow-up scheduler decision before continuing
+9) run `/mb-sync` to synchronize the already-written task/feature state; if the task record does not contain the scheduler decision/status/evidence, `/mb-sync` reports a consistency gap and stops
+10) run `node scripts/mb-lint.mjs`, then `/mb-doctor --strict`
+11) scheduler performs a separate promotion/dependent blocking pass and writes any `planned -> ready` / downstream `blocked` changes to their `.task.json` records
 
 Per-task command order is exactly: latest strict readiness gate while task is
 still `ready` → scheduler writes `ready -> in_progress` → `/execute` → `/verify` →
 `/red-verify` for T3 only, optional for T2 → scheduler writes final task decision/status/evidence
-to `.task.json` → `/mb-sync` → `node scripts/mb-lint.mjs` +
+to `.task.json` → conditional T2 feature-level `/red-verify` when the last
+feature task closes → `/mb-sync` → `node scripts/mb-lint.mjs` +
 `/mb-doctor --strict` → scheduler promotion/dependent blocking pass.
 
-Feature completion is a separate gate: after all tasks for a `T2` feature are
-implemented, run `/red-verify --feature FT-<ID>` and require
+Feature completion is a separate semantic gate: when all tasks for a `T2`
+feature become `done`, run `/red-verify --feature FT-<ID>` before the next
+strict doctor and require
 `SEMANTIC_VERDICT: semantic-pass` recorded in the matching
 `.memory-bank/features/FT-<ID>-*.md` before treating that feature as complete.
 

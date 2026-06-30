@@ -27,14 +27,21 @@ If the repository exposes another documented wrapper for the same script, use th
 
 ## Modes
 - Default mode: health report for humans and interactive work. A fresh skeleton with an empty `.memory-bank/tasks/index.json` is valid and reports `TASK_INDEX_EMPTY` as `info`.
-- Strict mode: post-queue autonomous/autopilot readiness gate. Empty `.memory-bank/tasks/index.json` is an error because there is no executable task queue.
+- Strict mode: post-queue executable-readiness gate for every `FT-000`
+  foundation queue and for autonomous/autopilot product queues. Empty
+  `.memory-bank/tasks/index.json` is an error because there is no executable task queue.
 - JSON mode: machine-readable report for schedulers and agents.
 
 Default mode may emit warnings for incomplete scheduler readiness evidence that should be fixed before unattended execution. These warnings do not invalidate KISS manual closure. Strict mode promotes those readiness gaps to errors where autonomous/autopilot progression would be unsafe.
 
 After `/spec-init` PASS, `.memory-bank/spec-backbone.md` may correctly have `Pre-PRD Spec Status: ready_for_prd` while Global Backbone Status is still absent, `blocked`, or otherwise incomplete. In default mode, report this as "prepared for `/prd`; Global Backbone Status intentionally pending until `/spec-design`" rather than a fix-now problem. The machine-readable finding code may remain `SPEC_BACKBONE_NOT_READY`; the meaning is downstream task/autonomous readiness, not failure of `/spec-init`.
 
-Use `--strict` before `/autopilot` or the scheduler phase of `/autonomous`, before each task-selection pass, and after each `/mb-sync` before promoting dependents or declaring success.
+Use `--strict` after `/foundation-to-tasks` before any `FT-000` execution,
+before `/autopilot` or the scheduler phase of `/autonomous`, before each
+task-selection pass, and after each `/mb-sync` before promoting dependents or
+declaring success. When the last task of a T2 product feature closes, the
+scheduler must run feature-level `/red-verify --feature FT-<ID>` and record
+semantic-pass before that post-closure sync/strict-doctor boundary.
 
 In manual greenfield, `/mb-doctor` is conditional readiness checking, not a
 default gate for simple `T0` / `T1` execution. Skip it by default for local
@@ -147,6 +154,7 @@ Errors block autonomous/autopilot progression:
 - `TASK_FAILED_EVIDENCE_MISSING` in `--strict`
 - `TASK_RED_VERIFY_EVIDENCE_MISSING` in `--strict`
 - `TASK_RED_VERIFY_VERDICT_MISSING` in `--strict`
+- `FEATURE_RED_VERIFY_VERDICT_MISSING` in `--strict`
 - `TASK_T3_CHECKPOINT_MISSING` in `--strict`
 - `TASK_T3_ROLLBACK_MISSING` in `--strict`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING` in `--strict`

@@ -259,10 +259,10 @@ Allowed in `.memory-bank/spec-backbone.md`:
 - Global Backbone Status after `/spec-design`
 - Not applicable areas and concise blockers/handoff notes
 
-If a decision needs more than a short label plus link, write it in the relevant authoritative spec or ADR and route it from `spec-index.md`; summarize route/state in `spec-backbone.md`. If `spec-index.md` already contains old backbone/status content, migrate that state to `spec-backbone.md` and leave only registry rows and planned specs in the index.
+If a decision needs more than a short label plus link, write it in the relevant canonical spec or ADR and route it from `spec-index.md`; summarize route/state in `spec-backbone.md`. If `spec-index.md` already contains old backbone/status content, migrate that state to `spec-backbone.md` and leave only registry rows and planned specs in the index.
 
 ## 8) Phase A - staged architecture decision interview
-Do not use a long questionnaire. Ask one question at a time with 2-3 options, a preferred option, and a short rationale. After each answer, record the decision body and rationale in the relevant authoritative spec or ADR. Update `.memory-bank/spec-index.md` only as a registry/planned-spec index and update `.memory-bank/spec-backbone.md` with concise backbone state, status, matrix, and handoff notes.
+Do not use a long questionnaire. Ask one question at a time with 2-3 options, a preferred option, and a short rationale. After each answer, record the decision body and rationale in the relevant canonical spec or ADR. Update `.memory-bank/spec-index.md` only as a registry/planned-spec index and update `.memory-bank/spec-backbone.md` with concise backbone state, status, matrix, and handoff notes.
 
 Confirm or choose only decisions that affect the current PRD:
 - architecture style
@@ -366,7 +366,7 @@ Domain Spec is not a mandatory heavy phase for every project:
 - If domain logic is introduced by one feature but remains a cohesive technical
   concern, route it to `/prd-to-tasks FT-<NNN>` and a subject-based canonical
   domain/state/contract spec instead of creating a global Domain Spec or FT hub.
-- If the domain model affects modules, contracts, storage, states, security/safety, runtime behavior, or shared boundaries, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared authoritative source.
+- If the domain model affects modules, contracts, storage, states, security/safety, runtime behavior, or shared boundaries, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared canonical spec.
 
 Minimal Domain Spec sections:
 - main entities
@@ -378,7 +378,8 @@ Minimal Domain Spec sections:
 - links to contracts, states, and storage specs
 
 Boundaries:
-- Domain Spec owns domain vocabulary, model, and business rules.
+- Domain Spec defines domain vocabulary, model, and business rules within its
+  registered scope.
 - Detailed state machines live in `.memory-bank/states/*`.
 - DB schemas, migrations, and runtime data details live in `.memory-bank/domains/runtime-data-model.md` or schema/contract docs.
 
@@ -404,7 +405,7 @@ Write or update only relevant backbone artifacts:
 - `.memory-bank/adrs/*` for stable architecture decisions
 - `.memory-bank/foundation.md` only when a Foundation Dev Path decision or explicit non-requirement must be recorded
 
-Keep output conservative. Prefer updating an existing authoritative spec over creating a new one.
+Keep output conservative. Prefer reusing or extending an existing registered canonical spec over creating a new one.
 Prefer fewer architecture files for faster priming; split only when it removes real complexity or matches the selected artifact strategy.
 Keep architecture docs global: if the content is an API schema, lifecycle state
 machine, message/event contract, or feature-level behavior, create or update the
@@ -497,7 +498,7 @@ For AI-first architecture, route concrete contracts to verifiable artifacts when
 KISS rule: `/spec-design` must decide each relevant contract area as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`. It does not need to write every concrete contract immediately.
 
 Use contract-area routing this way:
-- `authoritative`: a linked spec already owns enough detail for downstream tasking, or the area is governed by an existing stack-native source.
+- `authoritative`: a linked canonical spec provides enough concrete detail for downstream tasking, or the area is governed by an existing stack-native source.
 - `needed_before_tasks`: feature tasking can enter `/prd-to-tasks`, but dependent T2/T3 task records must not be created until `/prd-to-tasks` writes or links the missing concrete block at the routed canonical path.
 - `not_applicable`: the current feature set has no such boundary; include a rationale.
 - `blocked`: the canonical path, boundary, or decision is unsafe to choose without user/external evidence; stop downstream work.
@@ -539,7 +540,7 @@ Update `.memory-bank/spec-backbone.md`:
 - handoff to `/prd-to-tasks` or `/spec-auto`
 
 Update `.memory-bank/spec-index.md` only as a pure registry:
-- add or update authoritative spec rows
+- add or update active canonical spec rows
 - add or update planned spec rows
 - record broken/missing links
 - keep update rules concise
@@ -566,7 +567,7 @@ Report:
   `Foundation Gate Task: not_required`
 - blockers/open questions
 - next command routing:
-  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is required: `/foundation-to-tasks`, then `/mb-doctor` at the foundation/task-queue boundary
+  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is required: `/foundation-to-tasks`, then `/mb-doctor --strict` at the foundation/task-queue boundary
   - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is not required: `/prd-to-tasks FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
   - if status is `blocked`: no downstream command; resolve the blocker, user decision, or spec gap, then rerun `/spec-design`
 

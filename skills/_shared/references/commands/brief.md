@@ -117,7 +117,7 @@ If the user explicitly overrides a blocked brief, `/write-prd` may continue, but
 The next planning chain is:
 
 ```text
-/brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute TASK
+/brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict and execute/verify FT-000 until its gate is done when foundation tasks were created -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute TASK
 ```
 
 Check `.memory-bank/constitution.md` before recommending the next command. If `project_principles: ratified|partial`, continue directly to `/write-prd`. If `project_principles: framework-default|skipped|missing`, recommend `/constitution`; it should read `.memory-bank/analysis/product-brief.md` and run the governing-principles interview before `/write-prd`. If the user explicitly skips `/constitution`, continue to `/write-prd` with framework-default/skipped principles and recommend revisiting `/constitution` later.
@@ -133,7 +133,7 @@ Update `.memory-bank/analysis/index.md` with:
 - recommended next step
 
 Recommended next step:
-- if `Decision: proceed` and `project_principles: ratified|partial`: `/write-prd`, then `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
-- if `Decision: proceed` and `project_principles: framework-default|skipped|missing`: `/constitution`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
+- if `Decision: proceed` and `project_principles: ratified|partial`: `/write-prd`, then `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/mb-doctor --strict` plus execute/verify of `FT-000` until its gate is done when foundation tasks were created, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
+- if `Decision: proceed` and `project_principles: framework-default|skipped|missing`: `/constitution`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/mb-doctor --strict` plus execute/verify of `FT-000` until its gate is done when foundation tasks were created, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
 - if `Decision: blocked`: answer blocking questions, then rerun `/brief`
 </process>

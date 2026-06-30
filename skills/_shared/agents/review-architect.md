@@ -21,6 +21,10 @@
 - `guides/` отвечает на HOW, если используется
 - если используется классическая пара, у неё есть взаимные ссылки
 - если концепт покрыт spec-driven docs, это должно быть явно маршрутизировано и не противоречить architecture/guides
+- новые design specs имеют subject-based canonical paths без `FT-*` имен и
+  feature/file-owner metadata; feature только композирует exact links
+- один concrete concern имеет один canonical path; competing paths блокируют
+  task handoff вместо создания третьей spec
 
 3) **Зависимости и инварианты**
 - зависимости между компонентами описаны

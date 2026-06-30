@@ -57,10 +57,11 @@ Do not overengineer. Придерживайся KISS. Лучшнее враг х
 - `skills/_shared/` — единственный canonical source для общих prompts, references и scripts.
 - В рабочем дереве намеренно нет package-local файлов `skills/*/{agents,references,scripts}/shared-*`.
 - В git намеренно нет tracked `.memory-bank/*` baseline; bootstrap/smoke проверяет generated Memory Bank во временной target-директории.
-- При установке фреймворка эти файлы разворачиваются автоматически во временной копии репозитория.
-- Ожидаемый масштаб разворота: 610 generated `shared-*` файлов.
-- Разворот выполняется цепочкой `scripts/install-framework.mjs` → временная копия repo → `scripts/vendor-shared.mjs` → `npx -y skills add <prepared-temp-repo> ...`.
-- Прямой `npx skills add <repo>` для source-only форка использовать нельзя, если перед этим не был запущен vendoring.
+- При установке фреймворка shared-файлы разворачиваются только во временной копии репозитория для четырёх package entrypoints: `cold-start`, `mb-init`, `mb-garden` и `mb-harness`.
+- Runtime-команды для Codex и Claude генерируются напрямую из `skills/_shared/references/commands/*.md` в `.agents/skills/` и `.claude/skills/` целевого проекта.
+- Актуальная цепочка установки: `scripts/install-framework.mjs` → временная копия repo → `scripts/vendor-shared.mjs` → direct generation выбранных runtime command skills → optional bootstrap/sync Memory Bank.
+- Количество временно vendored `shared-*` файлов не является публичным контрактом и зависит от числа package entrypoints и canonical shared assets.
+- Прямой `npx skills add <repo>` не является поддерживаемым способом установки этого source-only репозитория. Используй `scripts/install-framework.mjs`.
 
 Практическое правило:
 
@@ -80,7 +81,7 @@ find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | w
 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-Если нужно посмотреть временно развернутые 610 файлов, запускай:
+Если нужно посмотреть временно развёрнутые package-local `shared-*` файлы, запускай:
 
 ```bash
 MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes

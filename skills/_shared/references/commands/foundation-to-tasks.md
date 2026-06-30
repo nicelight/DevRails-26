@@ -341,7 +341,7 @@ Before finishing:
 - stop before execution
 
 Next command:
-- run `/mb-doctor` at the foundation/task-queue boundary
+- run `/mb-doctor --strict` at the foundation/task-queue boundary
 - then execute/verify foundation tasks until the final foundation gate task is
   `done`
 - only then run `/prd-to-tasks FT-<NNN>` for product features

@@ -84,7 +84,7 @@ After finishing a meaningful unit of work:
 - Delegation and worker reports follow `.memory-bank/roles/orchestrator.md` and `.memory-bank/roles/worker.md`.
 - T0/T1 may use compact `.protocols/TASK-NNN-TN-FT-NNN-WN/run.md`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc.
+- Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the post-closure `/mb-sync` and strict doctor.
 - Scheduler mode: T3 requires full protocol state, applicable task/spec gates, `/verify` `VERDICT: PASS`, and per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before the scheduler marks `done`.
 - Scheduler mode: T3 also requires exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
 - Manual mode: T0/T1 may close in `/execute` with compact evidence when the explicit manual top-level owner conditions are met; standalone `/verify` is optional for uncertainty, widened scope, or explicit request. T2 becomes closure-eligible after `/verify PASS` when full protocol plus applicable task/spec gates are satisfied; the explicit owner writes the lifecycle decision. T3 must run per-task `/red-verify` before final closure/`/mb-sync`.
@@ -104,7 +104,7 @@ Claude (fresh session):
 - `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
 
 ## Two modes (manual vs scheduler)
-- **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/execute TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/execute TASK` → `/verify TASK` → `/red-verify TASK` → `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/prd-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; when needed it records `.memory-bank/foundation.md`, and `/foundation-to-tasks` creates normal `FT-000` task records. Use `/clarify-feature FT-<NNN>` only for explicit feature blockers and rerun `/prd-to-tasks FT-<NNN>` for feature-level canonical spec repair.
+- **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/execute TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/execute TASK` → `/verify TASK` → `/red-verify TASK` → `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/prd-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/clarify-feature FT-<NNN>` only for explicit feature blockers and rerun `/prd-to-tasks FT-<NNN>` for feature-level canonical spec repair.
 - **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/prd-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if JSON task records and required SDD spec links already exist and every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE`. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 `.tasks/` naming:
@@ -201,6 +201,7 @@ status: active
 - [.memory-bank/behavior-specs/](behavior-specs/): Optional JSON behavior examples linked from feature docs and task `source_artifacts`.
 - [.memory-bank/tasks/index.json](tasks/index.json): Authoritative JSON task record index.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
+- [.memory-bank/workflows/index.md](workflows/index.md): Workflow router and tier/execution/sync policies.
 
 - [.memory-bank/spec-index.md](spec-index.md): Pure SDD spec registry and planned-spec index.
 - [.memory-bank/spec-backbone.md](spec-backbone.md): Pre-PRD framing status and global backbone state for `/prd` and `/spec-design`.
@@ -281,6 +282,9 @@ status: active
 ---
 description: Pure SDD spec registry and planned-spec index.
 status: active
+last_updated: YYYY-MM-DD
+source_of_truth:
+  - .memory-bank/spec-index.md
 ---
 # SDD Spec Index
 
@@ -792,12 +796,13 @@ status: active
 ## When to use
 - Bootstrap skeleton / memory: mb-init
 - Scenario routing: cold-start
+- Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
 - SDD design: /spec-init, mandatory adaptive /spec-design, foundation tasking inside /foundation-to-tasks, close the FT-000 foundation gate when required, initial and repair feature-level design/task reconciliation inside /prd-to-tasks, /spec-auto
-- PRD decomposition: mb-from-prd
-- Codebase mapping: mb-map-codebase
+- PRD decomposition: /prd
+- Codebase mapping: /map-codebase
 - Execution: /execute
-- Verification (UAT): mb-verify
-- Semantic adversarial verification: mb-red-verify
+- Verification (UAT): /verify
+- Semantic adversarial verification: /red-verify
 - Review: /review-feat-plan, /review-tasks-plan
 - Maintenance: mb-garden
 - Harness: mb-harness
@@ -821,9 +826,23 @@ status: active
 
 ---
 
-## 10) `.memory-bank/workflows/mb-sync.md`
+## 10) `.memory-bank/workflows/index.md` and `mb-sync.md`
 
 ```markdown
+---
+description: Router for generated DevRails execution, autonomy, tier, and synchronization workflows.
+status: active
+---
+# Workflow Index
+
+- [.memory-bank/workflows/tier-policy.md](tier-policy.md): Task tier routing, protocol depth, and closure gates.
+- [.memory-bank/workflows/execute-loop.md](execute-loop.md): Manual and autonomous task execution sequence.
+- [.memory-bank/workflows/autonomy-policy.md](autonomy-policy.md): Unattended-run guardrails, budgets, and terminal states.
+- [.memory-bank/workflows/mb-sync.md](mb-sync.md): Durable state synchronization boundaries and checklist.
+```
+
+```markdown
+
 ---
 description: Чеклист синхронизации Memory Bank после wave/изменений.
 status: active

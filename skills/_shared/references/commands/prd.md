@@ -51,9 +51,9 @@ Before writing derived docs:
 - stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, contains broken links, or still contains old non-index sections such as `Feature Design Status Map`, `Global backbone status`, or Backbone Area Matrix;
 - use `.memory-bank/spec-backbone.md` decomposition inputs before deriving product/requirements/epics/features: user scenarios, domain model, constraints, non-goals, risks, boundary hints, and lifecycle hints;
 - determine relevance from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy;
-- resolve and read only the relevant authoritative spec files routed by `.memory-bank/spec-index.md`;
-- do not load every SDD spec by default; leave non-relevant authoritative specs closed unless the index routes them into the current PRD/decomposition scope;
-- if a relevant authoritative spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment instead of silently overriding either source.
+- resolve and read only the relevant canonical spec files routed by `.memory-bank/spec-index.md`;
+- do not load every SDD spec by default; leave non-relevant canonical specs closed unless the index routes them into the current PRD/decomposition scope;
+- if a relevant canonical spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment instead of silently overriding either source.
 - do not perform architecture design; unresolved global design questions are passed to `/spec-design` after L1-L3 exists.
 
 ## 1) Protocol
@@ -98,7 +98,7 @@ Before writing derived docs:
 - test strategy pointers
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
 - `status: draft` по умолчанию
-- write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
+- write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/mb-doctor --strict` and execute/verify `FT-000` until its gate is done when foundation tasks were created, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
 - if existing SDD specs apply, add candidate/normative `spec_design_links` or route notes only when grounded in evidence; `/prd` must not set `spec_design_status: complete` before `/spec-design` has produced a global backbone status of `complete` or valid `minimal`
 - otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/prd-to-tasks FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
 - add an SDD Design Gate note that `/spec-design` is the mandatory global gate before foundation gating and feature-level design inside `/prd-to-tasks`; if the feature-set pressure is local/simple, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
@@ -130,7 +130,7 @@ For high-risk, large, or autonomous flows, run `/review-feat-plan` with fresh co
 For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
 
 ## 9) What next
-- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks` and close the foundation gate; then choose one feature and run `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
+- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, and execute/verify `FT-000` until the foundation gate is done; then choose one feature and run `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
 - autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan FT-<NNN>` for every task-linked product feature
 
