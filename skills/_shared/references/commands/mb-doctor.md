@@ -41,7 +41,7 @@ before `/autopilot` or the scheduler phase of `/autonomous`, before each
 task-selection pass, and after each `/mb-sync` before promoting dependents or
 declaring success. When the last task of a T2 product feature closes, the
 scheduler must run feature-level `/red-verify --feature FT-<ID>` and record
-semantic-pass before that post-closure sync/strict-doctor boundary.
+semantic-pass before that wave-boundary sync/strict-doctor gate.
 
 In manual greenfield, `/mb-doctor` is conditional readiness checking, not a
 default gate for simple `T0` / `T1` execution. Skip it by default for local
@@ -49,7 +49,7 @@ manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
 freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`. In manual mode, T0/T1 may close in `/execute` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus applicable spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
+Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done`. In manual mode, T0/T1 may close in `/execute` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus applicable task/spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at the wave boundary.
 
 ## Required checks
 `mb-doctor` must check only readiness-critical conditions:
@@ -87,7 +87,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   least one `T2` task is `done`, the matching feature doc records an exact
   standalone `SEMANTIC_VERDICT: semantic-pass` line from
   `/red-verify --feature FT-<ID>`.
-- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and exact standalone marker lines: `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
+- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and the exact standalone marker line `HUMAN_CHECKPOINT: done`.
 - `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
 - In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
 - For `complete`, every `## Backbone Area Matrix` row in `.memory-bank/spec-backbone.md` has status `authoritative` or `not_applicable`; missing, `blocked`, `needed_before_tasks`, `unknown`, `planned`, `candidate`, or any other status is not product autonomous-ready.
@@ -156,7 +156,6 @@ Errors block autonomous/autopilot progression:
 - `TASK_RED_VERIFY_VERDICT_MISSING` in `--strict`
 - `FEATURE_RED_VERIFY_VERDICT_MISSING` in `--strict`
 - `TASK_T3_CHECKPOINT_MISSING` in `--strict`
-- `TASK_T3_ROLLBACK_MISSING` in `--strict`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING` in `--strict`
 - `TASK_FAILED_DEPENDENTS_NOT_BLOCKED`
 - `TASK_FEATURE_LINK_MISSING` in `--strict`
@@ -193,7 +192,6 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_RED_VERIFY_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_VERDICT_MISSING`
 - `TASK_T3_CHECKPOINT_MISSING`
-- `TASK_T3_ROLLBACK_MISSING`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING`
 - `TASK_FEATURE_LINK_MISSING`
 - `TASK_REQUIREMENT_LINK_MISSING`

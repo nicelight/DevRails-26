@@ -122,8 +122,8 @@ verification targets.
   enough when explicitly requested.
 - T1: standalone verification is optional for strictly local work.
 - T2/T3: functional `/verify` and full protocol evidence are required.
-- T3: functional PASS still requires per-task `/red-verify` and the closure
-  markers required by tier policy.
+- T3: functional PASS still requires per-task `/red-verify` and the human
+  checkpoint required by tier policy.
 
 If verification evidence shows that actual implementation requires a higher
 tier or materially different task scope:

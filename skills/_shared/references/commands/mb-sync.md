@@ -5,6 +5,8 @@ status: active
 # /mb-sync — Memory Bank sync
 
 Используй на boundary where broader Memory Bank state must be reconciled.
+The normal scheduler/manual boundary is the end of the current wave, after each
+task has already written authoritative status, closure decision, and evidence.
 Manual `T0` / `T1` local closure does not require full `/mb-sync` when only
 task `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed.
 
@@ -20,14 +22,14 @@ Scheduler mode:
 - `/execute` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
 - `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
+- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
 - T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
 - T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
+- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
@@ -48,10 +50,15 @@ Manual mode:
   `.protocols/<TASK>/run.md` without invoking full `/mb-sync` when no RTM,
   lifecycle, index, changelog, spec, contract, guide, dependency, or
   feature state changed.
-- Run full `/mb-sync` for RTM/lifecycle/changelog/index/router/spec/contract/
-  guide consistency, dependency or promotion reconciliation, T2 wave/feature
-  boundaries, T2 feature completion after feature-level red-verify, T3 closure,
-  handoff/review freshness, or suspected drift.
+- Run full `/mb-sync` once at the end of the current wave for
+  RTM/lifecycle/changelog/index/router/spec/contract/guide consistency,
+  dependency or promotion reconciliation, T2 feature completion after
+  feature-level red-verify, T3 closure, handoff/review freshness, or suspected
+  drift.
+- Do not run full `/mb-sync` after every ordinary task. Run an early sync only
+  when continuation of the current wave depends on reconciled
+  RTM/index/spec/contract/changelog state or when the explicit owner requests
+  sync. An early sync does not replace the end-of-wave sync.
 - Skipping full `/mb-sync` must not silently promote dependents. If the next
   task depends on broader reconciled state, run `/mb-sync` or have the explicit
   owner update the next task deliberately.
@@ -141,6 +148,6 @@ Task synchronization rule:
 - Report tasks whose `feature` points to `clarification_status: pending|blocked` as not promotion-eligible. Missing clarification metadata is allowed.
 - Report tasks with failed/blocked upstream dependencies, open blocking bugs, or unresolved semantic concern decisions as not promotion-eligible.
 - In scheduler mode, `T2` tasks may close when full protocol closure expectations, applicable task/spec gates, and `/verify` `VERDICT: PASS` are present; per-task `/red-verify` is not required. `T2` feature completion separately requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- In scheduler mode, `T3` tasks may close only when full protocol closure expectations, applicable task/spec gates, `/verify` `VERDICT: PASS`, per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass`, and exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present` are present.
-- In manual mode, `T0` / `T1` may close through `/execute` fast-lane evidence or `/verify PASS`, and `T2` may close when full protocol plus applicable task/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure/`/mb-sync`.
+- In scheduler mode, `T3` tasks may close only when full protocol closure expectations, applicable task/spec gates, `/verify` `VERDICT: PASS`, per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass`, and the exact marker line `HUMAN_CHECKPOINT: done` are present.
+- In manual mode, `T0` / `T1` may close through `/execute` fast-lane evidence or `/verify PASS`, and `T2` may close when full protocol plus applicable task/spec gates are satisfied, only with explicit closure ownership; `T3` requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at the wave boundary.
 - `mb-doctor` is the readiness gate over `mb-lint`; in autonomous/autopilot runs, the scheduler may promote dependents only after strict doctor passes.

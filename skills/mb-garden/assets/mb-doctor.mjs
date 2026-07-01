@@ -49,7 +49,6 @@ const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
 const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
 const T3_HUMAN_CHECKPOINT_MARKER = 'HUMAN_CHECKPOINT: done';
-const T3_ROLLBACK_RECOVERY_MARKER = 'ROLLBACK_RECOVERY_NOTE: present';
 const PATH_MARKER_RE =
   /(?:^|[\s"`'])(?:\.{1,2}\/|\/|[A-Za-z]:\\)[^\s"`']+|\b[A-Za-z0-9_.-]+\/[A-Za-z0-9_.\/-]+\b|\b[\w.-]+\.(?:md|txt|log|json|xml|html|htm|png|jpg|jpeg|webm|mp4)\b/i;
 
@@ -851,13 +850,6 @@ function checkFullProtocolTask(record) {
         path: rel,
         task_id: id,
         suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
-      });
-    }
-    if (!hasExactMarker(text, T3_ROLLBACK_RECOVERY_MARKER)) {
-      addFinding(severity, 'TASK_T3_ROLLBACK_MISSING', `${rel}: T3 done task has no exact ${T3_ROLLBACK_RECOVERY_MARKER} marker.`, {
-        path: rel,
-        task_id: id,
-        suggested_fix: `Record ${T3_ROLLBACK_RECOVERY_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
       });
     }
   }

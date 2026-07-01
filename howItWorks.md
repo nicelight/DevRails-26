@@ -211,7 +211,8 @@ idea / rough draft
   -> /verify TASK-001-TN-FT-001-W1 для T2/T3 или uncertainty
   -> /red-verify TASK-001-T3-FT-001-W1 для T3
   -> /red-verify --feature FT-001 для T2 feature completion
-  -> /mb-sync
+  -> record task status/closure/evidence immediately
+  -> /mb-sync once at the end of the wave
   -> повторять feature/task loop
 ```
 
@@ -258,10 +259,11 @@ Interactive mode для одной задачи:
 ```text
 T0/T1: /execute TASK -> compact evidence or no-runnable-check note -> optional local closure by explicit owner
 T2: /execute TASK -> /verify TASK -> /mb-sync at wave/feature boundary
-T3: /execute TASK -> /verify TASK -> /red-verify TASK -> /mb-sync
+T3: /execute TASK -> /verify TASK -> /red-verify TASK -> explicit owner closure
+Wave boundary: /mb-sync -> mb-lint -> /mb-doctor --strict
 ```
 
-В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. Если фактический scope требует higher tier, `/execute` записывает escalation evidence и останавливается; исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`; для T3 сохраняются human/recovery markers.
+В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. Если фактический scope требует higher tier, `/execute` записывает escalation evidence и останавливается; исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass` и exact `HUMAN_CHECKPOINT: done`. Explicit owner сразу записывает closure/status/evidence в task record. Full `/mb-sync` выполняется один раз в конце текущей wave; ранний sync допустим только при реальной зависимости текущей wave от согласованного RTM/index/spec/contract/changelog state или по явному запросу owner.
 
 Для manual feature work `node scripts/mb-doctor.mjs` is conditional, not a
 default gate for simple T0/T1. Запускайте его для T3, autonomous/autopilot
@@ -400,9 +402,10 @@ Manual mode:
 - T0/T1 task можно закрыть прямо в `/execute` только при явном top-level closure owner, task-local scope, no T2/T3 trigger и compact evidence;
 - standalone `/verify` для T0/T1 optional и нужен для uncertainty, widened scope или explicit request;
 - T2 task можно считать финально `done` после full protocol, applicable task/spec gates и `/verify PASS`; per-task `/red-verify` не требуется для T2 task closure;
-- T2 feature нельзя считать complete, пока после всех feature tasks не прошел `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанным в feature doc; scheduler запускает этот gate при закрытии последней feature task до post-closure `/mb-sync` и strict doctor;
-- T3 task нельзя считать финально `done` по одному `/verify PASS`; перед closure и `/mb-sync` нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass`;
-- `/mb-sync` синхронизирует Memory Bank, RTM, changelog и task records после уже записанного closure/failure/blocking decision; сам sync не выводит решение о закрытии и не нужен для local T0/T1 closure, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
+- T2 feature нельзя считать complete, пока после всех feature tasks не прошел `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанным в feature doc; scheduler запускает этот gate при закрытии последней feature task до wave-boundary `/mb-sync` и strict doctor;
+- T3 task нельзя считать финально `done` по одному `/verify PASS`; перед closure нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass` и exact `HUMAN_CHECKPOINT: done`;
+- explicit owner сразу записывает task status, closure decision и evidence; `/mb-sync` синхронизирует Memory Bank, RTM, changelog и task records один раз в конце wave и сам не выводит решение о закрытии;
+- ранний full sync допустим только если продолжение текущей wave зависит от reconciled RTM/index/spec/contract/changelog state или owner явно запросил sync; local T0/T1 closure не требует sync, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
 
 Scheduler mode (`/autopilot`, `/autonomous`):
 
@@ -410,11 +413,11 @@ Scheduler mode (`/autopilot`, `/autonomous`):
 - `/execute` не закрывает tasks;
 - `/verify` не закрывает, не fail-ит и не promote-ит dependents;
 - `/red-verify` не закрывает, не fail-ит и не promote-ит dependents;
-- scheduler записывает closure/failure/blocking decision, final status и evidence links в authoritative `.task.json` до `/mb-sync`;
+- scheduler записывает closure/failure/blocking decision, final status и evidence links в authoritative `.task.json` сразу после каждой task;
 - before `/execute`, scheduler requires a green `/mb-doctor --strict`; an
   incomplete T2/T3 single-card handoff is `HALT_QUALITY_GATES`;
-- `/mb-sync` только synchronizes/reconciles already-written task state и не принимает closure/promotion decisions сам;
-- после `/mb-sync` и strict doctor scheduler выполняет отдельный promotion/dependent blocking pass.
+- `/mb-sync` только synchronizes/reconciles already-written task state и не принимает closure/promotion decisions сам; обычный full sync запускается один раз в конце wave;
+- после wave-boundary `/mb-sync`, lint и strict doctor scheduler выполняет отдельный promotion/dependent blocking pass для следующей wave.
 
 Не смешивайте manual и scheduler mode внутри одного task run.
 
@@ -425,7 +428,7 @@ Scheduler mode (`/autopilot`, `/autonomous`):
 | `T0` | typo, links, formatting, safe docs-only | допустим compact `.protocols/TASK/run.md` | отдельный `/verify` обычно не нужен | compact evidence / functional PASS достаточно |
 | `T1` | local code/local behavior с низким blast radius | compact допустим | local gates; `/verify` optional | compact evidence / functional PASS достаточно |
 | `T2` | API, contracts, schema/state/data/domain, cross-module | full protocol required | `/verify` required; per-task `/red-verify` optional | task: `VERDICT: PASS`; feature: `/red-verify --feature FT-*` + feature-doc `SEMANTIC_VERDICT: semantic-pass` before feature completion |
-| `T3` | auth, security, secrets, prod/deploy, irreversible/data-loss, payments, compliance | full protocol required | `/verify` + per-task `/red-verify` + human/recovery evidence | `VERDICT: PASS` + `SEMANTIC_VERDICT: semantic-pass` + exact `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present` |
+| `T3` | auth, security, secrets, prod/deploy, irreversible/data-loss, payments, compliance | full protocol required | `/verify` + per-task `/red-verify` + human checkpoint | `VERDICT: PASS` + `SEMANTIC_VERDICT: semantic-pass` + exact `HUMAN_CHECKPOINT: done` + explicit owner/scheduler closure; `/mb-sync` at wave boundary |
 
 Если scope растет, поднимите tier перед передачей task дальше. Если сомневаетесь между двумя tiers, выбирайте более высокий.
 
@@ -456,7 +459,7 @@ The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 | `/review-feat-plan` | Fresh-context feature plan review | `.tasks/TASK-MB-REVIEW-FEAT-PLAN/*`, fix list/verdict | не ревьюит JSON task queue | `/spec-design` или исправить PRD/REQ/EP/FT |
 | `/review-tasks-plan` | Fresh-context feature task-plan review; no args infer latest decomposed product feature; `--all` expands to per-feature reviews | `.tasks/TASK-MB-REVIEW-TASKS-PLAN/*`, per-feature fix list/verdict, concrete contract readiness answer for T2/T3 | не заменяет `/mb-doctor`, `/verify`, `/red-verify`; не ревьюит PRD decomposition как основной surface; не схлопывает batch features в один широкий prompt | исправить rejected feature task plan или manual `/mb-doctor`; every task-linked product feature needs `APPROVE` для `/autopilot`/`/autonomous` |
 | `/map-codebase` | Brownfield as-is mapping | `.memory-bank/*` baseline docs, `.tasks/TASK-MB-MAP/*` | не создает roadmap/tasks без PRD | `/write-prd --delta`, затем `/prd` |
-| `/mb-sync` | Synchronize durable docs and task consistency | indexes, RTM/lifecycle, changelog, task consistency | не принимает scheduler closure/promotion decisions; не нужен для local T0/T1 closure, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md` | review, next task, or boundary doctor |
+| `/mb-sync` | Synchronize durable docs and task consistency at the wave boundary | indexes, RTM/lifecycle, changelog, task consistency | не принимает scheduler closure/promotion decisions; не запускается после каждой ordinary task; early sync только по real reconciled-state dependency или owner request | lint + strict doctor, then next-wave promotion |
 | `/mb-garden` | Maintain Memory Bank hygiene | cleanup/archive recommendations, hygiene findings | не меняет product scope; не является doctor workflow gate | исправить docs или rerun checks |
 | `/mb-doctor` | Deterministic readiness gate over `mb-lint` | report only; optional JSON output | не заменяет `/review-feat-plan`, `/review-tasks-plan`, `/verify`, `/red-verify`; не default для simple manual T0/T1; нет markdown task-card fallback | исправить findings, перейти к scheduler, or skip for simple T0/T1 |
 | `/mb-harness` | Set up deterministic agent-safe workflows | harness docs/config guidance, gates/worktree guidance | не реализует product tasks | запустить выбранный workflow с gates |

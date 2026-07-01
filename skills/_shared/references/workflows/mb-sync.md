@@ -5,13 +5,22 @@ status: active
 # MB-SYNC — Memory Bank synchronization workflow
 
 ## Когда запускать
-- После scheduler записал closure/failure/blocking decision, final task status, and evidence links в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` (`/autopilot` / `/autonomous`) и выполнения required `/verify` / `/red-verify` gates.
-- После manual `/verify`, если он изменил broader durable task/docs state beyond task-local closure evidence.
+- Один раз в конце текущей wave, после того как scheduler/explicit owner сразу
+  записал closure/failure/blocking decision, final task status и evidence links
+  каждой task в authoritative indexed `.memory-bank/tasks/TASK-*.task.json` и
+  завершил required `/verify` / `/red-verify` gates.
+- Раньше конца wave только если продолжение текущей wave реально зависит от
+  согласованного RTM/index/spec/contract/changelog state или sync явно запросил
+  owner. Early sync не заменяет итоговый wave-boundary sync.
+- После manual `/verify`, если он изменил broader durable task/docs state beyond
+  task-local closure evidence и достигнут wave boundary или действует правило
+  early sync выше.
 - Не запускать full `/mb-sync` по умолчанию для local manual `T0` / `T1`
   closure, если authoritative `.task.json` уже содержит `status`/`verify`,
   compact `.protocols/<TASK>/run.md` записан, and no RTM/lifecycle/index/
   changelog/spec/contract/guide/dependency state changed.
-- После `/red-verify`, если выполнялась семантическая adversarial-проверка и она изменила или требует reconcile task/docs state.
+- После `/red-verify`, если выполнялась семантическая adversarial-проверка и её
+  результат требует reconcile task/docs state на текущем wave boundary.
 - После changes that materially affect responsibility boundaries or HOW docs,
   reconcile existing `.memory-bank/contracts/boundary-map.md`, related
   `.memory-bank/contracts/*`, or `.memory-bank/guides/*` as normal Memory Bank
@@ -25,8 +34,8 @@ status: active
 - После значимых рефакторингов или архитектурных изменений.
 - Перед `/review-feat-plan` или `/review-tasks-plan` (чтобы reviewer видел
   актуальное состояние нужной поверхности).
-- На T2 wave/feature boundary, после T2 feature-level red-verify completion,
-  and after T3 closure.
+- На wave/feature boundary, после T2 feature-level red-verify completion и
+  after any T3 closures in that wave.
 - Перед handoff to another agent when they need fresh durable Memory Bank state.
 - При ощущении drift между кодом и документацией.
 
@@ -40,14 +49,14 @@ Scheduler mode:
 - `/execute` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
 - `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
+- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
 - `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
 - T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
 - T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc. In scheduler mode, run it before the post-closure `/mb-sync` once the last feature task closes.
+- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc. In scheduler mode, run it before the wave-boundary `/mb-sync` once the last feature task closes.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
 - T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
+- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
@@ -105,6 +114,8 @@ Manual mode:
 ### 5) Task registry
 - [ ] `.memory-bank/tasks/index.json` отражает актуальный набор задач.
 - [ ] `.memory-bank/tasks/TASK-*.task.json` records отражают актуальные статусы задач.
+- [ ] Status, closure decision, and evidence for every completed task in the
+  wave were written immediately; full sync was not used as the closure owner.
 - [ ] Новые задачи (из багов, из новых требований) добавлены как schema-backed task records.
 - [ ] В scheduler mode closure/failure/blocking decision уже записан в indexed `.task.json`; если нет, report consistency gap and stop for explicit scheduler or standalone owner decision.
 - [ ] В manual mode manual closure sync имеет already-recorded explicit owner decision в task record или direct instruction for this sync; иначе report consistency gap and do not infer closure.
@@ -114,6 +125,8 @@ Manual mode:
   verify linked files exist. Report stale behavior examples as notes unless a
   normal AC/spec/verification source also fails.
 - [ ] Promotion/dependent block/unblock не выполняется внутри `/mb-sync`; это отдельный scheduler pass после sync + strict doctor.
+- [ ] Full `/mb-sync` runs once for the wave. Any early sync has a recorded
+  current-wave durable-state dependency or explicit owner request.
 
 ### 6) Changelog
 - [ ] `.memory-bank/changelog.md` содержит запись о текущей wave/change.

@@ -160,12 +160,26 @@ jobs:
           grep -q 'no suitable canonical spec exists' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -Fq 'conditional T2 feature-level `/red-verify`' "$TARGET/.agents/skills/autopilot/SKILL.md"
           ! grep -R -E 'packet_required|packet_ref|source_task_hash|ready_with_gaps|/mb-packet|\.memory-bank/packets' "$TARGET/.agents/skills" "$TARGET/.claude/skills"
+          ! grep -R -E 'ROLLBACK_RECOVERY_NOTE|TASK_T3_ROLLBACK_MISSING' \
+            "$TARGET/AGENTS.md" \
+            "$TARGET/.agents/skills" \
+            "$TARGET/.claude/skills" \
+            "$TARGET/.memory-bank/workflows" \
+            "$TARGET/scripts/mb-doctor.mjs"
+          grep -Fq 'run `/mb-sync` once for the completed wave' "$TARGET/.agents/skills/autopilot/SKILL.md"
+          grep -Fq 'запусти `/mb-sync` один раз' "$TARGET/.agents/skills/autonomous/SKILL.md"
+          grep -Fq 'Do not run full `/mb-sync` after every ordinary task' "$TARGET/.agents/skills/mb-sync/SKILL.md"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
           grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' "$TARGET/.agents/skills/execute/SKILL.md"
 
           grep -q 'ROLE: GENERAL' "$TARGET/AGENTS.md"
           grep -q 'roles/general.md' "$TARGET/AGENTS.md"
+          grep -Fq '## KISS / Avoid overengineering' "$TARGET/AGENTS.md"
+          grep -Fq 'Implement the simplest solution that fully satisfies current requirements and specs.' "$TARGET/AGENTS.md"
+          grep -Fq 'KISS does not permit skipping required correctness, security, compatibility, or verification gates.' "$TARGET/AGENTS.md"
+          grep -Fq '## Communication' "$TARGET/AGENTS.md"
+          grep -Fq 'Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.' "$TARGET/AGENTS.md"
           ! grep -q '.memory-bank/commands' "$TARGET/AGENTS.md"
           grep -q 'Роль GENERAL' "$TARGET/.memory-bank/roles/general.md"
           grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
@@ -192,6 +206,12 @@ jobs:
             node scripts/mb-lint.mjs
             node scripts/mb-doctor.mjs
             node "$GITHUB_WORKSPACE/skills/_shared/scripts/init-mb.js" --sync
+            grep -Fq '## KISS / Avoid overengineering' AGENTS.md
+            grep -Fq 'Implement the simplest solution that fully satisfies current requirements and specs.' AGENTS.md
+            grep -Fq '## Communication' AGENTS.md
+            grep -Fq 'Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.' AGENTS.md
+            ! grep -R -E 'ROLLBACK_RECOVERY_NOTE|TASK_T3_ROLLBACK_MISSING' \
+              AGENTS.md .agents/skills .claude/skills .memory-bank/workflows scripts/mb-doctor.mjs
             node scripts/mb-lint.mjs
             node scripts/mb-doctor.mjs
           )
@@ -200,6 +220,12 @@ jobs:
           test ! -e "$TARGET/.memory-bank/commands"
           test ! -e "$TARGET/.memory-bank/tech-specs"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
+          grep -Fq '## KISS / Avoid overengineering' "$TARGET/AGENTS.md"
+          grep -Fq '## Communication' "$TARGET/AGENTS.md"
+          grep -Fq 'Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.' "$TARGET/AGENTS.md"
+          ! grep -R -E 'ROLLBACK_RECOVERY_NOTE|TASK_T3_ROLLBACK_MISSING' \
+            "$TARGET/AGENTS.md" "$TARGET/.agents/skills" "$TARGET/.claude/skills" \
+            "$TARGET/.memory-bank/workflows" "$TARGET/scripts/mb-doctor.mjs"
 
       - name: Single-card handoff doctor fixtures
         shell: bash
@@ -297,9 +323,10 @@ jobs:
             ...task,
             id: criticalId,
             title: 'Full protocol fixture task',
-            status: 'in_progress',
+            status: 'done',
             tier: 'T3',
-            touched_files: ['src/critical.js']
+            touched_files: ['src/critical.js'],
+            verify: ['VERDICT: PASS\nEvidence: strict T3 fixture']
           };
           for (const record of [compactTask, task, criticalTask]) {
             write(`.memory-bank/tasks/${record.id}.task.json`, `${JSON.stringify(record, null, 2)}\n`);
@@ -308,6 +335,21 @@ jobs:
           for (const file of ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md']) {
             write(`.protocols/${criticalId}/${file}`, '# Fixture\n');
           }
+          write(`.protocols/${criticalId}/red-verification.md`, 'SEMANTIC_VERDICT: semantic-pass\nEvidence: strict T3 fixture\n');
+          write(`.protocols/${criticalId}/handoff.md`, '# Fixture\nHUMAN_CHECKPOINT: done\n');
+          write('.memory-bank/spec-backbone.md', `---
+          description: Strict fixture backbone.
+          status: active
+          ---
+          # Spec Backbone
+          ## Global Backbone Status
+          - Status: minimal
+          - Mode: local_simple_backbone
+          - Architecture artifact strategy: single-file
+          - Not applicable areas:
+            - event_message_contracts: not_applicable - strict fixture has no event boundary.
+          - Notes: Strict doctor fixture.
+          `);
           const records = [compactId, id, criticalId].map((taskId) => ({ id: taskId, file: `${taskId}.task.json` }));
           write('.memory-bank/tasks/index.json', `${JSON.stringify({ version: 1, tasks: records }, null, 2)}\n`);
           NODE
@@ -317,6 +359,8 @@ jobs:
             node scripts/mb-lint.mjs
             node scripts/mb-doctor.mjs --json > complete-doctor.json
             node -e 'const r=require("./complete-doctor.json"); if (r.findings.some((f)=>f.code==="TASK_HANDOFF_INCOMPLETE")) process.exit(1)'
+            node scripts/mb-doctor.mjs --strict --json > strict-t3-doctor.json
+            node -e 'const r=require("./strict-t3-doctor.json"); if (r.status!=="pass" || r.summary.errors!==0 || r.findings.some((f)=>f.code==="TASK_T3_ROLLBACK_MISSING")) process.exit(1)'
             node -e 'const fs=require("node:fs"); const p=".memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json"; const t=JSON.parse(fs.readFileSync(p)); t.purpose=""; t.touched_files=[]; t.gates=[]; fs.writeFileSync(p, JSON.stringify(t,null,2)+"\n")'
             node scripts/mb-doctor.mjs --json > incomplete-doctor.json
             node -e 'const r=require("./incomplete-doctor.json"); if (!r.findings.some((f)=>f.code==="TASK_HANDOFF_INCOMPLETE")) process.exit(1)'

@@ -34,9 +34,12 @@ Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOM
     gates makes the task closure-eligible; the explicit owner writes the
     lifecycle decision, and T2 feature completion still requires feature-level
     semantic-pass recorded in the feature doc
-  - Manual mode T3: `/verify` PASS is not final closure; per-task `/red-verify` semantic-pass is required before `done` or `/mb-sync`
-  - T3: exact marker lines `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present` are required
-- mandatory `/mb-sync`
+  - Manual mode T3: `/verify` PASS is not final closure; per-task `/red-verify` semantic-pass is required before `done`, with full `/mb-sync` deferred to the wave boundary
+  - T3: exact marker line `HUMAN_CHECKPOINT: done` is required
+- mandatory `/mb-sync` once at the end of each wave, after task status,
+  closure decisions, and evidence are written immediately; early sync is only
+  for a real RTM/index/spec/contract/changelog dependency inside the current
+  wave or an explicit owner request
 - mandatory lint/link consistency before final success, covered by `mb-doctor`
 
 ## Failure budgets

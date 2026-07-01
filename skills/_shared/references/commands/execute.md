@@ -32,7 +32,7 @@ Scheduler mode:
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
 - T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires exact markers `HUMAN_CHECKPOINT: done` and `ROLLBACK_RECOVERY_NOTE: present`.
+- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
@@ -44,7 +44,7 @@ Manual mode:
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done` or `/mb-sync`; if semantic-pass is absent, leave closure pending or blocked, not done.
+- `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done`; if semantic-pass is absent, leave closure pending or blocked, not done. Full `/mb-sync` runs at the wave boundary.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
 - No persisted `mode` field is used.
@@ -209,11 +209,10 @@ For `T2` / `T3`, create or update full protocol:
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`
 - `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/handoff.md`
 
-For `T3`, exact closure marker lines are required by the later closure owner:
-- `HUMAN_CHECKPOINT: done`
-- `ROLLBACK_RECOVERY_NOTE: present`
+For `T3`, the exact closure marker line `HUMAN_CHECKPOINT: done` is required by
+the later closure owner.
 
-During `/execute`, record marker presence or gaps in handoff notes. Do not close
+During `/execute`, record checkpoint presence or gaps in handoff notes. Do not close
 the task.
 
 Use protocol templates when available. In `plan.md` or compact `run.md`, record:
