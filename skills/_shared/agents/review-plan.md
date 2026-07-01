@@ -12,10 +12,8 @@
 1) **Task registry structure**
 - `.memory-bank/tasks/index.json` существует и ссылается только на indexed `.memory-bank/tasks/TASK-*.task.json` records
 - задачи сгруппированы в waves по зависимостям
-- задачи не оцениваются в человеческих часах; предпочитай меньшее количество
-  крупных, но связных tasks
-- одна task может охватывать несколько технических слоёв и свои tests; не
-  требуй split по файлам, модулям, helper types или implementation artifacts
+- не оценивай tasks в часах и не дроби их по файлам, модулям, слоям или tests;
+  предпочитай меньшее число связных tasks
 - у каждого task record есть `status`, `wave`, `depends_on`, `touched_files`, `gates`, `verify`, `docs`, `tier`
 - task record валиден по `.memory-bank/schemas/task.schema.json`, а ID segments
   совпадают с `tier`, `feature` и `wave`

@@ -168,18 +168,11 @@ provisional outline to `plan.md`. For each candidate record only its purpose,
 likely dependencies/wave/tier, and expected design pressure. This is resumable
 planning state, not another task model.
 
-Keep initial task slicing lightweight and spend the main planning attention on
-complete, concrete canonical specs. Do not estimate tasks in human hours or
-optimize for a large task count. Prefer fewer cohesive tasks: one task may span
-multiple technical layers and include its applicable tests when those changes
-produce one connected implementation outcome. Do not split by file, module,
-layer, helper type, or implementation artifact alone.
-
-Split only when the boundary is obvious: outcomes are independently useful, a
-hard dependency requires another wave, or risk/rollback responsibility differs
-materially. When the boundary is unclear, keep coupled work together. A later
-explicit full re-decomposition run may revisit slicing after the specs are
-complete.
+Prioritize complete canonical specs over detailed initial task slicing. Prefer
+fewer cohesive tasks; one task may span layers and include its tests. Do not
+split by file, module, layer, or artifact. Split only for independent outcomes,
+hard dependencies/waves, or materially different risk/rollback. When unsure,
+keep work together; revisit slicing only in an explicit full re-decomposition.
 
 Update the outline only when its structure changes, a material decision is
 accepted, or the run pauses. Do not write an iteration checkpoint after every
@@ -449,8 +442,7 @@ decision or external evidence.
 The loaded schema and tier policy are authoritative. Additionally:
 - task ID tier/feature/wave segments match `tier`, `feature`, and `wave`
 - every task has one cohesive, independently verifiable implementation outcome;
-  it may span multiple technical steps or layers, and applicable implementation
-  tests stay in the same task
+  it may span layers and include its applicable tests
 - every T1/T2/T3 task links concrete governing `REQ-*` IDs in `reqs`; never use
   placeholder requirement or feature IDs
 - assign tier before writing; never use the removed `risk` model
