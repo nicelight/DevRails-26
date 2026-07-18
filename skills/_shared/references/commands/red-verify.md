@@ -1,262 +1,149 @@
 ---
-description: Adversarial semantic verification задачи (TASK-NNN-TN-FT-NNN-WN) для поиска "дисциплинированно, но по существу неверно".
+description: Independent adversarial semantic verification for T3 tasks and T2 feature completion.
 status: active
 ---
-# /red-verify — Adversarial semantic verification
+# /red-verify - Adversarial semantic verification
 
 <objective>
-Проверить, что реализованная задача правильна **по существу**, а не только по process/evidence surface.
+Challenge a formally passing implementation for substantive correctness. Find
+false success, hidden assumptions, cross-boundary harm, semantic drift, unsafe
+state/data behavior, operational risk, or unjustified maintenance cost that
+ordinary functional `/verify` may miss.
 
-Этот проход должен ловить ситуации:
-- acceptance criteria формально выполнены, но решена не та проблема
-- локально всё выглядит корректно, но решение вредит системе целиком
-- реализация переоптимизирована под локальную task interpretation и игнорирует соседние ограничения
-- появляются drift, state inconsistency, operational risks или скрытая стоимость сопровождения
-
-Разделение ролей:
-- `/verify` → "выполнено ли по AC/REQ и есть ли evidence?"
-- `/review-feat-plan` / `/review-tasks-plan` → "достаточно ли качественен feature plan или task planning surface?"
-- `/red-verify` → "это вообще хорошее и правильное решение в substance?"
-- scheduler (`/autopilot` / `/autonomous`) → task status transitions, closure, failure handling, and dependent block/unblock in scheduler mode
+`/verify` owns functional evidence. `/red-verify` owns semantic evidence and one
+exact `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
 </objective>
 
-<when-to-use>
-## Status Transition Modes
+<input_contract>
+Expected `$ARGUMENTS`:
+- `TASK-NNN-TN-FT-NNN-WN`: per-task semantic verification;
+- `--feature FT-<ID>`: T2 feature-completion semantic verification.
 
-Status transitions have two modes.
+Reject `--feature FT-000`. Foundation closes through normal FT-000 tasks and
+the final gate.
 
-Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
-- Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
-- `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
-- `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
-- Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record before `/mb-sync`.
-- `/mb-sync` records/reconciles already-written task state. It does not decide closure/failure/blocking/promotion and must not sync a decision that exists only in scheduler context.
-- T0/T1 scheduler closure may use compact evidence / functional PASS according to tier policy.
-- T2 scheduler task closure requires full protocol, applicable task/spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, and the verdict must be recorded in the feature doc itself.
-- `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
-- T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
+Routing from `.memory-bank/workflows/tier-policy.md`:
+- per-task mode is required for T3 closure;
+- per-task mode is optional evidence for T2 and does not make normal T2 task
+  closure stricter;
+- feature mode is required after all tasks for a T2 product feature are
+  implemented and before that feature is treated complete;
+- T0/T1 normally do not use this skill; apparent scope growth routes through
+  tier rebuild before semantic verification.
 
-Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
-- Manual closure is allowed only when an explicit closure owner exists.
-- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close `T0` / `T1` only under the tier-policy fast-lane conditions; otherwise closure remains with `/verify`, scheduler, or explicit owner.
-- `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
-- If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
-- `T2` manual task closure requires `/verify PASS` plus full protocol and applicable task/spec gates; per-task `/red-verify` is optional, while T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc.
-- `T3` manual task closure requires `/verify PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before `status: done`; if semantic-pass is absent, leave closure pending or blocked, not done. Full `/mb-sync` runs at the wave boundary.
-- `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
-- No persisted `mode` field is used.
+Require indexed task/feature identity, tier policy, task/feature intent and
+mapped REQ/AC, successful functional verification evidence, actual diff/change
+surface, tests/runtime artifacts, tier-selected protocol, direct task-linked
+canonical SDD specs for T2/T3, and only the additional provenance-linked
+context needed to assess system impact.
 
-Required by tier and mode:
-- In scheduler mode, `T2` tasks do not require per-task `/red-verify` before
-  scheduler marks the task `done`; the feature still requires feature-level
-  `/red-verify --feature FT-<ID>` and a recorded feature-doc semantic verdict
-  before feature completion.
-- In scheduler mode, `T3` tasks require per-task `/red-verify` before scheduler
-  marks the task `done`.
-- In manual mode, per-task `/red-verify` is optional for `T2` task closure but
-  required for `T3` task closure; feature-level `/red-verify --feature FT-<ID>`
-  plus a recorded feature-doc semantic verdict is required before T2 feature
-  completion.
-- `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case route the original task through the
-  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
+For per-task T2/T3, feature links and `spec-index.md` alone do not replace
+direct task links. Missing direct applicable coverage is a blocker, not a basis
+for semantic-pass.
+</input_contract>
 
-Status ownership:
-- `/red-verify` owns semantic evidence and `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
-- In scheduler mode (`/autopilot` / `/autonomous`), `/red-verify` must not independently close the task, write `status: done`, write `status: failed`, block dependents, or promote dependents. It returns the semantic verdict and recommended next status to the scheduler.
-- In standalone/manual mode, `/red-verify` may change `done -> blocked`, `done -> failed`, or create/recommend a bug/follow-up task when semantic issues are found only under explicit closure ownership.
+<hard_invariants>
+- Use an independent verifier context; do not trust task prose, writer claims,
+  or `VERDICT: PASS` as proof of semantic correctness.
+- Route only by task tier and canonical tier policy; never use legacy `risk`.
+- Scheduler mode: `/red-verify` never closes/fails/blocks/reopens tasks,
+  promotes dependents, or writes scheduler status. It returns verdict/evidence
+  and a recommended owner action.
+- Manual lifecycle or BUG/follow-up mutation is allowed only under explicit
+  standalone ownership and canonical tier policy.
+- T3 semantic-pass does not replace functional PASS or the exact standalone
+  `HUMAN_CHECKPOINT: done` required before closure.
+- T2 feature semantic-pass must be recorded in the matching feature document;
+  per-task evidence is not a substitute.
+- Do not invent a separate failure artifact, status, task schema, or lifecycle.
+</hard_invariants>
 
-Особенно полезно, если:
-- менялись `contracts/*`, `states/*`, миграции, схемы, data behavior
-- задача затрагивает несколько feature/module boundaries
-- меняется runtime/API behavior
-- задача доменно-нагруженная или business-rule-heavy
-- AC можно выполнить узко и при этом промахнуться мимо true intent
-- изменение архитектурно рискованное или может создать скрытую future cost
-</when-to-use>
+<operator_decisions>
+If the semantic verdict depends on an ambiguous product/spec interpretation,
+canonical identity, acceptance meaning, architecture/contract/state/data/
+storage/security/compatibility decision, task boundary, tier, dependency, or
+verification policy, the verifier does not pick a favorable reading.
 
-<when-not-to-use>
-Обычно не нужно для:
-- typo-only изменений
-- formatting-only изменений
-- изолированных механических рефакторингов без behavioral impact
-</when-not-to-use>
+- Return `semantic-concern` unless evidence proves a direct semantic break,
+  in which case return `semantic-fail`.
+- State the exact operator question, competing interpretations, affected
+  closure/dependents, and repair owner.
+- Interactive flow asks the operator; recommendation/default/silence is not an
+  accepted decision. The answer must be durably applied by
+  `/clarify-feature`, `/prd-to-tasks`, or `/spec-design`, then functional and
+  semantic gates rerun as applicable.
+- Unattended flow returns the blocker to the scheduler for
+  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and names the exact
+  resume route.
+</operator_decisions>
 
-<process>
+<agent_discretion>
+The verifier independently builds its own hostile model from the actual intent,
+change surface, system boundaries, evidence gaps, and risk. It chooses context
+loading order, adversarial hypotheses, probes, additional tests, cross-boundary
+checks, and depth proportional to tier and blast radius.
 
-0) Вход
-Ожидается `$ARGUMENTS`:
-- `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for per-task semantic verification
-- `--feature FT-<ID>` for T2 feature-completion semantic verification
+The following are examples, not a mandatory or exhaustive checklist/order:
+- solving a convenient local interpretation instead of the real outcome;
+- passing narrow AC while purpose/success outcome remains false;
+- anti-goal, hard-scope, responsibility-boundary, or canonical-spec drift;
+- local optimization that harms another feature/module;
+- state/data inconsistency, migration/retry/idempotency/failure-mode defects;
+- security, secrets, permissions, compliance, destructive/data-loss, payment,
+  deploy/runtime, or production hazards;
+- passing tests that hide operational or maintenance cost.
 
-Do not use `--feature FT-000`; foundation is closed through normal `FT-000`
-task dependencies and the final foundation gate task.
+The verifier may pursue unexpected hypotheses when evidence justifies them.
+</agent_discretion>
 
-Modes:
-- Per-task mode is required for `T3` task closure.
-- Per-task mode is optional/manual for `T2` task closure.
-- Feature mode is required before a `T2` feature is treated as complete, after
-  all tasks for that feature are implemented.
-- `T0` and `T1` usually do not need `/red-verify` unless their real scope grew
-  beyond the recorded tier; in that case route the original task through the
-  tier-escalation handoff and `/prd-to-tasks FT-<ID>` before retrying.
+<required_outputs>
+Per-task mode writes:
+- `.protocols/<TASK_ID>/red-verification.md` using the existing template shape;
+- `.tasks/<TASK_ID>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`.
 
-1) Не anchor слишком рано на full spec surface
-Сначала прочитай в таком порядке:
-- task intent из `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` через `.memory-bank/tasks/index.json`
-- linked FT/REQ и `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/plan.md`
-- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/progress.md`
-- `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/verification.md`, если уже есть
-- реальный change surface:
-  - изменённые файлы / diff
-  - тесты
-  - логи, screenshots, traces и другие artifacts в `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
+Feature mode writes:
+- `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`;
+- a durable `## Semantic Verification` section in the matching feature doc
+  with one exact standalone marker and report link.
 
-Только после этого подтягивай the smallest sufficient provenance-linked context:
-- `.memory-bank/spec-backbone.md`, `.memory-bank/spec-index.md`, and direct
-  task-linked canonical SDD specs for `T2` / `T3`
-- docs linked through existing task fields: `source_artifacts`,
-  `normative_inputs`, `constraints`, `invariants`, or `verification_targets`
-- feature `spec_design_links` for composition/drift context; they do not replace
-  direct task links in per-task T2/T3 mode
-- docs used to populate `runtime_context` fields
-- `requirements.md` only for referenced `REQ-*` reconciliation
+The report remains concise but records:
+- independently generated hostile model and probes;
+- top substance/false-success risks and purpose fit;
+- anti-goal and semantic/hard-scope assessment;
+- hidden assumptions and questions that could change the verdict;
+- cross-boundary, architecture, state/data, operational, security when
+  relevant, and maintenance impact;
+- how the conclusion could still be wrong;
+- counterproposal or escalation route;
+- exactly one standalone marker:
+  `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
 
-Do not discover boundary-map/contracts implicitly. Read
-`.memory-bank/contracts/boundary-map.md`, other `contracts/*`, `states/*`,
-`guides/*`, `runbooks/*`, or `invariants.md` only when they are linked through
-the provenance fields above, feature spec links, or runtime_context evidence.
+When blocked or failed, use the existing report's `## Failure / Blocker` shape
+with status, where, expected/observed, likely category, next action, and whether
+replan is required.
+</required_outputs>
 
-Важно:
-- if the task record has no `tier`, stop with an explicit error
-- authoritative red-verification routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used
-- if `task.tier` is `T2` or `T3` and task richer fields do not directly link
-  every relevant canonical SDD spec, stop with a blocker; feature links or
-  `spec-index.md` alone must not let semantic verification bless serious work
-- if the task record, implementation, or verify verdict conflicts with linked SDD specs or the global backbone in `.memory-bank/spec-backbone.md`, stop with `semantic-concern` or `semantic-fail` instead of choosing locally
-- не начинай с предположения, что task record и verify verdict уже доказывают correctness
-- сначала сформируй независимую hostile модель риска
-- затем сравни её со specs и кодом
+<validation>
+- `semantic-pass`: no substantive concern survived credible adversarial probes;
+  T3 task becomes closure-eligible only when functional PASS and the human
+  checkpoint also satisfy tier policy; T2 feature becomes completion-eligible
+  only when all feature tasks and required gates are satisfied and the feature
+  doc contains the exact marker.
+- `semantic-concern`: hidden assumptions or serious risk prevent normal closure;
+  affected task/feature/dependents remain pending or blocked by the lifecycle
+  owner until an accepted decision/fix and subsequent semantic-pass.
+- `semantic-fail`: evidence proves the solution substantively wrong, harmful,
+  or too risky; recommend failure and BUG/follow-up handling to the active
+  lifecycle owner.
 
-2) Построй hostile hypothesis list
-Проверь как минимум:
-- решена ли реальная задача, а не её удобная локальная интерпретация
-- не создала ли реализация false success: local AC passed, but
-  `purpose` / `success_outcome` is still not actually achieved
-- не нарушены ли `anti_goals`
-- не маскирует ли отклонение от advisory `touched_files` material scope expansion
-- не вышла ли реализация за hard autonomy/scope boundary from task
-  `runtime_context.allowed_write_scope` when present
-- не был ли затронут `forbidden_scope`
-- не сдвинула ли реализация responsibility boundary from linked
-  `.memory-bank/contracts/boundary-map.md` or contracts without an explicit spec
-  update
-- не спрятан ли boundary drift behind passing tests or narrow AC
-- не скрывает ли weak task context semantic problem, который нельзя
-  честно принять без уточнения
-- нет ли local optimization с системным вредом
-- не нарушены ли linked boundaries, invariants, contracts, or state transitions
-- не стал ли код хрупче, сложнее или дороже в сопровождении без достаточной причины
-- не создаёт ли решение ложную уверенность за счёт слишком узких тестов/AC
+Before reporting, confirm the verdict is supported by inspected evidence, no
+unresolved branch was silently resolved, and the skill did not mutate
+scheduler-owned state.
+</validation>
 
-3) Проверь cross-boundary substance
-Отдельно оцени:
-- cross-feature/module impact
-- responsibility/boundary drift against linked boundary-map/contracts
-- architectural drift
-- state/data consistency
-- operational behavior (retries, observability, migrations, failure modes)
-- future maintenance cost
-
-Для `T3` обязательно добавь отдельную проверку:
-- critical/security concerns
-- deploy/runtime/production failure modes
-- irreversible/data-loss, compliance, payments, or secrets exposure concerns when relevant
-- exact marker `HUMAN_CHECKPOINT: done` is present before autonomous closure
-
-4) Заполни `.protocols/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/red-verification.md`
-Используй шаблон проекта, если он есть.
-Отчёт должен быть коротким, но содержать:
-- semantic verdict
-- top substance risks
-- false-success / purpose-fit assessment
-- anti-goal and scope/autonomy assessment
-- weak-context questions that could change the verdict
-- hidden assumptions
-- cross-boundary impact
-- architectural concerns
-- state/data consistency concerns
-- operational concerns
-- future maintenance cost
-- "how this could still be wrong"
-- counterproposal / escalation path
-
-Do not create a separate failure artifact. When a spec/task gap blocks a
-credible semantic verdict, use the existing report plus this block:
-
-```md
-## Failure / Blocker
-- Status: blocked|failed
-- Where: command/protocol/file
-- Expected:
-- Observed:
-- Likely category: code|spec|task|verification|tool|unknown
-- Recommended next action:
-- Requires replan: yes/no
-```
-
-5) Сохрани короткий артефакт
-Per-task mode:
-- `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`
-
-Feature mode:
-- `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`
-- update the matching `.memory-bank/features/FT-<ID>-*.md` with a durable
-  `## Semantic Verification` section containing an exact standalone line:
-  `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`, plus a link
-  to the `.tasks/FT-<ID>/...` report.
-
-6) Вердикт
-- `semantic-pass`:
-  - substantive concerns не обнаружены
-  - per-task mode: T3 scheduler closure-eligible for normal `done` when `/verify` also has `PASS`
-  - per-task mode: T2 result is optional evidence and does not make normal T2 task closure stricter
-  - feature mode: T2 feature completion is eligible when all feature tasks are implemented, required task-level gates are satisfied, and the feature doc records `SEMANTIC_VERDICT: semantic-pass`
-  - manual T3 closure is eligible when `/verify` also has `PASS`; voluntary `T0` / `T1` / `T2` per-task red-verify does not make their normal verify-based closure stricter
-  - recommend `/mb-sync` and closure by the scheduler or explicit standalone owner
-
-- `semantic-concern`:
-  - есть серьёзные сомнения или hidden assumptions, но не доказан прямой semantic break
-  - scheduler mode: not closure-eligible for normal `done`
-  - manual mode: do not trust the existing `done` state without human review / follow-up
-  - до продолжения wave требуется явное решение by scheduler/explicit standalone owner: block task/dependents, reopen from `done`, or leave task `in_progress` pending human review
-  - если human review принимает concern, зафиксируй owner/reason, обнови work/evidence as needed и повтори `/red-verify`; scheduler normal `done` разрешён только после `semantic-pass`
-  - если выбран follow-up, recommend or create it only according to the active workflow ownership
-  - recommend not promoting dependents until the task receives `semantic-pass`
-
-- `semantic-fail`:
-  - решение по существу неверно, вредно или слишком рискованно
-  - заведи or recommend bug doc в `.memory-bank/bugs/BUG-<short>.md` according to active workflow ownership
-  - recommend follow-up task as JSON task record
-  - scheduler mode: recommend current task `status: failed`
-  - manual mode: may change `done -> failed` or create a bug/follow-up task according to the explicit local workflow and closure ownership
-  - recommend downstream dependents remain unpromoted/blocked by scheduler
-
-7) Место в normal loop
-Рекомендуемый порядок:
-- `/execute TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-- `/verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>`
-- `/red-verify TASK-<NNN>-T<N>-FT-<NNN>-W<N>` for `T3` task closure; optional for `T2` task closure
-- `/red-verify --feature FT-<ID>` after all `T2` feature tasks are implemented,
-  before treating the feature as complete; record the verdict in the feature
-  doc itself under `## Semantic Verification`
-- `/mb-sync`
-
-</process>
+<handoff_contract>
+Return the semantic verdict, evidence paths, and recommended scheduler/explicit
+owner action. A lifecycle owner records closure/failure/blocking and any
+follow-up task before wave-boundary `/mb-sync`. On ambiguity or design/task gap,
+handoff to the named interactive repair route instead of continuing the wave.
+</handoff_contract>

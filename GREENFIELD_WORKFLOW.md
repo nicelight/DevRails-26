@@ -44,7 +44,7 @@ flowchart TD
   more -- "нет" --> done["Готово"]
 
   mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Sequential scheduler loop:<br/>one task -> execute -> verify -> closure;<br/>red-verify для T3 -> mb-sync"]
+  autopilot --> scheduler["Sequential scheduler loop:<br/>one task -> execute -> verify -> closure;<br/>red-verify для T3; mb-sync once per wave"]
   scheduler --> terminal{"Queue terminal?"}
   terminal -- "done" --> done
   terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
@@ -54,5 +54,10 @@ flowchart TD
 Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
 parallel execution is available only through explicit `--experimental-parallel`
 with isolated worktrees/sandboxes and pairwise-disjoint hard
-`runtime_context.allowed_write_scope`; advisory `touched_files` does not prove
+`runtime_context.write_boundary`; advisory `touched_files` does not prove
 independence.
+
+Within task planning, implementation, testing, and verification, agents choose
+their local tactics. A new material product/design/contract/task-boundary/tier/
+dependency/verification branch always returns to the operator; unattended mode
+halts with the existing clarification/blocking state and an exact resume route.

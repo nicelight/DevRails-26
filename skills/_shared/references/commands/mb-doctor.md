@@ -106,7 +106,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
 - T2/T3 single-card handoff completeness is checked mechanically: non-empty
   `purpose` and scalar `success_outcome`, at least one existing direct task-linked canonical SDD
-  spec path, non-empty `touched_files` and/or `runtime_context.allowed_write_scope`,
+  spec path, non-empty `touched_files` and/or `runtime_context.write_boundary`,
   and at least one verification path through a real gate command and/or
   non-empty `verification_target`.
 - Schema/index/ID/REQ/dependency existence and cycle checks remain covered by

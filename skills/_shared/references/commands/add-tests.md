@@ -1,64 +1,78 @@
 ---
-description: Task-scoped добавление risk-based тестов с приоритетом по core value.
+description: Add the cheapest sufficient regression coverage inside one existing in-progress indexed task.
 status: active
 ---
-# /add-tests — Improve task-scoped test coverage
+# /add-tests - Improve task-scoped coverage
 
 <objective>
-Добавить полезные тесты в scope существующей indexed task так, чтобы они
-доказывали конкретный outcome и ловили значимые регрессии.
+Add useful tests that prove the selected task outcome and catch meaningful
+regressions without widening its product/spec boundary or creating a testing
+workflow of its own.
 </objective>
 
-<process>
-
-## 0) Required task context
-Require an explicit `TASK-NNN-TN-FT-NNN-WN` that:
-- exists in `.memory-bank/tasks/index.json` and has a matching task record;
+<input_contract>
+Require one explicit `TASK-NNN-TN-FT-NNN-WN` that:
+- resolves uniquely through `.memory-bank/tasks/index.json`;
 - has `status: in_progress`;
-- has an outcome/AC/REQ/spec boundary that covers the proposed test behavior.
+- has an outcome/AC/REQ/spec boundary covering the proposed test behavior.
 
-Read the task record and `.memory-bank/workflows/tier-policy.md` before editing.
-Test files may fall outside advisory `touched_files` when they remain inside the
-same task outcome and hard scopes; record them in evidence.
+Read the task record, `.memory-bank/workflows/tier-policy.md`, applicable linked
+specs/verification targets, implementation evidence, and project-native test
+configuration needed for the chosen check.
+</input_contract>
 
-If post-hoc coverage work is outside the current task outcome/spec scope, stop and route it
-through the normal planning/reconciliation path so a follow-up task can be
-created. `/add-tests` must not invent task identity, create synthetic testing
-task IDs, or introduce a separate lifecycle.
+<hard_invariants>
+- Reuse the existing task ID, lifecycle, tier, protocol, and evidence paths.
+  Do not create synthetic testing tasks, a second lifecycle, or new task fields.
+- Test files outside advisory `touched_files` are allowed only for the same
+  outcome and inside hard allowed/forbidden scopes; record the deviation.
+- Do not weaken assertions, disable failures, introduce decorative tests, or
+  substitute screenshots for behavior proof.
+- Do not create or modify `.memory-bank/testing/`; durable testing specs route
+  through `/spec-design`, `/foundation-to-tasks`, or `/prd-to-tasks`.
+- `/add-tests` does not own task closure or scheduler transitions.
+</hard_invariants>
 
-## 1) Choose the cheapest sufficient check
-Start from the concrete product behavior and regression risk in the task,
-linked requirements/features, and applicable specs. Select the narrowest check
-that reliably proves the outcome:
-- unit for isolated logic or invariants;
-- integration/contract for a real DB, API, component, or protocol boundary;
-- e2e for a critical user flow that narrower checks cannot prove;
-- an existing project-native gate or one targeted test for a small local change.
+<operator_decisions>
+If useful coverage requires a new product behavior, contract, state/data,
+security/compatibility rule, task-boundary/tier change, external dependency, or
+verification-policy choice not already settled, stop and surface the exact
+decision.
 
-Do not require unit, integration, and e2e together merely to fill categories.
-Do not put browser/e2e first by default. Browser screenshots, videos, or traces
-are evidence only when browser/e2e verification is actually needed.
+Interactive flow asks the operator and resumes only after the owning
+feature/spec/task plan is durably repaired. Unattended flow returns the blocker
+to the scheduler without choosing and names `/prd-to-tasks FT-<NNN>`,
+`/spec-design`, or `/clarify-feature FT-<NNN>` as the applicable resume route.
+A recommendation is not an accepted decision.
+</operator_decisions>
 
-## 2) Implement and run
-- add only tests authorized by the task outcome/spec scope and hard runtime
-  boundaries;
-- run the added tests and applicable project-native checks;
-- check for flakiness in proportion to the risk;
-- do not weaken assertions, disable failing checks, or replace meaningful
-  verification with a decorative test to obtain a green result.
+<agent_discretion>
+The agent chooses exploration order, tools, test level, test shape, fixtures,
+and proportional flakiness checks. Select the narrowest credible proof: a unit,
+integration/contract, e2e, or existing project-native check according to the
+actual behavior and regression risk. No requirement exists to fill every test
+category or put browser/e2e first.
+</agent_discretion>
 
-## 3) Record task evidence
-Record touched tests, exact commands, results, and applicable artifacts in the
-tier-selected evidence path of the existing task:
-- T0/T1: compact `.protocols/<TASK_ID>/run.md`;
-- T2/T3: full protocol state plus substantive `.tasks/<TASK_ID>/` artifacts.
+<required_outputs>
+- scoped test changes;
+- exact commands/results and substantive artifacts in the existing task's
+  tier-selected paths:
+  - T0/T1 -> `.protocols/<TASK_ID>/run.md`;
+  - T2/T3 -> full protocol state plus `.tasks/<TASK_ID>/` evidence;
+- recorded actual test files, advisory deviations, hard-scope compliance,
+  flakiness evidence when relevant, and remaining blockers.
+</required_outputs>
 
-Do not create or modify files under `.memory-bank/testing/`. Durable subject
-testing specs are created only through the existing SDD routing in
-`/spec-design`, `/foundation-to-tasks`, or `/prd-to-tasks` when evidence shows
-they are needed.
+<validation>
+Confirm the added tests fail for the meaningful regression they target when
+practical, pass against the implementation, prove the task-scoped outcome, and
+do not authorize or encode an unresolved product/design decision.
+</validation>
 
-## 4) Handoff
-`/add-tests` does not own task closure. Return control to `/execute`, `/verify`,
-the scheduler, or the explicit task owner according to the existing tier policy.
-</process>
+<handoff_contract>
+Return immediately to `/execute`, `/verify`, the scheduler, or the explicit task
+owner under `.memory-bank/workflows/tier-policy.md`. Out-of-scope coverage routes
+to normal `/prd-to-tasks FT-<NNN>` planning instead of being smuggled into the
+current task.
+</handoff_contract>

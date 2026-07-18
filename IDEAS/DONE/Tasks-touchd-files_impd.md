@@ -43,7 +43,7 @@
 - `touched_files` — ожидаемые файлы и области, известные на этапе планирования;
 - фактическую поверхность изменений — уточняется исполнителем во время
   preflight и фиксируется в evidence;
-- `runtime_context.allowed_write_scope` — отдельная жёсткая граница записи,
+- `runtime_context.write_boundary` — отдельная жёсткая граница записи,
   задаваемая только при наличии обоснованного ограничения;
 - `forbidden_scope` и stop conditions — безусловные жёсткие ограничения.
 
@@ -103,7 +103,7 @@ requirements, SDD-контрактов, tier policy и других жёстки
 - Сохранить task lifecycle, идентификаторы, tier policy, statuses и handoff
   между skills.
 - Не ослаблять acceptance, SDD, verification и safety gates.
-- Не превращать `allowed_write_scope` в автоматическую копию `touched_files`.
+- Не превращать `write_boundary` в автоматическую копию `touched_files`.
 - Не вводить новые workflow-артефакты и процесс без необходимости.
 - Сохранить разумную совместимость существующих Task cards.
 

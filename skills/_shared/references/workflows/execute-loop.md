@@ -11,7 +11,10 @@ status: active
 - `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
 - `/spec-design` is mandatory after `/prd`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.
 - `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
-- `/prd-to-tasks FT-<NNN>` performs registry-first canonical concern discovery before task slicing, then creates the implementation plan and complete JSON task records with direct relevant spec links.
+- `/prd-to-tasks FT-<NNN>` closes applicable canonical concern coverage and
+  creates the implementation plan plus complete JSON task records with direct
+  relevant spec links. Discovery, concern-lens order, and slicing tactics are
+  agent-selected inside the command contract.
 - Rerun `/prd-to-tasks FT-<NNN>` to reconcile subject-based canonical specs, task cards,
   and plans.
 - After the current feature task set is decomposed, run
@@ -69,6 +72,9 @@ when the last task of a T2 product feature closes, run feature-level
 of the wave run `/mb-sync` once, then lint and `/mb-doctor --strict` before
 promoting dependents. Early sync is allowed only for a real current-wave
 RTM/index/spec/contract/changelog dependency or an explicit owner request
+   - functional/semantic failures and blockers use tier-policy `Scheduler
+     Failure Handling`: bounded safe same-task retry, otherwise durable
+     `failed|blocked`, required bug/follow-up evidence, and dependent blocking
 7) after a wave, rerun `/review-tasks-plan FT-<NNN>` only for product features
 whose task/spec/dependency/tier/scope planning surface changed; do not
 rerun it for status/evidence-only closure
@@ -108,9 +114,20 @@ claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
 - `touched_files` is advisory and must not be used to prove task independence.
 - Experimental parallel execution is available only through explicit
   `--experimental-parallel`, pairwise-disjoint hard
-  `runtime_context.allowed_write_scope`, isolated worktrees/sandboxes, and the
+  `runtime_context.write_boundary`, isolated worktrees/sandboxes, and the
   remaining autonomy-policy exclusions. If any proof is missing, fall back to
   sequential execution.
 - Each task records its authoritative closure/evidence immediately; full
   `/mb-sync` remains a wave boundary unless TASK-B requires reconciled durable
   state or the owner requests an early sync.
+
+## Operator-decision boundary
+- Interactive task planning/execution asks the operator whenever a new material
+  product/design/contract/state/data/security/task-boundary/tier/dependency/
+  verification branch is not already settled by authoritative evidence.
+- Unattended execution does not choose for the operator. It records the exact
+  question and stops with the existing clarification/blocking terminal state
+  and the owning interactive resume skill.
+- A recommendation/default is not an accepted decision. Resume only after the
+  answer is durably applied to the existing owning artifact and applicable
+  review/readiness gates pass.

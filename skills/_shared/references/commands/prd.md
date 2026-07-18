@@ -2,113 +2,98 @@
 description: Decompose a clarified PRD into Memory Bank product, requirements, epics, and features.
 status: active
 ---
-# /prd - Clarified PRD -> Memory Bank
+# /prd - Clarified PRD -> product plan
 
 <objective>
-Turn an already clarified `.memory-bank/prd.md` into Memory Bank L1-L3 artifacts:
-- `.memory-bank/product.md`
-- `.memory-bank/requirements.md` with REQ IDs and RTM
-- `.memory-bank/epics/EP-*.md`
-- `.memory-bank/features/FT-*.md`
-- `.memory-bank/index.md`
+Derive the canonical L1-L3 product structure from an already clarified PRD:
+- `.memory-bank/product.md`;
+- `.memory-bank/requirements.md` with stable `REQ-*` IDs and RTM;
+- `.memory-bank/epics/EP-*.md`;
+- `.memory-bank/features/FT-*.md`;
+- `.memory-bank/index.md`.
 
-`/prd` does not write the PRD, ask Deep Questioning questions, create TASK records, create implementation plans, run architecture design, or require feature-level clarification.
-`/prd` does not create or modify files under `.memory-bank/testing/`, choose
-test levels, design a test harness, or define global testing gates. Product-level
-quality requirements remain in requirements/acceptance criteria, and features
-may keep short evidence-backed verification pointers.
-`/prd` requires the `/spec-init` output: `.memory-bank/spec-backbone.md` with Pre-PRD Spec Status `ready_for_prd`, plus `.memory-bank/spec-index.md` as a pure spec registry/index. It reads decomposition inputs from the backbone and only relevant existing specs routed by the index before deriving L1-L3.
+This command owns product decomposition, not PRD clarification, architecture
+design, testing policy, task generation, or implementation planning.
 </objective>
 
-<process>
-
-## 0) Required PRD input
+<input_contract>
 Require:
-- `.memory-bank/prd.md`
-- `.memory-bank/spec-backbone.md`
-- `.memory-bank/spec-index.md`
+- `.memory-bank/prd.md` with `type: prd`,
+  `clarification_status: complete`, and `constitution_checked: true`;
+- `.memory-bank/spec-backbone.md` with
+  `Pre-PRD Spec Status: ready_for_prd` and explicit decomposition inputs;
+- a pure `.memory-bank/spec-index.md`.
 
-Its frontmatter must include:
+Read the Constitution before writing. Use spec-backbone decomposition inputs
+and only canonical specs routed by spec-index that are relevant to the current
+PRD. Do not load every SDD spec by default.
 
-```yaml
-type: prd
-clarification_status: complete
-constitution_checked: true
-```
+Stop and route to the owning command when an input is missing, stale,
+placeholder-only, blocked, internally inconsistent, or has broken relevant
+links:
+- PRD/Constitution issue -> `/write-prd` or `/constitution`;
+- framing/index issue -> `/spec-init`.
+</input_contract>
 
-If `.memory-bank/prd.md` is missing, stop and tell the user to run `/write-prd`.
-If `clarification_status` is `pending` or `blocked`, stop and continue `/write-prd`.
-If `constitution_checked` is not `true`, stop and run `/write-prd` or resolve the Constitution gate.
-If the PRD contains unresolved `NEEDS CLARIFICATION` blockers in decomposition-relevant sections, stop and run `/write-prd`.
+<hard_invariants>
+- Do not write/clarify the PRD, perform architecture design, create TASK records
+  or implementation plans, choose test levels, define global testing gates, or
+  create/modify `.memory-bank/testing/*`. `/prd` does not create or modify files
+  under `.memory-bank/testing/`.
+- Do not let a lower-precedence PRD or feature override Constitution or an
+  authoritative canonical spec.
+- `FT-000` is reserved for Foundation Dev Path and is never a product feature.
+- Do not set feature `spec_design_status: complete` before the global design
+  backbone exists and feature concerns are actually satisfied.
+- Do not add clarification metadata to every feature; it is only for an
+  explicit feature-level decomposition blocker.
+</hard_invariants>
 
-Read `.memory-bank/constitution.md` before writing derived docs. If the PRD conflicts with the Constitution, stop and ask for explicit resolution or `/constitution` amendment.
+<operator_decisions>
+The agent may choose ordinary decomposition tactics, but a real ambiguity or
+branch that could materially change product scope, REQ/EP/FT boundaries,
+acceptance, actors, behavior, ownership, or traceability belongs to the
+operator.
 
-### Pre-PRD spec framing gate
-`.memory-bank/spec-backbone.md` and `.memory-bank/spec-index.md` are required `/spec-init` outputs for `/prd`.
+In interactive mode, ask one question or a small group of tightly related
+questions, explain what the decomposition choice changes, and optionally
+recommend an option. The recommendation is not accepted without an explicit
+answer. Record accepted decomposition-only decisions in
+`.protocols/PRD-BOOTSTRAP/decision-log.md` and the owning product artifact,
+remove contradictions, then revalidate before deriving dependent docs. If the
+answer changes PRD scope, behavior, acceptance, or another PRD-owned contract,
+route it through `/write-prd` and stop this run before continuing decomposition.
 
-Before writing derived docs:
-- read `.memory-bank/spec-backbone.md` first;
-- require `## Pre-PRD Spec Status` with `Status: ready_for_prd`;
-- stop and run `/spec-init` if `.memory-bank/spec-backbone.md` is missing, stale, placeholder-only, blocked, or does not make decomposition inputs explicit enough;
-- read `.memory-bank/spec-index.md` as a pure registry/index, not as a substitute for the specs;
-- stop and run `/spec-init` if `.memory-bank/spec-index.md` is missing, stale, placeholder-only, ambiguous, contains broken links, or still contains old non-index sections such as `Feature Design Status Map`, `Global backbone status`, or Backbone Area Matrix;
-- use `.memory-bank/spec-backbone.md` decomposition inputs before deriving product/requirements/epics/features: user scenarios, domain model, constraints, non-goals, risks, boundary hints, and lifecycle hints;
-- determine relevance from PRD sections, affected product areas, requirements, actors, data/domain model, contracts/APIs, states/lifecycles, security/compliance, runtime/operations, and verification strategy;
-- resolve and read only the relevant canonical spec files routed by `.memory-bank/spec-index.md`;
-- do not load every SDD spec by default; leave non-relevant canonical specs closed unless the index routes them into the current PRD/decomposition scope;
-- if a relevant canonical spec conflicts with the PRD, stop and ask for explicit resolution through a spec or PRD amendment instead of silently overriding either source.
-- do not perform architecture design; unresolved global design questions are passed to `/spec-design` after L1-L3 exists.
+In autonomous mode, use only an already accepted authoritative decision. If
+none exists, record the question/affected artifacts and set terminal state
+`HALT_BLOCKING_QUESTIONS`; do not write the affected decomposition as fact.
+</operator_decisions>
 
-## 1) Protocol
-Создай (если нет):
-- `.protocols/PRD-BOOTSTRAP/plan.md`
-- `.protocols/PRD-BOOTSTRAP/decision-log.md`
+<required_outputs>
+Create `.protocols/PRD-BOOTSTRAP/plan.md` and `decision-log.md` if missing.
 
-Режимы:
-- **interactive**: write derived docs and report the next feature to decompose.
-- **autonomous**: write derived docs non-interactively; if the PRD gate fails, set terminal state `HALT_BLOCKING_QUESTIONS`.
+Update `product.md` with product identity, core value, audience, primary flow,
+constraints, and non-goals. Update `requirements.md` with stable `REQ-*` IDs,
+out-of-scope items, and RTM `REQ -> Epic -> Feature -> Test`.
 
-## 2) Update product.md
-Заполни `.memory-bank/product.md`:
-- what this is
-- core value
-- audience
-- primary user flow
-- constraints/non-goals
+Each epic records value, success metrics, acceptance criteria, evidence-backed
+source/normative/constraint links when useful. Set epic `status: draft` by
+default; promote it to document `status: active` only after its open questions
+are closed. This document status is not the task lifecycle.
 
-## 3) Requirements and traceability
-Обнови `.memory-bank/requirements.md`:
-- REQ-001…
-- Out of scope
-- RTM: REQ → Epic → Feature → Test
+Each feature records:
+- use cases, acceptance criteria, and edge/failure behavior;
+- optional evidence-backed source artifacts, normative inputs,
+  constraints/invariants, and verification targets;
+- optional `## Behavior specs` routing only; do not create behavior JSON;
+- `status: draft` by default;
+- an `## SDD Design Gate` note routing immediately to mandatory
+  `/spec-design`, with feature-level canonical design completed later by
+  `/prd-to-tasks` or `/spec-auto` after any required Foundation Gate;
+- candidate canonical links only when grounded in evidence; omit
+  `spec_design_status` unless its existing truthful state must be preserved.
 
-## 4) Create epics/
-Для каждого эпика:
-- `.memory-bank/epics/EP-<NNN>-<slug>.md`
-- value, success metrics, acceptance criteria
-- optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`
- - `status: draft` по умолчанию (переводи в active после закрытия Open questions)
-
-## 5) Create features/
-Для каждой фичи:
-- `.memory-bank/features/FT-<NNN>-<slug>.md`
-- use cases
-- acceptance criteria
-- edge cases & failure modes
-- `## Behavior specs` section as optional routing only; `/prd` may mention that
-  concrete behavior examples could help later, but must not create
-  `.memory-bank/behavior-specs/*.behavior.json`
-- short test/verification pointers only when grounded in clarified PRD evidence;
-  do not choose test levels or define project-wide gates here
-- optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
-- `status: draft` по умолчанию
-- write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/mb-doctor --strict` and execute/verify `FT-000` until its gate is done when foundation tasks were created, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
-- if existing SDD specs apply, add candidate/normative `spec_design_links` or route notes only when grounded in evidence; `/prd` must not set `spec_design_status: complete` before `/spec-design` has produced a global backbone status of `complete` or valid `minimal`
-- otherwise omit `spec_design_status`; in the normal `/prd` flow this means omit status or write route notes only, because after the global `/spec-design` gate `/prd-to-tasks FT-<NNN>` or `/spec-auto` owns the feature-level design gate and may establish only `complete`, `not_required`, or `blocked`
-- add an SDD Design Gate note that `/spec-design` is the mandatory global gate before foundation gating and feature-level design inside `/prd-to-tasks`; if the feature-set pressure is local/simple, `/spec-design` records a minimal backbone with irrelevant areas `not_applicable`
-
-Do not set every new feature to `clarification_status: pending`.
-Only add feature clarification metadata when the PRD explicitly leaves a feature-level decomposition blocker:
+When the clarified PRD leaves a feature-level blocker, optional metadata remains:
 
 ```yaml
 clarification_status: pending|blocked
@@ -116,21 +101,35 @@ last_clarified: null
 clarification_questions: 0
 ```
 
-When a feature is already clear enough for task decomposition, omit clarification metadata.
+Update `.memory-bank/index.md` with annotated links.
+</required_outputs>
 
-## 6) Index
-Обнови `.memory-bank/index.md`:
-- добавить аннотированные ссылки
+<agent_discretion>
+Choose source-reading order, tools, decomposition technique, epic/feature
+grouping, filenames/slugs, and the smallest coherent product structure. Use
+traceability, independent product value, acceptance cohesion, and downstream
+designability as coverage criteria, not a mandatory reasoning sequence.
+</agent_discretion>
 
-## 7) Feature-plan review gate
-For high-risk, large, or autonomous flows, run `/review-feat-plan` with fresh context before `/spec-design`.
+<validation>
+Verify:
+- every derived claim is supported by the clarified PRD or authoritative
+  linked evidence;
+- every requirement has a stable `REQ-*` ID;
+- each epic/feature traces to requirements or an explicit accepted delta;
+- no product feature uses `FT-000`;
+- blockers and optional clarification metadata are truthful;
+- no task or testing-policy artifact was created;
+- global backbone remains pending until `/spec-design`.
+</validation>
 
-For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
+<handoff_contract>
+For high-risk, large, or autonomous work, the immediate handoff is mandatory
+fresh-context `/review-feat-plan`. For small manual work it is recommended unless
+the Constitution/operator requires it. After applicable approval, continue to
+`/spec-design`.
 
-## 8) What next
-- interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, and execute/verify `FT-000` until the foundation gate is done; then choose one feature and run `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
-- optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
-- autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan FT-<NNN>` for every task-linked product feature
-
-Do not create TASK records from `/prd`.
-</process>
+If one feature is explicitly pending/blocked, `/clarify-feature FT-<NNN>` may
+resolve it before review/design. Do not copy or recommend the entire downstream
+execution chain from this leaf command.
+</handoff_contract>

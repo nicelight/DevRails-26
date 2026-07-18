@@ -1,64 +1,38 @@
 ---
-description: Convert required Foundation Dev Path evidence into FT-000 JSON tasks, or mark brownfield baseline as already verified.
+description: Convert an accepted Foundation Dev Path decision into the minimum FT-000 JSON queue, or prove an existing brownfield baseline.
 status: active
 ---
-# /foundation-to-tasks - Foundation Dev Path -> JSON tasks
+# /foundation-to-tasks - Foundation decision -> FT-000 JSON tasks
 
 <objective>
-Turn the project foundation / walking-skeleton decision from `/spec-design` into
-normal Memory Bank task records before any product feature queue is generated,
-unless brownfield `--verify-existing` proves the existing baseline is already
-sufficient.
-
-Foundation uses the same execution model as product work:
-- `.memory-bank/tasks/TASK-*.task.json`
-- `.memory-bank/tasks/index.json`
-- `.protocols/TASK-*`
-- `.tasks/TASK-*`
-
-Do not create a separate foundation registry, task lifecycle, protocol family, or
-task schema.
+Turn the already accepted Foundation Dev Path decision into the smallest
+executable walking-skeleton queue, using the normal JSON task model. In
+`--verify-existing` mode, record a proven brownfield baseline without creating
+`FT-000`, or create only the probes needed to prove it.
 </objective>
 
-<process>
-
-## 0) Input
+<input_contract>
 Supported arguments:
-- no argument: create/update required foundation task records from
-  `.memory-bank/foundation.md`
-- `--verify-existing`: brownfield mode; create verification/probe tasks only when
-  the existing executable baseline must be proven before feature work; if the
-  baseline is already verified, record `Foundation Required: false` and create
-  no `FT-000` queue
+- no argument: create or reconcile the required foundation queue;
+- `--verify-existing`: verify an existing brownfield executable baseline.
 
-Required reads:
-- `.memory-bank/foundation.md`
-- `.memory-bank/prd.md`
-- `.memory-bank/requirements.md`
-- `.memory-bank/epics/`
-- `.memory-bank/features/`
-- `.memory-bank/spec-backbone.md`
-- `.memory-bank/spec-index.md`
-- linked architecture/contract/domain/state/testing/runbook specs
-- `.memory-bank/workflows/tier-policy.md`
-- `.memory-bank/schemas/task.schema.json`
+Require:
+- `.memory-bank/foundation.md` produced by `/spec-design`;
+- clarified PRD, requirements, epics, product features, and current Feature
+  Pressure Map;
+- `.memory-bank/spec-backbone.md` with Global Backbone Status `complete`, or
+  valid `minimal` with explicit not-applicable rationales;
+- pure `.memory-bank/spec-index.md` plus applicable linked canonical specs;
+- `.memory-bank/tasks/index.json` and
+  `.memory-bank/schemas/task.schema.json`;
+- `.memory-bank/workflows/tier-policy.md`.
 
-`/spec-design` must run first. If `.memory-bank/foundation.md` is missing, route
-back to `/spec-design` and stop before task generation.
+Read enough of those sources to prove the selected baseline, spec identity,
+task shape, dependencies, and tier. The agent chooses the efficient reading
+and exploration order, except that the task schema and tier policy must be
+loaded before drafting durable task records.
 
-Before reading foundation anchors or writing any artifact, require
-`.memory-bank/spec-backbone.md` `## Global Backbone Status` to be:
-- `complete`; or
-- `minimal` with the explicit `Not applicable areas` entries and rationales
-  required by the `/spec-design` status contract.
-
-If the section or status is missing/malformed, the status is `blocked`, or
-`minimal` lacks explicit not-applicable rationale, stop and route back to
-`/spec-design`. Do not create or update foundation specs, `REQ-000`, `FT-000`,
-task records, protocols, or plans.
-
-## 1) Foundation contract
-Read `.memory-bank/foundation.md` and require this parseable section:
+Require this parseable anchor block:
 
 ```markdown
 ## Gate Anchors
@@ -68,282 +42,151 @@ Read `.memory-bank/foundation.md` and require this parseable section:
 - Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required
 ```
 
-Rules:
-- `Foundation Required: false` requires `Foundation Gate Task: not_required` and a
-  concise rationale in `.memory-bank/foundation.md`; create no tasks.
-- `Foundation Required: true` may enter this command with
-  `Foundation Gate Task: pending_foundation_to_tasks`; this command creates or
-  refreshes `REQ-000`, `FT-000`, at least one implementation/probe task, and one
-  final foundation gate task.
-- `FT-000` is reserved for project foundation only. It is not a product feature.
-- `REQ-000` is reserved for the verified executable baseline requirement.
-- Product features must not use `FT-000` and product tasks must not use `W0`.
+If the backbone, foundation decision, anchors, or Feature Pressure Map are
+missing, blocked, contradictory, stale, or contain placeholders, stop before
+foundation specs, plans, requirements, features, or tasks are written and
+route to `/spec-design`.
+</input_contract>
 
-If anchors are absent, contradictory, or still contain placeholders, stop and
-route back to `/spec-design`.
+<hard_invariants>
+- Foundation is the minimum executable baseline, not product implementation or
+  a future-ready platform.
+- `REQ-000`, `FT-000`, and product-foundation `W0` are reserved. Product
+  features must not use `FT-000`; product tasks must not use `W0`.
+- Foundation uses only `.memory-bank/tasks/TASK-*.task.json`,
+  `.memory-bank/tasks/index.json`, the existing task schema/lifecycle, and the
+  tier-selected protocol/evidence paths. Do not add a foundation registry,
+  schema, status machine, task fields, or protocol family.
+- Task IDs use `TASK-NNN-TN-FT-000-WN`; ID tier/feature/wave segments match the
+  record. Existing IDs are not renumbered.
+- Lifecycle and closure ownership come from
+  `.memory-bank/workflows/tier-policy.md`. This command creates/reconciles
+  planning state only and never marks the final gate `done`.
+- `touched_files` is advisory and non-exhaustive. A non-empty
+  `runtime_context.write_boundary` is a deliberate hard boundary, never a
+  mechanical copy of `touched_files`; `forbidden_scope` and stop conditions
+  remain hard.
+- New specs use subject-based canonical paths without `FT-000` or product
+  feature identity. `spec-index.md` remains
+  `Type | Path | Status | Scope | Change route`, without decision bodies,
+  ownership, or `used_by` metadata.
+- Do not invent future endpoints, event payloads, domain behavior, state
+  machines, schemas, migrations, security policy, or operational layers that
+  are not needed to prove the baseline.
+- Never resolve competing canonical paths by creating a third spec.
+</hard_invariants>
 
-## 2) Foundation scope
-Foundation is a walking skeleton, not big upfront architecture.
+<operator_decisions>
+This command consumes the Foundation decision; it does not silently revise it.
+If evidence exposes a new material branch about whether Foundation is required,
+what executable baseline is sufficient, or which architecture, component/API/
+event/data, storage/state, security, compatibility, task-boundary, tier,
+dependency, or verification contract should govern it:
 
-Allowed work:
-- minimal app/repo skeleton
-- primary entrypoint
-- build/start command
-- minimal vertical path through real layers
-- test harness
-- smoke or integration check
-- small compatibility probes required by planned features
-- evidence that planned feature work can start safely
+- interactive/manual flow asks the operator an adaptive focused question,
+  explains the downstream effect, and treats a recommendation/default as not
+  accepted until the operator answers;
+- record an accepted answer in the existing owning canonical artifact and
+  `.protocols/FT-000/decision-log.md` when the queue exists, remove
+  contradictory wording, and revalidate the Foundation anchors/spec routes;
+- if the answer changes global design or the Foundation decision, route through
+  `/spec-design` before task generation;
+- unattended flow records the exact question and affected scope, creates no
+  affected task records, returns `HALT_BLOCKING_QUESTIONS`, and names
+  `/spec-design` as the resume route.
 
-Non-goals:
-- no future-ready platform, plugin/core framework, or universal abstraction
-  without immediate proving-path pressure
-- no product feature implementation except tiny compatibility probes
-- no complete future API/domain/state design
-- no deploy/CI/CD/ops layer beyond minimal build/start/test/smoke proof
+Do not ask when current authoritative evidence already settles the branch.
+</operator_decisions>
 
-Use the Feature Pressure Map in `.memory-bank/foundation.md` to decide the
-minimum task set. If the map is missing, stale, or not grounded in current
-features/specs, route back to `/spec-design`.
+<agent_discretion>
+Within the accepted Foundation objective, source precedence, KISS constraints,
+schema, tier policy, and hard scopes, the agent chooses:
+- exploration order, tools, and working notes;
+- the minimum walking skeleton and proof path;
+- which applicable Architecture, Interfaces/Contracts, Data, testing, runbook,
+  and evidence concerns need concrete coverage;
+- `reuse|extend|create|not_applicable|block` per concern;
+- the smallest cohesive task slicing, dependency shape, waves, and cheapest
+  credible verification path.
 
-## 2.1) Foundation substrate spec audit
-When `Foundation Required: true`, run a foundation substrate spec audit before
-creating FT-000 task records. The walking skeleton must not be planned from
-implicit platform assumptions.
+Architecture, Interfaces/Contracts, Data, Verification, security, runtime, and
+operations are coverage criteria driven by actual foundation pressure, not a
+mandatory analysis sequence or a requirement to create every spec family.
+</agent_discretion>
 
-Generate or update only the fundamental scaffold-level specifications needed to
-define and prove the executable substrate. Use evidence from
-`.memory-bank/foundation.md`, the Feature Pressure Map, PRD/features, and linked
-backbone specs. Do not invent future product behavior.
+<required_outputs>
+When `Foundation Required: false`:
+- require `Foundation Gate Task: not_required` and concise evidence/rationale;
+- create no `REQ-000`, `FT-000`, foundation plans, protocols, or task records.
 
-The output is the smallest set of subject-based canonical specs and substrate
-blocks needed by `FT-000` tasks, not the final product specification for every
-future feature. A good foundation block records:
-- its scope and out-of-scope concerns when the boundary is not obvious
-- the substrate shape or boundary used by the walking skeleton
-- the basic rules/invariants that foundation tasks must preserve
-- the verification target proving the baseline
-- where `/prd-to-tasks` should reuse or extend the same canonical path later
+For `--verify-existing`, if the baseline is already credibly proven, update the
+existing Foundation decision to the same no-queue state. If evidence is
+insufficient, keep `Foundation Required: true` and create only the minimum
+probe/verification queue.
 
-Before creating a substrate spec, read `spec-index.md`, relevant folder indexes,
-and plausible subject-based candidates in full. For each substrate concern use
-exactly one action: `reuse|extend|create|not_applicable|block`. If two paths
-compete for one concern, create no third file; route the conflict to
-`/spec-design`.
+When `Foundation Required: true`:
+1. Reconcile only the substrate-level canonical specs needed by the proof path.
+   Each changed or depended-on concrete concern has one canonical spec defining
+   shape, `MUST`/`MUST NOT` rules, edge cases/errors, and a verification target.
+   Typical routes are:
+   - runtime/module shape -> `.memory-bank/architecture/*`;
+   - component/API/event/protocol/agent/tool boundaries and crossing payloads
+     -> `.memory-bank/contracts/*`;
+   - internal DB/session/UoW/migration/seed/storage/state ->
+     `.memory-bank/domains/*`, `.memory-bank/states/*`, or the stack-native
+     schema/migration source;
+   - proof harness/evidence -> `.memory-bank/testing/*`;
+   - local bootstrap/runtime/troubleshooting -> `.memory-bank/runbooks/*`.
+2. Add/update `REQ-000` in `.memory-bank/requirements.md` as the verified
+   executable-baseline requirement.
+3. Create/update `.memory-bank/features/FT-000-foundation.md` with lifecycle
+   `planned|implemented|verified`, clarification omitted or `complete`, links
+   to Foundation/REQ/specs, and an explicit pseudo-feature note.
+4. Create/update `.protocols/FT-000/plan.md`,
+   `.protocols/FT-000/decision-log.md`, and
+   `.memory-bank/tasks/plans/IMPL-FT-000.md`.
+5. Create/reconcile at least one implementation/probe task and exactly one
+   final foundation gate task. The final gate depends on every required
+   foundation implementation/probe task and proves build/start/test/smoke plus
+   required compatibility probes.
+6. Replace `pending_foundation_to_tasks` with the concrete final gate task ID.
+7. Index every record exactly once and keep Foundation records before product
+   records.
 
-Apply the same three design lenses used by `/spec-design` and `/prd-to-tasks`,
-but only to the substrate proof path:
-- Architecture impact: minimal runtime shape, entrypoints, core
-  components/modules, dependency direction, source-of-truth boundary, and the
-  smallest vertical path through real layers. Update the existing canonical
-  Architecture Specification; do not introduce product architecture here.
-- Interfaces / Contracts: API, event, protocol, CLI, agent/tool, component, or
-  frontend/backend boundary actually crossed by the substrate proof path.
-  Interface Specification is the lens; create or update only the applicable
-  fundamental canonical contracts:
-  - Component Contract: module/component guarantees and ownership boundaries
-    required by the walking skeleton.
-  - API Contract: substrate-level REST/gRPC/GraphQL or other request/response
-    inputs, outputs, status/error behavior, and compatibility expectation for
-    the smoke path.
-  - Event Contract: event/message/queue envelope, required fields, ordering,
-    retry/idempotency, and failure behavior only when the foundation path uses an
-    event/message boundary.
-  - Data Contract: payload/data structure, versions, required fields,
-    validation/serialization, and compatibility expectations for substrate data
-    crossing a component/API/event/protocol boundary. It does not define internal
-    DB/storage models.
-- Data impact: update the Data Specification only for internal data
-  model/storage ownership needed by the baseline, DB
-  schema or migration path when persistence is part of foundation, session/UoW
-  lifetime, seed/bootstrap behavior, runtime data paths, internal stored or
-  serialized formats, and internal validation/serialization rules used by the
-  substrate proof.
+Task-record rules:
+- use `feature: "FT-000"`, normally `reqs: ["REQ-000"]`, and `W0` only for
+  executable-baseline work; later probe/integration waves may use `W1+`;
+- `ready` requires no unmet dependency or blocker; otherwise use `planned`;
+- choose tier only from `tier-policy.md`;
+- populate schema fields only from evidence and leave optional grounded-only
+  fields empty/absent rather than inventing filler;
+- link task-relevant substrate specs through existing link-bearing fields;
+- every T2/T3 record has non-empty `purpose`, scalar `success_outcome`, at
+  least one existing direct task-linked canonical SDD path, advisory expected
+  change surface and/or justified hard write scope, and a real gate command
+  and/or non-empty verification target.
+</required_outputs>
 
-Create supporting substrate specs only when the proof path needs them:
-- Test Harness Specification: test command, smoke/integration target, required
-  fixtures, and evidence expected from foundation verification.
-- Local Runtime / Bootstrap Runbook: setup/start commands, environment
-  variables, local service dependencies, smoke path, and troubleshooting notes
-  needed to prove the baseline.
-- Redaction / Evidence Contract: what logs, screenshots, traces, DB dumps, or
-  artifacts may be captured; what secrets/PII must be redacted; where evidence is
-  stored.
+<validation>
+Before handoff, prove:
+- schema/index validity and ID/tier/feature/wave consistency;
+- `REQ-000`, `FT-000`, W0, and final-gate rules;
+- one and only one final gate with complete dependencies and an acyclic graph;
+- no product behavior or speculative substrate escaped the Foundation scope;
+- canonical-path uniqueness and spec-index purity;
+- every T2/T3 card satisfies the complete single-card handoff contract;
+- Gate Anchors name the final gate or `not_required` truthfully;
+- no affected material operator decision remains unresolved.
 
-A substrate spec looks missing when the Foundation Feature Pressure Map names
-the area, when a foundation task would need to guess build/start/runtime/storage
-or evidence behavior, when future T2/T3 product tasks will depend on the
-substrate rule already selected by the foundation path, or when `/spec-design`
-routed a relevant Backbone Area Matrix row to foundation proof.
+Report queue action, specs reused/extended/created, task IDs, final gate ID or
+`not_required`, and blockers/questions.
+</validation>
 
-Canonical locations:
-- architecture/runtime shape -> `.memory-bank/architecture/*`
-- interface/component/API/event/protocol/agent/tool boundaries and payloads
-  crossing them -> `.memory-bank/contracts/*`
-- internal DB/session/UoW/migration/seed/storage ownership ->
-  `.memory-bank/domains/*`, `.memory-bank/states/*`, or the stack-native schema
-  and migration source
-- test harness and evidence requirements -> `.memory-bank/testing/*`
-- local runtime/bootstrap/troubleshooting -> `.memory-bank/runbooks/*`
-
-Rules:
-- Prefer reusing or extending an existing registered canonical path over
-  creating a new file.
-- New substrate specs use subject-oriented paths and names without `FT-000`,
-  `FT-<NNN>`, or feature identity. Recheck neighboring filenames for synonyms
-  and overlap before creation.
-- Register canonical identity by path and scope. Do not add feature ownership,
-  `used_by`, or file-owner metadata to specs or `spec-index.md`.
-- Do not create empty placeholder specs for scaffold areas that the foundation
-  path does not touch.
-- Foundation tasks must link scaffold specs through normal task fields when
-  those specs constrain the task: `source_artifacts`, `normative_inputs`,
-  `constraints`, `invariants`, or `verification_targets`.
-- Scaffold specs are reusable normative inputs for later T2/T3 product tasks.
-  They prove the selected substrate path; they must not define complete future
-  product APIs, domain behavior, event payloads, state machines, or migrations
-  by guessing.
-- Leave product-level endpoint shapes, feature data schemas, event payloads,
-  domain rules, state transitions, and edge-case/error matrices for
-  `/prd-to-tasks` unless they are required to prove the foundation baseline.
-  `/prd-to-tasks` may reuse or extend the same canonical spec, or create only a
-  missing subject-based spec, without duplicating the foundation definition.
-- When this command creates or materially updates scaffold specs, update
-  `.memory-bank/spec-index.md` as a registry only using
-  `Type | Path | Status | Scope | Change route`. Do not store decision bodies
-  or reverse feature usage in the index.
-- If the selected substrate requires an unresolved product/API/data/security
-  decision, stop and route back to `/spec-design` instead of creating weak
-  foundation tasks.
-
-## 3) Create or update REQ-000 and FT-000
-When foundation is required:
-1. Add/update `REQ-000` in `.memory-bank/requirements.md`:
-   `Project must have a verified executable baseline before product feature
-   implementation starts.`
-2. Create/update `.memory-bank/features/FT-000-foundation.md` with:
-   - lifecycle `planned|implemented|verified`
-   - clarification status omitted or `complete`; do not mark it pending
-   - links to `.memory-bank/foundation.md`, `REQ-000`, and relevant specs
-   - explicit note: this is a reserved pseudo-feature, not a product feature
-3. Create/update `.protocols/FT-000/plan.md` and
-   `.protocols/FT-000/decision-log.md`.
-4. Create/update `.memory-bank/tasks/plans/IMPL-FT-000.md`.
-
-Do not create `FT-000` when foundation is not required.
-
-## 4) Create foundation task records
-Create normal schema-backed task records only:
-
-```json
-{
-  "id": "TASK-000-T1-FT-000-W0",
-  "title": "Create minimal executable skeleton",
-  "status": "ready",
-  "wave": "W0",
-  "feature": "FT-000",
-  "reqs": ["REQ-000"],
-  "depends_on": [],
-  "touched_files": [],
-  "tier": "T1",
-  "gates": [],
-  "verify": [],
-  "docs": [],
-  "evidence_required": [],
-  "source_artifacts": [".memory-bank/foundation.md"],
-  "normative_inputs": [],
-  "constraints": [],
-  "invariants": [],
-  "verification_targets": []
-}
-```
-
-Task rules:
-- prefer `TASK-000-T1-FT-000-W0` for the first minimal `T1` foundation task;
-  otherwise use the next safe `TASK-<NNN>-T<N>-FT-000-W<N>` ID with the chosen
-  tier segment, without renumbering existing tasks
-- use `feature: "FT-000"` for every foundation task
-- task id tier, feature, and wave segments must match the task record fields
-- use `reqs: ["REQ-000"]` unless a task also traces to concrete product
-  requirements
-- use `wave: "W0"` only for project executable baseline tasks under `FT-000`
-- use `W1`/`W2`/`W3` for probes, integration, verification, and evidence work
-  when that better matches the normal wave vocabulary
-- set `status: ready` only when dependencies are empty or already `done`;
-  otherwise use `planned`
-- choose `tier` by `.memory-bank/workflows/tier-policy.md`
-- fill the normal task schema fields; use empty arrays only when no evidence
-  exists
-- include scaffold-level spec links from section 2.1 when they constrain
-  foundation Architecture, Interfaces / Contracts, Data, test harness,
-  runtime/bootstrap, or redaction/evidence behavior
-- every T2/T3 record has non-empty `purpose` and one scalar
-  `success_outcome`, at least one existing direct task-linked canonical SDD spec
-  path, advisory `touched_files` or an evidence-backed hard
-  `runtime_context.allowed_write_scope`, and at least one verification path
-  through a real gate command and/or non-empty `verification_target`
-- leave `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
-  `invariants`, `evidence_required`, and `runtime_context.stop_conditions`
-  empty or absent when current evidence does not justify them
-- never add foundation-specific task fields or lifecycle values
-
-Brownfield `--verify-existing` mode should not create `FT-000` by default. If
-existing baseline evidence is already verified and no task is needed, update
-`.memory-bank/foundation.md` to `Foundation Required: false` and
-`Foundation Gate Task: not_required` with concise evidence/rationale, then stop
-without creating `REQ-000`, `FT-000`, protocols, or task records. If
-evidence is insufficient, keep `Foundation Required: true` and create only the
-minimum probe/verification tasks needed to prove the existing baseline before
-product feature tasking.
-
-## 5) Final foundation gate task
-When foundation is required, create exactly one final gate task.
-
-Rules:
-- it must be a normal `TASK-NNN-TN-FT-000-WN` record with `feature: "FT-000"` and
-  `reqs: ["REQ-000"]`
-- it depends on every required foundation implementation/probe task
-- it verifies the minimal work path and all required compatibility probes
-- it records evidence requirements for build/start/test/smoke success
-- replace `.memory-bank/foundation.md`
-  `Foundation Gate Task: pending_foundation_to_tasks` with the concrete final
-  gate task id: `Foundation Gate Task: TASK-<NNN>-T<N>-FT-000-W<N>`
-- product feature tasks created later by `/prd-to-tasks` must depend on this
-  gate task when foundation is required
-
-Do not mark the gate `done` during this command. Execution and verification go
-through `/execute`, `/verify`, `/red-verify` when tier requires it, and
-`/mb-sync`.
-
-## 6) T2/T3 single-card handoff completeness
-
-Before handoff, apply the same single-card completeness contract as
-`/prd-to-tasks` to every foundation T2/T3 record:
-- schema/index/ID segments are valid
-- `REQ-000` and any additional governing requirements exist
-- `purpose` and scalar `success_outcome` are non-empty
-- at least one existing direct task-linked canonical SDD spec path is present
-- the expected change surface is present in `touched_files` and/or a deliberate
-  hard `runtime_context.allowed_write_scope`
-- a real gate command and/or non-empty `verification_target` exists
-- dependencies exist and remain acyclic
-
-This does not add a new status, artifact, nested object, or semantic doctor
-rule. Optional evidence-driven fields remain grounded-only.
-
-## 7) Handoff
-Before finishing:
-- update `.memory-bank/tasks/index.json` with normal task entries only
-- keep foundation tasks ordered before product feature tasks
-- ensure `.memory-bank/foundation.md` Gate Anchors name the final gate task or
-  `not_required`
-- report the planned foundation queue and blockers
-- stop before execution
-
-Next command:
-- run `/mb-doctor --strict` at the foundation/task-queue boundary
-- then execute/verify foundation tasks until the final foundation gate task is
-  `done`
-- only then run `/prd-to-tasks FT-<NNN>` for product features
-
-</process>
+<handoff_contract>
+- Queue created/reconciled: stop before execution and hand off immediately to
+  `/mb-doctor --strict` for the FT-000 queue.
+- No Foundation required/proven brownfield baseline: hand off to
+  `/prd-to-tasks FT-<NNN>`.
+- Unresolved Foundation/design decision: no affected queue handoff;
+  `/spec-design` is the repair/resume owner.
+</handoff_contract>

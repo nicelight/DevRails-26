@@ -53,11 +53,17 @@ const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const GATE_KEYS = new Set(['name', 'command', 'required']);
 const RUNTIME_CONTEXT_KEYS = new Set([
+  'write_boundary',
   'allowed_write_scope',
   'forbidden_scope',
   'stop_conditions',
 ]);
-const RUNTIME_CONTEXT_ARRAY_FIELDS = ['allowed_write_scope', 'forbidden_scope', 'stop_conditions'];
+const RUNTIME_CONTEXT_ARRAY_FIELDS = [
+  'write_boundary',
+  'allowed_write_scope',
+  'forbidden_scope',
+  'stop_conditions',
+];
 const LEGACY_TASK_RISK_KEYS = new Set(['risk', 'risk.level', 'risk_level', 'riskLevel']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
@@ -666,6 +672,12 @@ function checkOptionalTaskRuntimeContext(rel, task) {
   }
 
   checkExactKeys(rel, runtimeContext, RUNTIME_CONTEXT_KEYS, 'runtime_context');
+
+  if (hasOwn(runtimeContext, 'write_boundary') && hasOwn(runtimeContext, 'allowed_write_scope')) {
+    errors.push(`${rel}: runtime_context must not contain both 'write_boundary' and deprecated 'allowed_write_scope'`);
+  } else if (hasOwn(runtimeContext, 'allowed_write_scope')) {
+    warnings.push(`${rel}: runtime_context.allowed_write_scope is deprecated; use write_boundary`);
+  }
 
   for (const field of RUNTIME_CONTEXT_ARRAY_FIELDS) {
     checkOptionalStringArrayField(rel, runtimeContext, field, `runtime_context.${field}`);

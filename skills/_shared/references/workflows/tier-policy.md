@@ -22,7 +22,7 @@ review and applicable doctor gates before executing the replacement task ID.
 same outcome does not raise tier by itself. Raise tier only when the actual
 behavior, boundary, data/state/security/runtime impact, dependency shape, or
 blast radius triggers the higher tier. A non-empty
-`runtime_context.allowed_write_scope` remains a hard boundary.
+`runtime_context.write_boundary` remains a hard boundary.
 
 ## Status Transition Modes
 
@@ -62,6 +62,41 @@ Manual mode:
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
 - Do not mix scheduler mode and manual mode inside one task run.
 - No persisted `mode` field is used.
+
+## Scheduler Failure Handling
+
+`/autopilot` and `/autonomous` apply one canonical failure contract:
+
+- After `VERDICT: FAIL` or `SEMANTIC_VERDICT: semantic-fail`, a same-task retry
+  is allowed only while `max_retries_per_task` has capacity and the correction
+  stays inside the accepted task identity, outcome, scope, tier, dependencies,
+  specs, and hard runtime boundaries. The retry must not repeat an unsafe or
+  non-idempotent side effect. Keep the task `in_progress`, record the attempt and
+  evidence in the run status/task protocol, then rerun `/execute` and every
+  required verification gate.
+- If no safe same-task retry exists or its budget is exhausted, write
+  `in_progress -> failed` with the functional/semantic evidence and failure
+  decision in the authoritative task record. Before the next strict doctor,
+  create a `.memory-bank/bugs/` note mentioning the failed task or route a
+  normal indexed follow-up task through `/prd-to-tasks` or
+  `/foundation-to-tasks`. A follow-up joins the same run only after its normal
+  review and readiness gates pass.
+- `VERDICT: NEEDS-CLARIFICATION`, `SEMANTIC_VERDICT: semantic-concern`, or an
+  execution blocker never becomes `done` or automatic `failed`. Use a safe
+  same-task retry only when no operator/planning decision is needed; otherwise
+  set `blocked`, record owner/reason/evidence and the exact resume route, and use
+  the applicable clarification, blocking, or quality terminal state.
+- Mark direct dependents of every `failed|blocked` task `blocked` before another
+  promotion pass. Repeat the pass so no downstream task is promoted through a
+  failed or blocked dependency.
+- Record retry, consecutive-failure, and open-blocker counters in
+  `.protocols/AUTONOMOUS-RUN/status.md`. Exceeding an applicable failure limit
+  yields `HALT_FAILURE_BUDGET`; a successful task resets the consecutive-failure
+  count.
+
+The scheduler owns these lifecycle decisions. `/execute`, `/verify`,
+`/red-verify`, and `/mb-sync` only return or reconcile their existing evidence
+and ownership deltas.
 
 Tier summary:
 - T0/T1: compact allowed.
@@ -138,4 +173,9 @@ Use for auth, permissions, secrets, security-sensitive behavior, deploy/runtime 
 - Local, contained, low blast radius -> `T1`
 - API, contracts, state, data, migration, domain logic, or multiple modules -> at least `T2`
 - Auth, security, deploy/runtime, production, irreversible/data-loss, payments, or compliance -> `T3`
-- If unsure between two tiers, choose the higher tier
+- When evidenced scope deterministically triggers several tiers, use the highest
+  triggered tier; this is classification, not an unresolved choice.
+- A genuinely ambiguous tier is an operator decision because it changes task
+  identity and downstream gates. Interactive planning asks the operator;
+  unattended planning records the question and halts through the existing
+  clarification/blocking route instead of defaulting to the higher tier.

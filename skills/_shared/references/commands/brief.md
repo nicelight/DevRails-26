@@ -5,135 +5,99 @@ status: active
 # /brief - Product Brief input contract
 
 <objective>
-Create or update `.memory-bank/analysis/product-brief.md` as a concise Product Brief before `/write-prd`, with `/constitution` as the normal next step only when project principles are not already `ratified|partial`.
+Create or update `.memory-bank/analysis/product-brief.md` as the concise product
+input contract for `/constitution` when needed and for `/write-prd`.
 
-Product Brief is the input contract for `/constitution` when needed and for `/write-prd`. It is not a PRD, backlog, marketing document, research report, or task plan.
+The Product Brief captures what to build, for whom, why, the MVP boundary, and
+known decisions. It is not a PRD, backlog, marketing document, research report,
+or task plan.
 </objective>
 
-<process>
+<input_contract>
+Use `/brief` for a concept that is coherent enough to summarize, either directly
+from operator input or after `/brainstorm`.
 
-## 0) Scope
-Use `/brief` when the concept is clear enough to summarize, or after `/brainstorm`. Raw ideas should go to `/brainstorm`; clear concepts can start here directly.
+Read when present and relevant:
+- the latest `.memory-bank/analysis/brainstorming/BR-*.md`;
+- `.memory-bank/analysis/product-brief.md`;
+- `.memory-bank/constitution.md` for next-step routing;
+- operator-provided concept, notes, or PRD-like text.
 
-Allowed outputs:
-- `.memory-bank/analysis/index.md`
-- `.memory-bank/analysis/product-brief.md`
+If brainstorming exists, include it under `Source artifacts`. A report is not
+required when the operator supplied a clear concept directly.
+</input_contract>
 
-Do not create:
-- feature docs
-- task records
-- implementation plans
-- research reports
-- PRFAQ
-- `.memory-bank/analysis/assumptions.md`
-- command aliases
+<hard_invariants>
+Allowed outputs are only:
+- `.memory-bank/analysis/index.md`;
+- `.memory-bank/analysis/product-brief.md`.
 
-## 1) Inputs
-Read, when present:
-- latest relevant `.memory-bank/analysis/brainstorming/BR-*.md`
-- existing `.memory-bank/analysis/product-brief.md`
-- user-provided concept, notes, or PRD-like text
+Do not create features, task records, implementation plans, research reports,
+PRFAQ, command aliases, or `.memory-bank/analysis/assumptions.md`. Preserve the
+existing decision vocabulary `proceed|blocked`; do not add `no-go`.
+</hard_invariants>
 
-If brainstorming exists, include it in `Source artifacts`. If no brainstorming exists, a brief may still be created directly from user input.
+<operator_decisions>
+When a relevant ambiguity or branch can change product intent, users, scope,
+non-goals, value, constraints, success measures, or the PRD input, interview the
+operator before choosing. Questions are adaptive: ask one or group only tightly
+related decisions, use multiple choice or open form as useful, explain the
+impact, and optionally recommend an option.
 
-## 2) Create or update Product Brief
-Create `.memory-bank/analysis/product-brief.md` with a concise 1-2 page target.
+A recommendation/default is not accepted until the operator explicitly answers.
+Do not run a decorative questionnaire when authoritative evidence is already
+clear. Put accepted decisions into the applicable brief sections and keep
+unresolved material choices under `Open Questions` with `Decision: blocked`.
+</operator_decisions>
 
-When creating `.memory-bank/analysis/index.md`, include:
+<required_outputs>
+Create or update `.memory-bank/analysis/product-brief.md` with required
+frontmatter:
 
 ```yaml
----
-description: Analysis artifact index.
-status: active
----
-```
-
-Required structure:
-
-```md
 ---
 description: Product Brief input contract for PRD.
 status: draft
 type: product-brief
 ---
-# Product Brief
-
-## Metadata
-- Status: draft
-- Decision: proceed|blocked
-- Source artifacts:
-  - .memory-bank/analysis/brainstorming/BR-<NNN>.md
-
-## 1. One-liner
-
-## 2. Target Users
-
-## 3. Problem
-
-## 4. Current Alternatives
-
-## 5. Value Proposition
-
-## 6. Product Concept
-
-## 7. MVP Scope
-
-## 8. Non-goals
-
-## 9. Success Metrics
-
-## 10. Constraints
-
-## 11. Assumptions
-
-## 12. Risks
-
-## 13. Open Questions
-
-## 14. PRD Input Summary
-
-## 15. Decision
-proceed|blocked
 ```
 
-The Product Brief frontmatter is required. `type` must be `product-brief`, and `status` should match the current brief state, starting as `draft`.
+Keep the brief concise and cover:
+- Metadata: status, `Decision: proceed|blocked`, and source artifacts;
+- One-liner, Target Users, Problem, Current Alternatives;
+- Value Proposition and Product Concept;
+- MVP Scope and Non-goals;
+- Success Metrics and Constraints;
+- Assumptions, Risks, Open Questions;
+- PRD Input Summary;
+- final `## Decision` with `proceed|blocked`.
 
-KISS decision values:
-- `proceed`
-- `blocked`
+If `.memory-bank/analysis/index.md` is created, give it analysis-index
+frontmatter. Update the index with the brief status, source artifacts, decision,
+and immediate next command.
+</required_outputs>
 
-Do not add `no-go`.
+<agent_discretion>
+Choose the reading order, analysis tools, question grouping, and brief phrasing.
+Use the smallest structure that still covers the required content; do not pad to
+a page count or ask formal questions for already-resolved sections.
+</agent_discretion>
 
-## 3) Decision rules
-Set `Decision: proceed` only when the brief is clear enough for `/constitution` if needed and `/write-prd`.
+<validation>
+Set `Decision: proceed` only when the brief is coherent enough for governing
+principles and PRD clarification. Set `Decision: blocked` when a missing
+operator choice would make the PRD unreliable. Verify that accepted decisions
+are applied consistently, assumptions remain labelled, and the index agrees
+with the brief.
+</validation>
 
-Set `Decision: blocked` when open questions block PRD quality. If blocked:
-- do not continue to `/prd` unless the user explicitly overrides
-- explain the blocking open questions
+<handoff_contract>
+- `proceed` + Constitution `project_principles: ratified|partial` ->
+  `/write-prd`.
+- `proceed` + Constitution `framework-default|skipped|missing` ->
+  `/constitution`, unless the operator explicitly chooses the supported skip
+  route; then `/write-prd` records that context.
+- `blocked` -> obtain the listed operator decisions and rerun `/brief`.
 
-If the user explicitly overrides a blocked brief, `/write-prd` may continue, but Constitution conflicts and PRD-level blockers still stop downstream decomposition.
-
-## 4) Downstream path
-The next planning chain is:
-
-```text
-/brief -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict and execute/verify FT-000 until its gate is done when foundation tasks were created -> /prd-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> tier-routed /execute TASK
-```
-
-Check `.memory-bank/constitution.md` before recommending the next command. If `project_principles: ratified|partial`, continue directly to `/write-prd`. If `project_principles: framework-default|skipped|missing`, recommend `/constitution`; it should read `.memory-bank/analysis/product-brief.md` and run the governing-principles interview before `/write-prd`. If the user explicitly skips `/constitution`, continue to `/write-prd` with framework-default/skipped principles and recommend revisiting `/constitution` later.
-
-Do not recommend `/prd-to-tasks` directly from `/brief`.
-Recommend `/clarify-feature FT-<NNN>` only when a specific feature is explicitly pending/blocked or has decomposition-affecting unresolved markers.
-
-## 5) Update index and finish
-Update `.memory-bank/analysis/index.md` with:
-- product brief status
-- source artifacts
-- decision
-- recommended next step
-
-Recommended next step:
-- if `Decision: proceed` and `project_principles: ratified|partial`: `/write-prd`, then `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/mb-doctor --strict` plus execute/verify of `FT-000` until its gate is done when foundation tasks were created, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
-- if `Decision: proceed` and `project_principles: framework-default|skipped|missing`: `/constitution`, then `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, `/spec-design`, `/foundation-to-tasks` if required, `/mb-doctor --strict` plus execute/verify of `FT-000` until its gate is done when foundation tasks were created, `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
-- if `Decision: blocked`: answer blocking questions, then rerun `/brief`
-</process>
+Do not copy the full downstream workflow or route directly to task generation.
+</handoff_contract>

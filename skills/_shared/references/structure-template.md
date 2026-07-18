@@ -108,11 +108,11 @@ After finishing a meaningful unit of work:
 - If running in **Claude Code**: execute each `TASK-NNN-TN-FT-NNN-WN` in a **fresh Claude session** using tier-appropriate `.protocols/TASK-NNN-TN-FT-NNN-WN/` state.
 - If running in **Codex**: you can run each `TASK-NNN-TN-FT-NNN-WN` in a fresh session via `codex exec` (see `/execute`).
 - Execution file scope: `touched_files` is advisory and non-exhaustive; executor
-  preflight confirms actual files, while non-empty `allowed_write_scope` and
+  preflight confirms actual files, while non-empty `write_boundary` and
   `forbidden_scope` remain hard boundaries.
 - Sequencing: canonical task execution is sequential. Parallel task execution is
   experimental, requires explicit `--experimental-parallel`, pairwise-disjoint
-  hard `runtime_context.allowed_write_scope`, isolated worktrees/sandboxes, and
+  hard `runtime_context.write_boundary`, isolated worktrees/sandboxes, and
   the exclusions in `.memory-bank/workflows/autonomy-policy.md`;
   `touched_files` alone never proves independence.
 
@@ -533,7 +533,7 @@ status: draft
 
 ## Purpose
 - Keep lightweight boundary notes that help agents avoid crossing ownership, responsibility, or write-scope lines during decomposition and task execution.
-- Use this file as an existing contract/spec input when task records need `purpose`, `success_outcome`, `anti_goals`, `runtime_context.allowed_write_scope`, `runtime_context.forbidden_scope`, or `runtime_context.stop_conditions`.
+- Use this file as an existing contract/spec input when task records need `purpose`, `success_outcome`, `anti_goals`, `runtime_context.write_boundary`, `runtime_context.forbidden_scope`, or `runtime_context.stop_conditions`.
 
 ## Boundary Notes
 | Boundary | Purpose | Direction | Owner | Known Constraints | Questions |
@@ -552,7 +552,7 @@ status: draft
 - Linked ADs:
 
 ## Runtime Context Hints
-- Allowed write scope hints: TBD
+- Write boundary hints: TBD
 - Forbidden scope hints: TBD
 - Stop condition hints: TBD
 
@@ -672,9 +672,14 @@ status: draft
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "write_boundary": {
+          "type": "array",
+          "description": "Optional hard write boundary; omit unless evidence justifies one.",
+          "items": { "type": "string" }
+        },
         "allowed_write_scope": {
           "type": "array",
-          "description": "Optional hard write boundary; populate only when evidence justifies one.",
+          "description": "Deprecated alias for write_boundary; do not emit in new task cards.",
           "items": { "type": "string" }
         },
         "forbidden_scope": {
@@ -687,7 +692,8 @@ status: draft
           "description": "Hard conditions that require execution to stop and hand off.",
           "items": { "type": "string" }
         }
-      }
+      },
+      "not": { "required": ["write_boundary", "allowed_write_scope"] }
     },
     "source_artifacts": { "type": "array", "items": { "type": "string" } },
     "normative_inputs": { "type": "array", "items": { "type": "string" } },
@@ -732,7 +738,6 @@ The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>
     "What must not be changed or optimized away."
   ],
   "runtime_context": {
-    "allowed_write_scope": [],
     "forbidden_scope": [],
     "stop_conditions": []
   },
@@ -756,8 +761,9 @@ Optional runtime context rules:
 - `touched_files` is an advisory, expected, non-exhaustive change surface. It
   guides preflight and review but does not prohibit another file needed for the
   same task outcome.
-- `allowed_write_scope`, when non-empty, is an optional hard write boundary and
+- `write_boundary`, when present, is an optional hard write boundary and
   must not be populated by mechanically copying the exact `touched_files` list.
+- Existing `allowed_write_scope` is a deprecated read alias; never emit both.
 - `forbidden_scope` and `stop_conditions` are hard preflight/evidence contracts.
   These fields do not replace sandbox permissions or role write-scope instructions.
 - T2/T3 task cards require non-empty `purpose` and scalar `success_outcome`,

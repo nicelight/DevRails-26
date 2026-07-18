@@ -42,7 +42,7 @@ status: active
 ### Preflight-confirmed change surface
 - Expected hints kept: ...
 - Additional same-outcome files/areas and rationale: ...
-- Hard `allowed_write_scope` present and satisfied: yes | no | not set
+- Hard `write_boundary` present and satisfied: yes | no | not set
 - `forbidden_scope` / stop-condition check: clear | blocked
 
 ## Applicable quality gates

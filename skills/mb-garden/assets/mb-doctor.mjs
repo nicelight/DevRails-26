@@ -1042,11 +1042,12 @@ function checkSingleCardHandoffCompleteness(record) {
   const runtimeContext = isPlainObject(task.runtime_context) ? task.runtime_context : null;
   const hasTouchedFiles =
     Array.isArray(task.touched_files) && task.touched_files.some((value) => nonEmptyString(value));
-  const hasAllowedWriteScope =
-    Array.isArray(runtimeContext?.allowed_write_scope)
-    && runtimeContext.allowed_write_scope.some((value) => nonEmptyString(value));
-  if (!hasTouchedFiles && !hasAllowedWriteScope) {
-    issues.push('touched_files or runtime_context.allowed_write_scope must describe the expected change surface');
+  const writeBoundary = runtimeContext?.write_boundary ?? runtimeContext?.allowed_write_scope;
+  const hasWriteBoundary =
+    Array.isArray(writeBoundary)
+    && writeBoundary.some((value) => nonEmptyString(value));
+  if (!hasTouchedFiles && !hasWriteBoundary) {
+    issues.push('touched_files or runtime_context.write_boundary must describe the expected change surface');
   }
 
   const hasGateCommand =
@@ -1067,7 +1068,7 @@ function checkSingleCardHandoffCompleteness(record) {
     task_id: id,
     details: { issues },
     suggested_fix:
-      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and allowed_write_scope only for a deliberate hard boundary.',
+      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and write_boundary only for a deliberate hard boundary.',
   });
 }
 

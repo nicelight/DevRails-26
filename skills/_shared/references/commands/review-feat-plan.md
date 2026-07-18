@@ -1,105 +1,90 @@
 ---
-description: Fresh-context review of PRD decomposition into requirements, epics, and features before SDD design and tasking.
+description: Fresh-context review of PRD decomposition before global SDD design.
 status: active
 ---
 # /review-feat-plan - Feature plan review
 
 <objective>
-Проверить, что продуктовая декомпозиция готова к `/spec-design` и дальнейшему
-feature-level task planning.
+Independently decide whether PRD -> requirements -> epics -> features
+decomposition is ready for `/spec-design`.
 
-Scope:
-- PRD -> requirements -> epics -> features traceability
-- product brief / analysis traceability when those artifacts exist
-- feature sizing, boundaries, ambiguity, and blocked clarification markers
-- Constitution conflicts affecting product scope
-- `FT-000` is reserved for Foundation Dev Path and is not a product feature
-- required Foundation Dev Path signals are visible before `/spec-design`
-
-This command does not review JSON task records. Use
-`/review-tasks-plan FT-<NNN>` after `/prd-to-tasks FT-<NNN>` creates or updates
-that feature's task records.
+The verdict vocabulary remains `APPROVE|REJECT`. This review does not inspect
+JSON task design; `/review-tasks-plan` owns that later gate.
 </objective>
 
-<process>
+<input_contract>
+Read when present and relevant:
+- Constitution, Product Brief, analysis index, and clarified PRD;
+- product, requirements, epics, and product features;
+- spec-index and spec-backbone.
 
-## 0) Artifacts
+Do not require task records. If they already exist, ignore implementation detail
+except for an obvious stale contradiction with the current product plan.
+</input_contract>
+
+<hard_invariants>
+- Use a fresh-context reviewer or separate fresh session; do not pin a provider,
+  CLI, or model.
+- Reviewer reports findings only. It does not rewrite product decisions or
+  choose between ambiguous alternatives.
+- `FT-000` remains reserved for Foundation Dev Path.
+- `REJECT` is blocking; `APPROVE` may include non-blocking notes.
+- High-risk, large, and autonomous flows require `APPROVE`; small manual flows
+  use this gate when required by the operator/Constitution or as recommended.
+</hard_invariants>
+
+<operator_decisions>
+If correctness depends on an unresolved product/decomposition choice, return
+`REJECT` with the exact question, affected artifacts, decision owner, and repair
+route. A reviewer recommendation may accompany the question but must not be
+applied as the operator's decision.
+</operator_decisions>
+
+<required_outputs>
 Create:
-- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/`
-- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/REQUEST.md`
+- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/REQUEST.md`;
+- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-<STAGE_ID>-final-report-docs-01.md`.
 
-Reviewer reports go to:
-- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-<STAGE_ID>-final-report-docs-01.md`
+The report must contain `VERDICT: APPROVE|REJECT`, evidence, blocking findings,
+non-blocking notes, unresolved operator questions, and the owning repair route.
 
-## 1) Inputs
-Read when present:
-- `.memory-bank/constitution.md`
-- `.memory-bank/analysis/product-brief.md`
-- `.memory-bank/analysis/index.md`
-- `.memory-bank/prd.md`
-- `.memory-bank/product.md`
-- `.memory-bank/requirements.md`
-- `.memory-bank/epics/*.md`
-- `.memory-bank/features/*.md`
-- `.memory-bank/spec-index.md`
-- `.memory-bank/spec-backbone.md`
+Use `TASK_ID=TASK-MB-REVIEW-FEAT-PLAN` and `STAGE_ID=S-FEAT`. The bounded
+reviewer request must name the inputs above, the output path ending in
+`TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md`, the
+`APPROVE|REJECT` vocabulary, and the prohibition on reviewing task
+implementation detail. This is the reviewer handoff contract; review order and
+probes remain discretionary.
+</required_outputs>
 
-Do not require task records. If `.memory-bank/tasks/index.json` already has
-records, ignore their implementation details except to flag obvious stale
-product-plan contradictions.
+<agent_discretion>
+Choose review order, search tools, working-note shape, additional probes, and
+depth proportional to risk and evidence. The review dimensions below are
+coverage criteria, not a required reasoning script:
+- clarified PRD and Constitution consistency;
+- stable `REQ-*` IDs and no unsupported scope;
+- PRD -> REQ -> EP -> FT traceability, including Product Brief/analysis when
+  present;
+- coherent feature value, sizing, boundaries, acceptance, and failure behavior;
+- truthful `clarification_status: pending|blocked` handling;
+- no bypass from analysis to tasking around `/write-prd`, `/spec-init`, `/prd`,
+  `/spec-design`, or required Foundation Dev Path;
+- `FT-000` reservation;
+- visible Foundation pressure signals for `/spec-design` without creating
+  foundation tasks here.
+</agent_discretion>
 
-## 2) Review checks
-Must check:
-- PRD is clarified enough for L1-L3 decomposition.
-- Requirements have stable `REQ-*` IDs and no invented unsupported scope.
-- Every epic/feature traces to requirements or explicitly documented deltas.
-- Features are not too broad for downstream `/prd-to-tasks`; oversized or vague
-  features become blockers or clarification notes.
-- `clarification_status: pending|blocked` is honored; blocked features do not
-  proceed to task planning.
-- There is no route from Analysis/Product Brief directly to `/prd-to-tasks`
-  without `/write-prd`, `/spec-init`, `/prd`, `/spec-design`, and required
-  Foundation Dev Path.
-- `FT-000` is absent from product feature completion semantics and reserved for
-  foundation only.
-- If a minimal executable baseline appears necessary, the review asks
-  `/spec-design` to record a Foundation Dev Path decision in
-  `.memory-bank/foundation.md`; it does not create foundation tasks.
-- Constitution contradictions are blocking.
+<validation>
+Return `APPROVE` only when product decomposition is traceable, coherent, and
+free of blocking governance/clarification gaps. Return `REJECT` for a blocking
+product, RTM, feature-boundary, clarification, or Constitution issue. Cite the
+artifacts checked and distinguish evidence gaps from actual defects.
+</validation>
 
-## 3) Decision rule
-- `APPROVE`: feature plan is ready for `/spec-design`.
-- `REJECT`: product decomposition, RTM, clarification state, or governance has
-  blocking gaps. Fix and rerun `/review-feat-plan`.
-- Non-blocking notes may be reported with `APPROVE`; `REJECT` always means the
-  gate is blocking.
+<handoff_contract>
+- `APPROVE` -> `/spec-design`.
+- `REJECT` -> the named owner command, normally `/write-prd`, `/spec-init`,
+  `/prd`, `/clarify-feature FT-<NNN>`, or `/constitution`; rerun this review
+  after repair.
 
-For high-risk, large, or autonomous flows, `APPROVE` is required before
-`/spec-design`. For small/manual flows, this command is recommended but not a
-mandatory stop unless the user or Constitution requires it.
-
-## 4) Reviewer handoff
-Use the active harness's configured fresh-context reviewer or a separate fresh
-session. Do not pin a provider, CLI, or model in this command. Pass this payload:
-
-```text
-TASK_ID=TASK-MB-REVIEW-FEAT-PLAN. STAGE_ID=S-FEAT. Review
-.memory-bank/constitution.md, .memory-bank/prd.md,
-.memory-bank/requirements.md, .memory-bank/epics/*.md,
-.memory-bank/features/*.md, and analysis/product brief artifacts when present.
-Check PRD->REQ->EP->FT traceability, feature sizing, blocked clarification
-metadata, Constitution contradictions, and that FT-000 is reserved for
-foundation only. Do not review JSON task records except for obvious stale
-contradictions. Write report to
-.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md.
-VERDICT: APPROVE/REJECT; REJECT only for blocking gaps.
-```
-
-## 5) Handoff
-When approved, continue to:
-- `/spec-design`
-- then `/foundation-to-tasks` and close the `FT-000` foundation gate when
-  required
-- then `/prd-to-tasks FT-<NNN>` or autonomous `/spec-auto --all` +
-  `/prd-to-tasks --all`
-</process>
+Do not restate the full downstream task/execution workflow.
+</handoff_contract>

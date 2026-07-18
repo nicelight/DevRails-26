@@ -1,555 +1,257 @@
 ---
-description: Декомпозиция или repair product feature: subject-based canonical SDD specs, implementation plan и complete JSON task cards.
+description: Plan or reconcile one product feature into canonical SDD coverage, an implementation plan, and complete JSON task cards.
 status: active
 ---
 # /prd-to-tasks - Feature design -> implementation plan -> JSON tasks
 
 <objective>
-Close or repair one product feature's planning surface:
-- feature-level SDD concern coverage and canonical spec links
-- implementation plan
-- schema-backed JSON task records
-- optional behavior specs
-- verification-ready single-card handoff
+Close or safely reconcile one product feature's tasking surface:
+- applicable feature-level SDD concern coverage and canonical spec links;
+- one implementation plan;
+- optional evidence-grounded behavior examples;
+- the smallest cohesive schema-backed JSON task queue;
+- verification-ready T2/T3 single-card handoff.
 
-Read the task schema before drafting tasks. Then process provisional tasks in
-dependency order: inspect design needs, close grounded spec gaps, and only then
-write each final task record.
+This command plans; it never executes tasks.
 </objective>
 
-<process>
-
-## 0) Target
-
+<input_contract>
 `$ARGUMENTS`:
-- `FT-<NNN>`: one product feature
-- `--all`: all product features in priority order
+- `FT-<NNN>`: one product feature;
+- `--all`: every product feature in priority order, excluding `FT-000`.
 
-Without arguments, ask the user to select a feature in interactive mode; use
-`--all` in autonomous mode.
+Without arguments, ask the operator to select a feature in interactive mode;
+unattended orchestration uses `--all`. Reject `FT-000`; Foundation tasking
+belongs to `/foundation-to-tasks`.
 
-The user may ask to repair/reconcile existing specs and task cards or explicitly
-request full re-decomposition. Do not add a persisted mode field or another
-repair command.
+Before any durable plan or task write, require:
+- target feature, linked epic, governing REQ/RTM, clarified PRD, and applicable
+  Constitution rules;
+- `.memory-bank/spec-backbone.md` Global Backbone Status `complete`, or valid
+  `minimal` with explicit global/shared not-applicable rationales;
+- `.memory-bank/spec-index.md` plus existing feature links and plausible
+  subject-based canonical specs;
+- a valid Foundation decision. When Foundation is required, the concrete
+  indexed `FT-000` final gate must be `done` and its ID retained as a direct or
+  transitive dependency of every product task;
+- `.memory-bank/tasks/index.json`, every existing indexed task for the target,
+  and existing plan/protocol/behavior evidence used for reconciliation;
+- parsed `.memory-bank/schemas/task.schema.json` and
+  `.memory-bank/workflows/tier-policy.md` before drafting even provisional task
+  records.
 
-Reject `FT-000`. It is reserved for the Foundation Dev Path and belongs to
-`/foundation-to-tasks`. Exclude it from `--all`.
+Block task drafting when clarification is explicitly `pending|blocked`, feature
+design is `blocked`, a decomposition-relevant unresolved marker remains, global
+backbone/foundation readiness is invalid, or schema/tier policy is unavailable
+or incompatible. Missing clarification metadata alone is allowed.
 
-## 1) Preflight, context, and schema
+For `--all`, preflight the complete target set before planning writes. Report
+all blockers and create no partial affected queue.
+</input_contract>
 
-Complete this section before creating an implementation plan, provisional task
-outline, or task record.
+<hard_invariants>
+- JSON task records and `.memory-bank/tasks/index.json` are the only task model.
+  Do not add a schema, registry, planning mode field, nested context model, or
+  lifecycle value.
+- Concrete IDs use `TASK-NNN-TN-FT-NNN-WN`; ID tier/feature/wave segments match
+  record fields. Product tasks use dependency-driven `W1+`; `W0` belongs only
+  to `FT-000`.
+- Lifecycle/status ownership is defined by
+  `.memory-bank/workflows/tier-policy.md`. Planning writes `planned`, or
+  `ready` only when dependencies and blockers are already satisfied; it does
+  not claim scheduler closure/promotion ownership.
+- Existing queue reconciliation is the default. Preserve ID, feature, wave,
+  tier, dependencies, lifecycle status, verification evidence, protocol links,
+  and the semantic basis of `in_progress|done|failed` records. Full re-slicing
+  requires an explicit operator request.
+- If repair needs identity, tier, wave, dependency, AC, or material-scope
+  changes, report `rebuild_required`; do not hide a new task behind repair.
+- One task has one cohesive independently verifiable outcome. Do not split by
+  file, module, layer, artifact, or tests. Split only for independent outcomes,
+  hard dependencies/waves, or materially different risk/rollback.
+- `touched_files` is advisory and non-exhaustive. A non-empty
+  `runtime_context.write_boundary` is a deliberate hard boundary and not a
+  copy of `touched_files`; `forbidden_scope` and stop conditions remain hard.
+- Features compose product behavior and canonical links; they do not own
+  default `FT-*` multi-concern design hubs.
+- New specs use subject-based canonical paths.
+- `spec-index.md` remains the pure
+  `Type | Path | Status | Scope | Change route` registry.
+- Never resolve competing canonical paths by creating a third spec.
+- Behavior specs are optional JSON `given/when/then` examples linked only
+  through feature `## Behavior specs` and task `source_artifacts`. They are not
+  a registry, schema, task field, readiness gate, verification target, or done
+  criterion.
+</hard_invariants>
 
-### 1.1 Feature and queue preflight
+<operator_decisions>
+Any unresolved material branch that can change product behavior, UX/acceptance,
+architecture, component/API/event/data/agent-tool contracts, storage/state,
+security/privacy/compliance, compatibility, task boundaries, tier,
+dependencies, verification strategy, human checkpoint, Foundation dependency,
+or canonical spec identity belongs to the operator.
 
-For every target feature:
-1. Find `.memory-bank/features/FT-<NNN>-*.md` and read its frontmatter.
-2. Read `.memory-bank/tasks/index.json` and all indexed records whose `feature`
-   is the target. Existing records select reconciliation; do not duplicate them.
-3. Block only when `clarification_status` is explicitly `pending|blocked`, or
-   when decomposition-relevant behavior, acceptance, data, contract, security,
-   UX, operations, or verification text contains unresolved `TBD`, `TODO`,
-   `NEEDS CLARIFICATION`, or `???` markers.
-4. Treat explicit `spec_design_status: blocked` as a blocker to task drafting.
-   A direct repair request may continue only to resolve a feature-level design
-   blocker from current evidence or focused user answers before the provisional
-   outline. If it remains unresolved, stop; route shared/global blockers to
-   `/spec-design`.
-5. Ignore unresolved-marker words in historical/unrelated notes.
+- Interactive/manual flow asks an adaptive focused question, states what it
+  unblocks, and may recommend an option; recommendation/default/silence is not
+  acceptance.
+- Apply an accepted answer to the existing owning feature, PRD, canonical spec,
+  Constitution, or Foundation artifact; record it in
+  `.protocols/FT-<NNN>/decision-log.md` when useful for handoff, remove
+  contradictory wording, and revalidate before task writes.
+- Shared/global decisions and competing canonical paths route to
+  `/spec-design`; feature product ambiguity routes to
+  `/clarify-feature FT-<NNN>` or its owning feature source.
+- Unattended flow records the question and affected scope, writes no affected
+  tasks, returns `HALT_CLARIFICATION_REQUIRED` for product clarification or
+  `HALT_BLOCKING_QUESTIONS` for design/contract decisions, and names the exact
+  interactive resume skill.
 
-Missing clarification metadata is allowed. `/clarify-feature` does not assign
-tier; tier is selected here under the tier policy.
+Do not ask again when authoritative evidence or an accepted policy already
+settles the decision. Independent read-only analysis may continue without
+predetermining the branch.
+</operator_decisions>
 
-For unresolved blockers:
-- interactive: report the exact blocker; route product ambiguity to
-  `/clarify-feature FT-<NNN>` or direct feature-source repair, feature-level
-  design ambiguity to a focused decision in this repair run, and shared/global
-  design ambiguity to `/spec-design`
-- autonomous: return `HALT_CLARIFICATION_REQUIRED` for product clarification or
-  `HALT_BLOCKING_QUESTIONS` for unresolved design
-- do not create or update plans or task records
+<agent_discretion>
+Within the objective, authoritative evidence, hard boundaries, schema, and tier
+policy, the agent chooses:
+- discovery/read order, tools, temporary working notes, and proportional depth;
+- how to identify applicable concerns and canonical candidates;
+- whether a resumable concern note is useful or an in-memory audit is enough;
+- `reuse|extend|create|not_applicable|block` for each applicable concern;
+- the minimal canonical artifact shape;
+- task slicing, dependency/wave shape, and cheapest sufficient verification;
+- whether 0-3 behavior examples materially reduce real ambiguity.
 
-For `--all`, resolve and preflight the whole target set before planning writes.
-If any target is missing or remains blocked, report all blockers and halt.
+Architecture, Interfaces/Contracts, Data, state, security, runtime, operations,
+and Verification are completeness lenses, not a mandatory thinking order. Do
+not force irrelevant categories or fabricate `not_applicable` filler.
+</agent_discretion>
 
-### 1.2 Global design and foundation gates
+<required_outputs>
+## Planning artifacts
 
-Read `.memory-bank/spec-backbone.md`. Its `Global Backbone Status` must be:
-- `complete`; or
-- `minimal` with explicit `not_applicable` global/shared areas.
+Create/update only the existing artifacts:
+- `.protocols/FT-<NNN>/plan.md`;
+- `.protocols/FT-<NNN>/decision-log.md`;
+- `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`.
 
-If missing, bare `minimal`, or `blocked`, stop and route to `/spec-design`.
+The implementation plan captures goals, scope/non-goals, cohesive strategy,
+dependencies, expected advisory change surface, tests/gates/UAT, applicable
+Constitution constraints, source/normative inputs, invariants, verification
+targets, and direct canonical links. A concise provisional outline may be kept
+in `plan.md` only when it improves resume safety; it is not another task model.
 
-Read `.memory-bank/foundation.md`:
-- `Foundation Required: false` requires
-  `Foundation Gate Task: not_required` and a rationale.
-- `Foundation Required: true` requires a concrete indexed
-  `TASK-<NNN>-T<N>-FT-000-W<N>` gate record with `feature: "FT-000"` and
-  `status: "done"`.
+## Canonical SDD coverage
 
-If the foundation file or valid decision is missing, route to `/spec-design`.
-If required foundation work is pending, route to `/foundation-to-tasks`,
-`/mb-doctor`, `/execute`, and `/verify`; stop product task generation.
+For each changed or depended-on concrete concern, select exactly one action:
+- `reuse`: one canonical path is sufficient;
+- `extend`: the same cohesive canonical concern needs grounded detail;
+- `create`: no suitable canonical spec exists;
+- `not_applicable`: evidence proves the concern irrelevant;
+- `block`: identity/scope/decision remains unresolved.
 
-Remember the final foundation gate ID. Every created/updated product task must
-depend on it directly or transitively when foundation is required.
+A task that changes or depends on a concrete boundary must link exactly one
+applicable canonical spec defining:
+- shape;
+- `MUST` / `MUST NOT` rules;
+- edge cases/errors;
+- verification target.
 
-### 1.3 Read planning context
+Direct routes include Architecture Specification, Component/API/Event/Data
+Contracts, Data Specification for internal models/storage/migrations, domain or
+state specs, testing specs under `.memory-bank/testing/*`, guides/runbooks, and
+applicable AD/ADR/boundary decisions. Data Contract covers payloads crossing
+boundaries; internal DB/
+storage/persistence belongs to Data Specification. Create a new subject-based
+spec only after existing identity and synonyms are checked. Do not expand a
+legacy `.memory-bank/tech-specs/FT-*.md` hub as the canonical T2/T3 answer.
 
-Read once before task drafting:
-- target feature, linked epic, requirements/RTM, and Constitution when present
-- `.memory-bank/spec-index.md` as a registry only
-- `.memory-bank/spec-backbone.md` as shared/global route and readiness state
-- feature `spec_design_links` and their canonical specs
-- relevant existing architecture, contract, domain, state, ADR, testing, guide,
-  and runbook specs routed by those sources
-- existing implementation plan, protocols, behavior specs, and tasks
-  for reconciliation
-
-Do not create a spec before checking the index, relevant folder indexes, and
-existing subject-based specs. A conflict with a higher/global source or two
-candidate canonical paths for one concern is a blocker, not a local choice.
-
-### 1.4 Schema-first invariant
-
-Before inventing even in-memory or provisional task drafts:
-1. Read and parse `.memory-bank/schemas/task.schema.json`.
-2. Read `.memory-bank/workflows/tier-policy.md`.
-3. Confirm the schema can represent the required task ID, fields, enums, arrays,
-   dependencies, tier, and runtime context used by this workflow.
-
-Use the loaded schema while thinking through task candidates. Do not reconstruct
-it from memory. If it is missing, invalid JSON, or incompatible with required
-task semantics, stop before drafting tasks and report the blocker.
-
-Only after this point may the command create a provisional task outline.
-
-## 2) Existing queue reconciliation
-
-When indexed tasks already exist, default to bounded reconciliation. Full
-re-slicing requires an explicit user request.
-
-Preserve:
-- `id`, `feature`, `wave`, `tier`, `depends_on`, and lifecycle `status`
-- recorded `verify` evidence and protocol/evidence references
-- the semantic goal and acceptance basis of `in_progress|done|failed` records
-
-For `planned|ready|blocked` tasks, repair only grounded specs, implementation
-plan, task content/context, links, and gates; lifecycle
-transitions remain with the scheduler or explicit owner.
-
-If repair requires changing identity, tier, wave, dependencies, acceptance
-criteria, or material scope, report `rebuild_required` and require controlled
-re-decomposition or a follow-up task. Do not hide re-slicing inside repair.
-
-Rerun `/review-tasks-plan FT-<NNN>` after reconciliation.
-
-## 3) Planning artifacts and provisional outline
-
-Create or update:
-- `.protocols/FT-<NNN>/plan.md`
-- `.protocols/FT-<NNN>/decision-log.md`
-- `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`
-
-The implementation plan contains:
-- goals, scope/non-goals, ordered implementation strategy, dependencies
-- expected touched files, tests, quality gates, and UAT
-- a short Constitution Check with relevant principles and blockers
-- grounded Source Artifacts, Normative Inputs, Constraints, Invariants,
-  Verification Targets, and direct canonical `spec_design_links` when useful
-
-Do not copy the whole Constitution or invent richer fields. Link it only when a
-specific principle constrains execution or verification.
-If the proposed feature plan conflicts with the Constitution, stop before task
-records and report the blocker.
-
-After the schema and tier policy are loaded, add a concise dependency-ordered
-provisional outline to `plan.md`. For each candidate record only its purpose,
-likely dependencies/wave/tier, and expected design pressure. This is resumable
-planning state, not another task model.
-
-Prioritize complete canonical specs over detailed initial task slicing. Prefer
-fewer cohesive tasks; one task may span layers and include its tests. Do not
-split by file, module, layer, or artifact. Split only for independent outcomes,
-hard dependencies/waves, or materially different risk/rollback. When unsure,
-keep work together; revisit slicing only in an explicit full re-decomposition.
-
-Update the outline only when its structure changes, a material decision is
-accepted, or the run pauses. Do not write an iteration checkpoint after every
-task.
-
-## 4) Optional behavior specs
-
-Decide whether the feature needs concrete behavior examples before slicing tasks.
-Creating `0` behavior specs is the correct result for simple, mechanical, or
-obvious features.
-
-Create 1-3 behavior specs only when evidence from PRD, feature docs, linked
-specs, baseline docs, contracts, states, runbooks, or testing docs shows that a
-specific `given / when / then` example will materially reduce implementation
-ambiguity. Typical cases:
-- core happy path for an important feature
-- negative or edge case with real implementation risk
-- `T2` / `T3` behavior where acceptance criteria could be satisfied too narrowly
-- API, state, domain, or UI flow needing a concrete example
-
-Do not create behavior specs for simple `T0` / `T1`, mechanical, or obvious
-tasks. Do not invent scenarios without evidence.
-
-Store behavior specs as standalone JSON files:
-
-```text
-.memory-bank/behavior-specs/FT-<NNN>-BHV-<NNN>-<slug>.behavior.json
-```
-
-Use this minimal shape:
-
-```json
-{
-  "id": "FT-001-BHV-001",
-  "feature_id": "FT-001",
-  "title": "Successful login with valid credentials",
-  "given": {},
-  "when": {},
-  "then": {}
-}
-```
-
-Rules:
-- one behavior spec describes one independent behavior
-- keep JSON short; do not duplicate the whole feature spec
-- do not add a registry, index, JSON Schema, validator, doctor gate, or new task
-  field
-- if behavior specs are created, add or update the feature doc section:
-
-```md
-## Behavior specs
-- `.memory-bank/behavior-specs/FT-001-BHV-001-login-success.behavior.json`
-```
-
-- link task-relevant behavior specs only through task `source_artifacts`
-- do not add behavior specs to `verification_targets`, `evidence_required`,
-  `gates`, `constraints`, or `invariants`
-- behavior specs are implementation context examples, not readiness,
-  verification, or done gates
-
-## 5) Unified canonical-design-and-task loop
-
-### 5.1 Feature design baseline and discovery
-
-Treat the feature as a composition root for product behavior and applicable
-system concerns. It links canonical specs; it does not own or contain a default
-feature tech-spec hub.
-
-Before creating or extending any spec, derive the feature's applicable design
-pressure from its requirements, epic, backbone, Foundation evidence, and
-existing links:
-- architecture/module/runtime impact
-- component or interface boundary
-- HTTP/RPC/CLI API
-- event/message/agent/tool I/O and boundary payloads
-- internal domain/storage/migration
-- state/lifecycle
-- security/access/safety
-- verification/runbook/operations
-
-Do not force every category to exist. A grounded `not_applicable` result is
-valid.
-
-Run discovery before writes:
-1. Read `spec-index.md`.
-2. Read relevant folder indexes when present.
-3. Scan the relevant architecture, contract, domain, state, testing, runbook,
-   guide, and ADR directories by subject-oriented filename and description.
-4. Read every plausible candidate spec in full.
-5. Build a temporary concern audit in protocol working state:
-
-   ```text
-   concern | canonical path candidate | sufficient | action
-   ```
-
-6. Select exactly one action for each applicable concern:
-   - `reuse`: one existing canonical spec fully covers it
-   - `extend`: one canonical spec exists but needs a grounded addition
-   - `create`: no suitable canonical spec exists
-   - `not_applicable`: evidence shows the concern is irrelevant
-   - `block`: paths conflict, scope is unclear, or a shared/global decision is
-     unresolved
-
-The audit is resumable protocol state, not another normative registry or task
-model. Never resolve competing paths by creating a third spec.
-
-Feature frontmatter may contain:
+Feature frontmatter remains:
 
 ```yaml
 spec_design_status: complete|not_required|blocked
 spec_design_links:
   - .memory-bank/contracts/<subject>.md
-  - .memory-bank/domains/<subject>.md
 ```
 
-Rules:
-- An unresolved explicit `blocked` status must stop task drafting in preflight.
-  A successful direct repair must replace it with a truthful status before the
-  provisional outline. If the loop discovers a new blocker, record it and stop
-  affected task/handoff writes instead of pretending the feature remains
-  ready.
-- `not_required` is valid only for simple work with no meaningful architecture,
-  interface/contract, data, state, security, migration, runtime, or cross-module
-  pressure; record a concise rationale, use empty `spec_design_links`, and create
-  no fake specs.
-- `complete` requires every relevant design concern to have one concrete
-  canonical link or an explicit feature-level `not_applicable` rationale; treat
-  an existing `complete` as a baseline to reconfirm after the loop.
-- Missing/incomplete status means the loop must complete or block feature design.
+- `complete` requires every applicable feature concern to have one canonical
+  link or a grounded not-applicable rationale;
+- `not_required` is only for truly local/simple work with empty links and a
+  rationale;
+- unresolved concern means `blocked` and no affected task handoff;
+- no `needed_before_tasks` Backbone Area Matrix row may remain after a
+  successful handoff.
 
-Keep feature-specific acceptance/use-case detail in the feature doc. Do not
-copy endpoint schemas, state transitions, storage details, error catalogs, or
-security constants into it. A rare cohesive concern introduced by one feature
-still receives a subject-based canonical path; it is not an `FT-*` hub.
+## Optional behavior specs
 
-Existing legacy `.memory-bank/tech-specs/FT-*.md` files may be read as evidence
-during reconciliation, but do not create or expand them as multi-concern hubs.
-When an affected concern is moved to a subject-based canonical spec, update the
-registry and all affected feature/task links without leaving duplicate active
-definitions. Do not force unrelated legacy migration into the current feature.
+Create 0-3 short files only when a grounded example materially reduces
+ambiguity:
 
-### 5.2 Canonical spec identity, scope, and concrete readiness
-
-When a task changes or depends on a concrete boundary, exactly one linked
-canonical spec must define its:
-- shape
-- `MUST` / `MUST NOT` rules
-- edge cases/errors
-- verification target
-
-The block must make implementation possible without guessing. This single rule
-governs T2/T3 concrete design readiness throughout the command.
-
-Select the action in this order:
-1. Reuse a sufficient registered canonical path within its stated scope.
-2. Extend that path when the new detail is the same cohesive concern.
-3. Fill the clearly routed canonical path from a `/spec-design`
-   `needed_before_tasks` row.
-4. Create one missing subject-based spec when discovery found no suitable path.
-5. Route a new/unclear shared decision or competing canonical paths to
-   `/spec-design`.
-
-For `create`:
-1. Choose the directory by specification type and concern.
-2. Choose a subject slug without an `FT-<NNN>` prefix or feature identity.
-3. Recheck the registry and neighboring filenames for synonyms or overlap.
-4. Write one cohesive spec with scope and the required concrete block.
-5. Update `spec-index.md` and a relevant folder index when one exists or the
-   folder now has more than three specs.
-6. Add the exact path to feature `spec_design_links` and only to relevant task
-   link fields.
-
-Split specs by independently meaningful boundary, change cadence, consumers,
-or cross-feature reuse. Do not split mechanically by taxonomy and do not use
-file length alone as a gate.
-
-When a routed `needed_before_tasks` concrete block becomes sufficient, update
-its Backbone Area Matrix row to `authoritative`, or to `not_applicable` with a
-rationale when evidence proves the area irrelevant. Product handoff must leave
-no `needed_before_tasks` row unresolved.
-
-Examples:
-- HTTP/RPC boundary -> API Contract or stack-native schema spec
-- event/message boundary -> Event Contract and boundary Data Contract when
-  payload compatibility matters
-- internal DB/storage/migration/state -> Data Specification
-- normative UI/operational behavior -> established guide or one subject-based
-  guide/runbook
-
-Data Contract defines payloads crossing component/API/event/protocol boundaries.
-Internal models, DB/storage, persistence, and migrations belong to Data
-Specification. Component Contract is needed only when a component boundary is
-crossed or changed.
-
-Applicable concrete specs cover:
-- Component Contract: guarantees, responsibilities, dependencies, forbidden
-  calls, ownership, and failure boundaries.
-- API Contract: inputs/outputs, auth, status/error behavior, compatibility, and
-  protocol-specific concerns such as pagination or upload when relevant.
-- Event Contract: producer/consumer, envelope/fields, ordering, versioning,
-  retry/idempotency, delivery, and failure behavior.
-- Data Contract: boundary payload structure, versions, required fields,
-  validation/serialization, and compatibility.
-
-When scope is not already unambiguous, use:
-
-```markdown
-## Scope
-
-## Out of scope
-
-## Related specs
+```text
+.memory-bank/behavior-specs/FT-<NNN>-BHV-<NNN>-<slug>.behavior.json
 ```
 
-Do not duplicate concrete blocks in task records, plans, or secondary docs;
-link the canonical spec and copy only task-relevant executable constraints,
-invariants, and verification targets.
+Use only `id`, `feature_id`, `title`, `given`, `when`, and `then`; link the
+relevant examples as described by the hard invariant above.
 
-Register canonical identity by path. `spec-index.md` stays a pure discovery map
-with `Type | Path | Status | Scope | Change route`; do not add a separate spec
-key, feature ownership, `used_by`, or file-owner metadata. Reverse usage comes
-from feature/task links and search. Feature design status belongs only in
-feature frontmatter; shared/global readiness belongs in `spec-backbone.md`.
+## JSON task records
 
-### 5.3 Question gate
+Create/reconcile
+`.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and index each
+record exactly once. The loaded schema and tier policy are authoritative.
 
-Ask `0-3` focused questions in one pass only when the answer can materially
-change architecture impact, component/API/event/data contracts, storage/state,
-compatibility, security, or verification.
+Additionally require:
+- every T1/T2/T3 task has concrete governing `REQ-*` links;
+- every task has a cohesive, independently observable outcome and grounded
+  dependency graph;
+- every required Foundation final-gate dependency is direct or transitive;
+- fields such as `source_artifacts`, `normative_inputs`, `constraints`,
+  `invariants`, `verification_targets`, purpose/outcome, and runtime context
+  contain only task-relevant evidence;
+- optional `anti_goals`, forbidden scope, constraints, invariants,
+  `evidence_required`, and stop conditions remain empty/absent when not
+  grounded;
+- every T2/T3 task has non-empty `purpose`, scalar `success_outcome`, and the
+  direct task-relevant subset of canonical specs through existing SDD paths;
+  it also carries advisory
+  expected change surface and/or a deliberate hard write scope, and at least
+  one real gate command and/or non-empty verification target;
+- mutable persistence names the real runtime storage path and a read/write or
+  repository-integration proof; otherwise the applicable spec records why it
+  is not relevant.
+</required_outputs>
 
-Group related questions around the current boundary and state what decision they
-unblock. If one answer affects several provisional tasks, ask once before the
-first, record it in `decision-log.md`, and reuse it. Do not ask to fill a
-template or reconfirm authoritative evidence.
-
-In autonomous mode, do not invent unsafe product/design decisions. Record the
-blocker and stop according to the active workflow.
-
-### 5.4 Process each provisional task
-
-For each candidate in dependency order:
-1. Refresh only specs/routes changed by earlier iterations or newly relevant to
-   this task.
-2. Apply three design lenses:
-   - Architecture impact: constraining boundary/source-of-truth/runtime rules
-     including security/safety constraints and any new shared/global decision.
-   - Interfaces/Contracts: actual component, API, event, protocol, agent/tool,
-     external, or frontend/backend boundary and its canonical spec.
-   - Data impact: domain rules/invariants, internal model, DB/storage,
-     persistence/migration, validation/serialization, lifecycle, retention,
-     seed, or runtime data path.
-3. Use the question gate for material unresolved choices.
-4. Apply the discovery action and update only the minimum grounded canonical
-   specs and registry links.
-5. Apply canonical concrete readiness.
-6. Write the final task record in
-   `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and validate it
-   against the already-loaded task schema before indexing it.
-
-If design remains blocked, set/report feature design `blocked` and do not write
-the affected task or hand off execution.
-Use `blocked` only when the design cannot be made truthful without a user
-decision or external evidence.
-
-### 5.5 Task record semantic invariants
-
-The loaded schema and tier policy are authoritative. Additionally:
-- task ID tier/feature/wave segments match `tier`, `feature`, and `wave`
-- every task has one cohesive, independently verifiable implementation outcome;
-  it may span layers and include its applicable tests
-- every T1/T2/T3 task links concrete governing `REQ-*` IDs in `reqs`; never use
-  placeholder requirement or feature IDs
-- assign tier before writing; never use the removed `risk` model
-- use only dependency-driven product waves `W1+`; `W0` belongs only to `FT-000`
-- downstream tasks start `planned`; `ready` requires satisfied dependencies and
-  no blockers/rejects
-- add the final foundation gate dependency directly or transitively when required
-- populate `source_artifacts`, `normative_inputs`, `constraints`, `invariants`,
-  `verification_targets`, purpose/outcome, and runtime context only from
-  PRD/feature/spec/baseline evidence; use empty schema-allowed values only for
-  optional fields when no evidence exists
-- every T2/T3 task has non-empty `purpose` and one non-empty scalar
-  `success_outcome`
-- every T2/T3 task links at least one existing task-relevant canonical SDD
-  spec through its existing link-bearing fields; a registry-only
-  `spec-index.md` reference is not sufficient task context
-- every T2/T3 task links the direct task-relevant subset of canonical specs;
-  do not make it load every spec used by the feature
-- for T2/T3, populate `touched_files` as an advisory, non-exhaustive expected
-  change surface; populate `runtime_context.allowed_write_scope` only for an
-  evidence-backed hard boundary, never as a copy of `touched_files`
-- every T2/T3 task has at least one executable verification path: a gate with a
-  real command and/or a non-empty `verification_target`
-- keep runtime allowed/forbidden scope and stop conditions concrete and grounded
-- keep `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
-  `invariants`, `evidence_required`, and `runtime_context.stop_conditions`
-  empty or absent when current evidence does not justify them; do not invent
-  completeness filler
-- link behavior specs only through `source_artifacts`
-- include direct task-relevant canonical SDD/AD/ADR/boundary links and
-  executable constraints
-- if mutable runtime data/persistence is in scope, name the real DB-backed path
-  and require a read/write smoke or repository integration verification target
-- if persistence is not needed, record `not_applicable` in the relevant spec
-  instead of creating a fake DB task
-
-Update `.memory-bank/tasks/index.json` with references only. Do not add another
-task model or task-specific fields outside the schema.
-
-### 5.6 Feature consistency
-
-After all records exist:
-- reread generated/updated records and canonical specs
-- repair earlier task links if a later iteration changed shared feature detail
-- confirm acceptance criteria coverage, coherent dependencies/waves, and one
-  canonical path per concrete concern
-- confirm every T2/T3 task remains implementable without guessing
-- finalize truthful `spec_design_status` and `spec_design_links`
-- confirm the feature composes applicable specs without duplicating their
-  concrete fields/rules and each task links only its relevant subset
-
-Do not leave `complete` while a relevant area is planned, candidate, unknown,
-conflicting, or unresolved. Do not hand off tasks when final consistency is
-blocked.
-
-For `--all`, process features in priority order, reread `tasks/index.json` after
-each feature, avoid duplicate IDs, and never start execution from this command.
-
-## 6) T2/T3 single-card handoff completeness
-
-After feature consistency succeeds, confirm every T2/T3 task card is complete
-enough to execute directly from the indexed task plus its linked canonical
-specs:
-- the record validates against `task.schema.json`, is indexed exactly once, and
-  its ID tier/feature/wave segments match the record
-- `reqs` contains concrete existing governing `REQ-*` IDs without placeholders
-- `purpose` and the scalar `success_outcome` are non-empty
-- at least one existing task-relevant canonical SDD spec path is linked;
-  `spec-index.md` alone does not count
-- the expected change surface is present in non-empty `touched_files` and/or a
-  deliberate hard `runtime_context.allowed_write_scope`
-- at least one verification path exists through a gate with a real command
-  and/or a non-empty `verification_target`
-- every dependency exists and the dependency graph is acyclic
-
-This is a completeness contract for the existing task card, not a new status,
-artifact, nested packet, or general readiness layer. Deterministic checks prove
-only structure and presence. Semantic applicability of linked specs,
-independent verifiability of `success_outcome`, concrete-block sufficiency, and
-task/spec conflicts remain owned by fresh-context `/review-tasks-plan`.
-
-Do not require non-empty optional evidence-driven fields merely to satisfy this
-contract: `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
-`invariants`, `evidence_required`, and `runtime_context.stop_conditions` remain
-grounded-only.
-
-## 7) Final handoff
-
+<validation>
 Before handoff:
-- validate every created/updated task against `task.schema.json` and its index
-  reference
-- confirm feature acceptance coverage and final design status
-- confirm foundation dependencies and T2/T3 single-card handoff completeness
-- update RTM/docs only where planning changed durable state
-- report blockers explicitly
+- validate every changed record against the loaded schema and its unique index
+  entry;
+- verify ID/tier/feature/wave consistency, concrete REQ links, valid Foundation
+  dependencies, existing/acyclic dependencies, and legal initial statuses;
+- map every feature AC/REQ to at least one task and every task back to feature
+  scope without orphan, duplicate, or unrelated outcomes;
+- reread changed specs/tasks and reconcile any shared detail changed later in
+  the run;
+- confirm canonical identity is unique, linked concrete blocks are sufficient,
+  feature design state is truthful, and each T2/T3 card is independently
+  executable without guessing;
+- confirm every accepted operator decision is durably applied and no material
+  branch remains unresolved.
 
 Final report:
-- feature ID and queue action: `created|reconciled|rebuild_required`
-- final design status and canonical specs reused/extended/created
-- task records created/updated
-- blockers/questions, or `none`
-- next step
+- feature ID and queue action `created|reconciled|rebuild_required`;
+- final design status and specs reused/extended/created;
+- task records created/updated;
+- blockers/questions or `none`;
+- immediate next step.
+</validation>
 
-Next step:
-- one feature: `/review-tasks-plan FT-<NNN>`, then conditional `/mb-doctor`
-- `--all`: review every task-linked product feature before scheduler execution
+<handoff_contract>
+- Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
+- Successful `--all` -> one fresh-context `/review-tasks-plan FT-<NNN>` per
+  task-linked product feature.
+- Blocked product decision -> `/clarify-feature FT-<NNN>` or owning feature
+  repair; blocked shared/global decision -> `/spec-design`.
 
-Do not execute tasks from this command.
-
-</process>
+Conditional `/mb-doctor` and execution happen only after the task-plan review;
+they are not performed by this command.
+</handoff_contract>

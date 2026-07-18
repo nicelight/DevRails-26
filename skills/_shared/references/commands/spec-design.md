@@ -1,351 +1,231 @@
 ---
-description: Mandatory global SDD architecture backbone gate after PRD decomposition and before feature task design.
+description: Mandatory global SDD backbone and Foundation Dev Path decision after PRD decomposition.
 status: active
 ---
 # /spec-design - Global SDD backbone gate
 
 <objective>
-Create or update the mandatory global architecture/design backbone after `/prd` has created the FT set and before `/prd-to-tasks FT-<NNN>` or `/spec-auto --all`.
+Create or update the mandatory global architecture/design backbone after `/prd`
+has created the product feature set and before product task design.
 
-The first result is an architecture scaffold: technical decisions, boundaries,
-and contracts that constrain agents/developers so they do not damage the
-project. It is not a narrative architecture essay.
+The outcome is a compact set of technical decisions, boundaries, and canonical
+contracts that constrains later agents without prescribing implementation. The
+gate is mandatory but adaptive in depth:
+- local/simple pressure may produce a valid `minimal` backbone with explicit
+  `not_applicable` rationale;
+- shared-boundary, contract, state/data, runtime, security, or strict pressure
+  requires a `complete` scaffold and applicable canonical specs;
+- unresolved material decisions produce `blocked` and stop the handoff.
 
-Main question:
-> What technical decisions, boundaries, and contracts must constrain implementation so agents/developers cannot tear the project apart?
-
-The gate is mandatory by workflow, but adaptive by depth:
-- local/simple feature-set pressure creates a minimal backbone and marks irrelevant areas `not_applicable`;
-- shared-boundary, contract, state/data/runtime/security, or strict pressure gets staged architecture decisions and normal backbone specs;
-- unresolved key decisions are recorded as blockers and downstream commands must stop.
-
-`/spec-design` does not create TASK records, implementation plans, or default
-feature-owned design specs. Initial and repair feature-level concern coverage is
-handled inside `/prd-to-tasks` through subject-based canonical specs. When a
-project needs a minimum executable baseline
-before business features, `/spec-design` records the Foundation Dev Path
-decision and Feature Pressure Map in `.memory-bank/foundation.md`; executable
-foundation work is generated later by `/foundation-to-tasks`.
+This command also records the explicit Foundation Dev Path decision. It never
+creates task records, implementation plans, `REQ-000`, or `FT-000`.
 </objective>
 
-<process>
+<input_contract>
+Run after `/prd`, with no argument or `--all`.
 
-## 0) Input and timing
-Run after `/prd`.
+Require and read relevant evidence from:
+- `.memory-bank/constitution.md`;
+- `.memory-bank/prd.md`, `.memory-bank/requirements.md`, epics, and product
+  features;
+- `.memory-bank/spec-backbone.md` and pure `.memory-bank/spec-index.md`;
+- `.memory-bank/user-scenarios.md` when present or scenario-sensitive;
+- applicable existing specs under `architecture/`, `contracts/`, `domains/`,
+  `states/`, `adrs/`, `testing/`, `runbooks/`, and `guides/`;
+- production code and mapped brownfield baseline when they exist;
+- task records only as stale-state evidence when this command is rerun after
+  task generation.
 
-Supported arguments:
-- no argument: inspect all current features and update the global backbone
-- `--all`: same as no argument; explicit for autonomous or batch flow
+Source precedence is:
+1. Constitution and explicit accepted operator decisions;
+2. existing production code and authoritative brownfield baseline;
+3. ADRs;
+4. authoritative contracts/specs;
+5. PRD, requirements, and features;
+6. user scenarios;
+7. existing task records on a rerun;
+8. labelled agent assumptions.
 
-Required inputs:
-- `.memory-bank/spec-backbone.md`
-- `.memory-bank/spec-index.md`
-- `.memory-bank/requirements.md`
-- `.memory-bank/epics/`
-- `.memory-bank/features/`
-- `.memory-bank/user-scenarios.md` when present
-- existing relevant specs under `.memory-bank/architecture/`, `.memory-bank/guides/`, `.memory-bank/domains/`, `.memory-bank/contracts/`, `.memory-bank/states/`, `.memory-bank/adrs/`, `.memory-bank/testing/`, and `.memory-bank/runbooks/`
+A lower source cannot override a higher source. Conflicts requiring judgment
+remain blocked until their owner resolves them.
 
-Never skip the command. Read `.memory-bank/spec-backbone.md` as the pre-PRD framing from `/spec-init`. For explicitly local/simple feature sets, write the minimal backbone status and mark non-applicable areas instead of expanding architecture.
+Treat `.memory-bank/user-scenarios.md` as authoritative scenario evidence only
+when an architecture decision is actually scenario-sensitive and the file has
+parseable `## Review Status` with `Status: reviewed`. Missing review state or
+`draft|blocked` cannot be silently promoted. In interactive flow, ask the
+operator adaptively to review/correct the scenarios; in unattended flow, record
+the affected areas, set Global Backbone Status `blocked`, and use the existing
+blocking halt. If the current architecture decisions are not scenario-sensitive
+or another higher-precedence source is sufficient, do not require a decorative
+scenario review or create the file only to satisfy a template.
+</input_contract>
 
-## 1) Source-of-truth precedence
-Use this precedence when deciding what is authoritative:
-1. Constitution / explicit user decision
-2. Existing production code and brownfield baseline
-3. ADRs
-4. Authoritative contracts/specs
-5. PRD / requirements / features
-6. User scenarios
-7. Task records, only when rerunning after task generation
-8. Agent assumptions
+<hard_invariants>
+- Do not skip this gate, even for local/simple work.
+- Do not create TASK records, implementation plans, default feature-owned or
+  `FT-*`-named design hubs, a new architecture workflow, a coverage-map
+  artifact, or another readiness/status model.
+- Keep `.memory-bank/spec-index.md` a pure registry with
+  `Type | Path | Status | Scope | Change route`, planned specs, broken links,
+  and concise update rules. Decision bodies, matrices, blockers, and handoffs do
+  not belong there.
+- Canonical identity is the registered subject-based path. Reuse or extend an
+  existing path before creating one; never create a third spec to avoid choosing
+  between competing canonical paths.
+- The bootstrap-owned registered testing policy is read-only here. Route
+  concrete harness/evidence/redaction/operational verification concerns to
+  applicable subject specs; do not invent a fallback testing-policy path.
+- Feature docs remain composition roots for behavior and exact applicable spec
+  links. Feature-level concern completion and `spec_design_status` normally
+  belong to `/prd-to-tasks` or `/spec-auto`.
+- Foundation work is product-enabling infrastructure only. Do not move product
+  behavior into the foundation path.
+</hard_invariants>
 
-A lower source cannot override a higher source. Any conflict becomes `blocked` unless the user makes an explicit decision.
+<operator_decisions>
+In interactive mode, every unresolved material architecture/design branch that
+could affect the current backbone or downstream contract belongs to the
+operator. This includes architecture style, source of truth, module/runtime
+boundaries, API/event/agent I/O contracts, state/storage/data behavior,
+compatibility, security/safety, deployment, irreversible behavior, competing
+canonical paths, and whether a Foundation Dev Path is required or sufficient.
 
-## 2) Brownfield guard
-Before interviewing, inspect whether meaningful production code exists and whether a mapped baseline / authoritative architecture baseline exists.
+Ask adaptively: one question or a small group of tightly related questions,
+multiple choice or open form as useful. Explain what changes, cite the evidence,
+and optionally recommend an option. A preferred, conservative, reversible, or
+KISS option is not an accepted decision until the operator explicitly answers.
+Do not ask questions for choices already fixed by authoritative evidence.
 
-Interactive mode:
-- If meaningful code exists but baseline is missing, ask one question:
-  - **Run `/map-codebase` first (recommended)**: create authoritative brownfield baseline before architecture decisions.
-  - **PRD-only override**: continue from PRD evidence and record drift risk.
-  - **Minimal local delta only**: continue only for a clearly local/safe change with narrow `not_applicable` rationale.
+Brownfield special case: when meaningful code exists but an authoritative
+baseline is missing, ask the operator to choose the immediate route unless the
+accepted scope already proves a strictly local delta:
+- run `/map-codebase` first;
+- explicitly accept PRD-only drift risk;
+- constrain the work to an evidenced local delta.
 
-Autonomous mode:
-- Block if baseline is missing and scope is not clearly local/safe.
-- Continue only when evidence proves the change is local, reversible, and does not affect shared architecture/contracts.
+In unattended mode, apply only a decision already resolved by Constitution,
+PRD, accepted operator policy, production baseline, ADR, or canonical spec. If a
+material branch is unresolved:
+- record the question, affected requirements/features/areas, and owner;
+- set the applicable backbone/feature state to `blocked`;
+- stop with the active workflow's existing `HALT_BLOCKING_QUESTIONS` or
+  `HALT_CLARIFICATION_REQUIRED` state;
+- identify `/spec-design` as the resume command after the decision.
 
-## 3) User scenarios preflight
-Check `.memory-bank/user-scenarios.md`.
+Accepted decisions must be written to their owning canonical spec, ADR when
+durable trade-off rationale warrants one, or `.memory-bank/foundation.md`.
+Remove conflicting superseded wording and revalidate before handoff.
+</operator_decisions>
 
-After `/spec-init` PASS, creating or reviewing `.memory-bank/user-scenarios.md` is only required when architecture decisions are scenario-sensitive. This is not a `/spec-init` failure; if PRD, requirements, features, or spec-backbone evidence is enough, link that evidence and continue.
+<required_outputs>
 
-If scenarios are visible in PRD/requirements/features/existing specs and architecture decisions depend on them, create or update a draft and ask the user to review/add before relying on those scenario-sensitive decisions.
+## 1. Global status and mode
 
-If scenarios are absent and materially affect architecture, record a blocker/gap instead of guessing.
-
-Use this simple template:
-
-```markdown
-# User Scenarios
-
-## Primary Actors
-- TBD
-
-## Core Scenarios
-- Scenario:
-  - Architecture implications:
-
-## Out Of Scope Scenarios
-- TBD
-
-## Review Status
-- Status: draft|reviewed|blocked
-- Notes:
-```
-
-## 4) Initial architecture mode
-After reading PRD/requirements/features and current specs, ask one initial
-architecture mode question in interactive mode, or choose the mode from
-evidence in autonomous mode. Task tiers are assigned later by `/prd-to-tasks`;
-`/spec-design` routes by feature/design pressure, not by task tier.
-
-- **local_simple_backbone**: only for explicitly local/simple feature sets with no shared boundary, contract, state/data, runtime, security, or irreversible pressure; irrelevant global areas require `not_applicable` rationale.
-- **standard_architecture_scaffold**: default for normal greenfield architecture scaffold; records guardrails for modules, source-of-truth, contracts, data, and deployment, and routes only applicable concrete verification concerns to subject specs.
-- **strict_architecture_scaffold**: for public contracts, security/safety, migrations, distributed/runtime boundaries, cross-team ownership, production-sensitive behavior, or irreversible decisions.
-
-Recommend the mode from evidence; the user may override. Preserve the rule that
-`/prd-to-tasks` may route back to `/spec-design` for shared/global gaps or use
-its own feature-level design phase for feature-level gaps if serious design
-pressure appears during task slicing.
-
-## 5) Backbone status gate
-Update `.memory-bank/spec-backbone.md` with this exact contract:
+Update `.memory-bank/spec-backbone.md` with this parseable contract:
 
 ```markdown
 ## Global Backbone Status
 - Status: complete|minimal|blocked
-- Mode: local_simple_backbone|standard_architecture_scaffold|strict_architecture_scaffold
-- Architecture artifact strategy: single-file|split-core-docs|split-by-boundary-topic
+- Mode: local_simple_backbone|standard_architecture_scaffold|strict_architecture_scaffold|pending
+- Architecture artifact strategy: single-file|split-core-docs|split-by-boundary-topic|pending
 - Not applicable areas:
-  - event_message_contracts: not_applicable - no event/message boundary in local/simple feature set.
+  - event_message_contracts: not_applicable - no event/message boundary in this feature set.
 - Notes:
 ```
 
-For `minimal`, explicit not-applicable global/shared lines must appear inside `.memory-bank/spec-backbone.md` `## Global Backbone Status` under `- Not applicable areas:` for readiness-gate compatibility. Do not use a separate heading as the authoritative source for minimal readiness; if a non-authoritative mirror exists elsewhere, the status gate still reads the lines under `## Global Backbone Status`.
+Mode meanings:
+- `local_simple_backbone`: explicitly local/simple feature pressure without a
+  shared boundary, contract, state/data, runtime, security, or irreversible
+  decision;
+- `standard_architecture_scaffold`: normal greenfield/shared design guardrails;
+- `strict_architecture_scaffold`: public contracts, security/safety,
+  migrations, distributed/runtime boundaries, cross-team ownership,
+  production-sensitive, or irreversible behavior.
+- `pending`: allowed only with `Status: blocked` while the operator-owned mode
+  or evidence needed to select it remains unresolved.
 
-Do not use `TBD`, `none`, or empty placeholders as a substitute for `not_applicable` rationale.
+Status meanings:
+- `complete`: every relevant global/shared area has an authoritative route or
+  explicit `not_applicable` rationale. A `needed_before_tasks` row is allowed
+  only as a clearly routed concrete-detail deferral; it blocks dependent T2/T3
+  product task records and strict product handoff until resolved. The existing
+  foundation-only strict exception remains available for an `FT-000`-only queue.
+- `minimal`: valid only for evidenced local/simple pressure, with each omitted
+  global/shared concern listed under `Not applicable areas` using
+  `not_applicable - <rationale>`.
+- `blocked`: a material decision, source conflict, canonical path, or required
+  global/shared area cannot be resolved truthfully.
 
-Status criteria:
-- `complete`: every relevant/global area in the Backbone Area Matrix has a route-level decision. Rows are normally `authoritative` or `not_applicable`. A concrete contract-detail row may be `needed_before_tasks` only when the canonical path is routed clearly enough for `/prd-to-tasks` to complete the concrete block before dependent T2/T3 task records are created. No `unknown`, `planned`, `candidate`, or `blocked` remains in global/shared areas.
-- `minimal`: only for explicit local/simple feature-set pressure; each unnecessary global/shared area has `not_applicable` plus rationale.
-- `blocked`: unsafe ambiguity remains, source-of-truth conflict exists, or a required global/shared area cannot be decided truthfully.
+Do not use `TBD`, `none`, or an empty list as `not_applicable` evidence.
 
-If status is `blocked`, stop downstream work. Record:
-- unresolved decision
-- affected features/requirements
-- why a conservative assumption would be unsafe
-- next question or owner needed
+## 2. Backbone Area Matrix
 
-## 6) Backbone Area Matrix
-Maintain a concise matrix in `.memory-bank/spec-backbone.md`. It holds only labels, status, links, and gaps; detailed rules live in linked specs or ADRs.
-
-Required columns:
-
-| Area | Status | Authoritative source | Notes |
-|---|---|---|---|
-
-Required areas:
-- `architecture_style`
-- `source_of_truth`
-- `module_boundaries`
-- `user_scenarios`
-- `constraints`
-- `non_goals`
-- `domain_model`
-- `data_flow`
-- `storage`
-- `api_contracts`
-- `event_message_contracts`
-- `agent_io_contracts`
-- `security_safety`
-- `deployment`
-- `risks`
-- `open_questions`
-
-Allowed area statuses: `authoritative`, `needed_before_tasks`, `not_applicable`, `blocked`.
-Use `needed_before_tasks` only for concrete contract details that are not yet
-written but are safely routed to one canonical path for `/prd-to-tasks`. It must
-name the candidate canonical spec, affected features, and missing concrete
-block in the Notes column. It does not block entering `/prd-to-tasks`, but it
-blocks creation of dependent T2/T3 task records until resolved to
-`authoritative` or `not_applicable`.
-
-Strict/autonomous product readiness cannot contain `needed_before_tasks`; `/prd-to-tasks` must resolve any affected rows before product execution handoff. A foundation-only strict gate may pass with product contract rows still `needed_before_tasks` so the `FT-000` foundation queue can execute before product tasking.
-
-## 6.1) Core SDD spec generation
-While updating the Backbone Area Matrix, generate or update the core SDD
-specifications needed by the current PRD through three design lenses:
-- `architecture`
-- `interfaces_contracts`
-- `data`
-
-Family outputs:
-- `architecture` / Architecture Specification: system shape, source-of-truth, module/bounded-context
-  boundaries, runtime/deployment constraints, and Architecture Spine `AD-*`
-  guardrails. Canonical specs normally live under `.memory-bank/architecture/*` or
-  `.memory-bank/adrs/*`.
-- `interfaces_contracts` / Interface Specification and Contracts: API, events,
-  protocols, component and interaction boundaries. Generate/update only the
-  relevant concrete contract types: Component Contract (module guarantees
-  within fixed architecture boundaries), API Contract (REST/gRPC/GraphQL
-  inputs, outputs, auth/status/error behavior), Event Contract
-  (event/message/queue envelope, ordering, retry/idempotency), Data Contract
-  (boundary payload shape, versions, required fields, serialization and
-  compatibility), and protocol/agent/tool I/O contracts. Cross-boundary
-  responsibility, evidence/redaction, safety/security, testing/runbook handoff,
-  and executable verification contracts also live in this lens. Canonical specs
-  live under `.memory-bank/contracts/*`, `.memory-bank/testing/*`, and
-  `.memory-bank/runbooks/*`; stack-native schemas may be linked as the
-  implementation source when present.
-- `data` / Data Specification: domain model, storage ownership,
-  persistence/session/UoW/migrations, DB schemas, lifecycle/state-machine rules,
-  internal data formats, validation and serialization rules, retention, seed
-  data, and runtime data paths. It does not define payload compatibility across a
-  component/API/event/protocol boundary; that belongs to a Data Contract in the
-  interfaces/contracts lens. Canonical specs normally live under
-  `.memory-bank/domains/*` and `.memory-bank/states/*`.
-
-KISS rules:
-- Create or update the canonical spec for each relevant concern. Prefer reusing
-  or extending an existing registered path over creating a new file.
-- Use existing Backbone Area Matrix rows such as `module_boundaries`,
-  `data_flow`, `storage`, `api_contracts`, `event_message_contracts`,
-  `agent_io_contracts`, and `security_safety` to show where the relevant specs
-  live. Route concrete verification contracts through the existing
-  subject-based spec registry without adding a global testing backbone row.
-- Do not add a second mandatory readiness gate, validator, or coverage-map
-  artifact.
-- If a lens is genuinely irrelevant to the current PRD, mark the relevant
-  area `not_applicable` with rationale; do not create an empty placeholder spec.
-- If a lens needs concrete feature-level detail, route that to `/prd-to-tasks`
-  through existing `needed_before_tasks` notes; `/spec-design` still creates or
-  updates the global/shared canonical spec when one is relevant.
-- Register specs in `spec-index.md`, but keep decision bodies in the canonical
-  architecture/contract/domain/state/testing/runbook spec.
-
-## 6.2) Testing policy boundary
-Resolve the canonical testing policy path through `.memory-bank/spec-index.md`.
-Fresh targets register `.memory-bank/testing/strategy.md` as a bootstrap-owned
-framework baseline. Treat the registered baseline as read-only in
-`/spec-design`: do not expand, redesign, create, or migrate it.
-
-Route concrete project verification concerns such as a test harness, executable
-verification contract, evidence/redaction rule, or operational proof path to
-subject specs under `.memory-bank/testing/`, `.memory-bank/contracts/`, or
-`.memory-bank/runbooks/` through the existing SDD concern routing. If the
-registry does not contain a testing policy, do not invent a fallback path.
-
-## 7) Spec-index and spec-backbone content boundary
-`.memory-bank/spec-index.md` is a pure spec registry/index, not an authoritative design spec or readiness/status file.
-
-Allowed in `spec-index.md`:
-- Spec Registry table: `Type | Path | Status | Scope | Change route`
-- Planned Specs table
-- Broken / Missing Links
-- concise Update Rules
-
-Not allowed in `spec-index.md`:
-- global backbone status, blockers, next command routing, or Backbone Area Matrix
-- feature design status map; feature `spec_design_status` remains in feature frontmatter
-- decision body, rationale, trade-off analysis, or architecture rules
-- API naming/status/error/auth/upload rules
-- state transitions, data schemas, event/message envelope rules, safety policy, or testing gate details
-- duplicated content that already belongs in `.memory-bank/architecture/`, `.memory-bank/contracts/`, `.memory-bank/domains/`, `.memory-bank/states/`, `.memory-bank/testing/`, `.memory-bank/invariants.md`, or `.memory-bank/adrs/`
-
-Allowed in `.memory-bank/spec-backbone.md`:
-- Pre-PRD Spec Status and Decomposition Inputs from `/spec-init`
-- Open Design Questions
-- Backbone Area Matrix
-- Handoff To `/prd`
-- Handoff To `/spec-design`
-- Global Backbone Status after `/spec-design`
-- Not applicable areas and concise blockers/handoff notes
-
-If a decision needs more than a short label plus link, write it in the relevant canonical spec or ADR and route it from `spec-index.md`; summarize route/state in `spec-backbone.md`. If `spec-index.md` already contains old backbone/status content, migrate that state to `spec-backbone.md` and leave only registry rows and planned specs in the index.
-
-## 8) Phase A - staged architecture decision interview
-Do not use a long questionnaire. Ask one question at a time with 2-3 options, a preferred option, and a short rationale. After each answer, record the decision body and rationale in the relevant canonical spec or ADR. Update `.memory-bank/spec-index.md` only as a registry/planned-spec index and update `.memory-bank/spec-backbone.md` with concise backbone state, status, matrix, and handoff notes.
-
-Confirm or choose only decisions that affect the current PRD:
-- architecture style
-- source-of-truth hierarchy
-- module/bounded-context boundaries
-- persistence strategy
-- API style
-- frontend/backend boundary
-- event/message model
-- agent input/output boundaries
-- schema strategy
-- deployment assumptions
-- architecture documentation granularity
-
-For local/simple feature sets, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, and no separate HTTP boundary when supported by PRD evidence. Mark unrelated areas `not_applicable`.
-
-In autonomous mode, do not ask questions. Record conservative assumptions only when they are reversible and safe; otherwise set backbone status `blocked`.
-
-## 9) Architecture documentation granularity
-Before creating multiple files under `.memory-bank/architecture/`, choose the architecture artifact strategy.
-
-Ask one targeted question when scope/artifact shape is unclear. If a safe
-choice is impossible, mark `blocked` instead of defaulting to one file.
-
-Allowed strategies:
-- **single-file**: keep the global architecture scaffold in `.memory-bank/architecture/system-architecture.md`; use when the feature set is explicitly tiny/local/simple or when one hub is the best readable scaffold shape.
-- **split-core-docs**: create `system-architecture.md`, `source-of-truth.md`, and `module-boundaries.md` only when those sections are large, reused independently, or owned by different workstreams.
-- **split-by-boundary-topic**: add extra files such as `<boundary>.md` only for large projects or complex external/runtime boundaries that would make `system-architecture.md` hard to prime.
-
-Normal greenfield scope creates the architecture scaffold needed by the feature
-set. Complex/shared scope splits only when separate files reduce real complexity
-or are needed as authoritative references. Do not create
-`.memory-bank/architecture/index.md` unless the architecture folder has more
-than three docs. If the project already has split architecture docs, do not
-churn them unless consolidation is explicitly useful.
-
-Recommended `system-architecture.md` sections when `single-file` is selected:
-- `# System Architecture`
-- `## System goal`
-- `## Main constraints`
-- `## Non-goals`
-- `## Architecture Spine` when shared-boundary, contract, state/data/runtime/security, or strict decisions need compact executable rules
-- `## Architecture style`
-- `## Main modules / bounded contexts`
-- `## Data flow`
-- `## External integrations`
-- `## Storage decisions`
-- `## API / contract boundaries`
-- `## Security / safety constraints`
-- `## Deployment assumptions`
-- `## Risks`
-- `## Open questions`
-
-Architecture docs content boundary:
-- keep only global architecture decisions and invariants there: system shape, ownership, module boundaries, source-of-truth, deployment assumptions, high-level data flow, and diagrams
-- do not put detailed API schemas, endpoint contracts, lifecycle state machines, message/event envelope contracts, or feature-level implementation design in `architecture/*`
-- route those details to subject-based specs under `.memory-bank/contracts/`,
-  `.memory-bank/states/`, `.memory-bank/domains/`, `.memory-bank/testing/`,
-  `.memory-bank/runbooks/`, or `.memory-bank/guides/`
-
-### Architecture Spine KISS rule
-
-For shared-boundary, contract, state/data/runtime/security, or strict pressure, update
-`.memory-bank/architecture/system-architecture.md#Architecture Spine`.
-
-Keep the spine short and executable. It is not a narrative architecture essay.
-
-Use stable `AD-*` blocks:
+Maintain in `spec-backbone.md`:
 
 ```markdown
-#### AD-001 — <short decision>
+## Backbone Area Matrix
+| Area | Status | Authoritative source | Notes |
+|---|---|---|---|
+```
+
+Required areas:
+- `architecture_style`, `source_of_truth`, `module_boundaries`;
+- `user_scenarios`, `constraints`, `non_goals`, `domain_model`;
+- `data_flow`, `storage`;
+- `api_contracts`, `event_message_contracts`, `agent_io_contracts`;
+- `security_safety`, `deployment`, `risks`, `open_questions`.
+
+Allowed row statuses are
+`authoritative|needed_before_tasks|not_applicable|blocked`.
+`needed_before_tasks` is only for a concrete missing block whose canonical path,
+affected features, and missing detail are already unambiguous. It is not a way
+to defer a product or architecture decision.
+
+## 3. Canonical SDD specs
+
+Create or update only specs needed to satisfy applicable coverage. Architecture,
+Interfaces/Contracts, Data, and Verification are design coverage criteria, not
+mandatory phases, file families, or an analysis order.
+
+Coverage meanings:
+- Architecture: system shape, source of truth, module/bounded-context and
+  runtime/deployment boundaries, high-level data flow, and global guardrails;
+- Interfaces/Contracts: only applicable Component, API, Event, Data,
+  protocol/agent/tool I/O, boundary compatibility, evidence/redaction,
+  security/safety, testing/runbook, and verification contracts. A Data Contract
+  owns payload compatibility across a boundary;
+- Data: internal domain model, storage ownership, persistence/session/UoW,
+  schemas/migrations, states/lifecycles, validation/serialization, retention,
+  seed data, and runtime data paths;
+- Verification: concrete proof/evidence concerns routed to the owning contract,
+  testing, or runbook spec without adding a global testing backbone row.
+
+Use subject paths under `architecture/`, `contracts/`, `domains/`, `states/`,
+`testing/`, `runbooks/`, `guides/`, or `adrs/`. Mark a genuinely irrelevant
+matrix area `not_applicable` with rationale instead of creating an empty spec.
+When only feature-level concrete detail remains and its canonical path is known,
+route it as `needed_before_tasks` for later completion.
+
+Architecture artifact strategies are output labels, not a required interview:
+- `single-file`: `.memory-bank/architecture/system-architecture.md` is the best
+  readable global scaffold;
+- `split-core-docs`: separate source-of-truth/module-boundary docs are reused or
+  independently owned;
+- `split-by-boundary-topic`: a complex boundary needs its own canonical doc.
+- `pending`: allowed only with `Status: blocked` when artifact shape depends on
+  an unresolved material design decision.
+
+Choose the smallest evidence-backed shape. Do not create
+`architecture/index.md` unless there are more than three architecture docs, and
+do not churn an existing useful split. Keep detailed API schemas, lifecycle
+machines, message envelopes, and feature behavior out of `architecture/*`.
+
+For shared-boundary, contract, state/data, runtime, security, or strict pressure,
+maintain `.memory-bank/architecture/system-architecture.md#Architecture Spine`
+with stable compact rules:
+
+```markdown
+#### AD-001 - <short decision>
 - Binds:
 - Prevents:
 - Rule:
@@ -353,92 +233,15 @@ Use stable `AD-*` blocks:
 - Source:
 ```
 
-Rules:
-- create `AD-*` only for decisions that constrain shared-boundary, contract, state/data/runtime/security, or strict work
-- do not create `AD-*` for local/simple implementation details
-- do not renumber existing `AD-*`
-- retire/replace decisions explicitly; do not silently delete them
-- every active `AD-*` must include `Binds`, `Prevents`, and `Rule`
-- `Rule` must be actionable for `/execute` and checkable by `/verify`
-- put detailed rationale in ADRs or decision logs only when it is worth preserving
+Create `AD-*` only for executable shared/strict decisions. Do not renumber
+existing IDs or silently delete a retired rule. Each active rule has `Binds`,
+`Prevents`, and an actionable `Rule`; detailed rationale goes to an ADR only
+when it has durable value.
 
-ADR routing remains optional. Create/update an ADR only when a decision has
-durable trade-off rationale, changes source of truth, changes public
-contract/schema/message envelope, introduces irreversible
-storage/state/deployment/security behavior, or will be reused by more than one
-feature.
+## 4. Foundation Dev Path decision
 
-## 10) Domain Spec routing
-Route domain model work through the Backbone Area Matrix as `domain_model` with status `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`.
-
-Domain Spec is not a mandatory heavy phase for every project:
-- If the feature set is local/simple and PRD/requirements/features already define the needed vocabulary and rules clearly enough, set `domain_model: not_applicable` with a short rationale, or link the authoritative PRD/requirements/features source.
-- If domain logic is introduced by one feature but remains a cohesive technical
-  concern, route it to `/prd-to-tasks FT-<NNN>` and a subject-based canonical
-  domain/state/contract spec instead of creating a global Domain Spec or FT hub.
-- If the domain model affects modules, contracts, storage, states, security/safety, runtime behavior, or shared boundaries, `/spec-design` creates or updates a minimal `.memory-bank/domains/<domain>.md` or `.memory-bank/domains/runtime-data-model.md` as the global/shared canonical spec.
-
-Minimal Domain Spec sections:
-- main entities
-- user roles
-- business rules
-- entity states
-- lifecycle
-- domain constraints
-- links to contracts, states, and storage specs
-
-Boundaries:
-- Domain Spec defines domain vocabulary, model, and business rules within its
-  registered scope.
-- Detailed state machines live in `.memory-bank/states/*`.
-- DB schemas, migrations, and runtime data details live in `.memory-bank/domains/runtime-data-model.md` or schema/contract docs.
-
-## 11) Phase B - write initial global specs
-Write or update only relevant backbone artifacts:
-- `.memory-bank/spec-backbone.md`
-- `.memory-bank/spec-index.md`
-- `.memory-bank/user-scenarios.md` when scenario evidence exists or a scenario gap must be explicit
-- `.memory-bank/architecture/system-architecture.md` when selected or needed as the architecture hub, using the sections above, Architecture Spine for shared-boundary, contract, state/data/runtime/security, or strict executable rules, and Mermaid C4/context/container/component, data flow, and sequence diagrams when useful
-- `.memory-bank/architecture/source-of-truth.md` only when Split core docs or Split by boundary/topic was selected, or when source-of-truth rules are too large/reused to keep in `system-architecture.md`
-- `.memory-bank/architecture/module-boundaries.md` only when Split core docs or Split by boundary/topic was selected, or when boundary rules are too large/reused to keep in `system-architecture.md`
-- `.memory-bank/architecture/<boundary>.md` only for a complex dedicated architecture boundary that cannot stay readable inside `system-architecture.md`
-- `.memory-bank/domains/runtime-data-model.md`
-- `.memory-bank/domains/<domain>.md` only when shared domain vocabulary/model/rules are needed before tasks
-- `.memory-bank/contracts/api-guidelines.md`
-- `.memory-bank/contracts/http-api.md` or `.memory-bank/contracts/openapi.md` only when a separate HTTP boundary spec is needed
-- `.memory-bank/contracts/agent-chat-bus.md` if agent/event/chat boundary exists
-- `.memory-bank/contracts/message-envelope.md` if messages/events/envelopes exist
-- `.memory-bank/guides/frontend-component-guide.md` if frontend component system/design behavior is in scope
-- `.memory-bank/glossary.md`
-- `.memory-bank/invariants.md`
-- `.memory-bank/testing/*`
-- `.memory-bank/adrs/*` for stable architecture decisions
-- `.memory-bank/foundation.md` only when a Foundation Dev Path decision or explicit non-requirement must be recorded
-
-Keep output conservative. Prefer reusing or extending an existing registered canonical spec over creating a new one.
-Prefer fewer architecture files for faster priming; split only when it removes real complexity or matches the selected artifact strategy.
-Keep architecture docs global: if the content is an API schema, lifecycle state
-machine, message/event contract, or feature-level behavior, create or update the
-relevant subject-based contract/state/domain/guide spec instead of expanding
-`architecture/*`.
-
-Do not create:
-- `.memory-bank/tasks/*.task.json`
-- `.memory-bank/tasks/plans/*`
-- default feature-owned or `FT-*`-named design specs
-- implementation plans
-- separate diagrams folders; diagrams belong as Mermaid sections in `.memory-bank/architecture/system-architecture.md`
-- extra architecture files just because a standard filename exists in this command
-
-## 11.1) Foundation Dev Path decision
-After the FT set and global backbone evidence exist, decide whether the project
-needs a verified executable baseline before product feature implementation.
-
-Always create or update `.memory-bank/foundation.md` during `/spec-design`.
-Downstream product tasking requires an explicit foundation decision, even when
-no separate foundation queue is needed.
-
-Minimal required shape:
+When the Foundation decision is accepted or already authoritative, create or
+update `.memory-bank/foundation.md` with this parseable shape:
 
 ```markdown
 ---
@@ -476,109 +279,80 @@ status: active
 - feature dev path allowed
 ```
 
-Rules:
-- set `Foundation Required: true` when planned features cannot safely start
-  without a walking skeleton, runtime path, test harness, entrypoint, storage
-  baseline, contract boundary, or compatibility probe
-- for `Foundation Required: true`, set
-  `Foundation Gate Task: pending_foundation_to_tasks`; the concrete final gate
-  task id is created later by `/foundation-to-tasks`
-- set `Foundation Required: false` when existing code/baseline or project
-  simplicity makes a separate foundation queue unnecessary; set
-  `Foundation Gate Task: not_required` and record rationale
-- in brownfield, default to `Foundation Required: false` when the existing
-  executable baseline is already evidenced well enough for the planned delta;
-  use `/foundation-to-tasks --verify-existing` only when baseline proof is
-  still needed before product feature work
-- keep the Feature Pressure Map grounded in current PRD/features/specs; do not
-  convert product behavior into foundation work
-- do not create `REQ-000`, `FT-000`, task records, protocols, or
-  implementation plans in `/spec-design`
-- route required executable work to `/foundation-to-tasks`
+Set `Foundation Required: true` only when planned features cannot safely begin
+without an executable walking skeleton, runtime/entry path, test harness,
+storage baseline, contract boundary, or compatibility probe. Then set
+`Foundation Gate Task: pending_foundation_to_tasks`; `/foundation-to-tasks`
+creates the concrete queue and gate ID.
 
-## 12) Verifiable contracts routing
-For AI-first architecture, route concrete contracts to verifiable artifacts when relevant:
-- OpenAPI
-- JSON Schema
-- Pydantic models or equivalent stack schemas
-- DB schema / migrations
-- event/message schemas
-- agent input/output schemas
+Set `Foundation Required: false` with evidence when an existing baseline or
+project simplicity makes a separate queue unnecessary, and set
+`Foundation Gate Task: not_required`. Brownfield defaults are not decisions:
+use existing executable evidence, or ask/halt if baseline sufficiency is
+ambiguous.
 
-KISS rule: `/spec-design` must decide each relevant contract area as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`. It does not need to write every concrete contract immediately.
+The Feature Pressure Map is evidence for the minimum baseline, not a product
+backlog. Do not create `REQ-000`, `FT-000`, tasks, protocols, or plans here.
 
-Use contract-area routing this way:
-- `authoritative`: a linked canonical spec provides enough concrete detail for downstream tasking, or the area is governed by an existing stack-native source.
-- `needed_before_tasks`: feature tasking can enter `/prd-to-tasks`, but dependent T2/T3 task records must not be created until `/prd-to-tasks` writes or links the missing concrete block at the routed canonical path.
-- `not_applicable`: the current feature set has no such boundary; include a rationale.
-- `blocked`: the canonical path, boundary, or decision is unsafe to choose without user/external evidence; stop downstream work.
+If the Foundation branch is unresolved, do not fabricate `true|false` anchors.
+Create or update `.memory-bank/foundation.md` only to record
+`Foundation decision: blocked`, the question/evidence, affected features, and
+owner; preserve any previous truthful anchors without treating them as current
+approval. Set Global Backbone Status `blocked` and report Foundation decision
+`blocked`. The operator answer must be applied and the normal Gate Anchors
+revalidated on the next `/spec-design` run.
 
-Do not mark an area `needed_before_tasks` for unresolved product or architecture choices. Use it only when the canonical path is clear and the remaining work is making an implementation contract concrete.
+## 5. Feature links and product/design boundary
 
-OpenAPI is not the source of truth for the whole system.
+For affected product features, add only evidence-backed global backbone links
+or SDD Design Gate notes. Do not set `spec_design_status: complete` unless all
+feature-level concern criteria are already truthfully satisfied. Do not use
+`not_required` for a feature that depends on shared-boundary, contract,
+state/data, runtime, security, or strict design.
+</required_outputs>
 
-Rules:
-- backend schemas such as FastAPI/Pydantic, or equivalent stack schemas, should generate OpenAPI when that stack exists or is selected
-- `.memory-bank/contracts/api-guidelines.md` defines naming, status codes, error format, auth, CORS, upload, pagination, and compatibility rules
-- OpenAPI covers only frontend/backend HTTP API
-- agent/domain/event/state/safety contracts live in separate specs
-- do not write a large hand-written `openapi.yaml` before architecture design
-- gate: generated OpenAPI validates and critical endpoints have integration/contract tests
+<agent_discretion>
+Choose the order of source review, tools, mode assessment, coverage analysis,
+spec updates, diagrams, and validation. Choose the minimum useful artifact shape
+within KISS and existing registry boundaries. Design coverage areas and risk
+lists are completeness criteria, not a mandatory thought process.
 
-## 13) Phase C - targeted follow-up interviews
-While writing boundary/data/testing specs, ask follow-up questions only for unresolved branch decisions that block truthful specs.
+The agent may decide local tactics and concrete spec organization when evidence
+leaves no material operator branch. It may not choose product, architecture,
+contract, Foundation, security, compatibility, or irreversible behavior on the
+operator's behalf.
+</agent_discretion>
 
-Examples:
-- the data model needs retention or migration rules not present in PRD
-- HTTP API exists but auth/error/upload behavior is undecided
-- event/message boundary exists but envelope or ordering rules are undecided
-- agent I/O boundary exists but schemas, ownership, or failure semantics are unclear
-- frontend component behavior is normative but ownership/design system source is unclear
+<validation>
+Before handoff:
+- verify the Global Backbone Status and Matrix are parseable and mutually
+  consistent;
+- verify every relevant area is authoritative, explicitly not applicable, or a
+  narrowly valid `needed_before_tasks` route;
+- verify canonical spec-index paths are unique, linked, and contain only
+  registry metadata;
+- verify accepted decisions live in owning specs/ADRs/foundation evidence;
+- verify Foundation anchors and decision are explicit;
+- verify no TASK/plan or feature-owned spec hub was created;
+- rerun applicable link/lint/readiness checks and preserve any blocker.
 
-If the answer is unavailable and a safe assumption is not possible, mark backbone status `blocked` and stop.
+The complete Product/Design boundary is ready only when the durable bundle is
+present and consistent:
+- clarified `.memory-bank/prd.md`;
+- product, requirements, epics, and product features;
+- Global Backbone Status `complete` or valid `minimal`;
+- canonical `.memory-bank/spec-index.md`;
+- explicit Foundation Dev Path decision;
+- accepted operator decisions in their existing canonical artifacts.
+</validation>
 
-## 14) Update routing
-Update `.memory-bank/spec-backbone.md`:
-- exact `## Global Backbone Status` section and `- Status: complete|minimal|blocked` line
-- Backbone Area Matrix with authoritative links or explicit `not_applicable` rationale
-- generated or updated core SDD specs through the three design lenses:
-  architecture, interfaces/contracts, and data
-- source-of-truth route labels and links; detailed hierarchy/rules live in the selected architecture artifact (`system-architecture.md` when single-file is selected, or `source-of-truth.md` when split)
-- global backbone blockers and next command routing
-- architecture artifact strategy and baseline backbone specs with their scope
-- short backbone decision labels only, never decision body/rationale/rules
-- handoff to `/prd-to-tasks` or `/spec-auto`
-
-Update `.memory-bank/spec-index.md` only as a pure registry:
-- add or update active canonical spec rows
-- add or update planned spec rows
-- record broken/missing links
-- keep update rules concise
-
-For affected feature docs:
-- add SDD Design Gate notes with normative backbone links where evidence exists
-- do not set `spec_design_status: complete` unless feature-level concern criteria are already fully satisfied
-- do not mark `not_required` for features that still depend on shared-boundary,
-  contract, state/data/runtime/security, or strict backbone decisions
-
-## 15) Handoff
-Report:
-- backbone status: `complete`, `minimal`, or `blocked`
-- architecture mode and evidence
-- architecture artifact strategy: single-file, split core docs, or split by boundary/topic
-- specs created/updated
-- Backbone Area Matrix summary
-- generated/updated specs by design lens and any areas marked
-  `not_applicable` with rationale
-- not_applicable areas and rationale for local/simple feature-set pressure
-- affected features and normative links
-- foundation decision: `required`, `not_required`, or `blocked`
-- foundation next step: `/foundation-to-tasks`, or `none` when
-  `Foundation Gate Task: not_required`
-- blockers/open questions
-- next command routing:
-  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is required: `/foundation-to-tasks`, then `/mb-doctor --strict` at the foundation/task-queue boundary
-  - if status is `complete`, or valid `minimal` with explicit `not_applicable` areas, and foundation is not required: `/prd-to-tasks FT-<NNN>` for manual flow, or `/spec-auto --all` before `/prd-to-tasks --all` in autonomous flow
-  - if status is `blocked`: no downstream command; resolve the blocker, user decision, or spec gap, then rerun `/spec-design`
-
-</process>
+<handoff_contract>
+Report backbone status/mode, artifact strategy, specs changed, matrix summary,
+`not_applicable` rationale, affected features, Foundation decision, durable
+operator decisions, blockers, and the immediate next command:
+- ready backbone + `Foundation Required: true` -> `/foundation-to-tasks`;
+- ready backbone + `Foundation Required: false` -> `/prd-to-tasks FT-<NNN>` in
+  manual flow, or `/spec-auto --all` for autonomous feature design;
+- `blocked` -> no downstream handoff; obtain the named operator/owner decision
+  and rerun `/spec-design`.
+</handoff_contract>

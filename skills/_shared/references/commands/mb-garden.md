@@ -21,6 +21,9 @@ status: active
 - Если есть `.memory-bank/constitution.md`, проверь ссылки и упоминания Constitution в MBB, spec-backbone, spec-index, workflows, AGENTS.md и generated plans.
 - Найди stale или contradictory Constitution references: старые пути, alias-команды, legacy task/risk routing, или правила, противоречащие текущей Constitution.
 - Найди “Known gaps / TBD / TODO” и реши: закрываем или превращаем в задачи.
+- Для linked `.memory-bank/behavior-specs/*.behavior.json` проверь feature links
+  и task `source_artifacts`. Stale examples отмечай как notes, если обычный
+  AC/spec/verification source не сломан.
 - Сверь `.memory-bank/skills/index.md` с реально установленными
   `.agents/skills/*/SKILL.md` и `.claude/skills/*/SKILL.md`. Реестр должен
   использовать canonical runtime command names без второй alias/package surface.
@@ -31,9 +34,13 @@ status: active
 - Если есть `scripts/mb-doctor.mjs`, запусти default mode как health check.
   `--strict` используй только после появления executable task queue и перед
   scheduler/autopilot execution.
+- Readiness findings принадлежат `mb-doctor`; не дублируй его проверки вручную.
 
-## 3) MB-SYNC
-Запусти `/mb-sync` и пройди чеклист.
+## 3) MB-SYNC (по необходимости)
+Запусти `/mb-sync`, только если garden изменил durable Memory Bank state или
+нашёл drift, требующий reconciliation уже принятого owner decision. Иначе
+сообщи, что sync не нужен. Не выводи closure, promotion или scheduler decision
+из результатов garden.
 
 ## 4) Архив/рефактор
 - Размер документа — только review signal. Разбивай по самостоятельной boundary,
@@ -49,7 +56,8 @@ status: active
 - Не архивируй и не переписывай Constitution как часть чистки, если пользователь явно не просил governance amendment.
 - Если Constitution устарела или конфликтует с routed docs, flag это как blocking garden finding и предложи `/constitution`; не выдумывай новые domain principles.
 
-## 5) Review (периодически)
-Запусти `/review-feat-plan` или `/review-tasks-plan` fresh-context по нужной
-поверхности (например, раз в неделю или после большой волны изменений).
+## 5) Review (по finding)
+Маршрутизируй в `/review-feat-plan` или `/review-tasks-plan` только concrete
+planning/spec/task drift в ownership соответствующего review. Не запускай review
+только по расписанию или из-за самого факта garden run.
 </process>

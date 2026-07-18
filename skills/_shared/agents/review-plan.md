@@ -24,7 +24,7 @@
 - verification steps (UAT)
 - docs-first update чеклист
 - для T2/T3: непустые `purpose`, один scalar `success_outcome`, advisory
-  `touched_files` или hard `allowed_write_scope`, реальная gate command и/или
+  `touched_files` или hard `write_boundary`, реальная gate command и/или
   `verification_target`
 - optional `anti_goals`, `constraints`, `invariants`, `evidence_required`,
   `forbidden_scope` и `stop_conditions` не заполнены фиктивными значениями

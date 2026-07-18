@@ -61,9 +61,9 @@ jobs:
           test -f skills/mb-garden/assets/mb-doctor.mjs
           test ! -e skills/mb-harness
           test "$(find skills -mindepth 2 -maxdepth 2 -type f -name SKILL.md -printf '%h\n' | sort)" = $'skills/cold-start\nskills/mb-garden\nskills/mb-init'
-          grep -Fq 'new default `FT-*` spec hub' skills/_shared/agents/review-plan.md
+          grep -Fq 'default `FT-*` spec hub' skills/_shared/agents/review-plan.md
           ! grep -q 'testing/index.md\|testing/strategy.md' skills/_shared/references/commands/prd.md
-          grep -Fq 'does not create or modify files under `.memory-bank/testing/`' skills/_shared/references/commands/prd.md
+          grep -Fq 'create/modify `.memory-bank/testing/*`' skills/_shared/references/commands/prd.md
           ! grep -q 'TASK-TESTS-' skills/_shared/references/commands/add-tests.md
           ! grep -q 'testing/index.md' skills/_shared/references/commands/add-tests.md
           grep -Fq 'has `status: in_progress`' skills/_shared/references/commands/add-tests.md
@@ -78,11 +78,63 @@ jobs:
           grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/spec-auto.md
           grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/foundation-to-tasks.md
           grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/prd-to-tasks.md
-          grep -Fq 'populate `touched_files` as an advisory, non-exhaustive expected' skills/_shared/references/commands/prd-to-tasks.md
-          grep -Fq 'treat `touched_files` as advisory; confirm actual files during preflight' skills/_shared/references/commands/execute.md
+          grep -Fq '`touched_files` is advisory and non-exhaustive' skills/_shared/references/commands/prd-to-tasks.md
+          grep -Fq '`touched_files` is advisory and non-exhaustive' skills/_shared/references/commands/execute.md
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/workflows/execute-loop.md
           grep -Fq -- '--experimental-parallel' skills/_shared/references/workflows/autonomy-policy.md
-          grep -Fq 'Optional hard write boundary; populate only when evidence justifies one.' skills/_shared/scripts/init-mb.js
+          grep -Fq 'Optional hard write boundary; omit unless evidence justifies one.' skills/_shared/scripts/init-mb.js
+
+          product_design_commands=(brainstorm brief constitution write-prd clarify-feature discuss spec-init prd review-feat-plan spec-design spec-auto)
+          for command in "${product_design_commands[@]}"; do
+            spec="skills/_shared/references/commands/$command.md"
+            grep -Fq '<operator_decisions>' "$spec"
+            grep -Fq '<agent_discretion>' "$spec"
+            grep -Fq '<validation>' "$spec"
+            grep -Fq '<handoff_contract>' "$spec"
+          done
+          ! grep -E -q '20-40 useful ideas|ask at most 5|ask exactly one question at a time|max (5|8) words|Phase A|Phase B|Phase C' \
+            skills/_shared/references/commands/{brainstorm,brief,constitution,write-prd,clarify-feature,discuss,spec-init,prd,review-feat-plan,spec-design,spec-auto}.md
+          grep -Fq 'A recommendation/default is not an operator decision; silence is not consent.' skills/_shared/references/commands/write-prd.md
+          grep -Fq 'Interfaces/Contracts, Data, and Verification are design coverage criteria, not' skills/_shared/references/commands/spec-design.md
+          grep -Fq 'does not ask the operator during the unattended run and never' skills/_shared/references/commands/spec-auto.md
+          grep -Fq 'HALT_BLOCKING_QUESTIONS' skills/_shared/references/commands/spec-auto.md
+          grep -Fq 'clarified `.memory-bank/prd.md`' skills/_shared/references/commands/spec-design.md
+          grep -Fq '`complete|minimal` + canonical spec-index' skills/_shared/references/commands/spec-auto.md
+          grep -Fq 'clarification_status: complete' skills/_shared/references/commands/spec-init.md
+          grep -Fq 'constitution_checked: true' skills/_shared/references/commands/spec-init.md
+          grep -Fq 'Status: draft|reviewed|blocked' skills/_shared/references/commands/spec-init.md
+          grep -Fq 'Status: reviewed' skills/_shared/references/commands/spec-design.md
+          grep -Fq 'promote it to document `status: active` only after its open questions' skills/_shared/references/commands/prd.md
+
+          tasking_execution_commands=(foundation-to-tasks prd-to-tasks review-tasks-plan execute add-tests verify red-verify autonomous autopilot mb-sync)
+          for command in "${tasking_execution_commands[@]}"; do
+            spec="skills/_shared/references/commands/$command.md"
+            grep -Fq '<operator_decisions>' "$spec"
+            grep -Fq '<agent_discretion>' "$spec"
+            grep -Fq '<validation>' "$spec"
+            grep -Fq '<handoff_contract>' "$spec"
+          done
+          ! grep -Fq '## Status Transition Modes' \
+            skills/_shared/references/commands/{foundation-to-tasks,prd-to-tasks,review-tasks-plan,execute,add-tests,verify,red-verify,autonomous,autopilot,mb-sync}.md
+          grep -Fq 'coverage criteria' skills/_shared/references/commands/foundation-to-tasks.md
+          grep -Fq 'completeness lenses, not a mandatory thinking order' skills/_shared/references/commands/prd-to-tasks.md
+          grep -Fq '`planned` remains valid for unmet dependencies or future waves' skills/_shared/references/commands/review-tasks-plan.md
+          grep -Fq 'independently builds its own hostile model' skills/_shared/references/commands/red-verify.md
+          grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autonomous.md
+          grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autopilot.md
+          grep -Fq 'Thin adapter' skills/_shared/references/commands/mb-sync.md
+          ! grep -Fq '## Status Transition Modes' skills/_shared/references/workflows/mb-sync.md
+          grep -Fq 'Canonical lifecycle, tier gates, manual-versus-scheduler closure rules, and' skills/_shared/references/workflows/mb-sync.md
+          grep -Fq 'A recommendation, framework preference, reversible/conservative default,' skills/_shared/references/workflows/autonomy-policy.md
+          grep -Fq '## Scheduler Failure Handling' skills/_shared/references/workflows/tier-policy.md
+          grep -Fq 'A genuinely ambiguous tier is an operator decision' skills/_shared/references/workflows/tier-policy.md
+          ! grep -Fq 'If unsure between two tiers, choose the higher tier' skills/_shared/references/workflows/tier-policy.md
+          grep -Fq 'direct dependents of every `failed|blocked` task `blocked`' skills/_shared/references/workflows/tier-policy.md
+          grep -Fq 'Scheduler Failure Handling' skills/_shared/references/commands/{autonomous,autopilot}.md
+          grep -Fq 'SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail' skills/_shared/references/commands/red-verify.md
+          grep -Fq 'HUMAN_CHECKPOINT: done' skills/_shared/references/commands/{red-verify,autonomous,autopilot}.md
+          grep -Fq 'planned|ready|in_progress|blocked|done|failed' skills/_shared/references/commands/{autonomous,autopilot}.md
+          grep -Fq 'pairwise-disjoint non-empty hard' skills/_shared/references/commands/autopilot.md
 
       - name: Syntax check helper scripts
         shell: bash
@@ -227,14 +279,14 @@ jobs:
           grep -Fq '`not_applicable`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -Fq '`block`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -q 'subject-based canonical path' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
-          grep -q 'Never resolve competing paths by creating a third spec' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -q 'Never resolve competing canonical paths by creating a third spec' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -q 'direct task-relevant subset of canonical specs' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -q 'no suitable canonical spec exists' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
-          grep -Fq 'populate `touched_files` as an advisory, non-exhaustive expected' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
-          grep -Fq 'treat `touched_files` as advisory; confirm actual files during preflight' "$TARGET/.agents/skills/execute/SKILL.md"
+          grep -Fq '`touched_files` is advisory and non-exhaustive' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
+          grep -Fq '`touched_files` is advisory and non-exhaustive' "$TARGET/.agents/skills/execute/SKILL.md"
           grep -Fq 'Canonical execution is sequential' "$TARGET/.memory-bank/workflows/execute-loop.md"
           grep -Fq -- '--experimental-parallel' "$TARGET/.memory-bank/workflows/autonomy-policy.md"
-          grep -Fq 'conditional T2 feature-level `/red-verify`' "$TARGET/.agents/skills/autopilot/SKILL.md"
+          grep -Fq 'run `/red-verify --feature FT-<ID>`' "$TARGET/.agents/skills/autopilot/SKILL.md"
           ! grep -R -E 'packet_required|packet_ref|source_task_hash|ready_with_gaps|/mb-packet|\.memory-bank/packets' "$TARGET/.agents/skills" "$TARGET/.claude/skills"
           ! grep -R -E 'ROLLBACK_RECOVERY_NOTE|TASK_T3_ROLLBACK_MISSING' \
             "$TARGET/AGENTS.md" \
@@ -242,9 +294,10 @@ jobs:
             "$TARGET/.claude/skills" \
             "$TARGET/.memory-bank/workflows" \
             "$TARGET/scripts/mb-doctor.mjs"
-          grep -Fq 'run `/mb-sync` once for the completed wave' "$TARGET/.agents/skills/autopilot/SKILL.md"
-          grep -Fq 'запусти `/mb-sync` один раз' "$TARGET/.agents/skills/autonomous/SKILL.md"
-          grep -Fq 'Do not run full `/mb-sync` after every ordinary task' "$TARGET/.agents/skills/mb-sync/SKILL.md"
+          grep -Fq 'Full `/mb-sync` runs once at the wave boundary' "$TARGET/.agents/skills/autopilot/SKILL.md"
+          grep -Fq 'run `/mb-sync` once for already-written authoritative state' "$TARGET/.agents/skills/autonomous/SKILL.md"
+          grep -Fq 'Thin adapter' "$TARGET/.agents/skills/mb-sync/SKILL.md"
+          grep -Fq 'independently builds its own hostile model' "$TARGET/.agents/skills/red-verify/SKILL.md"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
           grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' "$TARGET/.agents/skills/execute/SKILL.md"
@@ -277,7 +330,7 @@ jobs:
           node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
           grep -Fq '^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$' "$TARGET/.memory-bank/schemas/task.schema.json"
           grep -Fq 'Advisory, expected, non-exhaustive change surface confirmed by executor preflight.' "$TARGET/.memory-bank/schemas/task.schema.json"
-          grep -Fq 'Optional hard write boundary; populate only when evidence justifies one.' "$TARGET/.memory-bank/schemas/task.schema.json"
+          grep -Fq 'Optional hard write boundary; omit unless evidence justifies one.' "$TARGET/.memory-bank/schemas/task.schema.json"
           ! grep -q 'packet_required\|packet_ref' "$TARGET/.memory-bank/schemas/task.schema.json"
           grep -q 'TASK-NNN-TN-FT-NNN-WN' "$TARGET/AGENTS.md"
           test ! -e "$TARGET/.memory-bank/foundation.md"
@@ -457,7 +510,6 @@ jobs:
             success_outcome: 'The deterministic fixture command succeeds.',
             anti_goals: [],
             runtime_context: {
-              allowed_write_scope: [],
               forbidden_scope: [],
               stop_conditions: []
             },

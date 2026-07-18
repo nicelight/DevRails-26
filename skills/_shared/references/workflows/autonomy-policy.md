@@ -15,7 +15,7 @@ status: active
 - Record the opt-in in `.protocols/AUTONOMOUS-RUN/status.md`.
 - Never use advisory `touched_files` as proof that tasks are disjoint.
 - Parallel candidates require non-empty, deliberately hard, pairwise-disjoint
-  `runtime_context.allowed_write_scope` values and isolated worktrees/sandboxes.
+  `runtime_context.write_boundary` values and isolated worktrees/sandboxes.
 - T3 tasks and tasks that write shared/governing state, package manifests,
   lockfiles, CI, or global configuration remain sequential.
 - If isolation or non-overlap cannot be proved, fall back to sequential without
@@ -28,11 +28,26 @@ status: active
 - destructive data migrations
 - secret reads / prod writes / deploys
 
-## Allowed assumptions
-- naming / wording / non-critical UX defaults
-- low-impact implementation details that can be verified later
-
-Non-blocking gaps must be written as explicit assumptions in `.protocols/AUTONOMOUS-RUN/decision-log.md`.
+## Operator decisions and local tactics
+- Unattended runs apply only decisions already fixed by Constitution, clarified
+  PRD, accepted operator policy/decision, production baseline, ADR, canonical
+  spec, or another authoritative artifact.
+- An unresolved material product, UX/acceptance, architecture, API/event/data/
+  state/storage/security/compatibility, Foundation, task-boundary, tier,
+  dependency, verification, or human-checkpoint branch is not an allowed
+  assumption. Record the exact question and halt with
+  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` plus the owning
+  interactive resume skill.
+- A recommendation, framework preference, reversible/conservative default,
+  silence, or continued reasoning is not operator consent.
+- Agents may choose low-impact implementation tactics, naming inside an
+  accepted contract, exploration order, tools, and the cheapest sufficient
+  checks when those choices do not change an operator-owned decision or expand
+  the approved scope/tier.
+- Record material applied authoritative decisions and any temporary
+  implementation-only assumption that needs later verification in the existing
+  `.protocols/AUTONOMOUS-RUN/decision-log.md`; do not create an assumption or
+  interview registry.
 
 ## Required gates
 - latest `/review-tasks-plan FT-<NNN>` verdict must be `APPROVE` for every

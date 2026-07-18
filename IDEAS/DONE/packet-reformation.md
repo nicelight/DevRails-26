@@ -69,7 +69,7 @@ context:
 - `source_artifacts` и `normative_inputs`;
 - `constraints`, `invariants`, `verification_targets`;
 - gates и evidence requirements;
-- `runtime_context.allowed_write_scope`;
+- `runtime_context.write_boundary`;
 - `runtime_context.forbidden_scope`;
 - `runtime_context.stop_conditions`.
 
@@ -137,7 +137,7 @@ Task card остаётся authoritative для:
 - существует хотя бы одна task-linked SDD spec path; запись только в
   `spec-index.md` без task/feature link не считается task context;
 - grounded scope задан непустым `touched_files` и/или
-  `runtime_context.allowed_write_scope`;
+  `runtime_context.write_boundary`;
 - существует хотя бы один verification path: gate с реальной command или
   непустой `verification_target`;
 - все dependencies существуют и не образуют cycle.

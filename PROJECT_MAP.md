@@ -179,9 +179,11 @@ The indexed `.memory-bank/tasks/TASK-*.task.json` record is the only durable
 task-scoped planning, execution, and verification handoff. T2/T3 records must
 carry purpose/outcome, direct task-relevant canonical SDD paths, an expected
 change surface, and a verification path before execution. `touched_files` is
-advisory and non-exhaustive; a non-empty `runtime_context.allowed_write_scope`
+advisory and non-exhaustive; a non-empty `runtime_context.write_boundary`
 is a deliberate hard boundary. `/mb-doctor` checks only mechanical completeness;
 `/review-tasks-plan` owns semantic applicability and sufficiency.
+Existing `runtime_context.allowed_write_scope` is accepted only as a deprecated
+read alias; new or repaired task cards emit `write_boundary`.
 
 Primary source files for this behavior:
 
@@ -200,7 +202,7 @@ Primary source files for this behavior:
 
 Canonical scheduler execution is sequential. Experimental parallel execution
 requires explicit `--experimental-parallel`, isolated worktrees/sandboxes, and
-pairwise-disjoint hard `allowed_write_scope`; never infer independence from
+pairwise-disjoint hard `write_boundary`; never infer independence from
 `touched_files`.
 
 Do not add a second durable task-context artifact, nested duplicate context
