@@ -817,7 +817,6 @@ status: active
 - Semantic adversarial verification: /red-verify
 - Review: /review-feat-plan, /review-tasks-plan
 - Maintenance: mb-garden
-- Harness: mb-harness
 ```
 
 ---

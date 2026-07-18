@@ -51,6 +51,7 @@ jobs:
           test ! -e skills/_shared/references/commands/review.md
           test -f skills/_shared/references/commands/execute.md
           test -f skills/_shared/references/commands/verify.md
+          test ! -e skills/_shared/references/commands/mb-harness.md
           test ! -e skills/_shared/references/commands/mb-packet.md
           test ! -e skills/_shared/references/protocols/packet-template.json
           test -f skills/_shared/references/roles/general.md
@@ -58,7 +59,8 @@ jobs:
           test -f skills/_shared/references/roles/worker.md
           test -f skills/mb-garden/assets/mb-lint.mjs
           test -f skills/mb-garden/assets/mb-doctor.mjs
-          test "$(find skills -mindepth 2 -maxdepth 2 -type f -name SKILL.md -printf '%h\n' | sort)" = $'skills/cold-start\nskills/mb-garden\nskills/mb-harness\nskills/mb-init'
+          test ! -e skills/mb-harness
+          test "$(find skills -mindepth 2 -maxdepth 2 -type f -name SKILL.md -printf '%h\n' | sort)" = $'skills/cold-start\nskills/mb-garden\nskills/mb-init'
           grep -Fq 'new default `FT-*` spec hub' skills/_shared/agents/review-plan.md
 
       - name: Syntax check helper scripts
@@ -76,7 +78,7 @@ jobs:
 
           mkdir -p "$TMP_DIR/project"
           cd "$TMP_DIR/project"
-          obsolete_skills=(mb-analysis mb-execute mb-from-prd mb-map-codebase mb-packet mb-red-verify mb-review mb-verify)
+          obsolete_skills=(mb-analysis mb-execute mb-from-prd mb-harness mb-map-codebase mb-packet mb-red-verify mb-review mb-verify)
           for root in .agents/skills .claude/skills; do
             for skill in "${obsolete_skills[@]}"; do
               mkdir -p "$root/$skill"
@@ -98,6 +100,8 @@ jobs:
           test -f .claude/skills/foundation-to-tasks/SKILL.md
           test ! -e .agents/skills/analysis/SKILL.md
           test ! -e .claude/skills/analysis/SKILL.md
+          test ! -e .agents/skills/mb-harness/SKILL.md
+          test ! -e .claude/skills/mb-harness/SKILL.md
           grep -q '# /spec-design' .agents/skills/spec-design/SKILL.md
           grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
@@ -148,6 +152,8 @@ jobs:
           test ! -e "$TARGET/.agents/skills/review/SKILL.md"
           test ! -e "$TARGET/.claude/skills/mb-packet/SKILL.md"
           test ! -e "$TARGET/.agents/skills/mb-packet/SKILL.md"
+          test ! -e "$TARGET/.claude/skills/mb-harness/SKILL.md"
+          test ! -e "$TARGET/.agents/skills/mb-harness/SKILL.md"
           cmp "$TARGET/.agents/skills/prd-to-tasks/SKILL.md" "$TARGET/.claude/skills/prd-to-tasks/SKILL.md"
           grep -Fq '`reuse`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"
           grep -Fq '`extend`:' "$TARGET/.agents/skills/prd-to-tasks/SKILL.md"

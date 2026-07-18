@@ -184,7 +184,6 @@ GEMINI.md
   creation остается за installer bootstrap или `mb-init`.
 - `mb-init` - генерация skeleton, agent guides и runtime scripts.
 - `mb-garden` - maintenance Memory Bank и packaged deterministic lint/readiness tool assets.
-- `mb-harness` - deterministic commands, clean sessions и worktree guidance.
 
 ## 6. Workflows
 
@@ -462,7 +461,6 @@ The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
 | `/mb-sync` | Synchronize durable docs and task consistency at the wave boundary | indexes, RTM/lifecycle, changelog, task consistency | не принимает scheduler closure/promotion decisions; не запускается после каждой ordinary task; early sync только по real reconciled-state dependency или owner request | lint + strict doctor, then next-wave promotion |
 | `/mb-garden` | Maintain Memory Bank hygiene | cleanup/archive recommendations, hygiene findings | не меняет product scope; не является doctor workflow gate | исправить docs или rerun checks |
 | `/mb-doctor` | Deterministic readiness gate over `mb-lint` | report only; optional JSON output | не заменяет `/review-feat-plan`, `/review-tasks-plan`, `/verify`, `/red-verify`; не default для simple manual T0/T1; нет markdown task-card fallback | исправить findings, перейти к scheduler, or skip for simple T0/T1 |
-| `/mb-harness` | Set up deterministic agent-safe workflows | harness docs/config guidance, gates/worktree guidance | не реализует product tasks | запустить выбранный workflow с gates |
 | `/autopilot` | Execute existing JSON task queue | task statuses, protocols, evidence, sync/review loop | не создает PRD/FT/TASK queue | terminal state или follow-up fixes |
 | `/autonomous` | Full unattended PRD -> done flow | PRD/L1-L3/tasks/protocols/reviews/status | не спрашивает пользователя mid-run кроме terminal halt; не обходит hard stops | terminal state |
 | `/discuss` | Clarify unknowns/contradictions before implementation | decision log/protocol notes when useful | не реализует; не создает tasks сам | resolved command, например `/write-prd`, `/execute` |

@@ -70,14 +70,12 @@ Installable skill entrypoints:
 - `skills/cold-start/SKILL.md`
 - `skills/mb-init/SKILL.md`
 - `skills/mb-garden/SKILL.md`
-- `skills/mb-harness/SKILL.md`
 
 Skill-specific non-shared assets:
 
 - `skills/mb-garden/assets/mb-lint.mjs`: packaged deterministic Memory Bank structural/mechanical hygiene linter.
 - `skills/mb-garden/assets/mb-doctor.mjs`: current packaged location for the deterministic workflow/autonomous readiness check over `mb-lint`.
 - `skills/mb-garden/assets/memory-bank-lint.yml`: related lint config asset.
-- `skills/mb-harness/assets/codex-config.toml`: Codex harness config template.
 
 ## JSON Task Registry Work Hotspots
 

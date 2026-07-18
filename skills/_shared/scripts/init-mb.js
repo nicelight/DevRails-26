@@ -520,7 +520,7 @@ Task execution commands:
 \`/prd-to-tasks\`, \`/review-tasks-plan\`, \`/execute\`, \`/verify\`, \`/red-verify\`, \`/mb-sync\`.
 
 Maintenance commands:
-\`/mb-doctor\`, \`/mb-garden\`, \`/mb-harness\`, \`/map-codebase\`, \`/discuss\`, \`/add-tests\`.
+\`/mb-doctor\`, \`/mb-garden\`, \`/map-codebase\`, \`/discuss\`, \`/add-tests\`.
 `);
 
 writeFile(`${MB}/index.md`, `---
@@ -925,7 +925,6 @@ status: active
 - Readiness doctor: mb-doctor
 - Review: /review-feat-plan, /review-tasks-plan
 - Maintenance: mb-garden
-- Harness: mb-harness
 `);
 
 writeFile(`${MB}/workflows/index.md`, `---

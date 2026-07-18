@@ -134,7 +134,6 @@ DevRails ведет проект через три фазы.
 
 - `/autopilot` - автономно исполняет уже готовую JSON task queue, но не создает PRD/features/tasks.
 - `/autonomous` - полный unattended flow от PRD/brief/delta до сгенерированного кода.
-- `/mb-harness` - помогает настроить чистые agent sessions, профили и deterministic gates.
 - `/find-skills` - ищет релевантные skills сначала в проекте, затем в marketplace; не устанавливает без подтверждения.
 
 Автоматические режимы стоит включать после того, как PRD, features и task records уже понятны. `/autopilot` работает по готовой JSON task queue, а `/autonomous` берет на себя более длинный unattended flow. Оба режима требуют complete T2/T3 task cards и зелёный `/mb-doctor --strict`.

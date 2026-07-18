@@ -38,6 +38,7 @@ const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
   'mb-analysis',
   'mb-execute',
   'mb-from-prd',
+  'mb-harness',
   'mb-map-codebase',
   'mb-packet',
   'mb-red-verify',
