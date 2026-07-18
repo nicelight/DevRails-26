@@ -22,6 +22,17 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const MB = '.memory-bank';
+const MEMORY_BANK_EXISTED_AT_START = fs.existsSync(path.join(ROOT, MB));
+const TESTING_INDEX_EXISTED_AT_START = fs.existsSync(path.join(ROOT, MB, 'testing', 'index.md'));
+const TESTING_STRATEGY_EXISTED_AT_START = fs.existsSync(path.join(ROOT, MB, 'testing', 'strategy.md'));
+const TESTING_STRATEGY_ROUTER_ENTRY = !MEMORY_BANK_EXISTED_AT_START || TESTING_STRATEGY_EXISTED_AT_START
+  ? '- [Testing strategy](strategy.md): минимальные глобальные правила тестирования и verification evidence.'
+  : '';
+const TESTING_SPEC_REGISTRY_ROW = !MEMORY_BANK_EXISTED_AT_START || TESTING_STRATEGY_EXISTED_AT_START
+  ? '| testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |'
+  : TESTING_INDEX_EXISTED_AT_START
+    ? '| testing | [.memory-bank/testing/index.md](testing/index.md) | active | Existing project testing policy. | explicit project-level user decision |'
+    : '';
 const SHARED_DIR = path.resolve(__dirname, '..');
 const REFERENCES_DIR = path.join(SHARED_DIR, 'references');
 const WORKFLOW_REFERENCES_DIR = path.join(REFERENCES_DIR, 'workflows');
@@ -504,10 +515,11 @@ Naming:
 - Files: \`TASK-<NNN>-T<N>-FT-<NNN>-W<N>-S-<STAGE>-final-report-<code|docs>-<NN>.md\`
 
 ## Quality gates (before merge)
-- \`node scripts/mb-lint.mjs\` / typecheck / build
-- \`/mb-doctor\` (strict before autonomous/autopilot task selection)
-- unit tests
-- e2e tests (if UI/flow)
+- Run only applicable project-native lint, typecheck, build, and test commands
+  required by current task/spec/PRD evidence or repository configuration.
+- Run \`/mb-doctor\` when the workflow boundary requires it; strict mode remains
+  mandatory before autonomous/autopilot task selection.
+- Do not require a test level solely to fill a category.
 
 ## Entry points
 Workflow commands are installed as project skills for Codex and Claude.
@@ -559,7 +571,7 @@ status: active
 - [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): Lightweight responsibility/scope boundary notes for decomposition and task runtime context.
 - [.memory-bank/states/](states/): Lifecycle/state rules (prefer when present).
 - [.memory-bank/runbooks/](runbooks/): Runbooks и operational procedures.
-- [.memory-bank/testing/index.md](testing/index.md): Testing strategy.
+- [.memory-bank/testing/index.md](testing/index.md): Router for testing documentation.
 - [.memory-bank/skills/index.md](skills/index.md): Skill registry.
 `);
 
@@ -629,7 +641,7 @@ source_of_truth:
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
 | glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary when needed. | /spec-init or /spec-design |
 | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Lightweight responsibility/scope notes for task boundaries. | /spec-init or /spec-design |
-| testing | [.memory-bank/testing/index.md](testing/index.md) | planned | Verification strategy and quality gates. | /prd or /spec-design |
+${TESTING_SPEC_REGISTRY_ROW}
 
 ## Planned Specs
 | Area | Expected path | Needed by | Notes |
@@ -696,7 +708,6 @@ status: active
 | event_message_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
 | agent_io_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
 | security_safety | blocked | - | Decide in /spec-design after /prd. |
-| testing_strategy | blocked | .memory-bank/testing/index.md | Decide in /spec-design after /prd. |
 | deployment | blocked | - | Decide in /spec-design after /prd. |
 | risks | blocked | - | Capture in /spec-init and refine in /spec-design. |
 | open_questions | blocked | - | Resolve or keep blocked. |
@@ -791,9 +802,6 @@ Use this section only for durable decisions that constrain shared-boundary, cont
 
 ## API / Contract Boundaries
 - See [.memory-bank/contracts/boundary-map.md](../contracts/boundary-map.md).
-
-## Testing Strategy
-- TBD
 `);
 
 writeFile(`${MB}/contracts/boundary-map.md`, `---
@@ -880,26 +888,45 @@ writeFile(`${MB}/schemas/task.schema.json`, `${JSON.stringify(TASK_SCHEMA, null,
 writeFile(`${MB}/tasks/index.json`, `${JSON.stringify(TASK_INDEX, null, 2)}\n`);
 
 writeFile(`${MB}/testing/index.md`, `---
-description: Стратегия тестирования и верификации (quality gates, anti-cheat, UI/e2e).
+description: Router for testing and verification documentation.
 status: active
 ---
-# Testing & Verification
+# Testing Documentation
 
-## Quality gates
-- lint / typecheck
-- unit tests
-- integration tests (if applicable)
-- e2e tests for critical user flows
-
-## UI verification
-- Prefer Playwright / agent-browser / CDP for UI flows when available
-- Store screenshots/videos/traces in .tasks/TASK-NNN-TN-FT-NNN-WN/
-- In Memory Bank keep only links + short conclusions
-
-## Artifacts
-- screenshots/logs/videos → .tasks/TASK-NNN-TN-FT-NNN-WN/
-- in Memory Bank store only links + conclusions
+${TESTING_STRATEGY_ROUTER_ENTRY}
+- [SDD Spec Index](../spec-index.md): authoritative registry предметных testing и verification specs.
 `);
+
+if (!MEMORY_BANK_EXISTED_AT_START) {
+  writeFile(`${MB}/testing/strategy.md`, `---
+description: Minimal framework baseline policy for risk-based testing and verification evidence.
+status: active
+---
+# Testing Strategy
+
+## Risk-based checks
+- Choose checks from concrete product and regression risks in the PRD,
+  Constitution, requirements, features, subject specs, and actual project shape.
+- Use the cheapest check that reliably proves the required behavior.
+- Add a broader or more expensive test level only when a narrower check cannot
+  prove the outcome.
+- Do not create tests merely to fill unit, integration, or e2e categories.
+
+## Integrity
+- Do not weaken assertions, disable failing checks, or replace meaningful
+  verification with decorative coverage to obtain a green result.
+- Treat a failing applicable check as evidence to investigate or resolve within
+  explicit scope.
+
+## Evidence and ownership
+- T2/T3 tasks require an executable verification path. T0/T1 may use compact
+  evidence or a documented no-runnable-check route when no meaningful check exists.
+- Store commands, results, logs, screenshots, and verdicts in the task-selected
+  \`.protocols/<TASK_ID>/\` and \`.tasks/<TASK_ID>/\` paths, not in this policy.
+- Keep product quality requirements in requirements/features, concrete
+  verification contracts in subject specs, and executable gates in task records.
+`);
+}
 
 writeFile(`${MB}/skills/index.md`, `---
 description: Реестр доступных скиллов (когда применять) в этом репозитории.

@@ -10,10 +10,13 @@ Turn an already clarified `.memory-bank/prd.md` into Memory Bank L1-L3 artifacts
 - `.memory-bank/requirements.md` with REQ IDs and RTM
 - `.memory-bank/epics/EP-*.md`
 - `.memory-bank/features/FT-*.md`
-- `.memory-bank/testing/index.md`
 - `.memory-bank/index.md`
 
 `/prd` does not write the PRD, ask Deep Questioning questions, create TASK records, create implementation plans, run architecture design, or require feature-level clarification.
+`/prd` does not create or modify files under `.memory-bank/testing/`, choose
+test levels, design a test harness, or define global testing gates. Product-level
+quality requirements remain in requirements/acceptance criteria, and features
+may keep short evidence-backed verification pointers.
 `/prd` requires the `/spec-init` output: `.memory-bank/spec-backbone.md` with Pre-PRD Spec Status `ready_for_prd`, plus `.memory-bank/spec-index.md` as a pure spec registry/index. It reads decomposition inputs from the backbone and only relevant existing specs routed by the index before deriving L1-L3.
 </objective>
 
@@ -95,7 +98,8 @@ Before writing derived docs:
 - `## Behavior specs` section as optional routing only; `/prd` may mention that
   concrete behavior examples could help later, but must not create
   `.memory-bank/behavior-specs/*.behavior.json`
-- test strategy pointers
+- short test/verification pointers only when grounded in clarified PRD evidence;
+  do not choose test levels or define project-wide gates here
 - optional, if grounded in evidence: `Source artifacts`, `Normative inputs`, `Constraints / invariants`, `Verification targets`
 - `status: draft` по умолчанию
 - write a `## SDD Design Gate` section into every new feature: run mandatory `/spec-design`, then `/foundation-to-tasks` if required, then `/mb-doctor --strict` and execute/verify `FT-000` until its gate is done when foundation tasks were created, then `/prd-to-tasks FT-<NNN>`; `/prd-to-tasks` sets `spec_design_status: complete|not_required|blocked` before task slicing, with linked specs in `spec_design_links` when complete, concise rationale when not required, and blocker notes when blocked
@@ -114,22 +118,16 @@ clarification_questions: 0
 
 When a feature is already clear enough for task decomposition, omit clarification metadata.
 
-## 6) Testing index
-Обнови `.memory-bank/testing/index.md`:
-- quality gates
-- unit/integration/e2e
-- анти-чит правила
-
-## 7) Index
+## 6) Index
 Обнови `.memory-bank/index.md`:
 - добавить аннотированные ссылки
 
-## 8) Feature-plan review gate
+## 7) Feature-plan review gate
 For high-risk, large, or autonomous flows, run `/review-feat-plan` with fresh context before `/spec-design`.
 
 For small/manual flows, report review as optional/recommended and do not make it a mandatory stop before `/spec-design`.
 
-## 9) What next
+## 8) What next
 - interactive: run `/spec-design`; if foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, and execute/verify `FT-000` until the foundation gate is done; then choose one feature and run `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`
 - optional: run `/clarify-feature FT-<NNN>` only if that feature is explicitly pending/blocked or has decomposition-affecting unresolved markers
 - autonomous end-to-end: запусти `/autonomous`; it will run/require `/review-feat-plan`, `/spec-design --all`, handle `/foundation-to-tasks` when required, then `/spec-auto --all` before `/prd-to-tasks --all` and `/review-tasks-plan FT-<NNN>` for every task-linked product feature

@@ -39,11 +39,12 @@ status: active
 ### Touched areas (hypotheses OK)
 - `path/to/file` — why
 
-## Quality gates
-- [ ] lint/typecheck: `<cmd>`
-- [ ] unit tests: `<cmd>`
-- [ ] integration tests: `<cmd>`
-- [ ] e2e/UAT: `<cmd>`
+## Applicable quality gates
+List only evidence-backed project-native checks required by the task record,
+linked specs/PRD, or repository configuration.
+
+- [ ] `<check name>`: `<cmd>` — proves `<task outcome or concrete risk>`
+- No meaningful runnable check: `<not applicable | rationale>`
 
 ## Fan-out plan (if needed)
 - Worker A: scope ...

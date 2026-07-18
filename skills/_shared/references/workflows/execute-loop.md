@@ -5,7 +5,8 @@ status: active
 # Execute loop (PRD → Feature → Tasks)
 
 ## Principle: no task explosion
-- `/prd` creates L1–L3 only (product/requirements/epics/features/testing/index).
+- `/prd` creates L1–L3 only (product/requirements/epics/features) and does not
+  write testing documentation.
 - `/write-prd` = PRD-level ambiguity closure. `/clarify-feature` = optional feature-level ambiguity pass.
 - `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
 - `/spec-design` is mandatory after `/prd`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.

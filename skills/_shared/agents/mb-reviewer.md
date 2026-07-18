@@ -14,6 +14,8 @@
 
 2) Выборочно проверь ключевые файлы:
 - `product.md`, `requirements.md`, `testing/index.md`, `tasks/index.json`
+- зарегистрированную testing policy (в fresh targets — `testing/strategy.md`),
+  если она существует и маршрутизирована через `spec-index.md`
 - несколько файлов из `epics/`, `features/`, `architecture/`, `guides/` (если есть)
 - если есть normative layer: `spec-index.md`, `glossary.md`, `invariants.md`,
   `architecture/*`, `contracts/*`, `domains/*`, `states/*`, `testing/*`,

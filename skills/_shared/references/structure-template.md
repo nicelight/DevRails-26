@@ -125,9 +125,11 @@ Claude (fresh session):
 - Keep each report to ≤ 3–5 files worth of analysis to avoid context overflow
 
 ## Quality gates (before merge)
-- lint / typecheck / build
-- unit tests
-- e2e tests (if UI/flow)
+- Run only applicable project-native lint, typecheck, build, and test commands
+  required by current task/spec/PRD evidence or repository configuration.
+- Run `/mb-doctor` when the workflow boundary requires it; strict mode remains
+  mandatory before autonomous/autopilot task selection.
+- Do not require a test level solely to fill a category.
 
 ## Memory Bank entry points
 Command specs live in `skills/_shared/references/commands/*.md` in the source
@@ -229,7 +231,7 @@ status: active
 - [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): Lightweight responsibility/scope boundary notes for decomposition and task runtime context.
 - [.memory-bank/states/](states/): Lifecycle/state rules (prefer when present).
 - [.memory-bank/runbooks/](runbooks/): Runbooks (setup, dev, deploy).
-- [.memory-bank/testing/index.md](testing/index.md): Стратегия тестирования.
+- [.memory-bank/testing/index.md](testing/index.md): Router testing-документации.
 
 - [.memory-bank/skills/index.md](skills/index.md): Реестр скиллов.
 
@@ -313,7 +315,7 @@ source_of_truth:
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
 | glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary when needed. | /spec-init or /spec-design |
 | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Lightweight responsibility/scope notes for task boundaries. | /spec-init or /spec-design |
-| testing | [.memory-bank/testing/index.md](testing/index.md) | planned | Verification strategy and quality gates. | /prd or /spec-design |
+| testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |
 
 ## Planned Specs
 | Area | Expected path | Needed by | Notes |
@@ -385,7 +387,6 @@ status: active
 | event_message_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
 | agent_io_contracts | blocked | - | Decide authoritative/needed/not_applicable/blocked in /spec-design. |
 | security_safety | blocked | - | Decide in /spec-design after /prd. |
-| testing_strategy | blocked | .memory-bank/testing/index.md | Decide in /spec-design after /prd. |
 | deployment | blocked | - | Decide in /spec-design after /prd. |
 | risks | blocked | - | Capture in /spec-init and refine in /spec-design. |
 | open_questions | blocked | - | Resolve or keep blocked. |
@@ -510,9 +511,6 @@ Use this section only for durable decisions that constrain shared-boundary, cont
 
 ## API / Contract Boundaries
 - See [.memory-bank/contracts/boundary-map.md](../contracts/boundary-map.md).
-
-## Testing Strategy
-- TBD
 ```
 
 ---
@@ -701,13 +699,7 @@ The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>
   "depends_on": [],
   "touched_files": [],
   "tier": "T0",
-  "gates": [
-    {
-      "name": "unit tests",
-      "command": "npm test",
-      "required": true
-    }
-  ],
+  "gates": [],
   "verify": [],
   "docs": [],
   "evidence_required": [],
@@ -733,6 +725,10 @@ Optional (but recommended) plans folder:
 - `.memory-bank/tasks/plans/` — IMPL plans like `IMPL-FT-XXX.md`
 
 Optional runtime context rules:
+- `gates` starts empty. Add only evidence-backed project-native checks that are
+  applicable to the task outcome; do not add a test level merely to fill a
+  category. T0/T1 may keep it empty when compact evidence or a documented
+  no-meaningful-runnable-check route is valid under tier policy.
 - `purpose`, `success_outcome`, `anti_goals`, and `runtime_context` are optional; existing tasks without them remain valid.
 - `allowed_write_scope`, `forbidden_scope`, and `stop_conditions` are preflight/evidence contracts. They do not replace sandbox permissions or role write-scope instructions.
 - T2/T3 task cards require non-empty `purpose` and scalar `success_outcome`,
@@ -762,33 +758,53 @@ Rules:
 
 ---
 
-## 7) `.memory-bank/testing/index.md`
+## 7) `.memory-bank/testing/`
+
+Fresh bootstrap creates a router and one compact framework baseline policy.
+Existing targets keep their registered testing path until an explicit manual
+migration. Legacy sync never seeds the baseline strategy or overwrites an
+existing testing index. When the testing router is missing, it creates a
+minimal router to `spec-index.md`; generated root navigation and registry rows
+reference only testing documents that exist after sync.
+
+### `.memory-bank/testing/index.md`
 
 ```markdown
 ---
-description: Стратегия тестирования и верификации (quality gates, anti-cheat, UI/e2e).
+description: Router for testing and verification documentation.
 status: active
 ---
-# Testing & Verification
+# Testing Documentation
 
-## Quality gates
-- lint / typecheck
-- unit tests
-- integration tests (if applicable)
-- e2e tests for critical user flows
+- [Testing strategy](strategy.md): минимальные глобальные правила тестирования и verification evidence.
+- [SDD Spec Index](../spec-index.md): authoritative registry предметных testing и verification specs.
+```
 
-## UI verification
-- Prefer Playwright / agent-browser / CDP for UI flows when available
-- Store screenshots/videos/traces in `.tasks/TASK-NNN-TN-FT-NNN-WN/`
-- In Memory Bank keep only links + short conclusions
+### `.memory-bank/testing/strategy.md`
 
-## Anti-cheat
-- Don’t "green" failing tests by weakening assertions without approval.
-- If a test reveals a bug: log it (and fix only with explicit scope).
+```markdown
+---
+description: Minimal framework baseline policy for risk-based testing and verification evidence.
+status: active
+---
+# Testing Strategy
 
-## Artifacts
-- Put screenshots/logs/videos in `.tasks/TASK-NNN-TN-FT-NNN-WN/`
-- In Memory Bank store only links + short conclusions
+## Risk-based checks
+- Choose checks from concrete product and regression risks.
+- Use the cheapest check that reliably proves the required behavior.
+- Add a broader test level only when a narrower check cannot prove the outcome.
+- Do not create tests merely to fill unit, integration, or e2e categories.
+
+## Integrity
+- Do not weaken assertions, disable failing checks, or replace meaningful
+  verification with decorative coverage to obtain a green result.
+
+## Evidence and ownership
+- T2/T3 require an executable verification path; T0/T1 may use compact evidence
+  or a documented no-runnable-check route when meaningful checks do not exist.
+- Store execution evidence in `.protocols/<TASK_ID>/` and `.tasks/<TASK_ID>/`.
+- Keep project requirements in requirements/features, concrete verification
+  contracts in subject specs, and executable gates in task records.
 ```
 
 ---

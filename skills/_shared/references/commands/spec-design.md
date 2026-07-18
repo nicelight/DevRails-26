@@ -110,7 +110,7 @@ evidence in autonomous mode. Task tiers are assigned later by `/prd-to-tasks`;
 `/spec-design` routes by feature/design pressure, not by task tier.
 
 - **local_simple_backbone**: only for explicitly local/simple feature sets with no shared boundary, contract, state/data, runtime, security, or irreversible pressure; irrelevant global areas require `not_applicable` rationale.
-- **standard_architecture_scaffold**: default for normal greenfield architecture scaffold; records guardrails for modules, source-of-truth, contracts, data, testing, and deployment as needed by the feature set.
+- **standard_architecture_scaffold**: default for normal greenfield architecture scaffold; records guardrails for modules, source-of-truth, contracts, data, and deployment, and routes only applicable concrete verification concerns to subject specs.
 - **strict_architecture_scaffold**: for public contracts, security/safety, migrations, distributed/runtime boundaries, cross-team ownership, production-sensitive behavior, or irreversible decisions.
 
 Recommend the mode from evidence; the user may override. Preserve the rule that
@@ -168,7 +168,6 @@ Required areas:
 - `event_message_contracts`
 - `agent_io_contracts`
 - `security_safety`
-- `testing_strategy`
 - `deployment`
 - `risks`
 - `open_questions`
@@ -221,8 +220,9 @@ KISS rules:
   or extending an existing registered path over creating a new file.
 - Use existing Backbone Area Matrix rows such as `module_boundaries`,
   `data_flow`, `storage`, `api_contracts`, `event_message_contracts`,
-  `agent_io_contracts`, `security_safety`, and `testing_strategy` to show where
-  the relevant specs live.
+  `agent_io_contracts`, and `security_safety` to show where the relevant specs
+  live. Route concrete verification contracts through the existing
+  subject-based spec registry without adding a global testing backbone row.
 - Do not add a second mandatory readiness gate, validator, or coverage-map
   artifact.
 - If a lens is genuinely irrelevant to the current PRD, mark the relevant
@@ -232,6 +232,18 @@ KISS rules:
   updates the global/shared canonical spec when one is relevant.
 - Register specs in `spec-index.md`, but keep decision bodies in the canonical
   architecture/contract/domain/state/testing/runbook spec.
+
+## 6.2) Testing policy boundary
+Resolve the canonical testing policy path through `.memory-bank/spec-index.md`.
+Fresh targets register `.memory-bank/testing/strategy.md` as a bootstrap-owned
+framework baseline. Treat the registered baseline as read-only in
+`/spec-design`: do not expand, redesign, create, or migrate it.
+
+Route concrete project verification concerns such as a test harness, executable
+verification contract, evidence/redaction rule, or operational proof path to
+subject specs under `.memory-bank/testing/`, `.memory-bank/contracts/`, or
+`.memory-bank/runbooks/` through the existing SDD concern routing. If the
+registry does not contain a testing policy, do not invent a fallback path.
 
 ## 7) Spec-index and spec-backbone content boundary
 `.memory-bank/spec-index.md` is a pure spec registry/index, not an authoritative design spec or readiness/status file.
@@ -275,10 +287,9 @@ Confirm or choose only decisions that affect the current PRD:
 - agent input/output boundaries
 - schema strategy
 - deployment assumptions
-- testing gates
 - architecture documentation granularity
 
-For local/simple feature sets, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, no separate HTTP boundary, and minimal testing gates when supported by PRD evidence. Mark unrelated areas `not_applicable`.
+For local/simple feature sets, prefer conservative defaults such as modular monolith, local/simple persistence, no event bus, and no separate HTTP boundary when supported by PRD evidence. Mark unrelated areas `not_applicable`.
 
 In autonomous mode, do not ask questions. Record conservative assumptions only when they are reversible and safe; otherwise set backbone status `blocked`.
 
@@ -313,7 +324,6 @@ Recommended `system-architecture.md` sections when `single-file` is selected:
 - `## Storage decisions`
 - `## API / contract boundaries`
 - `## Security / safety constraints`
-- `## Testing strategy`
 - `## Deployment assumptions`
 - `## Risks`
 - `## Open questions`

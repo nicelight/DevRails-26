@@ -62,6 +62,22 @@ jobs:
           test ! -e skills/mb-harness
           test "$(find skills -mindepth 2 -maxdepth 2 -type f -name SKILL.md -printf '%h\n' | sort)" = $'skills/cold-start\nskills/mb-garden\nskills/mb-init'
           grep -Fq 'new default `FT-*` spec hub' skills/_shared/agents/review-plan.md
+          ! grep -q 'testing/index.md\|testing/strategy.md' skills/_shared/references/commands/prd.md
+          grep -Fq 'does not create or modify files under `.memory-bank/testing/`' skills/_shared/references/commands/prd.md
+          ! grep -q 'TASK-TESTS-' skills/_shared/references/commands/add-tests.md
+          ! grep -q 'testing/index.md' skills/_shared/references/commands/add-tests.md
+          grep -Fq 'has `status: in_progress`' skills/_shared/references/commands/add-tests.md
+          ! grep -q 'testing_strategy\|minimal testing gates' skills/_shared/references/commands/spec-design.md
+          ! grep -q '^- testing gates$' skills/_shared/references/commands/spec-design.md
+          ! grep -q '^- unit tests$\|^- e2e tests' skills/_shared/references/structure-template.md
+          grep -Fq '"gates": []' skills/_shared/references/structure-template.md
+          ! grep -q '"name": "unit tests"\|"command": "npm test"' skills/_shared/references/structure-template.md
+          grep -Fq '## Applicable quality gates' skills/_shared/references/protocols/plan-template.md
+          grep -Fq 'No meaningful runnable check:' skills/_shared/references/protocols/plan-template.md
+          ! grep -q 'unit tests:.*<cmd>\|integration tests:.*<cmd>\|e2e/UAT:.*<cmd>' skills/_shared/references/protocols/plan-template.md
+          grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/spec-auto.md
+          grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/foundation-to-tasks.md
+          grep -Fq '.memory-bank/testing/*' skills/_shared/references/commands/prd-to-tasks.md
 
       - name: Syntax check helper scripts
         shell: bash
@@ -131,6 +147,8 @@ jobs:
           test -d "$TARGET/.memory-bank/behavior-specs"
           test -f "$TARGET/.memory-bank/architecture/system-architecture.md"
           test -f "$TARGET/.memory-bank/contracts/boundary-map.md"
+          test -f "$TARGET/.memory-bank/testing/index.md"
+          test -f "$TARGET/.memory-bank/testing/strategy.md"
           test -f "$TARGET/.memory-bank/workflows/index.md"
           test -f "$TARGET/.memory-bank/workflows/execute-loop.md"
           test -f "$TARGET/.memory-bank/workflows/tier-policy.md"
@@ -184,6 +202,7 @@ jobs:
           grep -Fq '## KISS / Avoid overengineering' "$TARGET/AGENTS.md"
           grep -Fq 'Implement the simplest solution that fully satisfies current requirements and specs.' "$TARGET/AGENTS.md"
           grep -Fq 'KISS does not permit skipping required correctness, security, compatibility, or verification gates.' "$TARGET/AGENTS.md"
+          ! grep -q '^- unit tests$\|^- e2e tests' "$TARGET/AGENTS.md"
           grep -Fq '## Communication' "$TARGET/AGENTS.md"
           grep -Fq 'Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.' "$TARGET/AGENTS.md"
           ! grep -q '.memory-bank/commands' "$TARGET/AGENTS.md"
@@ -191,11 +210,17 @@ jobs:
           grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
           grep -q '## Architecture Spine' "$TARGET/.memory-bank/architecture/system-architecture.md"
           grep -q '#### AD-NNN' "$TARGET/.memory-bank/architecture/system-architecture.md"
+          ! grep -q '^## Testing Strategy$' "$TARGET/.memory-bank/architecture/system-architecture.md"
+          ! grep -q '^| testing_strategy |' "$TARGET/.memory-bank/spec-backbone.md"
           grep -q '## Boundary: <producer> -> <consumer>' "$TARGET/.memory-bank/contracts/boundary-map.md"
           grep -q "^last_updated: $TODAY$" "$TARGET/.memory-bank/constitution.md"
           ! grep -q '{{TODAY}}' "$TARGET/.memory-bank/constitution.md"
           grep -Fq '| Type | Path | Status | Scope | Change route |' "$TARGET/.memory-bank/spec-index.md"
+          grep -Fq '| testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |' "$TARGET/.memory-bank/spec-index.md"
           ! grep -q 'Owner command\|feature_design.*tech-specs' "$TARGET/.memory-bank/spec-index.md"
+          grep -Fq '[Testing strategy](strategy.md)' "$TARGET/.memory-bank/testing/index.md"
+          grep -Fq '[SDD Spec Index](../spec-index.md)' "$TARGET/.memory-bank/testing/index.md"
+          grep -Fq 'Use the cheapest check that reliably proves the required behavior.' "$TARGET/.memory-bank/testing/strategy.md"
 
           node -e 'const fs = require("node:fs"); const index = JSON.parse(fs.readFileSync(process.argv[1], "utf8")); if (!Array.isArray(index.tasks) || index.tasks.length !== 0) throw new Error("fresh bootstrap must start with an empty task index");' "$TARGET/.memory-bank/tasks/index.json"
           grep -Fq '^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$' "$TARGET/.memory-bank/schemas/task.schema.json"
@@ -232,6 +257,86 @@ jobs:
           ! grep -R -E 'ROLLBACK_RECOVERY_NOTE|TASK_T3_ROLLBACK_MISSING' \
             "$TARGET/AGENTS.md" "$TARGET/.agents/skills" "$TARGET/.claude/skills" \
             "$TARGET/.memory-bank/workflows" "$TARGET/scripts/mb-doctor.mjs"
+
+          LEGACY_TARGET="$TMP_DIR/legacy-target"
+          node - "$LEGACY_TARGET" <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = process.argv[2];
+          const testingDir = path.join(root, '.memory-bank', 'testing');
+          fs.mkdirSync(testingDir, { recursive: true });
+          const testingIndex = `---
+          description: Legacy project testing policy.
+          status: active
+          ---
+          # Legacy Testing Policy
+          - Keep this custom policy byte-identical.
+          `.replace(/^          /gm, '');
+          const specIndex = `---
+          description: Legacy spec registry.
+          status: active
+          ---
+          # Legacy Spec Index
+          | Type | Path | Status | Scope | Change route |
+          |---|---|---|---|---|
+          | testing | [.memory-bank/testing/index.md](testing/index.md) | active | Legacy project policy. | explicit user decision |
+          `.replace(/^          /gm, '');
+          fs.writeFileSync(path.join(testingDir, 'index.md'), testingIndex);
+          fs.writeFileSync(path.join(root, '.memory-bank', 'spec-index.md'), specIndex);
+          fs.writeFileSync(path.join(root, 'testing-index.before'), testingIndex);
+          fs.writeFileSync(path.join(root, 'spec-index.before'), specIndex);
+          NODE
+
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$LEGACY_TARGET" --yes --sync
+          cmp "$LEGACY_TARGET/testing-index.before" "$LEGACY_TARGET/.memory-bank/testing/index.md"
+          cmp "$LEGACY_TARGET/spec-index.before" "$LEGACY_TARGET/.memory-bank/spec-index.md"
+          test ! -e "$LEGACY_TARGET/.memory-bank/testing/strategy.md"
+
+          PARTIAL_LEGACY_TARGET="$TMP_DIR/partial-legacy-target"
+          node - "$PARTIAL_LEGACY_TARGET" <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = process.argv[2];
+          const testingDir = path.join(root, '.memory-bank', 'testing');
+          fs.mkdirSync(testingDir, { recursive: true });
+          const testingIndex = `---
+          description: Existing legacy testing policy.
+          status: active
+          ---
+          # Existing Legacy Testing Policy
+          `.replace(/^          /gm, '');
+          fs.writeFileSync(path.join(testingDir, 'index.md'), testingIndex);
+          fs.writeFileSync(path.join(root, 'testing-index.before'), testingIndex);
+          NODE
+
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$PARTIAL_LEGACY_TARGET" --yes --sync
+          cmp "$PARTIAL_LEGACY_TARGET/testing-index.before" "$PARTIAL_LEGACY_TARGET/.memory-bank/testing/index.md"
+          test ! -e "$PARTIAL_LEGACY_TARGET/.memory-bank/testing/strategy.md"
+          grep -Fq '| testing | [.memory-bank/testing/index.md](testing/index.md) | active | Existing project testing policy. | explicit project-level user decision |' "$PARTIAL_LEGACY_TARGET/.memory-bank/spec-index.md"
+          grep -Fq '[.memory-bank/testing/index.md](testing/index.md)' "$PARTIAL_LEGACY_TARGET/.memory-bank/index.md"
+          (
+            cd "$PARTIAL_LEGACY_TARGET"
+            node scripts/mb-lint.mjs
+          )
+
+          EMPTY_LEGACY_TARGET="$TMP_DIR/empty-legacy-target"
+          node - "$EMPTY_LEGACY_TARGET" <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          fs.mkdirSync(path.join(process.argv[2], '.memory-bank'), { recursive: true });
+          NODE
+
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap --target "$EMPTY_LEGACY_TARGET" --yes --sync
+          test -f "$EMPTY_LEGACY_TARGET/.memory-bank/testing/index.md"
+          test ! -e "$EMPTY_LEGACY_TARGET/.memory-bank/testing/strategy.md"
+          grep -Fq '[.memory-bank/testing/index.md](testing/index.md)' "$EMPTY_LEGACY_TARGET/.memory-bank/index.md"
+          grep -Fq '[SDD Spec Index](../spec-index.md)' "$EMPTY_LEGACY_TARGET/.memory-bank/testing/index.md"
+          ! grep -Fq '[Testing strategy](strategy.md)' "$EMPTY_LEGACY_TARGET/.memory-bank/testing/index.md"
+          ! grep -q '^| testing |' "$EMPTY_LEGACY_TARGET/.memory-bank/spec-index.md"
+          (
+            cd "$EMPTY_LEGACY_TARGET"
+            node scripts/mb-lint.mjs
+          )
 
       - name: Single-card handoff doctor fixtures
         shell: bash

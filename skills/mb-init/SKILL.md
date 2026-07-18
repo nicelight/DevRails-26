@@ -37,7 +37,17 @@ From templates, create:
 - `.memory-bank/schemas/task.schema.json`
 - `.memory-bank/tasks/index.json`
 - `.memory-bank/testing/index.md`
+- `.memory-bank/testing/strategy.md`
 - `.memory-bank/skills/index.md`
+
+Fresh bootstrap creates `testing/index.md` as a navigation router and
+`testing/strategy.md` as a compact framework baseline. Sync for an existing
+Memory Bank does not seed `testing/strategy.md` or overwrite an existing
+testing index. If the testing router is missing, sync creates a minimal router
+to `spec-index.md` and links an existing strategy only when that file was
+already present. A missing generated root index or spec registry references
+only testing documents that exist after sync; it does not register a
+fresh-only policy that was not seeded.
 
 Fresh PRD-less bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`, `.memory-bank/features/FT-000-foundation.md`, `.memory-bank/features/FT-001-*.md`, `.memory-bank/tasks/TASK-000-T1-FT-000-W0.task.json`, `.memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json`, or any other fake roadmap artifact. `.memory-bank/tasks/index.json` starts as `{ "version": 1, "tasks": [] }`; `/write-prd` creates a clarified PRD, `/spec-init` prepares only `.memory-bank/spec-backbone.md` as lightweight pre-PRD framing state and keeps `.memory-bank/spec-index.md` as a pure registry, `/prd` creates real product features, `/review-feat-plan` checks high-risk/large work before SDD design, mandatory `/spec-design` creates a minimal or full backbone gate and records foundation needs, `/foundation-to-tasks` creates real `FT-000` task records only when required, and `/prd-to-tasks FT-<NNN>` completes feature-level design before creating real product `TASK-*.task.json` records. `/clarify-feature FT-<NNN>` is optional for explicitly pending/blocked features.
 
@@ -77,6 +87,9 @@ If you don’t want a script, just create the files manually using the templates
 - `.memory-bank/` has the seeded docs.
 - `.memory-bank/constitution.md` exists as the governing-principles doc.
 - `.memory-bank/tasks/index.json` and `.memory-bank/schemas/task.schema.json` exist; task state is JSON-backed.
+- Fresh bootstrap has `.memory-bank/testing/index.md` linked to the compact
+  `.memory-bank/testing/strategy.md`, and the strategy is registered in
+  `.memory-bank/spec-index.md`.
 - `.memory-bank/tasks/index.json` has an empty `tasks` array in a PRD-less skeleton.
 - Skeleton bootstrap creates no fake feature docs or foundation artifacts; task planning starts later with `/write-prd`, `/spec-init`, `/prd`, `/review-feat-plan` for high-risk/large work, mandatory `/spec-design`, `/foundation-to-tasks` if required, then `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional `/mb-doctor`, and tier-routed `/execute TASK`.
 - No `.memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json` is created by bootstrap.

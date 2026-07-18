@@ -47,7 +47,7 @@ DevRails ведет проект через три фазы.
 
 `/prd` раскладывает clarified PRD на продуктовую структуру: requirements, epics и функциональные спецификации features (`FT-*`). Для крупной или рискованной работы `/review-feat-plan` проверяет traceability и границы до архитектурного design gate.
 
-`/spec-design` - обязательный SDD gate после `/prd` и до task decomposition. Он генерирует или обновляет core SDD specs через три design lenses: Architecture, Interfaces/Contracts и Data. Interfaces/Contracts включает только применимые Component Contract, API Contract, Event Contract и Data Contract; Data Contract описывает payload через границу, а Data Specification - внутренние модели, БД и persistence. Для простой локальной работы gate может зафиксировать minimal backbone и пометить лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure создает/обновляет архитектурный backbone, source-of-truth, boundary/contracts, state/domain/runtime/testing decisions. Короткие executable architecture rules живут в `Architecture Spine` как `AD-*` внутри `.memory-bank/architecture/system-architecture.md`.
+`/spec-design` - обязательный SDD gate после `/prd` и до task decomposition. Он генерирует или обновляет core SDD specs через три design lenses: Architecture, Interfaces/Contracts и Data. Interfaces/Contracts включает только применимые Component Contract, API Contract, Event Contract и Data Contract; Data Contract описывает payload через границу, а Data Specification - внутренние модели, БД и persistence. Для простой локальной работы gate может зафиксировать minimal backbone и пометить лишние области `not_applicable`; для shared-boundary, contract, state/data/runtime/security или strict pressure создает/обновляет архитектурный backbone, source-of-truth, boundary/contracts и маршрутизирует только конкретные verification concerns в subject specs. Короткие executable architecture rules живут в `Architecture Spine` как `AD-*` внутри `.memory-bank/architecture/system-architecture.md`.
 
 `/spec-design` всегда фиксирует явное Foundation Dev Path решение в `.memory-bank/foundation.md`. Если проекту нужен executable baseline до продуктовых задач, `/foundation-to-tasks` применяет к walking skeleton три design lenses: Architecture, Interfaces/Contracts и Data. Он создает только нужные substrate-level Component/API/Event/Data contracts, internal Data Specification и supporting Test Harness/Runbook/Evidence specs в объеме baseline proof. После этого создаются `REQ-000`, pseudo-feature `FT-000`, normal JSON tasks и final foundation gate. Если baseline не нужен, файл содержит `Foundation Required: false` и `Foundation Gate Task: not_required`, а foundation queue не создаётся. `FT-000` не является продуктовой feature: это walking skeleton / baseline proof, который нужно закрыть через `/execute` и `/verify` до генерации обычных product tasks. Детальные product specs дорабатываются в `/prd-to-tasks`. Fresh bootstrap сам `FT-000` не создает.
 
@@ -61,7 +61,7 @@ DevRails ведет проект через три фазы.
 
 Когда JSON task queue уже создана, reviewed и проходит strict readiness checks, можно запускать `/autopilot`. Он не пишет PRD, не делает `/prd-to-tasks` и не придумывает task queue. Это scheduler/executor: берет существующие task records, последовательно переводит статусы, запускает `/execute`, `/verify`, T3 `/red-verify`, feature-level semantic checks и `/mb-sync` по tier policy. `/autopilot` обычно съедает заметно больше токенов, потому что работает через более чистые контексты, перечитывает task-linked specs/evidence и пытается самостоятельно довести все доступные задачи до terminal state.
 
-После реализации кода можно усиливать тестовое покрытие. Внутри `/execute` агент запускает локальные project gates, если они есть. `/verify` независимо проверяет outcome выбранной task, только связанные с ней acceptance criteria/REQ, применимые SDD contracts и evidence; он не проверяет всю feature и не создает follow-up tasks. `/red-verify` ищет смысловые ошибки, которые могли пройти обычные проверки. Для отдельного улучшения покрытия используется `/add-tests`: команда добавляет unit/integration/e2e тесты там, где они реально ловят регрессии, обновляет `.memory-bank/testing/index.md` и записывает evidence. После добавления тестов нужно запускать реальные тестовые команды проекта и синхронизировать Memory Bank на boundary через `/mb-sync`.
+После реализации кода можно усиливать тестовое покрытие. Внутри `/execute` агент запускает локальные project gates, если они есть. `/verify` независимо проверяет outcome выбранной task, только связанные с ней acceptance criteria/REQ, применимые SDD contracts и evidence; он не проверяет всю feature и не создает follow-up tasks. `/red-verify` ищет смысловые ошибки, которые могли пройти обычные проверки. `/add-tests` работает только внутри существующей indexed task со статусом `in_progress`, выбирает самый дешёвый достаточный test level и записывает команды, результаты и artifacts в tier-selected `.protocols/<TASK_ID>/` и `.tasks/<TASK_ID>/`. Testing documentation при этом не становится operational log.
 
 
 
@@ -107,7 +107,7 @@ DevRails ведет проект через три фазы.
 ### 2. Спецификации и планирование
 
 - `/spec-init` - готовит pre-PRD domain/scenario/boundary framing и чистый spec registry.
-- `/prd` - декомпозирует clarified PRD в product, requirements, epics, features и testing index.
+- `/prd` - декомпозирует clarified PRD в product, requirements, epics и features; testing documentation не изменяет.
 - `/review-feat-plan` - проверяет PRD -&gt; REQ/EP/FT decomposition перед `/spec-design`.
 - `/spec-design` - обязательный global SDD backbone gate, генерация/обновление core SDD specs и решение по Foundation Dev Path.
 - `/foundation-to-tasks` - применяет Architecture, Interfaces/Contracts и Data lenses только к baseline proof, создает нужные substrate specs и `FT-000` foundation JSON tasks либо фиксирует, что brownfield baseline уже доказан.
@@ -121,7 +121,7 @@ DevRails ведет проект через три фазы.
 - `/execute TASK-...` - реализует одну scoped task и пишет protocol/evidence/handoff.
 - `/verify TASK-...` - независимо проверяет task-scoped outcome по mapped AC/REQ, applicable SDD contracts и evidence; возвращает PASS/FAIL/NEEDS-CLARIFICATION без создания новых tasks.
 - `/red-verify TASK-...` - adversarial semantic verification для случаев, где формально passing решение может быть неверным по сути.
-- `/add-tests` - добавляет полезные unit/integration/e2e тесты и evidence.
+- `/add-tests` - добавляет risk-based тесты и evidence в scope существующей `in_progress` task.
 - `/mb-sync` - синхронизирует durable Memory Bank state на boundary после уже принятого closure/failure/blocking decision.
 - `/mb-doctor` - deterministic readiness gate поверх `mb-lint`; обязателен для strict autonomous/autopilot handoff, conditional для complex manual work.
 - `/mb-garden` - регулярное обслуживание Memory Bank: lint, cleanup, archive, drift repair.
@@ -152,6 +152,7 @@ DevRails ведет проект через три фазы.
 - `.memory-bank/spec-index.md` - registry предметных specs в формате `Type | Path | Status | Scope | Change route`; canonical identity задаётся path.
 - `.memory-bank/contracts/`, `domains/`, `states/`, `testing/`, `runbooks/`, `guides/` - subject-based canonical specs, которые features и tasks связывают прямыми ссылками.
 - `.memory-bank/contracts/boundary-map.md` - легкие responsibility/scope boundary notes, которые используются через существующие task поля и `runtime_context`.
+- `.memory-bank/testing/index.md` - короткий router testing-документации; `.memory-bank/testing/strategy.md` - bootstrap-owned минимальная risk-based policy для fresh targets.
 - `.memory-bank/behavior-specs/` - optional JSON `given / when / then` примеры для важных или неоднозначных feature behaviors; tasks ссылаются на них только через `source_artifacts`.
 - `.protocols/` - планы, прогресс и verification по конкретным задачам или features.
 - `.tasks/` - runtime evidence, отчеты, handoff-файлы и материалы, которые помогают передавать работу между агентами.
