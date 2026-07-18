@@ -158,7 +158,8 @@ Stop with an explicit error if:
   implementation, or logically inconsistent
 - success cannot be verified from the provided acceptance criteria,
   verification targets, gates, or linked specs
-- implementation would exceed the assigned scope, touch forbidden scope, or
+- implementation would materially exceed the assigned outcome/AC/REQ/spec
+  boundary, violate a hard `allowed_write_scope`, touch `forbidden_scope`, or
   require a product/spec/architecture/public-contract/state/data/security
   decision that is not already settled
 - the task appears materially broader than assigned, or its tier is obviously
@@ -223,7 +224,9 @@ Use protocol templates when available. In `plan.md` or compact `run.md`, record:
   - Purpose:
   - Success outcome:
   - Anti-goals:
-  - Allowed write scope:
+  - Expected touched files/areas (advisory):
+  - Preflight-confirmed files/areas:
+  - Allowed write scope (hard when present):
   - Forbidden scope:
   - Stop conditions:
 - Boundary Notes:
@@ -242,6 +245,10 @@ Implement only scoped task changes.
 
 Rules:
 - keep edits bounded to acceptance criteria and referenced specs
+- treat `touched_files` as advisory; confirm actual files during preflight and
+  record deviations
+- extra files are allowed for the same outcome/AC/REQ/spec and tier within hard
+  scopes; otherwise stop and route repair through `/prd-to-tasks`
 - for any tier, if the task record or linked feature contains canonical SDD
   spec links, read `.memory-bank/spec-backbone.md`,
   `.memory-bank/spec-index.md`, and all linked canonical SDD specs before
@@ -296,11 +303,12 @@ exists, record the reason instead of inventing a fake check.
 ## 5) Handoff Output
 Return a concise handoff report containing:
 - changed files
+- advisory `touched_files` deviations and their same-outcome rationale
 - protocol paths
 - local gates run and results
 - evidence paths under `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
 - verification targets and notes for `/verify` or `/red-verify`
-- scope compliance: yes/no
+- outcome/spec scope compliance and hard write-boundary compliance: yes/no
 - forbidden scope touched: yes/no
 - task/spec commands and checks used or explicitly skipped with reason
 - MB-SYNC handoff notes for scheduler or explicit standalone owner

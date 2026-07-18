@@ -279,7 +279,7 @@ Task rules:
   runtime/bootstrap, or redaction/evidence behavior
 - every T2/T3 record has non-empty `purpose` and one scalar
   `success_outcome`, at least one existing direct task-linked canonical SDD spec
-  path, grounded scope in `touched_files` and/or
+  path, advisory `touched_files` or an evidence-backed hard
   `runtime_context.allowed_write_scope`, and at least one verification path
   through a real gate command and/or non-empty `verification_target`
 - leave `anti_goals`, `runtime_context.forbidden_scope`, `constraints`,
@@ -323,8 +323,8 @@ Before handoff, apply the same single-card completeness contract as
 - `REQ-000` and any additional governing requirements exist
 - `purpose` and scalar `success_outcome` are non-empty
 - at least one existing direct task-linked canonical SDD spec path is present
-- scope is grounded by `touched_files` and/or
-  `runtime_context.allowed_write_scope`
+- the expected change surface is present in `touched_files` and/or a deliberate
+  hard `runtime_context.allowed_write_scope`
 - a real gate command and/or non-empty `verification_target` exists
 - dependencies exist and remain acyclic
 

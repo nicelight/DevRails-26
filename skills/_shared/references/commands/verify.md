@@ -137,6 +137,9 @@ tier or materially different task scope:
 5. Require `/review-tasks-plan`, the applicable `/mb-doctor` gate, and
    `/execute <replacement-task-id>` before verification resumes.
 
+A file outside advisory `touched_files` is not material expansion by itself;
+verify the semantic task boundary and hard scopes.
+
 ## 4) Run functional verification
 
 For every task-scoped outcome, mapped AC/REQ item, verification target, and
@@ -151,7 +154,8 @@ applicable contract rule:
 When runtime context exists, verify:
 - `success_outcome` is observable, not merely that files changed
 - `anti_goals` and non-goals remain respected
-- changed files remain within `allowed_write_scope`
+- advisory `touched_files` deviations remain task-scoped and recorded
+- changed files remain within hard `allowed_write_scope` when it is present
 - `forbidden_scope` was not touched
 - applicable canonical architecture/component/API/event/data specs were respected
 - real persistence paths receive the required read/write or integration proof

@@ -23,9 +23,9 @@
 - тесты указаны (unit/integration/e2e)
 - verification steps (UAT)
 - docs-first update чеклист
-- для T2/T3: непустые `purpose`, один scalar `success_outcome`, grounded scope
-  через `touched_files` и/или `runtime_context.allowed_write_scope`, реальная
-  gate command и/или `verification_target`
+- для T2/T3: непустые `purpose`, один scalar `success_outcome`, advisory
+  `touched_files` или hard `allowed_write_scope`, реальная gate command и/или
+  `verification_target`
 - optional `anti_goals`, `constraints`, `invariants`, `evidence_required`,
   `forbidden_scope` и `stop_conditions` не заполнены фиктивными значениями
 
@@ -42,7 +42,7 @@
 - зависимости реалистичны
 - нет скрытых блокеров
 - `ready` помечены только задачи без незакрытых dependencies
-- нет задач, которые безопасно распараллелить, но они смешаны с shared-file задачами без явного порядка
+- canonical queue is sequential; не требуй parallel plan
 
 5) **Risk & sequencing**
 - ранние задачи снижают риск (spikes/POCs)

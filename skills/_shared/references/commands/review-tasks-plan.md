@@ -155,9 +155,12 @@ semantics must not cause `REJECT`.
 - Every T2/T3 task satisfies the single-card handoff completeness contract:
   schema/index/ID/REQ linkage is valid; `purpose` and scalar `success_outcome`
   are non-empty; an existing task-linked canonical SDD spec path is present;
-  scope is grounded by `touched_files` and/or
-  `runtime_context.allowed_write_scope`; a real gate command and/or non-empty
-  `verification_target` exists; dependencies exist and remain acyclic.
+  the expected change surface is present in advisory `touched_files` and/or a
+  hard `runtime_context.allowed_write_scope`;
+  a real gate command and/or non-empty `verification_target` exists;
+  dependencies exist and remain acyclic.
+- Review `touched_files` as plausible hints; treat non-empty
+  `allowed_write_scope` as a hard boundary, not a copied file list.
 - Treat this structural surface as necessary but not sufficient: semantic spec
   applicability, concrete-block sufficiency, outcome quality, and task/spec
   conflicts remain review judgments, not deterministic doctor claims.

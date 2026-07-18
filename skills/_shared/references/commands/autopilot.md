@@ -10,7 +10,8 @@ status: active
 - Запуск разрешён только если JSON task records уже декомпозированы и каждая
   task-linked product feature имеет latest `/review-tasks-plan FT-<NNN>`
   `APPROVE`.
-- По умолчанию выполняй **строго последовательно**. Параллель — только для независимых задач без общих файлов.
+- Канонически выполняет по одной task; parallel доступен только через
+  `/autopilot --experimental-parallel` по autonomy policy.
 - `/autopilot` не запускает `/prd-to-tasks` и не создает task queue; он только исполняет уже готовые JSON task records.
 
 ## Preconditions
@@ -37,10 +38,14 @@ status: active
 - Authoritative routing is only `task.tier`; the old `risk` / `risk.level` model is invalid and must not be used.
 - Every `T2` / `T3` task satisfies the deterministic single-card handoff
   contract checked by `/mb-doctor --strict`: purpose/outcome, task-linked SDD
-  path, grounded scope, verification path, valid REQ/dependencies, and matching
-  schema/index/ID segments.
+  path, advisory expected change surface or deliberate hard write boundary,
+  verification path, valid REQ/dependencies, and matching schema/index/ID
+  segments.
 - Нет unresolved blocking questions в `.protocols/AUTONOMOUS-RUN/status.md` или equivalent run protocol.
 - `/mb-doctor --strict` passes before the run starts.
+
+`--experimental-parallel` does not weaken preconditions and must follow
+`.memory-bank/workflows/autonomy-policy.md`; otherwise use sequential fallback.
 
 If there are no JSON task records, stop with an explicit error:
 `HALT_DEPENDENCY_DEADLOCK: no schema-backed task records found in .memory-bank/tasks/index.json`.
@@ -117,6 +122,9 @@ Manual mode:
 - `status: ready`
 - все `depends_on` уже `done`
 - нет blocking bug / blocked upstream
+
+In canonical mode, select one eligible task by earliest wave and stable index
+order. Experimental batches require the policy opt-in.
 
 Если после promotion pass `ready` пусто:
 - и JSON task queue полностью закрыт → запусти финальный
@@ -202,7 +210,7 @@ Every fresh-session worker prompt must include:
 
 ```bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Treat touched_files as advisory, respect hard scopes, and stop on material expansion. Task/spec are source of truth. Route only by task.tier. Implement scoped changes and record actual files in compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
   "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact HUMAN_CHECKPOINT: done. Run mb-doctor --strict before progression."
@@ -211,7 +219,7 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 ### Claude (fresh session per TASK)
 ```bash
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Respect task scope, gates, verification targets, evidence requirements, and stop conditions. Task/spec are source of truth. Route only by task.tier. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Implement only scoped changes. Update compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
+  "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, the tier-selected protocol path, and direct task-linked canonical specs. Assume scheduler/doctor checked structural readiness. Treat touched_files as advisory, respect hard scopes, and stop on material expansion. Task/spec are source of truth. Route only by task.tier. Implement scoped changes and record actual files in compact run.md or full progress.md. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md."
 
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
   "TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact HUMAN_CHECKPOINT: done. Run mb-doctor --strict before progression."

@@ -461,8 +461,9 @@ The loaded schema and tier policy are authoritative. Additionally:
   `spec-index.md` reference is not sufficient task context
 - every T2/T3 task links the direct task-relevant subset of canonical specs;
   do not make it load every spec used by the feature
-- every T2/T3 task grounds execution scope in non-empty `touched_files` and/or
-  `runtime_context.allowed_write_scope`
+- for T2/T3, populate `touched_files` as an advisory, non-exhaustive expected
+  change surface; populate `runtime_context.allowed_write_scope` only for an
+  evidence-backed hard boundary, never as a copy of `touched_files`
 - every T2/T3 task has at least one executable verification path: a gate with a
   real command and/or a non-empty `verification_target`
 - keep runtime allowed/forbidden scope and stop conditions concrete and grounded
@@ -511,8 +512,8 @@ specs:
 - `purpose` and the scalar `success_outcome` are non-empty
 - at least one existing task-relevant canonical SDD spec path is linked;
   `spec-index.md` alone does not count
-- scope is grounded by non-empty `touched_files` and/or
-  `runtime_context.allowed_write_scope`
+- the expected change surface is present in non-empty `touched_files` and/or a
+  deliberate hard `runtime_context.allowed_write_scope`
 - at least one verification path exists through a gate with a real command
   and/or a non-empty `verification_target`
 - every dependency exists and the dependency graph is acyclic

@@ -235,7 +235,7 @@ idea / rough draft
 
 `/spec-design` является обязательным gate после `/prd`: он потребляет `spec-backbone` и чистый `spec-index` из `/spec-init`, генерирует или обновляет core SDD specs через три design lenses — Architecture, Interfaces/Contracts и Data — и маршрутизирует concrete feature-level gaps как `needed_before_tasks` с candidate canonical path. Data Contract описывает payload, пересекающий component/API/event/protocol boundary; Data Specification описывает внутренние модели, БД, persistence, migrations и internal validation/serialization. Для local/simple feature-set pressure gate может записать minimal backbone и `not_applicable`, а для shared-boundary, contract, state/data/runtime/security или strict pressure фиксирует source-of-truth, boundaries, data/contracts и конкретные verification concerns либо blockers. Bootstrap-owned testing policy разрешается через `spec-index.md`, но `/spec-design` не расширяет и не перепроектирует её. Для serious design pressure он держит короткий `Architecture Spine` с `AD-*` executable rules внутри `architecture/system-architecture.md`, без отдельного architecture workflow. `/spec-design` всегда пишет явное Foundation Dev Path решение в `.memory-bank/foundation.md`; когда executable baseline нужен, `/foundation-to-tasks` создаёт/обновляет только недостающие subject-based substrate specs для walking skeleton в объёме baseline proof, затем создаёт normal `FT-000` JSON tasks и final foundation gate. Product task generation waits until that gate is `done`. При `Foundation Required: false` queue не создаётся. Architecture может остаться в одном `architecture/system-architecture.md` только когда это лучший readable scaffold shape; split architecture docs создаются только когда split снижает реальную сложность или нужен как canonical reference.
 
-`/prd-to-tasks` полноценно закрывает feature-level SDD concern coverage и для новой, и для уже разложенной feature. До любого provisional или мысленного draft task cards команда читает и парсит `.memory-bank/schemas/task.schema.json`, затем загружает tier policy. Она выводит применимые concerns, читает `spec-index`, folder indexes и все правдоподобные subject-based candidates, после чего выбирает для каждого concern ровно одно действие: `reuse|extend|create|not_applicable|block`. Feature остаётся composition root; новые specs получают предметные canonical paths без `FT-*` и не хранят reverse `used_by`. Перед каждой task команда применяет Architecture, Interfaces/Contracts и Data lenses и передаёт в task card только direct relevant subset specs. Новые shared/global решения или competing canonical paths возвращаются в `/spec-design`. При значимой развилке команда задаёт до трёх конкретных вопросов. Если task queue уже существует, команда по умолчанию согласует specs, plan и task records без смены task identity, lifecycle status или verification evidence; изменения identity, tier, wave, dependencies, acceptance criteria или material scope требуют явной полной передекомпозиции. Для T2/T3 concrete concern должен иметь canonical spec с `shape`, `rules`, `edge cases/errors` и `verification target`, а task card — purpose/outcome, direct spec links, grounded scope и verification path; нерешённая неоднозначность блокирует task creation. После этого `/review-tasks-plan FT-<NNN>` независимо проверяет structural integrity, acceptance/REQ coverage и slicing, final design readiness и execution readiness; он не исправляет planning surface, а возвращает `APPROVE|REJECT` и repair route.
+`/prd-to-tasks` полноценно закрывает feature-level SDD concern coverage и для новой, и для уже разложенной feature. До любого provisional или мысленного draft task cards команда читает и парсит `.memory-bank/schemas/task.schema.json`, затем загружает tier policy. Она выводит применимые concerns, читает `spec-index`, folder indexes и все правдоподобные subject-based candidates, после чего выбирает для каждого concern ровно одно действие: `reuse|extend|create|not_applicable|block`. Feature остаётся composition root; новые specs получают предметные canonical paths без `FT-*` и не хранят reverse `used_by`. Перед каждой task команда применяет Architecture, Interfaces/Contracts и Data lenses и передаёт в task card только direct relevant subset specs. Новые shared/global решения или competing canonical paths возвращаются в `/spec-design`. При значимой развилке команда задаёт до трёх конкретных вопросов. Если task queue уже существует, команда по умолчанию согласует specs, plan и task records без смены task identity, lifecycle status или verification evidence; изменения identity, tier, wave, dependencies, acceptance criteria или material scope требуют явной полной передекомпозиции. Для T2/T3 concrete concern должен иметь canonical spec с `shape`, `rules`, `edge cases/errors` и `verification target`, а task card — purpose/outcome, direct spec links, expected change surface и verification path. `touched_files` является advisory non-exhaustive гипотезой; `allowed_write_scope`, если заполнен, является deliberate hard boundary. Нерешённая неоднозначность блокирует task creation. После этого `/review-tasks-plan FT-<NNN>` независимо проверяет structural integrity, acceptance/REQ coverage и slicing, final design readiness и execution readiness; он не исправляет planning surface, а возвращает `APPROVE|REJECT` и repair route.
 
 ### Понятный PRD или concept
 
@@ -274,7 +274,7 @@ T3: /execute TASK -> /verify TASK -> /red-verify TASK -> explicit owner closure
 Wave boundary: /mb-sync -> mb-lint -> /mb-doctor --strict
 ```
 
-В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. Если фактический scope требует higher tier, `/execute` записывает escalation evidence и останавливается; исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass` и exact `HUMAN_CHECKPOINT: done`. Explicit owner сразу записывает closure/status/evidence в task record. Full `/mb-sync` выполняется один раз в конце текущей wave; ранний sync допустим только при реальной зависимости текущей wave от согласованного RTM/index/spec/contract/changelog state или по явному запросу owner.
+В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, semantic task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. `/execute` использует `touched_files` как стартовую гипотезу, подтверждает actual files на preflight и может добавить необходимый для того же outcome файл, записав rationale/evidence. Нарушение hard allowed/forbidden scope или material outcome/AC/REQ/spec/dependency/tier expansion останавливает работу. Если фактический scope требует higher tier, исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. Standalone `/verify` для T0/T1 остается optional: uncertainty, widened scope, explicit request, or public contract/state/data/security/runtime/cross-module changes. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: перед closure нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass` и exact `HUMAN_CHECKPOINT: done`. Explicit owner сразу записывает closure/status/evidence в task record. Full `/mb-sync` выполняется один раз в конце текущей wave; ранний sync допустим только при реальной зависимости текущей wave от согласованного RTM/index/spec/contract/changelog state или по явному запросу owner.
 
 Для manual feature work `node scripts/mb-doctor.mjs` is conditional, not a
 default gate for simple T0/T1. Запускайте его для T3, autonomous/autopilot
@@ -283,7 +283,7 @@ cases. `--strict` остается precondition для autopilot/autonomous hand
 
 ### Scheduler mode: `/autopilot`
 
-`/autopilot` - это scheduler/executor только для уже существующей JSON task queue.
+`/autopilot` - это scheduler/executor только для уже существующей JSON task queue. Канонический режим последователен: одна task должна получить execute/verify/closure decision до выбора следующей. `--experimental-parallel` остаётся тестовой opt-in возможностью и требует isolated worktrees/sandboxes и pairwise-disjoint hard `allowed_write_scope`; `touched_files` не доказывает независимость.
 
 Preconditions:
 
@@ -393,10 +393,11 @@ evidence:
 
 For T2/T3, `/prd-to-tasks` and `/foundation-to-tasks` require a complete single
 task card before execution: non-empty `purpose` and scalar `success_outcome`, an
-existing direct task-linked canonical SDD path, grounded scope in `touched_files`
-and/or `runtime_context.allowed_write_scope`, and a real gate command and/or
-non-empty `verification_target`. Optional evidence-driven fields remain empty
-when no grounded value exists.
+existing direct task-linked canonical SDD path, an expected change surface in
+advisory non-exhaustive `touched_files` and/or a deliberate hard
+`runtime_context.allowed_write_scope`, and a real gate command and/or non-empty
+`verification_target`. Optional evidence-driven fields remain empty when no
+grounded value exists.
 
 Boundary notes live in `.memory-bank/contracts/boundary-map.md` as a normal
 contract/spec document. Tasks reference it through existing source/normative/
@@ -420,6 +421,11 @@ Manual mode:
 
 Scheduler mode (`/autopilot`, `/autonomous`):
 
+- canonical selection is sequential: one task completes its
+  execute/verify/closure decision before the next is selected;
+- `--experimental-parallel` is non-canonical and requires isolated execution,
+  pairwise-disjoint hard scopes, no T3/shared-governing writes, and sequential
+  fallback when independence cannot be proved;
 - scheduler владеет переходами `planned -> ready`, `ready -> in_progress`, `in_progress -> done|failed`, dependent block/unblock и terminal state;
 - `/execute` не закрывает tasks;
 - `/verify` не закрывает, не fail-ит и не promote-ит dependents;

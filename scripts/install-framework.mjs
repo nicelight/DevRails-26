@@ -45,6 +45,7 @@ const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
   'mb-review',
   'mb-verify',
 ]);
+const VERIFY_OBSOLETE_RUNTIME_SKILLS = new Set(['mb-verify']);
 const PREPARE_EXCLUDED_ROOTS = new Set([
   '.agents',
   '.claude',
@@ -395,18 +396,31 @@ function writeRuntimeSkill(targetRepo, runtimeRoot, spec) {
   return true;
 }
 
-function cleanupObsoleteDevRailsRuntimeSkills(targetRepo, runtimeRoot) {
+function cleanupObsoleteDevRailsRuntimeSkills(
+  targetRepo,
+  runtimeRoot,
+  obsoleteNames = OBSOLETE_DEVRAILS_RUNTIME_SKILLS,
+) {
   const absRoot = join(targetRepo, runtimeRoot);
   if (!existsSync(absRoot)) return;
 
-  OBSOLETE_DEVRAILS_RUNTIME_SKILLS.forEach((name) => {
+  obsoleteNames.forEach((name) => {
     const skillDir = join(absRoot, name);
     const skillPath = join(skillDir, 'SKILL.md');
     if (!existsSync(skillPath)) return;
 
     const current = readFileSync(skillPath, 'utf8');
-    const isKnownLegacyPackage = current.includes(`name: ${name}`)
-      && current.includes(`# ${name}`);
+    const normalizedLines = new Set(
+      current
+        .replace(/\r\n/g, '\n')
+        .split('\n')
+        .map((line) => line.trim()),
+    );
+    const hasKnownLegacyHeading = [...normalizedLines].some(
+      (line) => line === `# ${name}` || line.startsWith(`# ${name} `),
+    );
+    const isKnownLegacyPackage = normalizedLines.has(`name: ${name}`)
+      && hasKnownLegacyHeading;
     if (!hasRuntimeGeneratedMarker(current) && !isKnownLegacyPackage) {
       console.log(`  ! ${runtimeRoot}/${name} is obsolete but does not match the DevRails legacy skill; left unchanged`);
       return;
@@ -477,6 +491,17 @@ function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode
     cleanupObsoleteDevRailsRuntimeSkills(targetRepo, '.claude/skills');
     cleanupRuntimeSkills(targetRepo, '.agents/skills', expectedNames, syncMode);
     cleanupRuntimeSkills(targetRepo, '.claude/skills', expectedNames, syncMode);
+  } else if (expectedNames.has('verify')) {
+    cleanupObsoleteDevRailsRuntimeSkills(
+      targetRepo,
+      '.agents/skills',
+      VERIFY_OBSOLETE_RUNTIME_SKILLS,
+    );
+    cleanupObsoleteDevRailsRuntimeSkills(
+      targetRepo,
+      '.claude/skills',
+      VERIFY_OBSOLETE_RUNTIME_SKILLS,
+    );
   }
 
   selectedSpecs.forEach((spec) => {

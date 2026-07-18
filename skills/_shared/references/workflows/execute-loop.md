@@ -60,7 +60,9 @@ trigger another task-plan review.
 2) command runs `/write-prd -> /spec-auto --init -> /prd -> /review-feat-plan -> /spec-design --all -> /foundation-to-tasks when required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until the final foundation gate is done -> /spec-auto --all -> /prd-to-tasks --all -> /review-tasks-plan FT-<NNN> for each task-linked product feature`, then schedules ready TASKs
 3) run `/mb-doctor --strict` again before product scheduler execution; T2/T3 tasks without SDD spec links are blockers
 4) before `/execute`, scheduler requires `/mb-doctor --strict`; structurally incomplete T2/T3 task cards stop execution and require task-card repair
-5) each TASK runs in **fresh CLI sessions**
+5) each TASK runs in a **fresh CLI session**, sequentially by default; parallel
+execution is non-canonical and requires explicit `--experimental-parallel` plus
+the autonomy-policy isolation and hard-scope gates
 6) after each task, record status, closure decision, and evidence immediately;
 when the last task of a T2 product feature closes, run feature-level
 `/red-verify --feature FT-<ID>` before the wave-boundary `/mb-sync`; at the end
@@ -85,7 +87,7 @@ wave-boundary `/mb-sync` before promotion.
 Codex (manual execution, tier-routed minimal context):
 ~~~bash
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
-  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
+  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Treat touched_files as advisory and non-exhaustive; confirm the actual write set during preflight, respect hard allowed/forbidden scope, and stop on material outcome/tier/design expansion. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only semantically scoped changes. Record evidence and actual changed files. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
 
 codex exec --ephemeral --full-auto -m gpt-5.2-high \
   'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact HUMAN_CHECKPOINT: done. Run mb-doctor --strict before progression.'
@@ -94,15 +96,21 @@ codex exec --ephemeral --full-auto -m gpt-5.2-high \
 Claude (manual execution, tier-routed minimal context):
 ~~~bash
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
-  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only scoped changes. Record evidence. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
+  'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Do not load broad planning/global docs by default for T0/T1. Assume structural readiness was checked by the applicable boundary gate. Treat touched_files as advisory and non-exhaustive; confirm the actual write set during preflight, respect hard allowed/forbidden scope, and stop on material outcome/tier/design expansion. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement only semantically scoped changes. Record evidence and actual changed files. For manual T0/T1, close only if explicit top-level owner fast-lane conditions are met; otherwise hand off. Report → .tasks/TASK-123-T2-FT-001-W1/TASK-123-T2-FT-001-W1-S-IMPL-final-report-code-01.md.'
 
 claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
   'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact HUMAN_CHECKPOINT: done. Run mb-doctor --strict before progression.'
 ~~~
 
 ## Parallel vs sequential
-- Independent tasks (no shared files) MAY run in parallel (separate sessions).
-- Dependent or shared-file tasks MUST run sequentially. Each task records its
-  authoritative closure/evidence immediately; full `/mb-sync` remains a wave
-  boundary unless TASK-B requires reconciled durable state or the owner requests
-  an early sync.
+- Canonical execution is sequential: finish one task's execute/verify/closure
+  decision before selecting the next task.
+- `touched_files` is advisory and must not be used to prove task independence.
+- Experimental parallel execution is available only through explicit
+  `--experimental-parallel`, pairwise-disjoint hard
+  `runtime_context.allowed_write_scope`, isolated worktrees/sandboxes, and the
+  remaining autonomy-policy exclusions. If any proof is missing, fall back to
+  sequential execution.
+- Each task records its authoritative closure/evidence immediately; full
+  `/mb-sync` remains a wave boundary unless TASK-B requires reconciled durable
+  state or the owner requests an early sync.

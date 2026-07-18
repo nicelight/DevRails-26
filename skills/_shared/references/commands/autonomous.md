@@ -27,6 +27,9 @@ status: active
 
 Если нужен **только JSON task queue executor**, а PRD → FT → TASK уже готовы, используй `/autopilot`.
 
+Canonical execution is sequential; `/autonomous --experimental-parallel` is an
+opt-in test mode governed by `autonomy-policy.md`.
+
 ## 1) Протокол автономного запуска
 Создай:
 - `.protocols/AUTONOMOUS-RUN/plan.md`
@@ -36,6 +39,7 @@ status: active
 
 `status.md` должен содержать минимум:
 - run metadata
+- scheduler mode: `sequential` or explicit `experimental-parallel`
 - review gate
 - blocking questions / assumptions
 - queue state (`ready`, `in_progress`, `blocked`, `done`, `failed`)
@@ -167,8 +171,9 @@ without creating `REQ-000`, `FT-000`, or foundation task records.
   `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
   `verification_targets`; feature links or `spec-index.md` alone do not count.
 - T2/T3 task records must satisfy the deterministic single-card handoff
-  contract: purpose/outcome, task-linked SDD path, grounded scope, verification
-  path, valid REQ/dependencies, and matching schema/index/ID segments.
+  contract: purpose/outcome, task-linked SDD path, advisory expected change
+  surface or deliberate hard write boundary, verification path, valid
+  REQ/dependencies, and matching schema/index/ID segments.
 
 ## 6.1) Task-plan review gate по JSON task records
 Сразу после `/prd-to-tasks --all` и до scheduler execution выполни
@@ -257,8 +262,8 @@ Manual mode:
 - и остались `planned` / `blocked` → `HALT_DEPENDENCY_DEADLOCK` только после фиксации, какие dependencies/blockers/review rejects/semantic-concern помешали promotion
 
 Правила очереди:
-- независимые задачи (нет deps и shared files) можно запускать параллельно
-- зависимые или shared-file задачи — только последовательно
+- canonical mode completes one eligible task at a time
+- experimental parallel follows `autonomy-policy.md`; otherwise use sequential
 - follow-up task, созданная scheduler/owner после verify FAIL, должна попасть в
   **следующую итерацию того же run**; `/verify` сам task records не создает
 

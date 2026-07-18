@@ -2,6 +2,28 @@
 
 Date: 2026-06-26
 
+## Resolution
+
+Status: done
+
+Resolved: 2026-07-18
+
+- The stale `skills/mb-verify` package surface was retired; canonical runtime
+  behavior lives only in `skills/_shared/references/commands/verify.md`.
+- Canonical `/verify` explicitly treats linked behavior specs as optional
+  context examples rather than independent verification gates.
+- Full runtime installs remove recognized obsolete `mb-verify` packages from
+  both `.agents/skills/` and `.claude/skills/`.
+- Selective `--skill verify --yes` installs now remove only the recognized
+  legacy `mb-verify` alias in both runtime roots. Unknown user-owned custom
+  skills are preserved with a warning, and unrelated selective installs do not
+  trigger this cleanup.
+- Release smoke coverage exercises full cleanup, selective verify cleanup,
+  custom-skill preservation, and unrelated selective-install isolation.
+
+The audit below is retained as historical context; its package, packet, and
+line-number references describe the pre-resolution implementation.
+
 ## Scope
 - Canonical runtime command: `skills/_shared/references/commands/verify.md`
 - Legacy package entrypoint: `skills/mb-verify/SKILL.md`

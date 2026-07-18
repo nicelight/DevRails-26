@@ -44,9 +44,15 @@ flowchart TD
   more -- "нет" --> done["Готово"]
 
   mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Scheduler loop:<br/>strict readiness -> execute -> verify -> red-verify для T3 -> mb-sync"]
+  autopilot --> scheduler["Sequential scheduler loop:<br/>one task -> execute -> verify -> closure;<br/>red-verify для T3 -> mb-sync"]
   scheduler --> terminal{"Queue terminal?"}
   terminal -- "done" --> done
   terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
   repair --> reviewTasks
 ```
+
+Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
+parallel execution is available only through explicit `--experimental-parallel`
+with isolated worktrees/sandboxes and pairwise-disjoint hard
+`runtime_context.allowed_write_scope`; advisory `touched_files` does not prove
+independence.

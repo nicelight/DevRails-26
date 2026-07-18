@@ -6,6 +6,21 @@ status: active
 
 ## Default mode
 - Prefer interactive mode unless the user explicitly requested unattended execution.
+- Canonical scheduler execution is sequential: select, execute, verify, and
+  record one task before selecting the next.
+- Parallel task execution is experimental and disabled unless the run was
+  explicitly invoked with `--experimental-parallel`.
+
+## Experimental parallel execution
+- Record the opt-in in `.protocols/AUTONOMOUS-RUN/status.md`.
+- Never use advisory `touched_files` as proof that tasks are disjoint.
+- Parallel candidates require non-empty, deliberately hard, pairwise-disjoint
+  `runtime_context.allowed_write_scope` values and isolated worktrees/sandboxes.
+- T3 tasks and tasks that write shared/governing state, package manifests,
+  lockfiles, CI, or global configuration remain sequential.
+- If isolation or non-overlap cannot be proved, fall back to sequential without
+  treating the fallback as an error.
+- This option adds no task status, schema field, registry, or lifecycle.
 
 ## Hard-stop categories
 - security / compliance ambiguity

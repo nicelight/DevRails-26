@@ -102,7 +102,7 @@ Run this checklist weekly (or every 5–10 meaningful changes):
 4. **RTM sync**: `requirements.md` RTM matches actual feature/test status.
 5. **Task record hygiene**: completed tasks are marked done in `.task.json`,
    every task has `tier`, and T2/T3 cards keep purpose/outcome, direct relevant
-   canonical spec links, grounded scope, and a verification path.
+   canonical spec links, an expected change surface, and a verification path.
 6. **Changelog**: `.memory-bank/changelog.md` has entries for recent changes.
 7. **Index links**: all links in `index.md` and router-indexes resolve correctly.
 8. **Archive routing**: deprecated/tombstone paths cannot be mistaken for active

@@ -106,9 +106,9 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
 - T2/T3 single-card handoff completeness is checked mechanically: non-empty
   `purpose` and scalar `success_outcome`, at least one existing direct task-linked canonical SDD
-  spec path, grounded scope in `touched_files` and/or
-  `runtime_context.allowed_write_scope`, and at least one verification path
-  through a real gate command and/or non-empty `verification_target`.
+  spec path, non-empty `touched_files` and/or `runtime_context.allowed_write_scope`,
+  and at least one verification path through a real gate command and/or
+  non-empty `verification_target`.
 - Schema/index/ID/REQ/dependency existence and cycle checks remain covered by
   `mb-lint` and the normal doctor checks. `TASK_HANDOFF_INCOMPLETE` reports only
   missing structural/presence evidence.
@@ -116,6 +116,7 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
   whether its concrete block is sufficient, or whether `success_outcome` is a
   good independent outcome. Fresh-context `/review-tasks-plan` owns those
   judgments.
+- `/mb-doctor` checks scope-field presence only; `touched_files` remains advisory.
 - In `--strict`, T2/T3 tasks with no architecture/contract/ADR reference in
   richer task fields may report `TASK_ARCH_SPINE_LINK_ABSENT` as a warning. It
   is advisory: add relevant Architecture Spine, boundary-map, contract, or ADR

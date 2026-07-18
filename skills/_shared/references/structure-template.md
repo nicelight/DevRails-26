@@ -107,13 +107,20 @@ After finishing a meaningful unit of work:
 - T2/T3 use the indexed task card as the complete task-scoped handoff; `/mb-doctor` checks structural completeness and `/review-tasks-plan` checks semantic applicability and sufficiency.
 - If running in **Claude Code**: execute each `TASK-NNN-TN-FT-NNN-WN` in a **fresh Claude session** using tier-appropriate `.protocols/TASK-NNN-TN-FT-NNN-WN/` state.
 - If running in **Codex**: you can run each `TASK-NNN-TN-FT-NNN-WN` in a fresh session via `codex exec` (see `/execute`).
-- Sequencing: independent tasks may run in parallel clean sessions; dependent/shared-file tasks must run sequentially.
+- Execution file scope: `touched_files` is advisory and non-exhaustive; executor
+  preflight confirms actual files, while non-empty `allowed_write_scope` and
+  `forbidden_scope` remain hard boundaries.
+- Sequencing: canonical task execution is sequential. Parallel task execution is
+  experimental, requires explicit `--experimental-parallel`, pairwise-disjoint
+  hard `runtime_context.allowed_write_scope`, isolated worktrees/sandboxes, and
+  the exclusions in `.memory-bank/workflows/autonomy-policy.md`;
+  `touched_files` alone never proves independence.
 
 Codex (fresh session):
-- `codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
+- `codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Treat touched_files as advisory and non-exhaustive; confirm the actual write set during preflight, respect hard allowed/forbidden scope, and stop on material outcome/tier/design expansion. Implement only semantically scoped changes. Record evidence and actual changed files. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
 
 Claude (fresh session):
-- `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
+- `claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Treat touched_files as advisory and non-exhaustive; confirm the actual write set during preflight, respect hard allowed/forbidden scope, and stop on material outcome/tier/design expansion. Implement only semantically scoped changes. Record evidence and actual changed files. Report → .tasks/TASK-123-T2-FT-001-W1/…'`
 
 ## Two modes (manual vs scheduler)
 - **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/prd-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/execute TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/execute TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/execute TASK` → `/verify TASK` → `/red-verify TASK`, then explicit owner closure and wave-boundary `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full `/mb-sync` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/prd-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/clarify-feature FT-<NNN>` only for explicit feature blockers and rerun `/prd-to-tasks FT-<NNN>` for feature-level canonical spec repair.
@@ -629,7 +636,11 @@ status: draft
     "feature": { "type": "string" },
     "reqs": { "type": "array", "items": { "type": "string" } },
     "depends_on": { "type": "array", "items": { "type": "string" } },
-    "touched_files": { "type": "array", "items": { "type": "string" } },
+    "touched_files": {
+      "type": "array",
+      "description": "Advisory, expected, non-exhaustive change surface confirmed by executor preflight.",
+      "items": { "type": "string" }
+    },
     "tier": { "type": "string", "enum": ["T0", "T1", "T2", "T3"] },
     "gates": {
       "type": "array",
@@ -661,9 +672,21 @@ status: draft
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "allowed_write_scope": { "type": "array", "items": { "type": "string" } },
-        "forbidden_scope": { "type": "array", "items": { "type": "string" } },
-        "stop_conditions": { "type": "array", "items": { "type": "string" } }
+        "allowed_write_scope": {
+          "type": "array",
+          "description": "Optional hard write boundary; populate only when evidence justifies one.",
+          "items": { "type": "string" }
+        },
+        "forbidden_scope": {
+          "type": "array",
+          "description": "Hard paths or areas that execution must not change.",
+          "items": { "type": "string" }
+        },
+        "stop_conditions": {
+          "type": "array",
+          "description": "Hard conditions that require execution to stop and hand off.",
+          "items": { "type": "string" }
+        }
       }
     },
     "source_artifacts": { "type": "array", "items": { "type": "string" } },
@@ -730,10 +753,17 @@ Optional runtime context rules:
   category. T0/T1 may keep it empty when compact evidence or a documented
   no-meaningful-runnable-check route is valid under tier policy.
 - `purpose`, `success_outcome`, `anti_goals`, and `runtime_context` are optional; existing tasks without them remain valid.
-- `allowed_write_scope`, `forbidden_scope`, and `stop_conditions` are preflight/evidence contracts. They do not replace sandbox permissions or role write-scope instructions.
+- `touched_files` is an advisory, expected, non-exhaustive change surface. It
+  guides preflight and review but does not prohibit another file needed for the
+  same task outcome.
+- `allowed_write_scope`, when non-empty, is an optional hard write boundary and
+  must not be populated by mechanically copying the exact `touched_files` list.
+- `forbidden_scope` and `stop_conditions` are hard preflight/evidence contracts.
+  These fields do not replace sandbox permissions or role write-scope instructions.
 - T2/T3 task cards require non-empty `purpose` and scalar `success_outcome`,
-  an existing task-linked SDD path, grounded scope, and a verification path at
-  handoff. Optional evidence-driven fields stay empty when ungrounded.
+  an existing task-linked SDD path, an expected change surface, and a
+  verification path at handoff. Optional evidence-driven fields stay empty when
+  ungrounded.
 
 ### 6c) `.memory-bank/behavior-specs/`
 

@@ -29,7 +29,8 @@ status: active
 
 ## Regression / non-goals
 - [ ] Confirmed non-goals unaffected (if applicable)
-- [ ] Confirmed allowed/forbidden scope (if applicable)
+- [ ] Confirmed advisory `touched_files` deviations remain necessary for the same outcome
+- [ ] Confirmed hard allowed/forbidden scope (if applicable)
 - [ ] Confirmed applicable Architecture/Component/API/Event/Data spec rules
 
 ## Quality gates evidence

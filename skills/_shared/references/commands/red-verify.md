@@ -151,8 +151,9 @@ the provenance fields above, feature spec links, or runtime_context evidence.
 - не создала ли реализация false success: local AC passed, but
   `purpose` / `success_outcome` is still not actually achieved
 - не нарушены ли `anti_goals`
-- не вышла ли реализация за допустимую autonomy/scope boundary from task
-  `runtime_context.allowed_write_scope`
+- не маскирует ли отклонение от advisory `touched_files` material scope expansion
+- не вышла ли реализация за hard autonomy/scope boundary from task
+  `runtime_context.allowed_write_scope` when present
 - не был ли затронут `forbidden_scope`
 - не сдвинула ли реализация responsibility boundary from linked
   `.memory-bank/contracts/boundary-map.md` or contracts without an explicit spec

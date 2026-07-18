@@ -11,6 +11,9 @@ status: active
 ## Where to look
 - key files:
   - ...
+- advisory `touched_files` deviations and rationale:
+  - ...
+- hard write-boundary compliance: yes | no | not set
 
 ## How to run / verify
 - gates:

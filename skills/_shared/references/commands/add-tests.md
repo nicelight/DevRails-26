@@ -15,10 +15,13 @@ status: active
 Require an explicit `TASK-NNN-TN-FT-NNN-WN` that:
 - exists in `.memory-bank/tasks/index.json` and has a matching task record;
 - has `status: in_progress`;
-- already includes the proposed test changes in its grounded scope.
+- has an outcome/AC/REQ/spec boundary that covers the proposed test behavior.
 
 Read the task record and `.memory-bank/workflows/tier-policy.md` before editing.
-If post-hoc coverage work is outside the current task scope, stop and route it
+Test files may fall outside advisory `touched_files` when they remain inside the
+same task outcome and hard scopes; record them in evidence.
+
+If post-hoc coverage work is outside the current task outcome/spec scope, stop and route it
 through the normal planning/reconciliation path so a follow-up task can be
 created. `/add-tests` must not invent task identity, create synthetic testing
 task IDs, or introduce a separate lifecycle.
@@ -37,7 +40,8 @@ Do not put browser/e2e first by default. Browser screenshots, videos, or traces
 are evidence only when browser/e2e verification is actually needed.
 
 ## 2) Implement and run
-- add only tests authorized by the task scope;
+- add only tests authorized by the task outcome/spec scope and hard runtime
+  boundaries;
 - run the added tests and applicable project-native checks;
 - check for flakiness in proportion to the risk;
 - do not weaken assertions, disable failing checks, or replace meaningful

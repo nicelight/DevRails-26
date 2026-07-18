@@ -1046,7 +1046,7 @@ function checkSingleCardHandoffCompleteness(record) {
     Array.isArray(runtimeContext?.allowed_write_scope)
     && runtimeContext.allowed_write_scope.some((value) => nonEmptyString(value));
   if (!hasTouchedFiles && !hasAllowedWriteScope) {
-    issues.push('touched_files or runtime_context.allowed_write_scope must ground execution scope');
+    issues.push('touched_files or runtime_context.allowed_write_scope must describe the expected change surface');
   }
 
   const hasGateCommand =
@@ -1067,7 +1067,7 @@ function checkSingleCardHandoffCompleteness(record) {
     task_id: id,
     details: { issues },
     suggested_fix:
-      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; keep optional evidence-driven fields empty when no grounded value exists.',
+      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and allowed_write_scope only for a deliberate hard boundary.',
   });
 }
 

@@ -90,7 +90,11 @@ const TASK_SCHEMA = {
     feature: { type: 'string' },
     reqs: { type: 'array', items: { type: 'string' } },
     depends_on: { type: 'array', items: { type: 'string' } },
-    touched_files: { type: 'array', items: { type: 'string' } },
+    touched_files: {
+      type: 'array',
+      description: 'Advisory, expected, non-exhaustive change surface confirmed by executor preflight.',
+      items: { type: 'string' },
+    },
     tier: { type: 'string', enum: ['T0', 'T1', 'T2', 'T3'] },
     gates: {
       type: 'array',
@@ -122,9 +126,21 @@ const TASK_SCHEMA = {
       type: 'object',
       additionalProperties: false,
       properties: {
-        allowed_write_scope: { type: 'array', items: { type: 'string' } },
-        forbidden_scope: { type: 'array', items: { type: 'string' } },
-        stop_conditions: { type: 'array', items: { type: 'string' } },
+        allowed_write_scope: {
+          type: 'array',
+          description: 'Optional hard write boundary; populate only when evidence justifies one.',
+          items: { type: 'string' },
+        },
+        forbidden_scope: {
+          type: 'array',
+          description: 'Hard paths or areas that execution must not change.',
+          items: { type: 'string' },
+        },
+        stop_conditions: {
+          type: 'array',
+          description: 'Hard conditions that require execution to stop and hand off.',
+          items: { type: 'string' },
+        },
       },
     },
     source_artifacts: { type: 'array', items: { type: 'string' } },
@@ -498,7 +514,14 @@ After finishing a meaningful unit of work:
 - T2/T3 use the indexed task card as the complete task-scoped handoff; \`/mb-doctor\` checks structural completeness and \`/review-tasks-plan\` checks semantic applicability and sufficiency.
 - If running in **Claude Code**: execute each \`TASK-NNN-TN-FT-NNN-WN\` in a **fresh Claude session** using tier-appropriate \`.protocols/TASK-NNN-TN-FT-NNN-WN/\` state.
 - If running in **Codex**: you can run each \`TASK-NNN-TN-FT-NNN-WN\` in a fresh session via \`codex exec\` (see \`/execute\`).
-- Sequencing: independent tasks may run in parallel clean sessions; dependent/shared-file tasks must run sequentially.
+- Execution file scope: touched_files is advisory and non-exhaustive; executor
+  preflight confirms actual files, while non-empty allowed_write_scope and
+  forbidden_scope remain hard boundaries.
+- Sequencing: canonical task execution is sequential. Parallel task execution is
+  experimental, requires explicit --experimental-parallel, pairwise-disjoint
+  hard runtime_context.allowed_write_scope, isolated worktrees/sandboxes, and
+  the exclusions in .memory-bank/workflows/autonomy-policy.md; touched_files
+  alone never proves independence.
 
 Codex (fresh session):
 - \`codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /execute project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'\`
