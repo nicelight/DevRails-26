@@ -128,7 +128,7 @@ plan, spec, requirement, dependency, or doctor finding; the report uses only
 
 <handoff_contract>
 - `APPROVE` manual route -> conditional `/mb-doctor` when required, then
-  `/execute-task TASK-...` only for a task whose lifecycle context is currently
+  `/exe TASK-...` only for a task whose lifecycle context is currently
   executable; approval does not promote `planned` tasks or normalize status.
 - Complete scheduler review coverage -> `/mb-doctor --strict`, then the selected
   scheduler, which retains promotion/status ownership.

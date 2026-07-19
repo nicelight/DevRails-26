@@ -66,7 +66,7 @@ integration validation должны правдиво описывать изме
 Не переносить в этот пакет:
 
 - общий Stage 2 inventory/slimming всех remaining skills;
-- refactor `/red-verify`, `/feature-to-tasks`, `/foundation-to-tasks`, `/execute-task`
+- refactor `/red-verify`, `/feature-to-tasks`, `/foundation-to-tasks`, `/exe`
   или review skills;
 - глобальное сокращение prompts и downstream chains вне RF-04;
 - новую behavioral-eval infrastructure;

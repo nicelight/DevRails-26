@@ -2,7 +2,7 @@
 description: Прайминг агента — загрузка контекста проекта из Memory Bank перед работой.
 status: active
 ---
-# /get-context — Prime context
+# /fill — Prime context
 
 <objective>
 Стабильно запраймить агента перед работой:
@@ -35,9 +35,9 @@ status: active
 </process>
 
 <hard_invariants>
-- `/get-context` строго read-only во всех ролях и режимах.
+- `/fill` строго read-only во всех ролях и режимах.
 - Не создавай и не обновляй `.protocols/*`, task plan или другой artifact.
-- Не запускай сабагентов, delegation или `/context-manifest` из `/get-context`.
+- Не запускай сабагентов, delegation или `/context-manifest` из `/fill`.
 - Если нужен protocol mutation, назови существующий owning execution/planning
   skill как следующий шаг, но не выполняй mutation.
 </hard_invariants>

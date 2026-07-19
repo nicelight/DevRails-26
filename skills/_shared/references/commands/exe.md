@@ -2,11 +2,11 @@
 description: Implement one indexed JSON task within its semantic and hard runtime boundaries, then produce tier-routed evidence and handoff.
 status: active
 ---
-# /execute-task - Execute one TASK
+# /exe - Execute one TASK
 
 <objective>
 Implement one selected `TASK-NNN-TN-FT-NNN-WN` and leave reproducible
-protocol/evidence for verification and the lifecycle owner. `/execute-task` is not a
+protocol/evidence for verification and the lifecycle owner. `/exe` is not a
 scheduler.
 </objective>
 
@@ -46,7 +46,7 @@ objectively contradictory, is unverifiable, or is materially under-tiered.
 <hard_invariants>
 - Authoritative routing and status ownership come from
   `.memory-bank/workflows/tier-policy.md`; never use legacy `risk` fields.
-- Scheduler mode: `/execute-task` never writes final task closure/failure/blocking,
+- Scheduler mode: `/exe` never writes final task closure/failure/blocking,
   promotes dependents, or runs scheduler transitions. It returns an
   implementation handoff.
 - Manual mode: T0/T1 fast-lane closure is allowed only when the current agent is
@@ -54,7 +54,7 @@ objectively contradictory, is unverifiable, or is materially under-tiered.
   T2/T3 trigger appeared, hard scopes were respected, and compact PASS evidence
   was durably written. Otherwise leave lifecycle unchanged for `/verify`, the
   scheduler, or explicit owner.
-- T2/T3 task closure is never owned by `/execute-task`.
+- T2/T3 task closure is never owned by `/exe`.
 - `touched_files` is advisory and non-exhaustive. Confirm and record the actual
   change surface; extra files are allowed only for the same outcome/spec/tier
   and inside hard scopes.
@@ -104,7 +104,7 @@ Protocol by tier:
   context, preflight-confirmed change surface, changes, checks, evidence,
   `VERDICT: PASS|FAIL|BLOCKED`, closure owner/decision, and handoff notes.
 - T2/T3: `.protocols/<TASK_ID>/{context,plan,progress,verification,handoff}.md`
-  using available templates; `/execute-task` fills implementation context/progress
+  using available templates; `/exe` fills implementation context/progress
   and leaves final verification to `/verify`.
 - T3 handoff records whether the later exact
   `HUMAN_CHECKPOINT: done` marker is present or still required; it does not
@@ -125,7 +125,7 @@ behavior. Do not run categories merely to fill a template. T0 docs-only work
 may use inspected-diff evidence; T1 should use one cheap relevant check when
 available or record why none is meaningful.
 
-Reusable execute evidence is optional. When `/execute-task` proposes one of its
+Reusable execute evidence is optional. When `/exe` proposes one of its
 results for reuse by `/verify`, record one complete receipt in the existing
 protocol: normally `run.md` for T0/T1 or `progress.md` for T2/T3. The receipt is
 a self-attested `reuse candidate`, not independent, cryptographic, or
@@ -165,7 +165,7 @@ The implementation handoff must point to the exact current-attempt receipt
 location and mark older same-claim receipts from previous execution/retry
 attempts `superseded` or supporting-only. Evidence produced directly by
 `/add-tests` is supporting-only; after all relevant changes, only a final gate
-run owned and recorded by `/execute-task` may become a reuse candidate.
+run owned and recorded by `/exe` may become a reuse candidate.
 </required_outputs>
 
 <validation>
@@ -181,7 +181,7 @@ Before handoff, confirm:
 Tier escalation handoff records original/required tier, trigger, partial
 changes/evidence, and split recommendation; then routes the original task ID to
 `/feature-to-tasks FT-<NNN>` for controlled rebuild/split, followed by
-`/review-tasks-plan`, applicable doctor gate, and `/execute-task <replacement-id>`.
+`/review-tasks-plan`, applicable doctor gate, and `/exe <replacement-id>`.
 </validation>
 
 <handoff_contract>

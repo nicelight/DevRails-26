@@ -71,7 +71,7 @@ do not authorize or encode an unresolved product/design decision.
 </validation>
 
 <handoff_contract>
-Return immediately to `/execute-task`, `/verify`, the scheduler, or the explicit task
+Return immediately to `/exe`, `/verify`, the scheduler, or the explicit task
 owner under `.memory-bank/workflows/tier-policy.md`. Out-of-scope coverage routes
 to normal `/feature-to-tasks FT-<NNN>` planning instead of being smuggled into the
 current task.

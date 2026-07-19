@@ -110,7 +110,7 @@ Stage 1 did not change:
 - task IDs, tier policy, task lifecycle, waves, or status ownership;
 - Foundation task generation, `REQ-000`/`FT-000`/W0 task rules;
 - `/feature-to-tasks`, `/foundation-to-tasks`, `/review-tasks-plan`;
-- `/execute-task`, `/verify`, `/red-verify`, or evidence/protocol routing;
+- `/exe`, `/verify`, `/red-verify`, or evidence/protocol routing;
 - `/autonomous`, `/autopilot`, scheduler ordering/budgets/transitions;
 - `/mb-sync` ownership and synchronization behavior.
 
@@ -144,7 +144,7 @@ Passed:
   canonical paths, and Foundation ambiguity.
 - Start Stage 2 with an exact contract inventory of the remaining skills before
   slimming them. Likely hotspots from the source brief are `/red-verify`,
-  `/feature-to-tasks`, `/foundation-to-tasks`, `/execute-task`, `/review-tasks-plan`,
+  `/feature-to-tasks`, `/foundation-to-tasks`, `/exe`, `/review-tasks-plan`,
   `/autonomous`, `/autopilot`, and `/mb-sync`.
 - `howItWorks.md` still intentionally describes the current fixed/internal
   behavior of out-of-scope Stage 2 skills (for example `/feature-to-tasks`). Update

@@ -72,7 +72,7 @@
   Если существующему command недостаёт минимальной output shape, она остаётся
   частью его существующего generated `SKILL.md` и формируется из текущего
   canonical source без нового durable artifact.
-- `/get-context` остаётся строго read-only: только прочитанный контекст, gaps и
+- `/fill` остаётся строго read-only: только прочитанный контекст, gaps и
   рекомендуемые следующие reads. Task protocol создаёт или обновляет его
   существующий owning execution/planning skill, не priming command.
 - `/find-skills` не получает отдельный manifest/catalog. Он различает DevRails
@@ -183,15 +183,15 @@ output contract, либо он самовольно создаёт protocol arti
 - Принятое решение остаётся durable и однозначно находится через owning
   artifact.
 
-## RF-08 — `/get-context` пишет task protocol и предполагает делегирование при priming
+## RF-08 — `/fill` пишет task protocol и предполагает делегирование при priming
 
 **Severity:** Medium
 
 **Суть проблемы**
 
-`skills/_shared/references/commands/get-context.md:21-23` требует создать
+`skills/_shared/references/commands/fill.md:21-23` требует создать
 `.protocols/<TASK-ID>/plan.md` и определить работу сабагентов, если контекста
-не хватает. При этом `/get-context` может быть вызван без TASK-ID, top-level GENERAL
+не хватает. При этом `/fill` может быть вызван без TASK-ID, top-level GENERAL
 не имеет права автоматически делегировать работу, а Reviewer/Explorer может
 быть read-only.
 
@@ -209,14 +209,14 @@ orchestration step.
 
 **Потенциальные опасности**
 
-- Нельзя переносить task planning/resumability в `/get-context`; для этого уже существуют
-  task record, `/execute-task` и task-owned protocol.
-- Нельзя считать сам вызов `/get-context` разрешением на запуск сабагентов.
+- Нельзя переносить task planning/resumability в `/fill`; для этого уже существуют
+  task record, `/exe` и task-owned protocol.
+- Нельзя считать сам вызов `/fill` разрешением на запуск сабагентов.
 
 **Готово, когда**
 
 - Простое priming не меняет рабочее дерево.
-- При необходимости protocol mutation `/get-context` возвращает точный owning next step,
+- При необходимости protocol mutation `/fill` возвращает точный owning next step,
   но сам ничего не записывает.
 - Delegation всегда следует role/operator contract.
 
@@ -386,7 +386,7 @@ deterministic proof и не новый blocking eval framework.
 |---|---|---|---|
 | P1 / RF-07 `/discuss` | Отсутствует owning `user-scenarios` artifact | Остановка до вопроса/принятия ответа, route в `/spec-init`, без writes | PASS |
 | P1b / RF-07 `/discuss` | Существует `.memory-bank/product.md#Audience`, decision log отсутствует; оператор принял audience answer | Ответ применён только к `product.md`; file count не изменился, decision log или другой artifact не создан | PASS |
-| P2 / RF-08 `/get-context` | Обнаружен context gap | Только reads, gaps и owning route; без writes, delegation и `/context-manifest` | PASS |
+| P2 / RF-08 `/fill` | Обнаружен context gap | Только reads, gaps и owning route; без writes, delegation и `/context-manifest` | PASS |
 | P3 / RF-09 `/find-skills` | Unknown origin; доказанный DevRails command; autonomous recommendation | Unknown origin остаётся ambiguity без install; DevRails command получает external-installer route; autonomous обновляет только заранее существующий exact decision log | PASS |
 | P3b / RF-09 `/find-skills` | Verified external metadata `acme-labs/calendar-skills` | Предложен marketplace route с conflict warning; без explicit confirmation установка не выполнена, tree не изменён | PASS |
 | P4 / RF-14 `/mb-sync` | No-op manual sync | Только sync-local inspection, без lint/doctor; post-sync gates возвращены explicit owner | PASS |

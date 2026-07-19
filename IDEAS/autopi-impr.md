@@ -37,7 +37,7 @@ verifier обязан повторять.
 - `autonomy-policy.md` — budgets, hard stops и terminal vocabulary.
 - `execute-loop.md` — короткая карта общего workflow, без второго scheduler
   algorithm.
-- `/execute-task`, `/verify`, `/red-verify` — собственные методы и evidence.
+- `/exe`, `/verify`, `/red-verify` — собственные методы и evidence.
 - `/autonomous` — Product/Design/tasking orchestration, затем использование
   canonical `/autopilot` scheduler contract вместо его копирования.
 
@@ -79,7 +79,7 @@ child step только из-за перезапуска scheduler.
    verdict evidence, не доверяя одному checkpoint без подтверждения;
 3. определяет текущий attempt и первую не завершённую durable stage;
 4. продолжает безопасный путь:
-   - нет implementation handoff → `/execute-task`;
+   - нет implementation handoff → `/exe`;
    - implementation завершён, но нет functional verdict → `/verify`;
    - T3 имеет functional PASS, но не имеет semantic-pass → `/red-verify`;
    - все tier gates уже пройдены → записывает scheduler-owned lifecycle
@@ -170,7 +170,7 @@ Conditional:
   изменении публичного scheduler contract;
 - agent-run isolated target checks — только для узкого regression smoke.
 
-Task schema, `mb-lint`, `mb-doctor`, `/execute-task`, `/verify` и `/red-verify` не
+Task schema, `mb-lint`, `mb-doctor`, `/exe`, `/verify` и `/red-verify` не
 меняются этой задачей.
 
 ## Non-goals
@@ -188,7 +188,7 @@ Task schema, `mb-lint`, `mb-doctor`, `/execute-task`, `/verify` и `/red-verify`
 
 - scheduler restart с `in_progress` и `ready` сначала восстанавливает
   `in_progress`, не выполняя promotion/selection другой task;
-- interruption after `/execute-task` resumes at `/verify`, not repeated execute;
+- interruption after `/exe` resumes at `/verify`, not repeated execute;
 - interruption after functional PASS resumes at required T3 semantic gate or
   closure;
 - ambiguous stage, scheduler ownership или non-idempotent replay записывает

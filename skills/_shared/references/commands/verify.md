@@ -50,7 +50,7 @@ or normative evidence remains a required-input blocker under the rule above.
 - Apply only spec families demanded by actual scope. Missing/conflicting/wrong
   canonical coverage is a planning/design blocker, not an implementation FAIL.
 - Evidence requirements and verification targets state what must be proved;
-  they are not proof. `/execute-task` local PASS is input, not automatic PASS.
+  they are not proof. `/exe` local PASS is input, not automatic PASS.
 - An execute receipt is self-attested supporting evidence. It does not prove
   that its declared snapshot preceded the command or that the reported result
   occurred, and it is never an independent observation by `/verify`.
@@ -75,7 +75,7 @@ do not choose one.
 - Route task scope/tier/feature-level spec repair to
   `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-design`, product
   ambiguity to `/feature-doctor FT-<NNN>`, and missing implementation evidence
-  to `/execute-task <TASK_ID>`.
+  to `/exe <TASK_ID>`.
 - Unattended flow returns the blocker and exact route to the scheduler for
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS`.
 

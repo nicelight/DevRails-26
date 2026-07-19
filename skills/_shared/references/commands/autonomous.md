@@ -63,7 +63,7 @@ state, not a second task registry.
   waves, Foundation dependencies, and hard runtime scopes.
 - Scheduler owns promotion, `ready -> in_progress`, final
   `done|failed|blocked` decisions, dependent block/unblock, queue state, and
-  terminal run state. `/execute-task`, `/verify`, `/red-verify`, and `/mb-sync` keep
+  terminal run state. `/exe`, `/verify`, `/red-verify`, and `/mb-sync` keep
   the ownership defined by tier policy.
 - Scheduler writes every task closure/failure/blocking decision, status, and
   evidence link to the authoritative `.task.json` before any sync boundary.
@@ -180,7 +180,7 @@ Select one eligible `ready` task by earliest wave and stable index order. Before
 writing `ready -> in_progress`, require the current strict-doctor pass. Then:
 
 1. scheduler writes `ready -> in_progress`;
-2. `/execute-task <TASK_ID>`;
+2. `/exe <TASK_ID>`;
 3. `/verify <TASK_ID>` using authoritative `task.tier`;
 4. per-task `/red-verify <TASK_ID>` for T3 only (optional for T2);
 5. scheduler records final lifecycle decision and evidence in `.task.json`;

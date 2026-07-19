@@ -672,7 +672,7 @@ function checkFoundationReadiness(orderedRecords, records) {
       path: gate.rel,
       task_id: anchors.gateTask,
       details: { status: gate.task.status },
-      suggested_fix: 'Finish /execute-task, /verify, and /mb-sync for the foundation gate task before product feature execution.',
+      suggested_fix: 'Finish /exe, /verify, and /mb-sync for the foundation gate task before product feature execution.',
     });
   }
 

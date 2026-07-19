@@ -17,7 +17,7 @@ status: active
 ## Reuse Candidates (optional)
 Receipt is executor self-attestation and supporting evidence, not independent
 provenance. Repeat the block only for current-attempt results offered by
-`/execute-task`; mark older same-claim blocks superseded.
+`/exe`; mark older same-claim blocks superseded.
 
 - receipt_status: current | superseded | supporting-only
 - attempt:

@@ -87,7 +87,7 @@ For updates that change the JSON-only task registry or indexed task record model
 - `skills/_shared/references/commands/feature-to-tasks.md`
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/autonomous.md`
-- `skills/_shared/references/commands/execute-task.md`
+- `skills/_shared/references/commands/exe.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/mb-sync.md`
 - `skills/mb-garden/assets/mb-lint.mjs` (packaged deterministic lint asset)
@@ -160,7 +160,7 @@ Primary source files:
 - `skills/_shared/references/commands/spec-auto.md`
 - `skills/_shared/references/commands/foundation-to-tasks.md`
 - `skills/_shared/references/commands/review-tasks-plan.md`
-- `skills/_shared/references/commands/execute-task.md`
+- `skills/_shared/references/commands/exe.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/scripts/init-mb.js`
 - `skills/_shared/references/structure-template.md`
@@ -188,7 +188,7 @@ Primary source files for this behavior:
   `runtime_context`
 - `skills/_shared/references/commands/review-tasks-plan.md`
 - `skills/_shared/references/commands/mb-doctor.md`
-- `skills/_shared/references/commands/execute-task.md`
+- `skills/_shared/references/commands/exe.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/red-verify.md`
 - `skills/_shared/references/commands/autopilot.md`
@@ -222,7 +222,7 @@ Primary source files for this behavior:
 - `skills/_shared/references/structure-template.md`
 - `skills/_shared/references/commands/prd-to-features.md`
 - `skills/_shared/references/commands/feature-to-tasks.md`
-- `skills/_shared/references/commands/execute-task.md`
+- `skills/_shared/references/commands/exe.md`
 - `skills/_shared/references/commands/verify.md`
 - `README.md`, `howItWorks.md`
 
