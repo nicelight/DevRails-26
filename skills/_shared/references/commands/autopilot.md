@@ -31,7 +31,11 @@ links, expected advisory change surface and/or deliberate hard write boundary,
 verification path, concrete REQ links, and valid dependencies.
 
 If the queue is empty, return
-`HALT_DEPENDENCY_DEADLOCK: no schema-backed task records found in .memory-bank/tasks/index.json`.
+`HALT_QUALITY_GATES: no schema-backed task records found in .memory-bank/tasks/index.json`.
+Use the existing planning owner identified by authoritative Foundation/product
+state to create and review a non-empty queue. If that state identifies no owner,
+require the operator to provide a reviewed non-empty queue; do not invent a
+planning route. After review and strict readiness pass, resume `/autopilot`.
 Missing/invalid tier is `HALT_POLICY_VIOLATION`; clarification/design/Foundation/
 handoff/readiness gaps use the applicable clarification or quality halt and
 repair route.
@@ -133,9 +137,14 @@ run only after its review and readiness gates pass; verifiers do not create it
 independently.
 
 If no `ready` task remains:
+- preserve any already-recorded specific `HALT_*` state, reason, owner, and
+  resume route as required by autonomy policy;
 - all work closed -> run final task-plan review coverage and success checks;
-- unresolved `planned|blocked` work -> record exact blockers and
-  `HALT_DEPENDENCY_DEADLOCK`.
+- only when every unfinished record is non-runnable solely because its task
+  dependencies are unfinished -> record exact dependency evidence and
+  `HALT_DEPENDENCY_DEADLOCK`;
+- for any other cause, keep the applicable specific halt and its owner/resume
+  route.
 </required_outputs>
 
 <validation>

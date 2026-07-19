@@ -146,9 +146,28 @@ contract proves it already complete:
    - lint plus `/mb-doctor --strict` after the real product queue exists.
 5. Scheduler loop below.
 
-Review `REJECT` is blocking. After the existing 2-3 repair attempts for the same
-surface, use `HALT_REVIEW_REJECT`. Missing/failing lint or doctor uses
-`HALT_QUALITY_GATES`.
+### Review repair cycles
+
+Apply one bounded loop independently to the `feature-plan` surface and each
+actually reviewed `task-plan:FT-<NNN>` surface. The maximum is exactly `2`
+completed `repair -> re-review` cycles per surface.
+
+- The initial review starts at `0` completed cycles and is not a repair attempt.
+- A cycle is one repair followed by re-review of the same surface. Increment its
+  counter exactly once, after that re-review returns its verdict.
+- Keep compact counters only for surfaces actually reviewed in the existing
+  `## Review gates` section of `.protocols/AUTONOMOUS-RUN/status.md`; do not add
+  a file, template, schema, policy field, or registry.
+- `APPROVE` continues the recorded flow. On `REJECT` with fewer than `2`
+  completed cycles, run the next repair and re-review for that same surface.
+- On `REJECT` after completed cycle `2`, record existing
+  `HALT_REVIEW_REJECT`, the latest findings, and the named repair owner. Do not
+  enter another automatic repair cycle.
+- On resume, read the recorded counter; never reset it. A surface at `2` stays
+  exhausted. Operator-directed repair returns to the same review with that
+  counter preserved, and only `APPROVE` continues the recorded flow.
+
+Missing/failing lint or doctor uses `HALT_QUALITY_GATES`.
 
 ## Sequential scheduler loop
 
@@ -189,8 +208,11 @@ and readiness gates, and is never created independently by `/verify` or
 `/red-verify`.
 
 If no eligible task remains:
+- preserve any already-recorded specific `HALT_*` state, reason, owner, and
+  resume route as required by autonomy policy;
 - all queue work closed and success gates pass -> success evaluation;
-- unresolved `planned|blocked` work -> record dependency/blocker evidence and
+- only when every unfinished record is non-runnable solely because its task
+  dependencies are unfinished -> record exact dependency evidence and
   `HALT_DEPENDENCY_DEADLOCK`;
 - missing/invalid tier/schema/ownership rule -> `HALT_POLICY_VIOLATION`;
 - incomplete task handoff or readiness gate -> `HALT_QUALITY_GATES`.

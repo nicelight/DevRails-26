@@ -87,6 +87,65 @@ jobs:
           grep -Fq '<hard_invariants>' skills/_shared/references/commands/context-manifest.md
           grep -Fq '## Explorer Contract' skills/_shared/references/roles/worker.md
           grep -Fq 'Explore <target> with /context-manifest' skills/_shared/references/roles/orchestrator.md
+          grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes' skills/_shared/references/commands/mb-init.md
+          grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --sync --target <target-repo> --yes' skills/_shared/references/commands/mb-init.md
+          grep -Fq 'Never guess or invent `<devrails-checkout>`.' skills/_shared/references/commands/mb-init.md
+          grep -Fq 'create the skeleton manually' skills/_shared/references/commands/mb-init.md
+          grep -Fq 'Bootstrap is owned only' skills/mb-init/SKILL.md
+          ! grep -q 'init-mb\.js\|structure-template\.md' skills/_shared/references/commands/mb-init.md skills/mb-init/SKILL.md
+          for cold_start_surface in skills/_shared/references/commands/cold-start.md skills/cold-start/SKILL.md; do
+            grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes' "$cold_start_surface"
+            grep -Fq 'Never guess or invent `<devrails-checkout>`.' "$cold_start_surface"
+            grep -Fq 'rerun the original `/cold-start`' "$cold_start_surface"
+            grep -Fq 'Do not call `/mb-init`' "$cold_start_surface"
+          done
+          ! grep -Fq 'запусти `/mb-init`' skills/_shared/references/commands/cold-start.md
+          ! grep -Fq 'use the generated `/mb-init`' skills/cold-start/SKILL.md
+          map_codebase_spec=skills/_shared/references/commands/map-codebase.md
+          ! grep -Eq '5.?7|fan-(out|in)' "$map_codebase_spec"
+          ! grep -Fq 'сабагентов по зонам' "$map_codebase_spec"
+          grep -Fq 'direct reads' "$map_codebase_spec"
+          grep -Fq 'действительно широкого discovery' "$map_codebase_spec"
+          grep -Fq 'только когда это дешевле direct reads' "$map_codebase_spec"
+          grep -Fq 'bounded' "$map_codebase_spec"
+          grep -Fq 'текущие роль и' "$map_codebase_spec"
+          grep -Fq 'operator contract разрешают delegation' "$map_codebase_spec"
+          grep -Fq 'delegation не является default' "$map_codebase_spec"
+          grep -Fq 'delegated Worker не запускает других' "$map_codebase_spec"
+          grep -Fq '`.tasks/TASK-MB-MAP/`' "$map_codebase_spec"
+          for baseline_surface in '- product' '- architecture (C4)' '- spec-index / spec-backbone / glossary / invariants' '- runbooks' '- contracts' '- states (' '- testing' '- index'; do
+            grep -Fq -- "$baseline_surface" "$map_codebase_spec"
+          done
+          grep -Fq 'facts от inferences' "$map_codebase_spec"
+          grep -Fq '`needs verification` / unresolved evidence' "$map_codebase_spec"
+          grep -Fq 'не заменяй существующие baseline facts догадками' "$map_codebase_spec"
+          grep -Fq 'authoritative PRD/delta уже передан' "$map_codebase_spec"
+          grep -Fq 'не спрашивай повторно' "$map_codebase_spec"
+          grep -Fq 'ссылки на baseline вместе с тем же переданным PRD/delta' "$map_codebase_spec"
+          grep -Fq 'если PRD/delta не передан, заверши as-is baseline, запроси его у оператора и' "$map_codebase_spec"
+          grep -Fq 'остановись;' "$map_codebase_spec"
+          grep -Fq 'не переходи к roadmap, task' "$map_codebase_spec"
+          grep -Fq '`.memory-bank/epics/*`' "$map_codebase_spec"
+          grep -Fq '`.memory-bank/features/*`' "$map_codebase_spec"
+          grep -Fq '`.memory-bank/tasks/*.task.json` task records' "$map_codebase_spec"
+          grep -Fq '`.memory-bank/tasks/index.json` task links' "$map_codebase_spec"
+          mb_garden_spec=skills/_shared/references/commands/mb-garden.md
+          grep -Fq 'Read-only scan и classification' "$mb_garden_spec"
+          grep -Fq 'До первого edit назови в текущем transient working context точные paths' "$mb_garden_spec"
+          grep -Fq 'Не создавай для этого artifact, write-set file, ownership' "$mb_garden_spec"
+          grep -Fq 'только их однозначные mechanical' "$mb_garden_spec"
+          grep -Fq 'Список можно расширять в любой момент: до edit' "$mb_garden_spec"
+          grep -Fq 'каждого дополнительного file явно назови его path в transient context.' "$mb_garden_spec"
+          grep -Fq 'TODO/gap-to-task conversion' "$mb_garden_spec"
+          grep -Fq 'existing handoff: operator для destructive/canonical choice' "$mb_garden_spec"
+          grep -Fq 'Cosmetic или mechanical garden cleanup сам по себе не запускает `/mb-sync`.' "$mb_garden_spec"
+          grep -Fq 'останови дальнейшую garden mutation и верни handoff существующему' "$mb_garden_spec"
+          grep -Fq 'Не вызывай и не пересказывай его contract.' "$mb_garden_spec"
+          grep -Fq 'После любого фактического garden edit запусти final' "$mb_garden_spec"
+          grep -Fq 'Initial lint не' "$mb_garden_spec"
+          grep -Fq '`--strict` — только после' "$mb_garden_spec"
+          grep -Fq 'Невыполненные archive/move/delete/merge items являются blockers' "$mb_garden_spec"
+          ! grep -Fq 'Удали/объедини дубли.' "$mb_garden_spec"
 
           canonical_halts="$(grep -oE 'HALT_[A-Z_]+' skills/_shared/references/protocols/run-status-template.md | sort -u)"
           used_halts="$(grep -hoE 'HALT_[A-Z_]+' skills/_shared/references/commands/*.md skills/_shared/references/workflows/*.md | sort -u)"
@@ -141,6 +200,18 @@ jobs:
           grep -Fq 'independently builds its own hostile model' skills/_shared/references/commands/red-verify.md
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autonomous.md
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autopilot.md
+          autonomous_spec=skills/_shared/references/commands/autonomous.md
+          grep -Fq 'The maximum is exactly `2`' "$autonomous_spec"
+          ! grep -Eq '2-3|2–3' "$autonomous_spec"
+          grep -Fq 'initial review starts at `0` completed cycles and is not a repair attempt' "$autonomous_spec"
+          grep -Fq 'Increment its' "$autonomous_spec"
+          grep -Fq 'counter exactly once, after that re-review returns its verdict.' "$autonomous_spec"
+          grep -Fq '`feature-plan` surface and each' "$autonomous_spec"
+          grep -Fq '`task-plan:FT-<NNN>` surface' "$autonomous_spec"
+          grep -Fq '`## Review gates` section of `.protocols/AUTONOMOUS-RUN/status.md`' "$autonomous_spec"
+          grep -Fq 'On `REJECT` after completed cycle `2`' "$autonomous_spec"
+          grep -Fq 'On resume, read the recorded counter; never reset it.' "$autonomous_spec"
+          grep -Fq 'Operator-directed repair returns to the same review' "$autonomous_spec"
           grep -Fq 'Thin adapter' skills/_shared/references/commands/mb-sync.md
           grep -Fq '`/mb-sync` does not run full `node scripts/mb-lint.mjs` or' skills/_shared/references/commands/mb-sync.md
           ! grep -Fq '## Status Transition Modes' skills/_shared/references/workflows/mb-sync.md
@@ -148,6 +219,18 @@ jobs:
           grep -Fq '### 7) Sync-local consistency validation' skills/_shared/references/workflows/mb-sync.md
           grep -Fq '`/autonomous` or `/autopilot` is the sole owner of the' skills/_shared/references/workflows/mb-sync.md
           grep -Fq 'A recommendation, framework preference, reversible/conservative default,' skills/_shared/references/workflows/autonomy-policy.md
+          autonomy_policy=skills/_shared/references/workflows/autonomy-policy.md
+          grep -Fq 'overwrite it with `HALT_DEPENDENCY_DEADLOCK`.' "$autonomy_policy"
+          grep -Fq 'only for genuine dependency-only graph' "$autonomy_policy"
+          grep -Fq 'dependencies are unfinished.' "$autonomy_policy"
+          for scheduler_spec in skills/_shared/references/commands/{autonomous,autopilot}.md; do
+            grep -Fq 'preserve any already-recorded specific `HALT_*` state, reason, owner, and' "$scheduler_spec"
+            grep -Fq 'only when every unfinished record is non-runnable solely because its task' "$scheduler_spec"
+          done
+          grep -Fq '`HALT_QUALITY_GATES: no schema-backed task records found in .memory-bank/tasks/index.json`.' skills/_shared/references/commands/autopilot.md
+          ! grep -Fq '`HALT_DEPENDENCY_DEADLOCK: no schema-backed task records found in .memory-bank/tasks/index.json`.' skills/_shared/references/commands/autopilot.md
+          grep -Fq 'require the operator to provide a reviewed non-empty queue' skills/_shared/references/commands/autopilot.md
+          grep -Fq 'After review and strict readiness pass, resume `/autopilot`.' skills/_shared/references/commands/autopilot.md
           grep -Fq '## Scheduler Failure Handling' skills/_shared/references/workflows/tier-policy.md
           grep -Fq 'A genuinely ambiguous tier is an operator decision' skills/_shared/references/workflows/tier-policy.md
           ! grep -Fq 'If unsure between two tiers, choose the higher tier' skills/_shared/references/workflows/tier-policy.md
@@ -195,6 +278,8 @@ jobs:
           test -f .claude/skills/foundation-to-tasks/SKILL.md
           test -f .agents/skills/context-manifest/SKILL.md
           test -f .claude/skills/context-manifest/SKILL.md
+          test -f .agents/skills/map-codebase/SKILL.md
+          test -f .claude/skills/map-codebase/SKILL.md
           test ! -e .agents/skills/analysis/SKILL.md
           test ! -e .claude/skills/analysis/SKILL.md
           test ! -e .agents/skills/mb-harness/SKILL.md
@@ -202,6 +287,11 @@ jobs:
           grep -q '# /spec-design' .agents/skills/spec-design/SKILL.md
           grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
           grep -q '# /context-manifest' .agents/skills/context-manifest/SKILL.md
+          cmp .agents/skills/map-codebase/SKILL.md .claude/skills/map-codebase/SKILL.md
+          grep -Fq 'direct reads' .agents/skills/map-codebase/SKILL.md
+          cmp .agents/skills/mb-garden/SKILL.md .claude/skills/mb-garden/SKILL.md
+          grep -Fq 'Read-only scan и classification' .agents/skills/mb-garden/SKILL.md
+          grep -Fq 'После любого фактического garden edit запусти final' .agents/skills/mb-garden/SKILL.md
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
           for command in discuss mb find-skills; do
             test -f ".agents/skills/$command/SKILL.md"
@@ -215,6 +305,54 @@ jobs:
           grep -Fq '`CONSTITUTION_STRUCTURE_INVALID` in `--strict`' .agents/skills/mb-doctor/SKILL.md
           grep -Fq '`FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default' .agents/skills/mb-doctor/SKILL.md
           test ! -e .memory-bank
+
+          SELECTIVE_MB_INIT_TARGET="$TMP_DIR/selective-mb-init"
+          mkdir -p "$SELECTIVE_MB_INIT_TARGET"
+          (
+            cd "$SELECTIVE_MB_INIT_TARGET"
+            node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --skill mb-init --yes
+          )
+          test -f "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md"
+          test -f "$SELECTIVE_MB_INIT_TARGET/.claude/skills/mb-init/SKILL.md"
+          cmp "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md" "$SELECTIVE_MB_INIT_TARGET/.claude/skills/mb-init/SKILL.md"
+          test "$(find "$SELECTIVE_MB_INIT_TARGET" -type f -printf '%P\n' | sort)" = $'.agents/skills/mb-init/SKILL.md\n.claude/skills/mb-init/SKILL.md'
+          test ! -e "$SELECTIVE_MB_INIT_TARGET/.memory-bank"
+          test ! -e "$SELECTIVE_MB_INIT_TARGET/.tasks"
+          test ! -e "$SELECTIVE_MB_INIT_TARGET/.protocols"
+          test ! -e "$SELECTIVE_MB_INIT_TARGET/scripts"
+          grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes' "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md"
+          grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --sync --target <target-repo> --yes' "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md"
+          grep -Fq 'Never guess or invent `<devrails-checkout>`.' "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md"
+          grep -Fq 'create the skeleton manually' "$SELECTIVE_MB_INIT_TARGET/.agents/skills/mb-init/SKILL.md"
+
+          SELECTIVE_COLD_START_TARGET="$TMP_DIR/selective-cold-start"
+          mkdir -p "$SELECTIVE_COLD_START_TARGET"
+          (
+            cd "$SELECTIVE_COLD_START_TARGET"
+            node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --skill cold-start --yes
+          )
+          test -f "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+          test -f "$SELECTIVE_COLD_START_TARGET/.claude/skills/cold-start/SKILL.md"
+          cmp "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md" "$SELECTIVE_COLD_START_TARGET/.claude/skills/cold-start/SKILL.md"
+          test "$(find "$SELECTIVE_COLD_START_TARGET" -type f -printf '%P\n' | sort)" = $'.agents/skills/cold-start/SKILL.md\n.claude/skills/cold-start/SKILL.md'
+          test ! -e "$SELECTIVE_COLD_START_TARGET/.memory-bank"
+          test ! -e "$SELECTIVE_COLD_START_TARGET/.tasks"
+          test ! -e "$SELECTIVE_COLD_START_TARGET/.protocols"
+          test ! -e "$SELECTIVE_COLD_START_TARGET/scripts"
+          grep -Fq 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes' "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+          grep -Fq 'Never guess or invent `<devrails-checkout>`.' "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+          grep -Fq 'rerun the original `/cold-start`' "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+          grep -Fq 'Do not call `/mb-init`' "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+          ! grep -Fq 'запусти `/mb-init`' "$SELECTIVE_COLD_START_TARGET/.agents/skills/cold-start/SKILL.md"
+
+          CUSTOM_AGENTS_TARGET="$TMP_DIR/custom-agents-bootstrap"
+          mkdir -p "$CUSTOM_AGENTS_TARGET"
+          printf '%s\n' '# Operator-owned AGENTS policy' > "$CUSTOM_AGENTS_TARGET/AGENTS.md"
+          node "$GITHUB_WORKSPACE/scripts/install-framework.mjs" --bootstrap-only --target "$CUSTOM_AGENTS_TARGET" --yes
+          test -f "$CUSTOM_AGENTS_TARGET/.memory-bank/tasks/index.json"
+          test "$(cat "$CUSTOM_AGENTS_TARGET/AGENTS.md")" = '# Operator-owned AGENTS policy'
+          test ! -e "$CUSTOM_AGENTS_TARGET/.agents"
+          test ! -e "$CUSTOM_AGENTS_TARGET/.claude"
 
           SELECTIVE_VERIFY_TARGET="$TMP_DIR/selective-verify"
           for root in .agents/skills .claude/skills; do

@@ -2,8 +2,9 @@
 
 ## Статус review
 
-- Verdict: `REQUEST_CHANGES`
+- Verdict: `ACCEPT`
 - Дата review: 2026-07-19
+- Дата closure evidence: 2026-07-20
 - Scope: canonical runtime commands, shared workflows/protocols, installer,
   generated target behavior, deterministic validators, documentation и release
   checks
@@ -14,16 +15,18 @@
 
 ## Текущий статус реализации
 
-- Общий статус: `implemented_with_open_findings`; global refactor не завершён.
+- Repair status: `implemented_and_validated`; все принятые findings закрыты,
+  RF-02 исключён operator decision. Broad refactor plan не переобъявляется
+  `complete` этим repair-пакетом.
 - Первый пакет: `implemented_and_validated` — RF-06, RF-07, RF-08, RF-09,
   RF-10, RF-11, RF-13, RF-14 и RF-15 закрыты в repair scope и прошли полный
   package validation.
-- Второй пакет: `open` — RF-01, RF-03, RF-04, RF-05 и RF-12 ещё требуют
-  реализации; RF-01 остаётся `external bootstrap only`.
+- Второй пакет: `implemented_and_validated` — RF-01, RF-03, RF-04, RF-05 и
+  RF-12 реализованы и прошли package integration validation.
 - RF-02: `excluded` — fix намеренно удалён как неоправданное расширение
   runtime/Memory Bank surface.
-- Пока RF-01, RF-03 и остальные fixes второго пакета открыты, итоговый verdict
-  не может быть `complete`.
+- Blocking deterministic matrix пройдена; prompt-only semantics зафиксированы
+  как manual contract-shape evidence, а не model-behavior proof.
 
 ## Сводка
 
@@ -86,13 +89,18 @@
 - Не создавать универсальный Markdown parser или отдельный vocabulary artifact
   для `/mb-doctor`. Документировать фактические public finding codes и покрывать
   критичные mode/severity combinations прямыми fixtures.
-- Review budget хранится только в существующем autonomous run status:
-  operator-approved `max_review_repairs_per_surface: 2` и компактные counters.
-  Не добавлять task fields, отдельный budget registry или новый status artifact.
+- RF-12 меняет только canonical `/autonomous`: initial review не считается
+  попыткой, на одну review surface разрешены ровно два завершённых цикла
+  `repair -> re-review`, а compact counters хранятся в существующем autonomous
+  run status. Не менять autonomy policy/run-status template и не добавлять
+  config field, task field, registry, schema или новый artifact.
 - `/mb-garden` автоматически меняет только mechanical links/indexes/routers.
   Delete/merge и semantic canonical/task/governance decisions требуют
-  explicit owner decision. После mutation обязателен lint; doctor и `/mb-sync`
-  запускаются только на применимой readiness или durable-state boundary.
+  explicit owner decision. После mutation обязателен lint; doctor остаётся
+  conditional. Contract и implementation `/mb-sync` не меняются: broader
+  reconciliation получает handoff к этому existing owner.
+- По позднему operator override `README.md` и `howItWorks.md` точечно
+  синхронизируются в Slice 7 после canonical fixes и integration validation.
 - Любой новый durable artifact, target path, workflow branch или повторная
   canonical copy требует отдельного текущего requirement и explicit operator
   approval. Иначе используется существующий artifact/owner или изменение не
@@ -467,6 +475,9 @@ historical snapshot, а основной план указывает current rep
 
 **Severity:** High
 
+**Статус:** `implemented_and_validated` — external bootstrap-only router,
+selective installs, fresh/sync и custom-`AGENTS.md` fixtures прошли.
+
 **Суть проблемы**
 
 `skills/_shared/references/commands/mb-init.md:16-21` ссылается на
@@ -514,6 +525,10 @@ bootstrap helper/template. Selective `--skill cold-start` дополнитель
 
 **Severity:** High
 
+**Статус:** `implemented_and_validated` — specific halt preservation,
+dependency-only deadlock и empty-index quality halt закреплены в canonical
+contracts и release assertions.
+
 **Суть проблемы**
 
 Tier policy требует отдельных маршрутов для operator clarification,
@@ -527,6 +542,9 @@ quality evidence.
 
 **Как исправить**
 
+- `HALT_DEPENDENCY_DEADLOCK` не вводится этим fix: token присутствует в
+  terminal vocabulary с initial import `bdb8c86` от 2026-06-22. Его удаление
+  было бы отдельным public-contract change и не входит в repair scope.
 - Зафиксировать в существующем `workflows/autonomy-policy.md` два правила:
   1. уже записанный specific `HALT_*` и его resume route нельзя заменять общим
      deadlock;
@@ -534,6 +552,11 @@ quality evidence.
      candidates остановлены исключительно незакрытыми task dependencies.
 - `/autonomous` и `/autopilot` должны ссылаться на эти два правила. Не добавлять
   blocker classes, precedence table, parser или новое persisted поле.
+- Пустой task index нарушает existing non-empty input contract `/autopilot` и
+  возвращает `HALT_QUALITY_GATES` с точной причиной. Возобновление возможно
+  после того, как существующий planning owner создаст reviewed non-empty queue
+  и пройдёт strict readiness; если authoritative planning state отсутствует,
+  команда требует queue у оператора, а не угадывает новый route.
 
 **Потенциальные опасности**
 
@@ -552,6 +575,9 @@ quality evidence.
 ## RF-04 — `/map-codebase` остался со старой фиксированной тактикой
 
 **Severity:** Medium
+
+**Статус:** `implemented_and_validated` — direct reads стали default для малого
+repo, bounded delegation условна, supplied delta сохраняется.
 
 **Суть проблемы**
 
@@ -595,6 +621,10 @@ constraints и runtimes с меньшим числом concurrency slots.
 
 **Severity:** Medium
 
+**Статус:** `implemented_and_validated` — automatic scope ограничен mechanical
+links/indexes/routers, final lint обязателен, semantic/destructive work получает
+handoff; `/mb-sync` и validators не менялись.
+
 **Суть проблемы**
 
 `skills/_shared/references/commands/mb-garden.md:31-57` запускает lint,
@@ -607,16 +637,20 @@ operator-decision boundary.
 
 **Как исправить**
 
-- Разрешить skill автоматически менять только mechanical stale links, indexes и
-  routers в заранее определённом write set.
+- Сначала выполнить read-only scan; перед edits назвать exact intended files в
+  transient working context без durable write-set artifact или ownership
+  matrix.
+- Разрешить skill автоматически менять только однозначные mechanical stale
+  links, indexes и routers в этих files.
 - Archive/delete/merge и material canonical/task/governance decisions возвращать
   оператору или существующему owning planning skill; не добавлять новую
   ownership matrix или maintenance lifecycle.
-- После фактических mutations обязательно запускать lint. Doctor запускать
-  только на применимой readiness/risk boundary, а `/mb-sync` — только когда
-  изменён broader durable state, который уже принадлежит sync contract.
-- Handoff должен перечислять archived/moved files, updated links и оставшиеся
-  blockers.
+- После фактических garden mutations обязательно запускать final lint. Doctor
+  запускать только на применимой readiness/risk boundary.
+- Если нужен broader durable-state reconcile, вернуть handoff существующему
+  `/mb-sync`; не менять и не пересказывать его contract внутри garden.
+- Handoff должен перечислять реально changed files, updated links и оставшиеся
+  blockers. Не выполненные archive/move/delete остаются blockers, а не changes.
 
 **Потенциальные опасности**
 
@@ -626,48 +660,53 @@ operator-decision boundary.
   evidence.
 - Без точной границы garden может начать создавать product tasks или менять
   Constitution, что ему не принадлежит.
-- Автоматический `/mb-sync` после любого cosmetic change создаст лишний
-  churn; он должен оставаться conditional.
+- Cosmetic cleanup не является основанием для `/mb-sync`; broader reconcile
+  остаётся отдельным handoff существующему owner.
 
 **Готово, когда**
 
-- Финальный changed state всегда проходит lint; applicable doctor/sync gates не
-  пропускаются и не запускаются декоративно.
+- Финальный garden-owned changed state всегда проходит lint; applicable doctor
+  не пропускается и не запускается декоративно.
 - Mechanical cleanup отделён от operator-owned semantic decisions.
+- `/mb-sync`, lint/doctor implementation и validators не изменены.
 - User-owned/current canonical artifacts не удаляются без явного основания.
 
 ## RF-12 — Review budget `/autonomous` не определён и не сохраняется
 
 **Severity:** Medium
 
+**Статус:** `implemented_and_validated` — ровно два завершённых
+`repair -> re-review` цикла на surface, counter сохраняется при resume; новых
+artifacts/statuses/schema нет.
+
 **Суть проблемы**
 
 `skills/_shared/references/commands/autonomous.md:122,136-142` одновременно
 говорит `within review budget` и `after existing 2-3 repair attempts`.
-Autonomy policy не определяет точное число, а run-status template не хранит
-review-attempt counters.
+Сам command не задаёт точное число и не требует сохранять review-attempt
+counters в существующем run status.
 
 Разные агенты могут остановиться после двух или трёх циклов, а resume способен
 обнулить неявный счётчик.
 
 **Как исправить**
 
-- Operator-approved default:
-  `max_review_repairs_per_surface: 2`. Не добавлять новую configurability;
-  отличающееся значение применяется только когда оно уже явно задано
-  authoritative run policy.
+- Изменить только canonical `/autonomous`: разрешить ровно `2` завершённых
+  `repair -> re-review` цикла на одну surface. Не добавлять configurability или
+  policy field.
 - Однозначно определить семантику: initial review не считается repair attempt;
   учитывается завершённый repair + re-review cycle.
-- Хранить effective limit и только компактные counters по реально reviewed
-  surface в существующем autonomous run status; не создавать отдельный
-  registry, schema или artifact.
+- Хранить только компактные counters по реально reviewed surface внутри
+  existing Review gates section существующего autonomous run status; не менять
+  `autonomy-policy.md` или `run-status-template.md` и не создавать отдельный
+  registry, schema, template или artifact.
 - При достижении лимита использовать существующий `HALT_REVIEW_REJECT` и
   сохранять latest findings/resume route.
 
 **Потенциальные опасности**
 
-- Не менять approved default `2` без нового explicit operator decision или уже
-  заданной authoritative run policy конкретного run.
+- Не заменять approved exact limit `2` формулировкой `2-3`, configurable default
+  или внешним policy mechanism.
 - Нельзя добавлять новый lifecycle status или task-schema field только ради
   budget.
 - Нужно избежать off-by-one и сброса counters после compaction/resume.
@@ -708,19 +747,26 @@ review-attempt counters.
 ## Второй пакет
 
 Все operator decisions этого пакета приняты: для RF-01 действует
-`external bootstrap only`, для RF-12 —
-`max_review_repairs_per_surface: 2`; RF-02 исключён.
+`external bootstrap only`, для RF-12 — ровно два `repair -> re-review` цикла на
+surface только внутри `/autonomous`; RF-02 исключён. `README.md` и
+`howItWorks.md` точечно обновляются в финальном integration slice, `/mb-sync`
+не меняется.
 
 Рекомендуемый порядок:
 
-1. RF-01 — исправить `/mb-init` как external-bootstrap blocker/router без
-   target-local helper.
-2. RF-04 и RF-05 — убрать forced fan-out и закрыть post-mutation/ownership gaps
-   без общего refactor команд.
-3. RF-03 — исправить no-ready fallback двумя существующими terminal rules.
-4. RF-12 — добавить approved persisted review budget `2`.
-5. Прогнать deterministic fixtures, manual non-blocking behavior checklist,
-   install/bootstrap/sync и existing-target compatibility checks.
+1. RF-01A — исправить `/mb-init` как external-bootstrap blocker/router и
+   selective fixture без target-local helper.
+2. RF-01B — дать selective `/cold-start` самостоятельный external route без
+   dependency на установленный `/mb-init`.
+3. RF-04 — убрать forced fan-out, сохранить baseline outputs и reuse supplied
+   delta.
+4. RF-05 — KISS garden-only fix: mechanical ownership, final lint и handoff к
+   unchanged `/mb-sync` только для broader reconciliation.
+5. RF-03 — минимально исправить no-ready fallback, не меняя существующий
+   terminal vocabulary.
+6. RF-12 — зафиксировать ровно две repair/re-review пары только внутри
+   `/autonomous` и compact counters в existing status.
+7. Прогнать package integration validation и записать фактическое evidence.
 
 Проверки пакета:
 
@@ -731,5 +777,22 @@ review-attempt counters.
 - resume сохраняет terminal reason и review counters;
 - small/large brownfield map fixtures;
 - post-garden link/lint/doctor checks;
+- отсутствие изменений в `/mb-sync`, `run-status-template.md` и task schema;
+- точечная синхронизация `README.md` и `howItWorks.md` с реализованными
+  contracts;
 - existing JSON task cards остаются compatible;
 - source-only дерево не содержит generated package-local `shared-*`.
+
+## Evidence второго пакета — 2026-07-20
+
+- `npm run check:syntax --silent`: PASS.
+- `git diff --check`: PASS.
+- Existing source/release assertions и first-package guards: PASS.
+- Full install-only, selective `cold-start`/`mb-init`, fresh bootstrap, explicit
+  sync и custom `AGENTS.md` preservation в isolated targets: PASS.
+- Generated Codex/Claude equality, fresh/applicable `mb-lint` и doctor,
+  existing JSON task-card compatibility: PASS.
+- Source-only package-local `shared-*`: `0`.
+- RF-01/RF-03/RF-04/RF-05/RF-12 prompt-only scenarios: manual contract-shape
+  inspection PASS; это non-blocking evidence, не model-behavior eval.
+- Integration fixes вне documentation/registers не потребовались.

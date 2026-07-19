@@ -93,8 +93,9 @@ task boundary, tier, dependencies, verification policy или human checkpoint.
 
 Tracked installable package entrypoints всего три:
 
-- `skills/cold-start/SKILL.md` — package/start surface;
-- `skills/mb-init/SKILL.md` — skeleton bootstrap surface;
+- `skills/cold-start/SKILL.md` — package/start и external-bootstrap routing
+  surface;
+- `skills/mb-init/SKILL.md` — external installer router для bootstrap/sync;
 - `skills/mb-garden/SKILL.md` — packaged lint/doctor/CI assets.
 
 Они нужны для source-only упаковки и не являются вторым набором runtime
@@ -237,8 +238,16 @@ node scripts/install-framework.mjs --skill verify --yes
 DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-После install-only, если `.memory-bank/` отсутствует, нужен `/mb-init`, затем
-`/cold-start`.
+После install-only, если `.memory-bank/` отсутствует, `/cold-start` и
+`/mb-init` не создают skeleton локально. Они возвращают точную external command
+через доступный checkout DevRails:
+
+```bash
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
+```
+
+Для explicit sync добавляется `--sync`. Неизвестный checkout path является
+честным blocker; после успешного bootstrap исходную команду запускают повторно.
 
 ## 7. Fresh bootstrap state
 
@@ -351,7 +360,7 @@ Stages do not own each other's outputs:
 
 ```text
 /map-codebase
-  -> request authoritative PRD/delta
+  -> reuse supplied authoritative PRD/delta, иначе запросить его и остановиться
   -> /constitution if needed
   -> /write-prd --delta
   -> /spec-init
@@ -362,6 +371,11 @@ Stages do not own each other's outputs:
 
 `/map-codebase` creates an as-is baseline from code/config/tests, separates
 facts from inferences and does not generate roadmap entities without PRD/delta.
+Малый repository можно исследовать direct reads одним агентом. Для широкого
+discovery допустимы `/context-manifest` или bounded delegation, только если это
+дешевле direct reads и разрешено ролью/оператором. Уже переданный delta не
+переспрашивается.
+
 When existing executable baseline sufficiency is not proved,
 `/foundation-to-tasks --verify-existing` can create only the minimum probe
 queue. A credibly proven baseline produces no `FT-000` queue.
@@ -688,6 +702,14 @@ Doctor механически проверяет наличие single-card evid
 действительно ли spec применим и достаточен. Это semantic ownership
 `/review-tasks-plan`.
 
+`/mb-garden` начинает с read-only scan и classification. Он автоматически
+меняет только однозначные mechanical links, indexes и routers в заранее
+названных transient paths; список можно расширить, назвав path до его edit.
+После фактических edits обязателен final `mb-lint`. Semantic, destructive и
+canonical choices возвращаются owner/operator. Cosmetic cleanup не запускает
+`/mb-sync`; broader reconciliation уже принятого durable decision получает
+отдельный handoff существующему `/mb-sync`.
+
 ## 13. Execution protocols и lifecycle ownership
 
 ### Protocol depth
@@ -848,6 +870,10 @@ rebuild/split, затем повторяются `/review-tasks-plan`, applicabl
 - no unresolved operator decision;
 - `/mb-doctor --strict` PASS.
 
+Пустой task index нарушает non-empty queue contract и возвращает
+`HALT_QUALITY_GATES`, после чего нужен reviewed non-empty queue и повторный
+strict readiness gate.
+
 Canonical scheduler loop:
 
 ```text
@@ -898,6 +924,12 @@ authoritative Product Brief / PRD / delta
 тактику. Он не проводит unattended Constitution interview и не принимает
 missing operator decisions.
 
+Для `feature-plan` и каждой реально reviewed `task-plan:FT-<NNN>` surface
+допускаются ровно два завершённых цикла `repair -> re-review`. Initial review
+начинается с counter `0` и не считается попыткой; counter увеличивается после
+re-review и сохраняется в existing run status при resume. `REJECT` после
+второго цикла приводит к existing `HALT_REVIEW_REJECT`.
+
 Allowed terminal states:
 
 ```text
@@ -911,6 +943,11 @@ HALT_POLICY_VIOLATION
 HALT_QUALITY_GATES
 HALT_BUDGET_EXCEEDED
 ```
+
+No-ready fallback не заменяет уже записанный specific `HALT_*`, его reason,
+owner и resume route. `HALT_DEPENDENCY_DEADLOCK` допустим только когда каждый
+unfinished record non-runnable исключительно из-за незакрытых task
+dependencies.
 
 ### Experimental parallel
 
@@ -931,8 +968,8 @@ Canonical execution sequential. `--experimental-parallel` требует:
 
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
-| `/cold-start` | scenario detection и next route | не создаёт EP/FT/TASK без PRD; route в discovery, PRD, mapping или stop |
-| `/mb-init` | Memory Bank skeleton, agent guides, runtime scripts | не создаёт roadmap; затем `/cold-start` |
+| `/cold-start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
+| `/mb-init` | external installer route для Memory Bank bootstrap/sync | сам не создаёт skeleton; затем повторный `/mb-init` и `/cold-start` |
 | `/mb` | минимально достаточный context priming | не реализует task; может записать plan неизвестных |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
@@ -966,7 +1003,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/verify` | task-scoped functional `PASS|FAIL|NEEDS-CLARIFICATION` | не исправляет implementation/spec и не создаёт follow-up task |
 | `/red-verify` | independent hostile model и semantic verdict | не заменяет functional PASS и не меняет scheduler lifecycle |
 | `/mb-sync` | reconciliation already-decided durable state | не принимает closure/promotion/design decisions |
-| `/mb-garden` | lint/cleanup/archive/drift maintenance | не является readiness owner и не меняет governance silently |
+| `/mb-garden` | mechanical links/indexes/routers maintenance и final lint | semantic/destructive decisions блокирует; broader reconcile передаёт `/mb-sync` |
 | `/mb-doctor` | deterministic readiness report | не заменяет semantic review или verification |
 | `/autopilot` | existing queue scheduler и terminal state | не создаёт PRD/features/initial queue |
 | `/autonomous` | full Product/Design-to-terminal-state orchestration | не принимает unresolved operator decisions |

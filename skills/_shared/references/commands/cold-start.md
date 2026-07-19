@@ -15,12 +15,27 @@ status: active
 <process>
 
 ## 0) Предусловия
-Эта команда предполагает, что skeleton уже создан (есть `.memory-bank/`).
 Если `.memory-bank/` отсутствует:
-- в установленном target repo запусти `/mb-init`, затем вернись к `/cold-start`;
-- из source repo используй installer bootstrap:
-  `node scripts/install-framework.mjs --bootstrap --target <target-repo> --yes`;
-- не создавай roadmap docs, features, or task records до skeleton.
+1. Считай корень текущего repository `<target-repo>`, если оператор явно не
+   указал другой target.
+2. Принимай `<devrails-checkout>` только когда путь предоставлен оператором или
+   `scripts/install-framework.mjs` уже можно проверить по известному пути.
+   Never guess or invent `<devrails-checkout>`.
+3. Верни external bootstrap command, заменив оба placeholders проверенными,
+   shell-safe paths:
+
+   ```bash
+   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
+   ```
+
+4. Если доступный DevRails checkout неизвестен, остановись с честным blocker:
+   попроси оператора предоставить путь к checkout или выполнить external
+   installer action, затем rerun the original `/cold-start`. Не показывай
+   unresolved placeholder как executable command.
+5. Do not call `/mb-init`, не запускай local bootstrap logic, не копируй helper,
+   не добавляй dependency и не создавай skeleton вручную. После успешного
+   external bootstrap повторно запусти `/cold-start`.
+6. Не создавай roadmap docs, features or task records до появления skeleton.
 
 ## 1) Определи сценарий (не угадывай)
 Проверь:
@@ -59,7 +74,7 @@ status: active
   - `.memory-bank/tasks/*.task.json` реальными задачами
   - `.memory-bank/tasks/index.json` ссылками на реальные TASK-IDs
 - Пустой skeleton допустим:
-  - папки/файлы могут существовать после `mb-init` / `init-mb.js`
+  - папки/файлы могут существовать после external bootstrap
   - но roadmap-сущности, реальные TASK-IDs и task records без PRD не создаются
 - Если PRD есть, но пользователь временно недоступен:
   - фиксируй `Open questions` в `.protocols/PRD-BOOTSTRAP/decision-log.md`

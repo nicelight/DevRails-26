@@ -1,8 +1,8 @@
 ---
 name: cold-start
 description: >
-  Bootstrap or route a DevRails 26 target project without bypassing the
-  generated Memory Bank command workflow.
+  Route a DevRails 26 target through external bootstrap or the existing
+  Memory Bank command workflow.
 ---
 
 # Cold Start
@@ -10,13 +10,13 @@ description: >
 ## What This Skill Is
 
 `cold-start` is the package-level entrypoint for starting DevRails in a target
-repository.
+repository. It does not bootstrap the target itself.
 
 Do not confuse two related surfaces:
 
-- Package/install surface: use the DevRails installer to install runtime command
-  skills and optionally bootstrap the skeleton; use `mb-init` only to create or
-  sync the skeleton inside an already installed target repo.
+- Package/install surface: use the installer from an available external
+  DevRails checkout to install runtime command skills or bootstrap the
+  skeleton.
 - Generated project command: `/cold-start` is the lightweight scenario router
   used after runtime skills are installed in the target repository.
 
@@ -34,24 +34,33 @@ written into target `.agents/skills/cold-start/SKILL.md` and
 - Do not assume ORCHESTRATOR role or spawn subagents. Follow the target
   `AGENTS.md` role contract.
 - Do not use direct `npx skills add <source-repo>` for this source-only fork.
-  Use `scripts/install-framework.mjs`, which prepares a temporary vendored copy.
+  Use `scripts/install-framework.mjs` from an available external DevRails
+  checkout; it prepares a temporary vendored copy.
 - Keep skeleton/bootstrap separate from product planning. A fresh skeleton has
   empty `.memory-bank/tasks/index.json` and no `FT-000` or product task records.
 
 ## If `.memory-bank/` Is Missing
 
-Create or sync the target skeleton first:
+Treat the current repository root as `<target-repo>` unless the operator
+explicitly supplied another target. Accept `<devrails-checkout>` only when the
+operator supplied it or its `scripts/install-framework.mjs` is already
+verifiable at a known path. Never guess or invent `<devrails-checkout>`.
+
+Return this external bootstrap command with both placeholders replaced by
+verified, shell-safe paths:
 
 ```bash
-node scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
 ```
 
-When already inside an installed target repo, use the generated `/mb-init`
-command to create or sync the skeleton. Use packaged `scripts/mb-lint.mjs` and
-`scripts/mb-doctor.mjs` only after the skeleton exists; they are checks, not
-bootstrap commands.
+If the checkout is unknown or unavailable, stop with an honest blocker: ask the
+operator to provide an available checkout path or perform the external
+installer action, then rerun the original `/cold-start`. Never present an
+unresolved placeholder as an executable command.
 
-Then run generated `/cold-start` in the target repository.
+Do not call `/mb-init`, run local bootstrap logic, copy a helper into the
+target, install a dependency, or create the skeleton manually. After successful
+external bootstrap, rerun `/cold-start` in the target repository.
 
 ## If `.memory-bank/` Exists
 

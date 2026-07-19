@@ -77,6 +77,14 @@ status: active
 - max_consecutive_failures: 3
 - max_open_blockers: 3
 
+## Terminal fallback
+- A no-ready pass or resumed run must preserve any already-recorded specific
+  `HALT_*` state together with its reason, owner, and resume route; never
+  overwrite it with `HALT_DEPENDENCY_DEADLOCK`.
+- Use `HALT_DEPENDENCY_DEADLOCK` only for genuine dependency-only graph
+  exhaustion: every unfinished record is non-runnable solely because its task
+  dependencies are unfinished.
+
 ## Terminal states
 - `SUCCESS`
 - `HALT_BLOCKING_QUESTIONS`
