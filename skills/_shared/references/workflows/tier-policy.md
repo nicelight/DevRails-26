@@ -24,6 +24,32 @@ behavior, boundary, data/state/security/runtime impact, dependency shape, or
 blast radius triggers the higher tier. A non-empty
 `runtime_context.write_boundary` remains a hard boundary.
 
+## Execute Evidence Reuse
+
+`/execute` may optionally offer a well-known local deterministic gate result as
+a self-attested `reuse candidate` in the existing task protocol. A receipt is
+supporting evidence, not independent or trusted provenance. Unknown, implicit,
+broad, stale, flaky, external-state-dependent, input-mutating, or incompletely
+bound command inputs deny reuse and route `/verify` to a safe rerun or
+replacement probe. Missing receipt alone is not a task blocker.
+
+Evidence reuse changes repeated-command ownership, not verification or closure
+ownership:
+- T0/T1 retain their existing compact/manual fast lane and scheduler rules;
+- T2 may reuse eligible execute gates, but functional PASS requires at least
+  one new verifier-owned outcome-level probe and independent grounding of every
+  required task-scoped outcome, AC/REQ, gate, verification target, and
+  applicable spec claim. One probe may cover several claims only with explicit
+  complete mapping; no required claim may rely only on a receipt;
+- T3 never permits reuse-only PASS. `/verify` obtains new functional evidence
+  for every independently harm-driving claim, then normal per-task
+  `/red-verify` and human-checkpoint rules still apply.
+
+Receipt eligibility, current-attempt selection, state/freshness comparison,
+fallback, and reporting are fully defined in the installed `/execute` and
+`/verify` runtime commands. No receipt task field, registry, status, cache, or
+artifact family exists.
+
 ## Status Transition Modes
 
 Status transitions have two modes.
@@ -144,6 +170,9 @@ Use for APIs, contracts, events, schemas, state machines, lifecycle changes, dat
 - Protocol: full protocol files are required
 - Compact-only protocol: invalid
 - `/verify`: required
+- Execute evidence reuse: eligible deterministic gates may be reused, but
+  `/verify PASS` still requires new verifier-owned outcome evidence and
+  independent grounding of every required task-scoped claim
 - Scheduler mode: full protocol, applicable task/spec gates, and `/verify` `VERDICT: PASS` before scheduler marks the task done; per-task `/red-verify` is not required
 - Manual mode: T2 requires explicit closure ownership plus full protocol, applicable task/spec gates, and `/verify PASS`; per-task `/red-verify` is optional
 - Feature completion: after all tasks for the feature are implemented, run `/red-verify --feature FT-<ID>` and require `SEMANTIC_VERDICT: semantic-pass` before treating the feature as complete
@@ -160,6 +189,9 @@ Use for auth, permissions, secrets, security-sensitive behavior, deploy/runtime 
 - Protocol: full protocol files are required
 - Compact-only protocol: invalid
 - `/verify`: required
+- Execute evidence reuse: supporting lower-risk gates may be reused, but every
+  independently harm-driving functional claim requires new verifier-owned
+  evidence and reuse-only PASS is forbidden
 - Scheduler mode: `/verify` `VERDICT: PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before scheduler marks the task done
 - T3: human checkpoint before scheduler marks done
 - Required scheduler marker line is the exact standalone line `HUMAN_CHECKPOINT: done`

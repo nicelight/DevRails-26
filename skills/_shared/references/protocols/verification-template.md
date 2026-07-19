@@ -38,6 +38,21 @@ status: active
 - unit tests: ...
 - integration/e2e: ...
 
+## Reused execute evidence
+- receipt locator:
+- supported claim(s):
+- current-state / freshness basis:
+
+## Repeated checks
+- check:
+- why reuse was denied or repetition was necessary:
+- evidence:
+
+## New targeted probes
+- verifier-owned probe:
+- claim mapping:
+- evidence:
+
 ## Verdict
 Replace the placeholder with one exact standalone marker:
 VERDICT: <PASS|FAIL|NEEDS-CLARIFICATION>

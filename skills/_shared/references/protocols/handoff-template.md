@@ -18,10 +18,13 @@ status: active
 ## How to run / verify
 - gates:
   - ...
+- current-attempt reuse candidate locators:
+  - <attempt plus protocol/artifact path and heading, or none>
+- superseded/supporting-only receipt locators:
+  - <protocol/artifact path and heading, or none>
 
 ## Known issues
 - ...
 
 ## Follow-ups
 - ...
-

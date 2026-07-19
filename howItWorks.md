@@ -715,6 +715,44 @@ artifacts записываются в `.tasks/<TASK_ID>/`.
 `in_progress`. Он выбирает narrowest credible test level, не создаёт synthetic
 testing task и не меняет `.memory-bank/testing/`.
 
+### Receipt-aware reuse между `/execute` и `/verify`
+
+`/execute` может предложить результат хорошо известного local deterministic
+gate как optional `reuse candidate`. Receipt остаётся self-attestation
+исполнителя: он сообщает attempt/status, claim, command/cwd/exit code, declared
+pre-command input state, completed time и redacted observable evidence, но не
+доказывает независимо, что snapshot и command выполнялись именно в заявленном
+порядке.
+
+Reuse разрешён только при консервативно ограниченном command read surface и
+совпадении current relevant source/config/dependency/generated/runtime state.
+Implicit, broad, incomplete, flaky, external-state-dependent, input-mutating
+или stale evidence не переиспользуется. Отсутствующий или непригодный receipt
+ведёт к safe rerun или replacement probe; это не `NEEDS-CLARIFICATION`, пока
+обязательные implementation и normative inputs доступны.
+
+Receipt хранится в существующем task protocol и не создаёт task field,
+registry, cache, status или отдельную artifact family. Current handoff указывает
+актуальный receipt; evidence прежней retry attempt становится superseded или
+supporting-only. `/add-tests` сам reusable receipt не создаёт: после всех
+изменений candidate может оформить только финальный gate `/execute`.
+
+Перед новыми mutating probes `/verify` оценивает все candidates относительно
+одного current state. Receipt может избавить от identical gate rerun, но не
+считается independent observation:
+
+- T0/T1 сохраняют существующий compact/manual fast lane и scheduler rules;
+- T2 требует минимум один новый verifier-owned outcome probe и независимое
+  обоснование каждого обязательного task-scoped outcome, AC/REQ, gate,
+  verification target и применимого spec claim; ни один required claim не
+  закрывается только receipt;
+- T3 требует новое functional evidence для каждого independently harm-driving
+  claim, после чего остаются обычные per-task `/red-verify` и human checkpoint.
+
+Verification report отдельно показывает `reused execute evidence`, `repeated
+checks` и `new targeted probes`. Оптимизируется повтор команд, а не ownership
+или полнота functional verification.
+
 ### Manual mode
 
 Manual mode означает явный top-level owner, а не ручное написание кода.

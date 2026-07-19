@@ -33,6 +33,11 @@ tier, string-array `reqs`/`depends_on`, valid gate shapes, valid `verify` array,
 and tier-selected execution evidence. This is not another full schema/review
 gate. Missing required input returns `NEEDS-CLARIFICATION`; do not reconstruct
 it from protocol prose.
+
+An execute receipt is optional evidence, not required implementation input.
+Its absence or ineligibility routes to a rerun or replacement probe, not by
+itself to `NEEDS-CLARIFICATION`. Missing tier-required protocol, implementation,
+or normative evidence remains a required-input blocker under the rule above.
 </input_contract>
 
 <hard_invariants>
@@ -46,6 +51,9 @@ it from protocol prose.
   canonical coverage is a planning/design blocker, not an implementation FAIL.
 - Evidence requirements and verification targets state what must be proved;
   they are not proof. `/execute` local PASS is input, not automatic PASS.
+- An execute receipt is self-attested supporting evidence. It does not prove
+  that its declared snapshot preceded the command or that the reported result
+  occurred, and it is never an independent observation by `/verify`.
 - Advisory `touched_files` deviation is not material expansion by itself; hard
   allowed/forbidden scopes and semantic task boundaries remain strict.
 - Do not edit implementation, specs, AC, dependencies, tier/wave, task scope,
@@ -89,10 +97,52 @@ Build the minimum complete verification basis from:
 - gates/evidence requirements;
 - execution handoff, actual changes, local results, and artifacts.
 
+Before running a probe or writing evidence that may change relevant state,
+inventory all current-attempt reuse candidates named by the implementation
+handoff, or the current `run.md` receipt blocks for T0/T1, and assess them
+against one current verified state. Ignore receipts marked `superseded` or
+supporting-only by a later attempt. For every candidate:
+
+- require one unambiguous block with `attempt`, `receipt_status`, `claim`,
+  `command`, `cwd`, `exit_code`, `input_state_basis`, `completed_at`, and
+  `evidence`;
+- require a well-known local deterministic gate with an explicitly and
+  conservatively bounded command read surface;
+- independently inspect current source/diff and recompute the relevant source,
+  config, dependency, generated/runtime, and redacted environment/toolchain
+  state needed to compare with `input_state_basis`;
+- accept elapsed time alone as non-invalidating for deterministic current-state
+  evidence, unless an authoritative project/task/spec/gate freshness policy or
+  volatile input requires a fresh observation;
+- reject reuse for missing/ambiguous fields, state drift, incomplete input
+  coverage, implicit/broad read surface, flaky/nondeterministic behavior,
+  external state, a command that changed its relevant inputs, observed
+  background mutation, or conflicting evidence.
+
+An eligible candidate may satisfy the need to repeat that exact execute gate,
+but remains supporting evidence. If a candidate is absent or rejected, rerun
+the safe gate or perform a replacement probe. Return
+`NEEDS-CLARIFICATION` only when required proof cannot be safely obtained or
+reproduced from the available state; do not turn an unusable receipt into an
+implementation `FAIL`.
+
 Cover every task-scoped outcome, mapped AC/REQ item, applicable concrete spec
 rule, gate, verification target, and evidence requirement, or record the exact
 blocker. Verify observable behavior, non-goals, actual change scope, hard scope,
 contract/state/data consistency, and real persistence proof when applicable.
+
+Tier-specific independence remains:
+- T0/T1 retain the existing compact/manual fast lane and scheduler evidence
+  rules from tier policy;
+- T2 may reuse eligible supporting or expensive execute gates, but PASS
+  requires at least one new verifier-owned outcome-level probe and independent
+  grounding for every required task-scoped claim. One probe may cover multiple
+  claims only when the report maps it to the complete affected claim set; no
+  required claim may rely only on a receipt;
+- T3 never permits reuse-only PASS. New verifier-owned functional evidence must
+  cover every independently harm-driving claim; one probe is sufficient only
+  when it demonstrably covers that full risk-driving set. `/red-verify` remains
+  the separate hostile semantic review and is not duplicated here.
 
 For UI/browser scope, use the smallest reproducible project-native automation,
 record runtime/base URL and relevant viewport/device plus redacted artifacts,
@@ -103,6 +153,17 @@ Write:
 - T0/T1 -> `.protocols/<TASK_ID>/run.md`;
 - T2/T3 -> `.protocols/<TASK_ID>/verification.md`;
 - substantive artifacts -> `.tasks/<TASK_ID>/`.
+
+Separate the verification evidence into:
+- `reused execute evidence`: accepted candidates, supported claims, state and
+  freshness basis, and exact receipt locations;
+- `repeated checks`: reruns or replacement checks and why reuse was denied;
+- `new targeted probes`: verifier-owned observations and their claim mapping.
+
+Keep full receipts in their existing protocol/artifact locations. Append only
+a concise verdict/evidence summary and links to task `verify`. Raw receipt
+output containing a standalone workflow verdict marker is not itself closure
+evidence.
 
 Use exactly one verdict:
 - `VERDICT: PASS`: every required task-scoped check passed with credible
@@ -120,7 +181,10 @@ task record is malformed, keep evidence in protocol/artifacts and route repair.
 Before reporting, confirm every required claim is reproducible from recorded
 commands/flows/artifacts; no feature-wide requirement was misassigned; actual
 scope did not require a higher tier; and no material branch was silently
-resolved.
+resolved. Also confirm that no T2 required claim and no T3 independently
+harm-driving claim relies only on self-attested execute evidence, and that every
+reused candidate is current-attempt, state-matched, bounded-input, and
+auditably reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
 tier and trigger, and routes controlled rebuild/split through

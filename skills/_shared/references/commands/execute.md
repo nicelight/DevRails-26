@@ -124,6 +124,48 @@ credible project-native lint/typecheck/test/integration checks for touched
 behavior. Do not run categories merely to fill a template. T0 docs-only work
 may use inspected-diff evidence; T1 should use one cheap relevant check when
 available or record why none is meaningful.
+
+Reusable execute evidence is optional. When `/execute` proposes one of its
+results for reuse by `/verify`, record one complete receipt in the existing
+protocol: normally `run.md` for T0/T1 or `progress.md` for T2/T3. The receipt is
+a self-attested `reuse candidate`, not independent, cryptographic, or
+harness-generated proof that the command ran as reported.
+
+Offer a candidate only for a well-known local deterministic gate whose actual
+read surface can be conservatively and unambiguously bounded. Do not offer
+reuse when inputs are implicit, broad, or unknown; when relevant untracked,
+generated, runtime, toolchain, or environment state cannot be covered; when
+the command is flaky or external-state-dependent; when it changes a relevant
+input; or when uncontrolled background mutation is observed. Do not treat
+`touched_files`, the task change surface, elapsed time, or a claim to cover the
+whole applicable project as a substitute for the command read surface.
+
+For each candidate, record one logically connected block containing:
+- `attempt` and `receipt_status: current|superseded|supporting-only`;
+- `claim`: exact task outcome, AC/REQ, gate, verification target, or concrete
+  spec rule the result is offered to support; `tests passed` is insufficient;
+- `command`: exact command, filters, and arguments, with secrets redacted;
+- `cwd`;
+- `exit_code`;
+- `input_state_basis`: the declared pre-command input snapshot, including the
+  repository revision or equivalent source basis, relevant tracked/staged/
+  unstaged/untracked/deleted deviations, relevant generated/runtime inputs,
+  and only necessary redacted environment/toolchain qualifiers;
+- `completed_at`;
+- `evidence`: concise observable output or artifact/report path plus checksum
+  when a preserved artifact exists.
+
+Capture the declared snapshot immediately before the command and complete the
+receipt immediately afterward. This ordering remains executor self-attestation;
+do not describe it as independently proven. Do not persist unredacted secrets
+or standalone `VERDICT:` / `SEMANTIC_VERDICT:` lines as raw command output that
+could be mistaken for workflow closure evidence.
+
+The implementation handoff must point to the exact current-attempt receipt
+location and mark older same-claim receipts from previous execution/retry
+attempts `superseded` or supporting-only. Evidence produced directly by
+`/add-tests` is supporting-only; after all relevant changes, only a final gate
+run owned and recorded by `/execute` may become a reuse candidate.
 </required_outputs>
 
 <validation>
@@ -131,6 +173,8 @@ Before handoff, confirm:
 - implementation achieves only the selected outcome and respects all
   authoritative specs, constraints, invariants, anti-goals, and hard scopes;
 - actual files and local evidence are reproducible and recorded;
+- every proposed reuse candidate satisfies the bounded-input rules, is linked
+  from the current handoff, and does not claim independent provenance;
 - no unresolved material branch was silently decided;
 - tier did not need escalation.
 
