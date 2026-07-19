@@ -1,6 +1,55 @@
 Ты выступаешь в роли GENERAL, если не было дано явных инструкций выступать в другой роли.
 Твоя роль не может быть изменена после ее назначения.
 
+# Что является продуктом этого репозитория
+
+DevRails — framework агентной разработки, а не обычное приложение и не набор
+независимых prompts.
+
+Canonical source через installer разворачивается в целевой проект как runtime
+skills, Memory Bank, workflows, protocols и validators.
+
+Изменения оцениваются по всей цепочке:
+
+```text
+canonical source
+  -> installer/generator
+  -> deployed target files
+  -> поведение runtime-агента
+  -> workflow state, gates и handoffs
+```
+
+Наличие файла в source repo не означает, что он доступен runtime-агенту в
+target project.
+
+# Skills как executable workflow contracts
+
+Runtime skills, shared workflows, protocol shapes и validators являются частями
+одного публичного workflow contract.
+
+Без отдельного решения нельзя менять или терять:
+
+- inputs, outputs, statuses и verdicts;
+- lifecycle и status ownership;
+- blockers, stop conditions и resume routes;
+- required gates и handoffs;
+- task schema и registry semantics.
+
+Leaf skill должен описывать собственный outcome и immediate handoff, а общие
+правила получать из доступного в target canonical reference.
+
+# Правила рефакторинга framework
+
+При рефакторинге skills, workflows, protocols или installer обязательно проверь:
+
+- доступен ли runtime-агенту каждый required reference/template в target;
+- не ссылается ли deployed skill на source-only path;
+- сохранён ли executable workflow contract;
+- работает ли изменение после установки в изолированный target.
+
+Более короткий или чистый prompt не считается успешным refactor, если
+развёрнутый skill теряет контекст или нарушает workflow contract.
+
 # Граница проекта и агентной памяти
 
 Этот репозиторий сам является проектом `memobank_BMAD_SDD`.
@@ -60,9 +109,6 @@ skills/tools текущим агентом-разработчиком DevRails.
 - В unattended flow применяется только уже принятое authoritative решение;
   иначе агент использует существующий blocker/terminal halt, а не выбирает за
   оператора.
-- Inputs, preconditions, outputs, artifacts, statuses/verdicts, stop conditions,
-  ownership и handoff должны оставаться однозначными и достаточными для
-  независимого продолжения workflow.
 
 ## KISS / Avoid overengineering
 
@@ -73,11 +119,7 @@ skills/tools текущим агентом-разработчиком DevRails.
 - Added complexity must be justified by an existing requirement, constraint, risk, or demonstrated duplication.
 - KISS does not permit skipping required correctness, security, compatibility, or verification gates.
 
-# Важный контекст репозитория
-
-Этот проект DevRails - это фреймворк для агентной разработки приложений. 
-Фреймворк включает в себя  воркфлоу разработки программного обеспечения, завязанный на разраотку design specs, feature specs, разложение на таски и протоколы выполнения тасок, долгосрочную память и протоколы выполнения разработки Фреймворк при установке разворачивается в целевой проект.
-
+# Source-only packaging
 
 Перед доработкой проекта прочитай `PROJECT_MAP.md`.
 
@@ -104,10 +146,20 @@ find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | w
 
 Команда должна вернуть `0`.
 
-Для проверки установки без загрязнения рабочего дерева используй wrapper:
+Для проверки установки и bootstrap используй изолированные временные targets:
 
 ```bash
-node scripts/install-framework.mjs --skill '*' --yes
+tmp_target="$(mktemp -d)"
+
+node scripts/install-framework.mjs \
+  --skill '*' \
+  --target "$tmp_target/install-only" \
+  --yes
+
+node scripts/install-framework.mjs \
+  --bootstrap \
+  --target "$tmp_target/bootstrap" \
+  --yes
 ```
 
 Если нужно посмотреть временно развёрнутые package-local `shared-*` файлы, запускай:

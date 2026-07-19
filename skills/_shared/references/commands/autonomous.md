@@ -20,12 +20,19 @@ JSON queue already exists.
 Preflight:
 - `.memory-bank/` exists, otherwise route `/mb-init`;
 - authoritative PRD/brief/delta input exists;
-- `.memory-bank/workflows/autonomy-policy.md`, `tier-policy.md`, and
-  `execute-loop.md` exist;
+- `.memory-bank/workflows/{autonomy-policy,tier-policy,execute-loop,mb-sync}.md`
+  exist;
 - at least one configured executor is available;
 - repository safety policy permits code edits but no unapproved marketplace
   install, deployment, production write, secret read, or out-of-repo
   infrastructure change.
+
+If a required workflow is missing, halt before creating/reusing the run
+protocol or making any other durable write with `HALT_POLICY_VIOLATION`. Name
+every missing path in the reason. The repair owner is the external DevRails
+installer: from an available DevRails checkout run
+`node scripts/install-framework.mjs --bootstrap --target <project-path> --yes --sync`,
+then resume `/autonomous`. Do not copy missing workflow rules inline.
 
 If substantial code already exists, require/update the brownfield baseline via
 `/map-codebase` before applying the PRD delta.
@@ -44,8 +51,9 @@ state, not a second task registry.
 
 <hard_invariants>
 - Follow `.memory-bank/workflows/autonomy-policy.md`,
-  `.memory-bank/workflows/tier-policy.md`, and
-  `.memory-bank/workflows/execute-loop.md`.
+  `.memory-bank/workflows/tier-policy.md`,
+  `.memory-bank/workflows/execute-loop.md`, and
+  `.memory-bank/workflows/mb-sync.md`.
 - Canonical execution is sequential: select, execute, verify, record the
   authoritative lifecycle decision/evidence for one task, then select another.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy

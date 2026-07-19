@@ -1,5 +1,10 @@
 # Global skills refactor — Stage 1 handoff
 
+> **Historical Stage 1 snapshot.** Этот документ сохраняет исходный handoff и
+> evidence первого этапа, но не является текущим execution plan. Актуальные
+> статусы repair-пакетов и open findings ведутся в
+> [`_refactor.md`](_refactor.md).
+
 ## Status and scope
 
 Stage 1 is implemented for the Product and Design path only:

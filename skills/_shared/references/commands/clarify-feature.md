@@ -15,8 +15,15 @@ plans, tiers, behavior specs, or canonical SDD design specs.
 
 <input_contract>
 Require `$ARGUMENTS` with one `FT-<NNN>`. Do not auto-select a feature. If the
-ID is absent, ask for it in interactive mode or halt unattended flow with
-`HALT_CLARIFICATION_TARGET_REQUIRED`.
+ID is absent, ask for it in interactive mode. In unattended flow, halt before
+any write with `HALT_CLARIFICATION_REQUIRED` and report:
+- reason: `missing required FT-<NNN> argument for /clarify-feature`;
+- affected command: `/clarify-feature`;
+- owner and next action: the operator supplies the exact feature ID;
+- exact resume command: `/clarify-feature FT-<NNN>`.
+
+Use the caller's existing halt handoff; do not create a durable artifact solely
+for this missing argument.
 
 Locate exactly one `.memory-bank/features/FT-<NNN>-*.md`; otherwise stop. Read
 product, requirements, and the target feature. Read epics, glossary,

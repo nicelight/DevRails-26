@@ -21,6 +21,10 @@ a recorded current-wave dependency on reconciled RTM/index/spec/contract/
 changelog state or an explicit owner request; it does not replace the final
 wave-boundary sync.
 
+In manual flow, the invocation or its durable context identifies the explicit
+top-level caller/owner that will own applicable post-sync gates and the next
+handoff.
+
 Do not require full sync for a local manual T0/T1 closure when only task
 `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed.
 </input_contract>
@@ -79,18 +83,26 @@ scheduler-owned transitions.
 </required_outputs>
 
 <validation>
-Run the lint/readiness checks required by
-`.memory-bank/workflows/mb-sync.md`. `/autonomous` and `/autopilot` handoff
-requires lint plus `/mb-doctor --strict` after sync; T3, complex T2,
-Foundation/dependency/stale-doc/risky-link boundaries follow the same routed
-gate. A bare skeleton or task-local manual T0/T1 closure does not gain a new
-strict requirement.
+Perform only sync-local consistency validation: re-read the links, indexes,
+RTM, lifecycle/spec state, routers, evidence links, and changelog entries this
+sync changed, and confirm that they agree with their already-authoritative
+sources. `/mb-sync` does not run full `node scripts/mb-lint.mjs` or
+`/mb-doctor`.
+
+In scheduler flow, `/autonomous` or `/autopilot` is the sole owner that runs
+authoritative post-sync lint and then `/mb-doctor --strict` before promotion or
+success. In manual flow, the named explicit top-level caller/owner runs the
+applicable post-sync lint/doctor before its next handoff. A bare skeleton or
+task-local manual T0/T1 closure does not gain a new full sync, lint, or strict
+doctor requirement.
 </validation>
 
 <handoff_contract>
-- Successful scheduler wave sync -> return to the scheduler for lint/strict
-  doctor and a separate promotion/dependent-blocking pass.
-- Successful manual sync -> return to the explicit owner/next task.
+- Successful scheduler wave sync -> return to `/autonomous` or `/autopilot`,
+  which alone runs lint then strict doctor before its separate promotion/
+  dependent-blocking pass.
+- Successful manual sync -> return to the named explicit top-level caller/
+  owner, which runs applicable post-sync lint/doctor before its next handoff.
 - Missing owner decision or semantic contradiction -> stop and name the owning
   task/planning/design/closure repair route.
 </handoff_contract>

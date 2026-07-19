@@ -25,6 +25,10 @@ node scripts/mb-doctor.mjs --strict --json
 
 If the repository exposes another documented wrapper for the same script, use that wrapper.
 
+Any argument other than `--strict`, `--json`, `--help`, or `-h` produces the
+`CLI_INVALID_ARGUMENT` error before readiness checks run. When `--help` or `-h`
+is present, the script prints help and exits without running readiness checks.
+
 ## Modes
 - Default mode: health report for humans and interactive work. A fresh skeleton with an empty `.memory-bank/tasks/index.json` is valid and reports `TASK_INDEX_EMPTY` as `info`.
 - Strict mode: post-queue executable-readiness gate for every `FT-000`
@@ -55,6 +59,10 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 `mb-doctor` must check only readiness-critical conditions:
 
 - `mb-lint` passes first. A lint error is a doctor error.
+- In `--strict`, `.memory-bank/constitution.md`, `.memory-bank/index.md`,
+  `.memory-bank/spec-index.md`, and `.memory-bank/spec-backbone.md` exist, and
+  both index files mention `constitution.md`. Any missing file or missing
+  router mention is a `CONSTITUTION_STRUCTURE_INVALID` error.
 - Feature docs under `.memory-bank/features/FT-*.md` may have optional clarification metadata: `clarification_status`, `last_clarified`, and `clarification_questions`. Absent optional clarification fields are allowed; missing feature frontmatter or invalid present metadata is not.
 - Explicit `clarification_status: pending|blocked` is not allowed for autonomous/autopilot readiness or task-linked features.
 - Indexed task records do not exist for features that are pending, missing, or otherwise not clarified.
@@ -83,10 +91,11 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 - `T2` / `T3` `in_progress` tasks have full protocol files: `context.md`, `plan.md`, `progress.md`, `verification.md`, and `handoff.md`.
 - `T0` / `T1` `done` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.
 - In `--strict`, `T2` `done` tasks have full protocol files and `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts; per-task red-verify evidence is not required.
-- In `--strict`, when every indexed task for a non-`FT-000` feature with at
-  least one `T2` task is `done`, the matching feature doc records an exact
-  standalone `SEMANTIC_VERDICT: semantic-pass` line from
-  `/red-verify --feature FT-<ID>`.
+- When every indexed task for a non-`FT-000` feature with at least one `T2`
+  task is `done`, the matching feature doc records an exact standalone
+  `SEMANTIC_VERDICT: semantic-pass` line from `/red-verify --feature FT-<ID>`.
+  Until it does, `FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default
+  mode and an error in `--strict`.
 - In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and the exact standalone marker line `HUMAN_CHECKPOINT: done`.
 - `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
 - In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
@@ -129,8 +138,12 @@ Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonom
 ## Findings
 Errors block autonomous/autopilot progression:
 
+- `CLI_INVALID_ARGUMENT` for any unsupported CLI argument
 - `MB_LINT_SCRIPT_MISSING` in `--strict`
 - `MB_LINT_FAILED`
+- `CONSTITUTION_STRUCTURE_INVALID` in `--strict` when the Constitution,
+  Memory Bank index, spec index, or spec backbone is missing, or either index
+  does not mention `constitution.md`
 - `FEATURE_CLARIFICATION_METADATA_MISSING` in `--strict` when feature frontmatter is missing or present clarification metadata is invalid
 - `FEATURE_CLARIFICATION_PENDING` in `--strict`
 - `TASKS_FROM_UNCLARIFIED_FEATURE` in `--strict`
@@ -192,6 +205,7 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_FAILED_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_VERDICT_MISSING`
+- `FEATURE_RED_VERIFY_VERDICT_MISSING`
 - `TASK_T3_CHECKPOINT_MISSING`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING`
 - `TASK_FEATURE_LINK_MISSING`

@@ -50,6 +50,15 @@ status: active
   lifecycle, indexes, routers, specs, evidence links, and changelog. It never
   decides closure/failure/blocking/promotion, unblocks dependents, or treats a
   verdict existing only in transient context as durable state.
+- `/mb-sync` owns only reconciliation and sync-local consistency validation:
+  after its changes, it re-reads the links, indexes, RTM, lifecycle/spec state,
+  and other reconciled surfaces it actually changed. It does not run full
+  `node scripts/mb-lint.mjs` or `/mb-doctor`.
+- In scheduler flow, `/autonomous` or `/autopilot` is the sole owner of the
+  authoritative post-sync `mb-lint` followed by `/mb-doctor --strict`, before
+  promotion or success. In manual flow, the successful sync handoff names the
+  explicit top-level caller/owner; that owner runs the applicable post-sync
+  lint/doctor before its next handoff.
 - If the required owner decision is missing or conflicts with tier policy,
   report a consistency gap and return to that owner. Do not infer a scheduler
   or manual mode and do not add a persisted mode field.
@@ -116,19 +125,23 @@ status: active
 - [ ] `.memory-bank/changelog.md` содержит запись о текущей wave/change.
 - [ ] Формат: `## [YYYY-MM-DD] Wave N / описание` → список изменений.
 
-### 7) Lint
-- [ ] `node scripts/mb-lint.mjs` — 0 errors.
-- [ ] Все `.memory-bank/**/*.md` имеют frontmatter.
-- [ ] Ссылки не битые.
+### 7) Sync-local consistency validation
+- [ ] Re-read every link, index, RTM row, lifecycle/spec state, router,
+  evidence link, and changelog entry changed by this sync; confirm each agrees
+  with its already-authoritative source.
+- [ ] Check only the files and relationships actually reconciled. Do not run
+  full `mb-lint` or `/mb-doctor` inside `/mb-sync`.
 
-### 8) Readiness gates
-- [ ] `/mb-doctor --strict` passes after sync for `/autonomous` and
-  `/autopilot` handoff.
-- [ ] `/mb-doctor --strict` is also run for T3, complex T2,
-  foundation/dependency/stale-doc/risky-link cases before execution
-  handoff.
-- [ ] Strict mode is not required for a bare generated skeleton or simple manual
-  T0/T1 local closure.
+### 8) Caller-owned post-sync gates
+- [ ] In scheduler flow, `/autonomous` or `/autopilot` runs authoritative
+  `node scripts/mb-lint.mjs` and then `/mb-doctor --strict` after sync and
+  before promotion or success; `/mb-sync` does not duplicate either gate.
+- [ ] In manual flow, the sync handoff names the explicit top-level
+  caller/owner that runs applicable post-sync lint/doctor before its next
+  handoff. Doctor remains conditional for T3, complex T2,
+  foundation/dependency/stale-doc/risky-link boundaries.
+- [ ] A bare generated skeleton or simple manual T0/T1 local closure gains no
+  new full sync, lint, or strict-doctor requirement.
 
 ### 9) Index
 - [ ] `.memory-bank/index.md` содержит аннотированные ссылки на все новые/изменённые документы.

@@ -3,10 +3,13 @@
 ## Статус
 
 - Тип: план изменения DevRails
-- Статус: proposed
+- Статус: implemented_with_open_findings
 - Целевой проект: source-only framework DevRails 26
 - Основной scope: canonical command skills, shared workflow references,
   generated runtime skill behavior и связанные release checks
+- Текущий repair register: [`_refactor.md`](_refactor.md). Первый
+  пакет repair fixes реализован и проверен; refactor не завершён, пока открыт
+  второй пакет.
 
 ## 1. Исходная проблема
 

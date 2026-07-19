@@ -88,6 +88,15 @@ jobs:
           grep -Fq '## Explorer Contract' skills/_shared/references/roles/worker.md
           grep -Fq 'Explore <target> with /context-manifest' skills/_shared/references/roles/orchestrator.md
 
+          canonical_halts="$(grep -oE 'HALT_[A-Z_]+' skills/_shared/references/protocols/run-status-template.md | sort -u)"
+          used_halts="$(grep -hoE 'HALT_[A-Z_]+' skills/_shared/references/commands/*.md skills/_shared/references/workflows/*.md | sort -u)"
+          undefined_halts="$(comm -23 <(printf '%s\n' "$used_halts") <(printf '%s\n' "$canonical_halts"))"
+          if [ -n "$undefined_halts" ]; then
+            echo 'Found HALT_* tokens outside the canonical run-status vocabulary:'
+            printf '%s\n' "$undefined_halts"
+            exit 1
+          fi
+
           product_design_commands=(brainstorm brief constitution write-prd clarify-feature discuss spec-init prd review-feat-plan spec-design spec-auto)
           for command in "${product_design_commands[@]}"; do
             spec="skills/_shared/references/commands/$command.md"
@@ -109,6 +118,12 @@ jobs:
           grep -Fq 'Status: draft|reviewed|blocked' skills/_shared/references/commands/spec-init.md
           grep -Fq 'Status: reviewed' skills/_shared/references/commands/spec-design.md
           grep -Fq 'promote it to document `status: active` only after its open questions' skills/_shared/references/commands/prd.md
+          grep -Fq 'Update a scoped `.protocols/<ID>/decision-log.md` only when it already exists.' skills/_shared/references/commands/discuss.md
+          grep -Fq 'Do not solicit or treat an answer as accepted until its existing owning' skills/_shared/references/commands/discuss.md
+          grep -Fq '`/mb` строго read-only во всех ролях и режимах.' skills/_shared/references/commands/mb.md
+          grep -Fq 'Не запускай сабагентов, delegation или `/context-manifest` из `/mb`.' skills/_shared/references/commands/mb.md
+          grep -Fq 'Не используй `npx skills add` или' skills/_shared/references/commands/find-skills.md
+          grep -Fq '`.protocols/AUTONOMOUS-RUN/decision-log.md`' skills/_shared/references/commands/find-skills.md
 
           tasking_execution_commands=(foundation-to-tasks prd-to-tasks review-tasks-plan execute add-tests verify red-verify autonomous autopilot mb-sync)
           for command in "${tasking_execution_commands[@]}"; do
@@ -127,8 +142,11 @@ jobs:
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autonomous.md
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/commands/autopilot.md
           grep -Fq 'Thin adapter' skills/_shared/references/commands/mb-sync.md
+          grep -Fq '`/mb-sync` does not run full `node scripts/mb-lint.mjs` or' skills/_shared/references/commands/mb-sync.md
           ! grep -Fq '## Status Transition Modes' skills/_shared/references/workflows/mb-sync.md
           grep -Fq 'Canonical lifecycle, tier gates, manual-versus-scheduler closure rules, and' skills/_shared/references/workflows/mb-sync.md
+          grep -Fq '### 7) Sync-local consistency validation' skills/_shared/references/workflows/mb-sync.md
+          grep -Fq '`/autonomous` or `/autopilot` is the sole owner of the' skills/_shared/references/workflows/mb-sync.md
           grep -Fq 'A recommendation, framework preference, reversible/conservative default,' skills/_shared/references/workflows/autonomy-policy.md
           grep -Fq '## Scheduler Failure Handling' skills/_shared/references/workflows/tier-policy.md
           grep -Fq 'A genuinely ambiguous tier is an operator decision' skills/_shared/references/workflows/tier-policy.md
@@ -185,6 +203,17 @@ jobs:
           grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
           grep -q '# /context-manifest' .agents/skills/context-manifest/SKILL.md
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
+          for command in discuss mb find-skills; do
+            test -f ".agents/skills/$command/SKILL.md"
+            test -f ".claude/skills/$command/SKILL.md"
+            cmp ".agents/skills/$command/SKILL.md" ".claude/skills/$command/SKILL.md"
+          done
+          grep -Fq '`/mb` строго read-only во всех ролях и режимах.' .agents/skills/mb/SKILL.md
+          grep -Fq '`.protocols/AUTONOMOUS-RUN/decision-log.md`' .claude/skills/find-skills/SKILL.md
+          cmp .agents/skills/mb-doctor/SKILL.md .claude/skills/mb-doctor/SKILL.md
+          grep -Fq '`CLI_INVALID_ARGUMENT` error before readiness checks run.' .agents/skills/mb-doctor/SKILL.md
+          grep -Fq '`CONSTITUTION_STRUCTURE_INVALID` in `--strict`' .agents/skills/mb-doctor/SKILL.md
+          grep -Fq '`FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default' .agents/skills/mb-doctor/SKILL.md
           test ! -e .memory-bank
 
           SELECTIVE_VERIFY_TARGET="$TMP_DIR/selective-verify"
@@ -258,8 +287,10 @@ jobs:
           test -f "$TARGET/.memory-bank/testing/index.md"
           test -f "$TARGET/.memory-bank/testing/strategy.md"
           test -f "$TARGET/.memory-bank/workflows/index.md"
-          test -f "$TARGET/.memory-bank/workflows/execute-loop.md"
-          test -f "$TARGET/.memory-bank/workflows/tier-policy.md"
+          required_workflows=(autonomy-policy execute-loop mb-sync tier-policy)
+          for workflow in "${required_workflows[@]}"; do
+            test -f "$TARGET/.memory-bank/workflows/$workflow.md"
+          done
           test -f "$TARGET/.memory-bank/roles/general.md"
           test -f "$TARGET/.memory-bank/roles/orchestrator.md"
           test -f "$TARGET/.memory-bank/roles/worker.md"
@@ -307,6 +338,10 @@ jobs:
           grep -Fq 'Full `/mb-sync` runs once at the wave boundary' "$TARGET/.agents/skills/autopilot/SKILL.md"
           grep -Fq 'run `/mb-sync` once for already-written authoritative state' "$TARGET/.agents/skills/autonomous/SKILL.md"
           grep -Fq 'Thin adapter' "$TARGET/.agents/skills/mb-sync/SKILL.md"
+          cmp "$TARGET/.agents/skills/mb-sync/SKILL.md" "$TARGET/.claude/skills/mb-sync/SKILL.md"
+          grep -Fq '`/mb-sync` does not run full `node scripts/mb-lint.mjs` or' "$TARGET/.agents/skills/mb-sync/SKILL.md"
+          grep -Fq '### 7) Sync-local consistency validation' "$TARGET/.memory-bank/workflows/mb-sync.md"
+          grep -Fq '`/autonomous` or `/autopilot` is the sole owner of the' "$TARGET/.memory-bank/workflows/mb-sync.md"
           grep -Fq 'independently builds its own hostile model' "$TARGET/.agents/skills/red-verify/SKILL.md"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
           grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
@@ -588,10 +623,54 @@ jobs:
           (
             cd "$TARGET"
             node scripts/mb-lint.mjs
+            if node scripts/mb-doctor.mjs --json --unsupported-fixture-flag > invalid-cli-doctor.json; then
+              echo 'mb-doctor accepted an unsupported CLI argument'
+              exit 1
+            fi
+            node -e 'const r=require("./invalid-cli-doctor.json"); const f=r.findings.filter((item)=>item.code==="CLI_INVALID_ARGUMENT"); if (r.status!=="fail" || r.summary.errors!==1 || f.length!==1 || f[0].severity!=="error") process.exit(1)'
             node scripts/mb-doctor.mjs --json > complete-doctor.json
             node -e 'const r=require("./complete-doctor.json"); if (r.findings.some((f)=>f.code==="TASK_HANDOFF_INCOMPLETE")) process.exit(1)'
             node scripts/mb-doctor.mjs --strict --json > strict-t3-doctor.json
             node -e 'const r=require("./strict-t3-doctor.json"); if (r.status!=="pass" || r.summary.errors!==0 || r.findings.some((f)=>f.code==="TASK_T3_ROLLBACK_MISSING")) process.exit(1)'
+            node - <<'NODE'
+          const fs = require('node:fs');
+          const indexPath = '.memory-bank/index.md';
+          const original = fs.readFileSync(indexPath, 'utf8');
+          const invalid = original.replace(/^.*constitution\.md.*\n/m, '');
+          if (invalid === original) throw new Error('fixture could not remove Constitution route');
+          fs.writeFileSync('memory-bank-index.before', original);
+          fs.writeFileSync(indexPath, invalid);
+          NODE
+            if node scripts/mb-doctor.mjs --strict --json > constitution-structure-doctor.json; then
+              echo 'strict mb-doctor accepted a missing Constitution router link'
+              exit 1
+            fi
+            node -e 'const r=require("./constitution-structure-doctor.json"); const f=r.findings.filter((item)=>item.code==="CONSTITUTION_STRUCTURE_INVALID"); if (r.status!=="fail" || r.summary.errors!==1 || f.length!==1 || f[0].severity!=="error") process.exit(1)'
+            node -e 'const fs=require("node:fs"); fs.writeFileSync(".memory-bank/index.md", fs.readFileSync("memory-bank-index.before"))'
+            node - <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const id = 'TASK-001-T2-FT-001-W1';
+          const taskPath = `.memory-bank/tasks/${id}.task.json`;
+          const task = JSON.parse(fs.readFileSync(taskPath, 'utf8'));
+          task.status = 'done';
+          task.verify = ['VERDICT: PASS\nEvidence: completed T2 feature fixture'];
+          fs.writeFileSync(taskPath, `${JSON.stringify(task, null, 2)}\n`);
+          for (const file of ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md']) {
+            const target = path.join('.protocols', id, file);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.writeFileSync(target, '# Completed T2 feature fixture\n');
+          }
+          NODE
+            node scripts/mb-lint.mjs
+            node scripts/mb-doctor.mjs --json > feature-red-default-doctor.json
+            node -e 'const r=require("./feature-red-default-doctor.json"); const f=r.findings.filter((item)=>item.code==="FEATURE_RED_VERIFY_VERDICT_MISSING"); if (r.status!=="pass" || r.summary.errors!==0 || f.length!==1 || f[0].severity!=="warning") process.exit(1)'
+            if node scripts/mb-doctor.mjs --strict --json > feature-red-strict-doctor.json; then
+              echo 'strict mb-doctor accepted a completed T2 feature without semantic-pass'
+              exit 1
+            fi
+            node -e 'const r=require("./feature-red-strict-doctor.json"); const f=r.findings.filter((item)=>item.code==="FEATURE_RED_VERIFY_VERDICT_MISSING"); if (r.status!=="fail" || r.summary.errors!==1 || f.length!==1 || f[0].severity!=="error") process.exit(1)'
+            node -e 'const fs=require("node:fs"); const p=".memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json"; const t=JSON.parse(fs.readFileSync(p)); t.status="ready"; t.verify=[]; fs.writeFileSync(p, JSON.stringify(t,null,2)+"\n")'
             node -e 'const fs=require("node:fs"); const p=".memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json"; const t=JSON.parse(fs.readFileSync(p)); t.purpose=""; t.touched_files=[]; t.gates=[]; fs.writeFileSync(p, JSON.stringify(t,null,2)+"\n")'
             node scripts/mb-doctor.mjs --json > incomplete-doctor.json
             node -e 'const r=require("./incomplete-doctor.json"); if (!r.findings.some((f)=>f.code==="TASK_HANDOFF_INCOMPLETE")) process.exit(1)'
