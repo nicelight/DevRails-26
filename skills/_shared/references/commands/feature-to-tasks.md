@@ -46,7 +46,10 @@ backbone/foundation readiness is invalid, or schema/tier policy is unavailable
 or incompatible. Missing clarification metadata alone is allowed.
 
 For `--all`, preflight the complete target set before planning writes. Report
-all blockers and create no partial affected queue.
+all blockers and create no partial affected queue. After that preflight, keep
+the active planning working set to one feature at a time before moving to the
+next target. This is bounded working focus, not a physical context reset or a
+new execution mode.
 </input_contract>
 
 <hard_invariants>
@@ -68,7 +71,8 @@ all blockers and create no partial affected queue.
   changes, report `rebuild_required`; do not hide a new task behind repair.
 - One task has one cohesive independently verifiable outcome. Do not split by
   file, module, layer, artifact, or tests. Split only for independent outcomes,
-  hard dependencies/waves, or materially different risk/rollback.
+  hard dependencies/waves, or materially different risk/rollback. Task count
+  is not an optimization target.
 - `touched_files` is advisory and non-exhaustive. A non-empty
   `runtime_context.write_boundary` is a deliberate hard boundary and not a
   copy of `touched_files`; `forbidden_scope` and stop conditions remain hard.
@@ -195,6 +199,27 @@ Use only `id`, `feature_id`, `title`, `given`, `when`, and `then`; link the
 relevant examples as described by the hard invariant above.
 
 ## JSON task records
+
+Before initially emitting JSON task records, form provisional candidates and
+run one bounded execution-path sanity check per candidate. Inspect only one
+plausible evidence-backed path from the first necessary change through the main
+implementation steps to the observable outcome and cheapest sufficient
+verification. Use the target feature, direct canonical specs, necessary
+dependency records, and the plausible code/change surface when available.
+
+Look only for hidden work that changes the task boundary. Retain a cohesive
+candidate; re-slice when the path exposes an independent prerequisite or
+outcome, a separate rollout/rollback unit, a blocking dependency, or materially
+different risk/tier route; use the existing blocker and operator-decision route
+when a material branch remains unresolved. End the check as soon as that
+boundary decision is possible. Do not compare speculative architectures, write
+pseudocode, perform an unrelated full audit, persist the check, or add a field,
+artifact, status, or report. Newly produced candidates receive the same bounded
+check before emission.
+
+This check does not silently re-slice an existing indexed queue. If it exposes
+a material identity, dependency, tier, AC, or scope change during
+reconciliation, use the existing `rebuild_required` route.
 
 Create/reconcile
 `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and index each

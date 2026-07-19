@@ -48,6 +48,8 @@ queue into one broad reviewer prompt.
 - Behavior specs are optional examples, never readiness gates.
 - Deterministic doctor findings are evidence, but this semantic review neither
   reruns nor impersonates `/mb-doctor`.
+- A bounded execution-path probe is review evidence only. Do not require or
+  create a simulation artifact, field, report, status, or replacement queue.
 - Rubrics below are coverage criteria, not a mandatory reasoning order or an
   exhaustive limit on reviewer probes.
 </hard_invariants>
@@ -93,7 +95,12 @@ Cover:
 2. Coverage and slicing
    - complete feature AC/REQ coverage; no orphan/duplicate/unrelated outcomes;
      cohesive independently verifiable slicing; coherent plans, waves,
-     dependencies, change surface, gates, and verification targets.
+     dependencies, change surface, gates, and verification targets;
+   - follow one plausible evidence-backed path only far enough to detect a
+     missing independent prerequisite/outcome, rollout/rollback unit, blocking
+     dependency, materially different risk route, or plan-level decision that
+     execution would otherwise have to invent. Stop after the boundary verdict;
+     do not repeat full implementation planning.
 3. Design readiness
    - clarification not explicitly pending/blocked; truthful feature design
      status; no applicable `needed_before_tasks|blocked` row; one applicable

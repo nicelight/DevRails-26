@@ -663,8 +663,8 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 |---|---|---|
 | `/review-feat-plan` | PRD -> REQ -> EP -> FT traceability и boundaries | не ревьюит JSON task queue |
 | `/review-tasks-plan` | schema/coverage/slicing/design/execution readiness одной feature | не исправляет planning surface и не меняет lifecycle |
-| `mb-lint` | structural/mechanical Memory Bank consistency | не принимает semantic decisions |
-| `/mb-doctor` | deterministic executable-readiness поверх lint | не заменяет reviews или verification |
+| `mb-lint` | structural/mechanical Memory Bank consistency | не оценивает tier/status-dependent protocol, closure evidence или lifecycle eligibility |
+| `/mb-doctor` | deterministic executable-readiness поверх lint, включая protocol/evidence consistency | не заменяет reviews/verification и не меняет task status |
 | `/verify` | task-scoped functional outcome и evidence | не проверяет всю feature, не чинит implementation/specs |
 | `/red-verify` | adversarial semantic correctness | не заменяет functional PASS и не закрывает scheduler task |
 
@@ -698,9 +698,11 @@ Strict doctor обязателен:
 stale-doc, risky-link или autonomous handoff. Простая local T0/T1 работа не
 получает mandatory doctor gate по умолчанию.
 
-Doctor механически проверяет наличие single-card evidence, но не решает,
-действительно ли spec применим и достаточен. Это semantic ownership
-`/review-tasks-plan`.
+Doctor механически проверяет single-card completeness, tier-appropriate
+protocol и terminal evidence с предусмотренной default/strict severity. Он не
+решает, действительно ли spec применим и достаточен, и не принимает lifecycle
+decision. Semantic applicability принадлежит `/review-tasks-plan`, а переход
+status — scheduler или explicit manual owner.
 
 `/mb-garden` начинает с read-only scan и classification. Он автоматически
 меняет только однозначные mechanical links, indexes и routers в заранее
@@ -1027,6 +1029,10 @@ Source-only count должен быть `0`.
 node scripts/mb-lint.mjs
 node scripts/mb-doctor.mjs
 ```
+
+`mb-lint` блокирует structural errors, но structurally valid task с
+tier/status-dependent protocol или closure-evidence gap может пройти lint.
+Такие gaps выявляет `mb-doctor` с severity применимого default/strict mode.
 
 Strict только после появления executable queue или на явно требуемом
 readiness boundary:

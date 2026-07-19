@@ -148,7 +148,9 @@ Use for typos, formatting, broken links, or safe documentation changes with no r
 - Scheduler mode: `/verify TASK` is the ordered verification step; compact protocol/evidence may be enough.
 - Manual mode: separate `/verify` is not default; `/exe` may close with compact evidence when explicit top-level owner conditions pass.
 - `/red-verify`: not required
-- Evidence: `VERDICT: PASS` or clear compact evidence accepted by current lint/doctor policy
+- Evidence: `VERDICT: PASS` or clear compact evidence under the closure rules
+  above; acceptance belongs to the scheduler or explicit manual owner, while
+  `/mb-doctor` checks readiness only at applicable boundaries
 - MB-SYNC: not required when only task `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed; run if broader durable Memory Bank docs/state changed
 
 ## T1 - local code / local behavior
@@ -160,7 +162,9 @@ Use for one local function, one small component, a local unit test, or a contain
 - Scheduler mode: `/verify TASK` is the ordered verification step; compact protocol/evidence may be enough.
 - Manual mode: separate `/verify` is optional; `/exe` should run the cheapest relevant local check when available, or record why no meaningful runnable check exists, and may close with compact evidence when explicit top-level owner conditions pass.
 - `/red-verify`: not required
-- Evidence: `VERDICT: PASS` or clear compact evidence accepted by current lint/doctor policy
+- Evidence: `VERDICT: PASS` or clear compact evidence under the closure rules
+  above; acceptance belongs to the scheduler or explicit manual owner, while
+  `/mb-doctor` checks readiness only at applicable boundaries
 - MB-SYNC: not required when only task `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed; run if broader durable Memory Bank docs/state changed
 
 ## T2 - cross-module / API / state / data / domain

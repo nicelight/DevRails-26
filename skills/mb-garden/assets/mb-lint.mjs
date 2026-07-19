@@ -50,7 +50,6 @@ const ARCHITECTURE_REF_PATH_RE =
   /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`),\]}]+/gi;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
 const INDEX_TASK_ENTRY_KEYS = new Set(['id', 'file']);
-const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const GATE_KEYS = new Set(['name', 'command', 'required']);
 const RUNTIME_CONTEXT_KEYS = new Set([
   'write_boundary',
@@ -65,12 +64,6 @@ const RUNTIME_CONTEXT_ARRAY_FIELDS = [
   'stop_conditions',
 ];
 const LEGACY_TASK_RISK_KEYS = new Set(['risk', 'risk.level', 'risk_level', 'riskLevel']);
-const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
-const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
-const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
-const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
-const COMPACT_EVIDENCE_RE =
-  /^(?:[-*]\s*)?(?:evidence|checks?|result|output|log|artifact|report)\s*:\s*(?!n\/a\b|none\b|tbd\b|todo\b|\.{3}$).+/im;
 const REQUIRED_TASK_FIELDS = [
   'id',
   'title',
@@ -513,72 +506,6 @@ function checkFileSize(filePath, text) {
   }
 }
 
-function hasDoneVerifyTextMarker(value) {
-  const text = String(value ?? '').trim();
-  if (!text) return false;
-  return PASS_EVIDENCE_RE.test(text);
-}
-
-function hasDoneVerifyObjectMarker(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  return Object.entries(value).some(([key, raw]) => {
-    const values = Array.isArray(raw) ? raw : [raw];
-    const hasNonEmptyValue = values.some((item) => String(item ?? '').trim());
-    if (!hasNonEmptyValue) return false;
-    return PASS_EVIDENCE_RE.test(key) || values.some((item) => hasDoneVerifyTextMarker(item));
-  });
-}
-
-function hasDoneVerifyEvidence(task) {
-  if (!Array.isArray(task.verify) || task.verify.length === 0) return false;
-  return task.verify.some((entry) => {
-    if (typeof entry === 'string') return hasDoneVerifyTextMarker(entry);
-    return hasDoneVerifyObjectMarker(entry);
-  });
-}
-
-function hasNonEmptyEvidenceValue(value) {
-  if (Array.isArray(value)) return value.some((item) => hasNonEmptyEvidenceValue(item));
-  if (value && typeof value === 'object') return Object.values(value).some((item) => hasNonEmptyEvidenceValue(item));
-  return String(value ?? '').trim().length > 0;
-}
-
-function hasStatusEvidenceMarker(value, status) {
-  const marker = status === 'done' ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
-  if (typeof value === 'string') return marker.test(value);
-  if (Array.isArray(value)) return value.some((item) => hasStatusEvidenceMarker(item, status));
-  if (!value || typeof value !== 'object') return false;
-
-  return Object.entries(value).some(([key, child]) => {
-    return (marker.test(key) && hasNonEmptyEvidenceValue(child)) || hasStatusEvidenceMarker(child, status);
-  });
-}
-
-function hasTaskStatusEvidence(task, status) {
-  if (!Array.isArray(task.verify) || task.verify.length === 0) return false;
-  return task.verify.some((entry) => hasStatusEvidenceMarker(entry, status));
-}
-
-function hasCompactRunEvidence(id) {
-  const runPath = path.join(protocolDirForTask(id), 'run.md');
-  if (!hasFile(runPath)) return false;
-
-  const text = readText(runPath).replace(/\r\n/g, '\n');
-  return PASS_EVIDENCE_RE.test(text) || COMPACT_EVIDENCE_RE.test(text);
-}
-
-function checkDoneEvidence(rel, task) {
-  if (task.status !== 'done') return;
-  if (!ALLOWED_TASK_TIER.has(task.tier)) return;
-  if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
-
-  if (!hasDoneVerifyEvidence(task) && !hasCompactRunEvidence(task.id)) {
-    errors.push(
-      `${rel}: ${task.tier} done task must include completed evidence in 'verify' or compact .protocols/${task.id}/run.md`
-    );
-  }
-}
-
 function checkArrayField(rel, task, field) {
   if (!Array.isArray(task[field])) {
     errors.push(`${rel}: '${field}' must be an array`);
@@ -915,94 +842,8 @@ function checkTaskSchemaDoesNotContainRisk(schemaRel, schema) {
   }
 }
 
-function protocolDirForTask(id) {
-  return path.join(ROOT, '.protocols', id);
-}
-
-function taskArtifactDirForTask(id) {
-  return path.join(ROOT, '.tasks', id);
-}
-
 function hasFile(absPath) {
   return fs.existsSync(absPath) && fs.statSync(absPath).isFile();
-}
-
-function listFilesRecursive(absDir) {
-  if (!fs.existsSync(absDir)) return [];
-  const out = [];
-  for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
-    const full = path.join(absDir, entry.name);
-    if (entry.isDirectory()) {
-      out.push(...listFilesRecursive(full));
-    } else if (entry.isFile()) {
-      out.push(full);
-    }
-  }
-  return out;
-}
-
-function missingFullProtocolFiles(id) {
-  const dir = protocolDirForTask(id);
-  return FULL_PROTOCOL_FILES.filter((file) => !hasFile(path.join(dir, file)));
-}
-
-function hasCompactOnlyProtocol(id) {
-  const dir = protocolDirForTask(id);
-  const hasRun = hasFile(path.join(dir, 'run.md'));
-  if (!hasRun) return false;
-  return missingFullProtocolFiles(id).length > 0;
-}
-
-function isRedVerificationFile(file) {
-  return /red/i.test(path.basename(file));
-}
-
-function hasProtocolOrArtifactStatusEvidence(id, status) {
-  const marker = status === 'done' ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
-  const files = [
-    ...listFilesRecursive(protocolDirForTask(id)).filter((file) => file.endsWith('.md')),
-    ...listFilesRecursive(taskArtifactDirForTask(id)).filter((file) => /\.(md|txt|log|json)$/i.test(file)),
-  ].filter((file) => !isRedVerificationFile(file));
-
-  return files.some((file) => {
-    try {
-      return marker.test(readText(file));
-    } catch {
-      return false;
-    }
-  });
-}
-
-function checkTierProtocolRequirements(rel, task) {
-  if (!ALLOWED_TASK_TIER.has(task.tier)) return;
-  if (!FULL_PROTOCOL_TIERS.has(task.tier)) return;
-  if (!FULL_PROTOCOL_STATUSES.has(task.status)) return;
-
-  const missing = missingFullProtocolFiles(task.id);
-  if (missing.length) {
-    errors.push(`${rel}: ${task.tier} ${task.status} task must have full protocol files: ${missing.join(', ')}`);
-  }
-
-  if (hasCompactOnlyProtocol(task.id)) {
-    errors.push(`${rel}: ${task.tier} ${task.status} task must not use compact-only protocol`);
-  }
-
-  if (task.status === 'in_progress') return;
-
-  const hasStatusEvidence =
-    hasTaskStatusEvidence(task, task.status) || hasProtocolOrArtifactStatusEvidence(task.id, task.status);
-
-  if (task.status === 'done' && !hasStatusEvidence) {
-    errors.push(
-      `${rel}: ${task.tier} done task must have PASS verification evidence/verdict in task.verify, .protocols/${task.id}/, or .tasks/${task.id}/`
-    );
-  }
-
-  if (task.status === 'failed' && !hasStatusEvidence) {
-    errors.push(
-      `${rel}: ${task.tier} failed task must have FAIL verification evidence/verdict in task.verify, .protocols/${task.id}/, or .tasks/${task.id}/`
-    );
-  }
 }
 
 function checkTaskRecords() {
@@ -1158,8 +999,6 @@ function checkTaskRecords() {
     checkTaskArchitectureReferences(rel, task);
     checkGateItems(rel, task);
 
-    checkDoneEvidence(rel, task);
-    checkTierProtocolRequirements(rel, task);
     checkTaskFeatureClarification(rel, task, featuresById);
 
     dependencies.set(id, Array.isArray(task.depends_on) ? task.depends_on : []);

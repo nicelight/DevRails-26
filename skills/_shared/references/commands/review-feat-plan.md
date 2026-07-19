@@ -65,6 +65,10 @@ coverage criteria, not a required reasoning script:
 - PRD -> REQ -> EP -> FT traceability, including Product Brief/analysis when
   present;
 - coherent feature value, sizing, boundaries, acceptance, and failure behavior;
+- where evidence shows multiple acceptance outcomes, lifecycle/release units,
+  or actor/authority/boundary paths, one bounded falsification probe asks
+  whether a concrete second product slice has its own observable value and
+  acceptance and can be verified or released independently;
 - truthful `clarification_status: pending|blocked` handling;
 - no bypass from analysis to tasking around `/write-prd`, `/spec-init`, `/prd-to-features`,
   `/spec-design`, or required Foundation Dev Path;
@@ -78,6 +82,12 @@ Return `APPROVE` only when product decomposition is traceable, coherent, and
 free of blocking governance/clarification gaps. Return `REJECT` for a blocking
 product, RTM, feature-boundary, clarification, or Constitution issue. Cite the
 artifacts checked and distinguish evidence gaps from actual defects.
+
+Boundary pressure alone is not a defect. For this boundary falsification probe,
+reject only when inspected evidence proves a hidden independent product outcome
+or an unresolved material boundary decision. Do not design the replacement
+feature tree, split by technical layer, or require a persisted pressure
+analysis; route repair to the owning command.
 </validation>
 
 <handoff_contract>

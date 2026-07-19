@@ -109,6 +109,20 @@ Choose source-reading order, tools, decomposition technique, epic/feature
 grouping, filenames/slugs, and the smallest coherent product structure. Use
 traceability, independent product value, acceptance cohesion, and downstream
 designability as coverage criteria, not a mandatory reasoning sequence.
+`Smallest coherent` does not mean the fewest features.
+
+Before finalizing the complete product map, run one bounded feature-boundary
+scan. Give focused attention only to candidates where authoritative evidence
+shows multiple independently acceptable user outcomes or acceptance clusters,
+distinct lifecycle/release/rollback units, or actor/authority/boundary paths
+that may produce standalone product outcomes. Split only when concrete parts
+have their own observable product result and acceptance and can be verified or
+released independently. A pressure signal alone is not a split decision;
+technical layers, migrations, integrations, or security concerns alone are not
+product features. Stop the focused analysis once the boundary is sufficient or
+an operator-owned ambiguity is identified. Do not persist a score, matrix, or
+pressure rationale; record only material accepted decisions through the
+existing decision route.
 </agent_discretion>
 
 <validation>
@@ -117,6 +131,9 @@ Verify:
   linked evidence;
 - every requirement has a stable `REQ-*` ID;
 - each epic/feature traces to requirements or an explicit accepted delta;
+- each feature boundary was checked proportionally to evidence, and no concrete
+  independently acceptable product outcome remains hidden inside another
+  feature;
 - no product feature uses `FT-000`;
 - blockers and optional clarification metadata are truthful;
 - no task or testing-policy artifact was created;
