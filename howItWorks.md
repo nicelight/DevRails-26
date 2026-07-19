@@ -970,7 +970,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 |---|---|---|
 | `/cold-start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
 | `/mb-init` | external installer route для Memory Bank bootstrap/sync | сам не создаёт skeleton; затем повторный `/mb-init` и `/cold-start` |
-| `/mb` | минимально достаточный context priming | не реализует task; может записать plan неизвестных |
+| `/mb` | минимально достаточный context priming | строго read-only; возвращает gaps и рекомендуемые reads, не создаёт artifacts |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
 | `/brainstorm` | traceable ideation report | не создаёт requirements/PRD; затем `/brief` |
