@@ -15,6 +15,9 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 ## 1) Read-only scan и classification
 
 - Сначала проведи read-only scan. До классификации findings ничего не меняй.
+- Пункты scan ниже являются coverage criteria, а не обязательным порядком.
+  Выбери порядок, инструменты и глубину проверки по фактическому состоянию
+  Memory Bank, но покрой каждую применимую surface до классификации её finding.
 - Пробеги `.memory-bank/index.md` и роутеры в подпапках.
 - Прочитай `.memory-bank/spec-index.md` и проверь, что active specs используют
   `Type | Path | Status | Scope | Change route`, один active canonical path на
@@ -38,14 +41,20 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
     TODO/gap-to-task conversion и любые material canonical, task, lifecycle,
     product, design, contract, security или governance decisions.
 
-## 2) Transient write boundary
+## 2) Bounded mechanical write set
 
-- До первого edit назови в текущем transient working context точные paths всех
-  intended files. Не создавай для этого artifact, write-set file, ownership
-  matrix, lifecycle, protocol или registry.
-- Автоматически меняй только названные files и только их однозначные mechanical
-  links, indexes и routers. Список можно расширять в любой момент: до edit
-  каждого дополнительного file явно назови его path в transient context.
+- После classification поддерживай в текущем transient working context
+  минимальный явный write set только для files с automatic findings. Он не
+  фиксируется заранее и может уточняться по мере discovery. Не создавай для
+  этого artifact, write-set file, ownership matrix, lifecycle, protocol или
+  registry.
+- Перед edit убедись, что file входит в текущий write set, finding остаётся
+  однозначно mechanical, а target доказан. Агент сам выбирает, как группировать
+  и обновлять transient write set; отдельное объявление каждого path перед
+  каждым edit не требуется.
+- Автоматически меняй только files из текущего write set и только их
+  однозначные mechanical links, indexes и routers. Фактически changed files
+  зафиксируй в handoff.
 - Не архивируй, не удаляй и не объединяй документы; не выбирай canonical
   трактовку; не создавай tasks и не меняй material meaning.
 - Для blocker назови finding, затронутые files, отсутствующее owner decision и
@@ -55,7 +64,17 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 - Obsolete generated runtime skill entry не удаляй автоматически: верни
   recommendation использовать installer sync. User-owned skills не меняй.
 
-## 3) Broader reconciliation boundary
+## 3) Agent discretion
+
+- Внутри read-only-first, automatic-only и bounded-write ограничений агент
+  выбирает search/read order, инструменты, inspection depth, способ grouping
+  findings, batch или последовательную mechanical mutation и минимальный набор
+  достаточных проверок до final lint.
+- Не выполняй scan, edit или validation только ради заполнения процесса.
+  Останавливайся, когда automatic findings исчерпаны, а оставшиеся findings
+  требуют owner decision или другого owning workflow.
+
+## 4) Broader reconciliation boundary
 
 - Cosmetic или mechanical garden cleanup сам по себе не запускает `/mb-sync`.
 - Если finding требует broader durable-state reconciliation уже принятого owner
@@ -64,7 +83,7 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 - Если до такого handoff garden уже сделал mechanical edits, всё равно выполни
   final lint по итоговому garden-owned state.
 
-## 4) Final validation
+## 5) Final validation
 
 - После любого фактического garden edit запусти final
   `node scripts/mb-lint.mjs` по полностью изменённому final state, если script
@@ -79,7 +98,7 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
   planning/spec/task drift направляй существующему `/review-feat-plan` или
   `/review-tasks-plan`, когда finding принадлежит их review scope.
 
-## 5) Handoff
+## 6) Handoff
 
 - Перечисли только фактически changed files, реально updated links/indexes/
   routers и выполненные validations с результатами.

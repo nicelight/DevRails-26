@@ -149,7 +149,7 @@ contract proves it already complete:
 ### Review repair cycles
 
 Apply one bounded loop independently to the `feature-plan` surface and each
-actually reviewed `task-plan:FT-<NNN>` surface. The maximum is exactly `2`
+actually reviewed `task-plan:FT-<NNN>` surface. The maximum is exactly `5`
 completed `repair -> re-review` cycles per surface.
 
 - The initial review starts at `0` completed cycles and is not a repair attempt.
@@ -158,12 +158,12 @@ completed `repair -> re-review` cycles per surface.
 - Keep compact counters only for surfaces actually reviewed in the existing
   `## Review gates` section of `.protocols/AUTONOMOUS-RUN/status.md`; do not add
   a file, template, schema, policy field, or registry.
-- `APPROVE` continues the recorded flow. On `REJECT` with fewer than `2`
+- `APPROVE` continues the recorded flow. On `REJECT` with fewer than `5`
   completed cycles, run the next repair and re-review for that same surface.
-- On `REJECT` after completed cycle `2`, record existing
+- On `REJECT` after completed cycle `5`, record existing
   `HALT_REVIEW_REJECT`, the latest findings, and the named repair owner. Do not
   enter another automatic repair cycle.
-- On resume, read the recorded counter; never reset it. A surface at `2` stays
+- On resume, read the recorded counter; never reset it. A surface at `5` stays
   exhausted. Operator-directed repair returns to the same review with that
   counter preserved, and only `APPROVE` continues the recorded flow.
 

@@ -85,8 +85,11 @@ No question is needed when authoritative evidence already settles the branch.
 <agent_discretion>
 Within the task-scoped normative basis, the verifier chooses evidence-reading
 order, tools, the smallest credible independent checks, reproducible flows, and
-depth proportional to tier and failure risk. Coverage criteria do not prescribe
-a fixed checklist order or require irrelevant test categories.
+depth proportional to tier and failure risk. It also chooses whether validating
+a reuse candidate or safely rerunning/replacing its gate is the cheaper credible
+path. Receipt reuse is an optional optimization, not a required verification
+phase. Coverage criteria do not prescribe a fixed checklist order or require
+irrelevant test categories.
 </agent_discretion>
 
 <required_outputs>
@@ -97,11 +100,17 @@ Build the minimum complete verification basis from:
 - gates/evidence requirements;
 - execution handoff, actual changes, local results, and artifacts.
 
-Before running a probe or writing evidence that may change relevant state,
-inventory all current-attempt reuse candidates named by the implementation
-handoff, or the current `run.md` receipt blocks for T0/T1, and assess them
-against one current verified state. Ignore receipts marked `superseded` or
-supporting-only by a later attempt. For every candidate:
+The verifier may ignore reuse candidates and immediately run a safe gate or
+replacement probe. Prefer that direct path when the gate is cheap, receipt
+eligibility is unclear, or validating the candidate would not be meaningfully
+cheaper than rerunning it. Do not inventory or assess every receipt merely
+because it exists.
+
+When the verifier elects to reuse a specific current-attempt candidate, assess
+that candidate before any probe or evidence write that may change its relevant
+inputs. Use the implementation-handoff locator, or the current `run.md` receipt
+block for T0/T1, and ignore receipts marked `superseded` or supporting-only by
+a later attempt. For each candidate actually considered for reuse:
 
 - require one unambiguous block with `attempt`, `receipt_status`, `claim`,
   `command`, `cwd`, `exit_code`, `input_state_basis`, `completed_at`, and
@@ -157,7 +166,8 @@ Write:
 Separate the verification evidence into:
 - `reused execute evidence`: accepted candidates, supported claims, state and
   freshness basis, and exact receipt locations;
-- `repeated checks`: reruns or replacement checks and why reuse was denied;
+- `repeated checks`: reruns or replacement checks and the concise reason for
+  choosing that path; no rejected-candidate inventory is required;
 - `new targeted probes`: verifier-owned observations and their claim mapping.
 
 Keep full receipts in their existing protocol/artifact locations. Append only
