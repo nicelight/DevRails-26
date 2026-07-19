@@ -76,7 +76,7 @@ status: active
 ### 2) SDD design state
 - [ ] `.memory-bank/spec-backbone.md` Global Backbone Status and Backbone Area
   Matrix are still truthful. Stale `needed_before_tasks` rows are resolved,
-  reported, or routed to `/spec-design` / `/prd-to-tasks`; do not guess design
+  reported, or routed to `/spec-design` / `/feature-to-tasks`; do not guess design
   decisions during sync.
 - [ ] `.memory-bank/spec-index.md` remains a pure registry/planned-spec index.
   Active rows use `Type | Path | Status | Scope | Change route`; it does not
@@ -84,7 +84,7 @@ status: active
   feature usage, API rules, state machines, data schemas, or contract details.
 - [ ] Feature frontmatter `spec_design_status` and `spec_design_links` match the
   actual linked specs. Stale or contradictory feature design is marked/reported
-  as `blocked` and routed to `/prd-to-tasks FT-<NNN>` for feature-level
+  as `blocked` and routed to `/feature-to-tasks FT-<NNN>` for feature-level
   canonical spec repair
   or `/spec-design` for shared/global repair; no new `stale` lifecycle/status
   value is introduced.

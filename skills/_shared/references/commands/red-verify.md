@@ -70,7 +70,7 @@ verification policy, the verifier does not pick a favorable reading.
   closure/dependents, and repair owner.
 - Interactive flow asks the operator; recommendation/default/silence is not an
   accepted decision. The answer must be durably applied by
-  `/clarify-feature`, `/prd-to-tasks`, or `/spec-design`, then functional and
+  `/feature-doctor`, `/feature-to-tasks`, or `/spec-design`, then functional and
   semantic gates rerun as applicable.
 - Unattended flow returns the blocker to the scheduler for
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and names the exact

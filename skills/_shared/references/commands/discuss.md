@@ -73,7 +73,7 @@ Confirm that no decision-log or other artifact was created by `/discuss`.
 
 <handoff_contract>
 Return to the immediate owning skill: `/brief`, `/constitution`, `/write-prd`,
-`/spec-init`, `/prd`, `/clarify-feature FT-<NNN>`, or `/spec-design` according
+`/spec-init`, `/prd-to-features`, `/feature-doctor FT-<NNN>`, or `/spec-design` according
 to the artifact and blocker being resolved. `/discuss` never routes directly
 past a required product/design gate or to execution without an already-ready
 indexed task.

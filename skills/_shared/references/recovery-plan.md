@@ -37,7 +37,7 @@
 1. Сохрани старый MB в `.memory-bank/archive/pre-rebuild/`.
 2. Запусти `mb-init` для создания нового скелета.
 3. Для brownfield: запусти `/map-codebase`.
-4. Для greenfield: запусти `/prd` после `/write-prd` и `/spec-init`.
+4. Для greenfield: запусти `/prd-to-features` после `/write-prd` и `/spec-init`.
 5. Перенеси salvageable контент из archive (ADRs, decision logs).
 6. Запусти `/review-feat-plan`, затем `/review-tasks-plan` после task planning.
 

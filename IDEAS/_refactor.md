@@ -6,10 +6,10 @@
 - Дата review: 2026-07-19
 - Дата closure evidence: 2026-07-20
 - Scope: canonical runtime commands, shared workflows/protocols, installer,
-  generated target behavior, deterministic validators, documentation и release
-  checks
+  generated target behavior, deterministic validators, documentation и
+  agent-run verification
 - Источник: три независимых focused review и отдельная сквозная проверка
-  packaging/CI/docs
+  packaging/verification/docs
 - Этот файл является текущим repair register; статус finding определяется
   разделом ниже, а не самим наличием finding в документе.
 
@@ -72,7 +72,7 @@
   Если существующему command недостаёт минимальной output shape, она остаётся
   частью его существующего generated `SKILL.md` и формируется из текущего
   canonical source без нового durable artifact.
-- `/mb` остаётся строго read-only: только прочитанный контекст, gaps и
+- `/get-context` остаётся строго read-only: только прочитанный контекст, gaps и
   рекомендуемые следующие reads. Task protocol создаёт или обновляет его
   существующий owning execution/planning skill, не priming command.
 - `/find-skills` не получает отдельный manifest/catalog. Он различает DevRails
@@ -82,10 +82,10 @@
   persisted blocker field. Сохранять уже записанный specific terminal state;
   `HALT_DEPENDENCY_DEADLOCK` допустим только для доказанного dependency-only
   graph exhaustion.
-- Не создавать blocking LLM/model-eval framework. Blocking CI содержит только
-  deterministic syntax, contract, install/bootstrap, lint/doctor и
-  compatibility checks. Prompt behavior проверяется компактным manual или
-  явно non-blocking probe checklist.
+- Не создавать blocking LLM/model-eval framework. Agent-run verification
+  содержит только deterministic syntax, contract, install/bootstrap,
+  lint/doctor и compatibility checks. Prompt behavior проверяется компактным
+  manual или явно non-blocking probe checklist.
 - Не создавать универсальный Markdown parser или отдельный vocabulary artifact
   для `/mb-doctor`. Документировать фактические public finding codes и покрывать
   критичные mode/severity combinations прямыми fixtures.
@@ -108,13 +108,13 @@
 
 # Первый пакет — contract hygiene и safety net
 
-## RF-06 — `/clarify-feature` использует неизвестный terminal state
+## RF-06 — `/feature-doctor` использует неизвестный terminal state
 
 **Severity:** Medium
 
 **Суть проблемы**
 
-`skills/_shared/references/commands/clarify-feature.md:16-19` использует
+`skills/_shared/references/commands/feature-doctor.md:16-19` использует
 `HALT_CLARIFICATION_TARGET_REQUIRED`, когда команда вызвана без
 `FT-<NNN>`. Такого состояния нет ни в
 `skills/_shared/references/protocols/run-status-template.md`, ни в
@@ -129,15 +129,15 @@ canonical terminal vocabulary. Оно не имеет определённого
 - Заменить его на существующий `HALT_CLARIFICATION_REQUIRED`.
 - Missing `FT-<NNN>` записывать как `reason`, affected command и exact next
   action, а не кодировать отдельным статусом.
-- Добавить release-check, который извлекает все `HALT_*` из commands/workflows
+- Добавить agent-run check, который извлекает все `HALT_*` из commands/workflows
   и проверяет их принадлежность canonical set из run-status template.
 
 **Потенциальные опасности**
 
 - Нельзя делать глобальную замену похожих строк без проверки контекста: разные
   `HALT_*` имеют разных owners и resume routes.
-- Static check должен читать один canonical vocabulary, а не создать второй
-  вручную поддерживаемый список в CI.
+- Static check должен читать один canonical vocabulary, а не создавать второй
+  вручную поддерживаемый список в verification tooling.
 
 **Готово, когда**
 
@@ -153,7 +153,7 @@ canonical terminal vocabulary. Оно не имеет определённого
 
 `skills/_shared/references/commands/discuss.md:40-45` безусловно требует
 существующий `.protocols/<ID>/decision-log.md`. Но `/spec-init` может
-направить в focused discussion до `/prd`, а именно `/prd` впервые создаёт
+направить в focused discussion до `/prd-to-features`, а именно `/prd-to-features` впервые создаёт
 `.protocols/PRD-BOOTSTRAP/decision-log.md`.
 
 Получается ложная развилка: либо `/discuss` не может выполнить собственный
@@ -183,15 +183,15 @@ output contract, либо он самовольно создаёт protocol arti
 - Принятое решение остаётся durable и однозначно находится через owning
   artifact.
 
-## RF-08 — `/mb` пишет task protocol и предполагает делегирование при priming
+## RF-08 — `/get-context` пишет task protocol и предполагает делегирование при priming
 
 **Severity:** Medium
 
 **Суть проблемы**
 
-`skills/_shared/references/commands/mb.md:21-23` требует создать
+`skills/_shared/references/commands/get-context.md:21-23` требует создать
 `.protocols/<TASK-ID>/plan.md` и определить работу сабагентов, если контекста
-не хватает. При этом `/mb` может быть вызван без TASK-ID, top-level GENERAL
+не хватает. При этом `/get-context` может быть вызван без TASK-ID, top-level GENERAL
 не имеет права автоматически делегировать работу, а Reviewer/Explorer может
 быть read-only.
 
@@ -209,14 +209,14 @@ orchestration step.
 
 **Потенциальные опасности**
 
-- Нельзя переносить task planning/resumability в `/mb`; для этого уже существуют
-  task record, `/execute` и task-owned protocol.
-- Нельзя считать сам вызов `/mb` разрешением на запуск сабагентов.
+- Нельзя переносить task planning/resumability в `/get-context`; для этого уже существуют
+  task record, `/execute-task` и task-owned protocol.
+- Нельзя считать сам вызов `/get-context` разрешением на запуск сабагентов.
 
 **Готово, когда**
 
 - Простое priming не меняет рабочее дерево.
-- При необходимости protocol mutation `/mb` возвращает точный owning next step,
+- При необходимости protocol mutation `/get-context` возвращает точный owning next step,
   но сам ничего не записывает.
 - Delegation всегда следует role/operator contract.
 
@@ -339,16 +339,16 @@ sync contract отсутствует.
 - Autonomous preflight симметричен autopilot preflight по required workflows.
 - Missing sync reference обнаруживается до первого durable write.
 
-## RF-13 — Release checks не ловят известные contract regressions
+## RF-13 — Verification должна ловить известные contract regressions
 
 **Severity:** Medium
 
 **Суть проблемы**
 
-Текущий `.github/workflows/release-check.yml:91-141` в основном проверяет
-наличие строк. Поэтому checks не обнаруживают уже найденные undefined terminal
-tokens, missing deployed workflow, doctor vocabulary drift и некоторые
-RF-01/RF-03 regressions.
+Одних проверок наличия строк недостаточно: они не обнаруживают undefined
+terminal tokens, missing deployed workflow, doctor vocabulary drift и некоторые
+RF-01/RF-03 regressions. Проверки должны оставаться воспроизводимыми без
+отдельного repository CI workflow.
 
 **Как исправить**
 
@@ -360,7 +360,7 @@ RF-01/RF-03 regressions.
 - Для prompt-only поведения, которое нельзя доказать deterministic script,
   выполнить компактный manual probe и записать результат в обычное repair
   evidence. Не создавать model-eval runner, provider integration,
-  scoring/retry framework или новый CI subsystem.
+  scoring/retry framework или CI subsystem.
 
 **Потенциальные опасности**
 
@@ -386,7 +386,7 @@ deterministic proof и не новый blocking eval framework.
 |---|---|---|---|
 | P1 / RF-07 `/discuss` | Отсутствует owning `user-scenarios` artifact | Остановка до вопроса/принятия ответа, route в `/spec-init`, без writes | PASS |
 | P1b / RF-07 `/discuss` | Существует `.memory-bank/product.md#Audience`, decision log отсутствует; оператор принял audience answer | Ответ применён только к `product.md`; file count не изменился, decision log или другой artifact не создан | PASS |
-| P2 / RF-08 `/mb` | Обнаружен context gap | Только reads, gaps и owning route; без writes, delegation и `/context-manifest` | PASS |
+| P2 / RF-08 `/get-context` | Обнаружен context gap | Только reads, gaps и owning route; без writes, delegation и `/context-manifest` | PASS |
 | P3 / RF-09 `/find-skills` | Unknown origin; доказанный DevRails command; autonomous recommendation | Unknown origin остаётся ambiguity без install; DevRails command получает external-installer route; autonomous обновляет только заранее существующий exact decision log | PASS |
 | P3b / RF-09 `/find-skills` | Verified external metadata `acme-labs/calendar-skills` | Предложен marketplace route с conflict warning; без explicit confirmation установка не выполнена, tree не изменён | PASS |
 | P4 / RF-14 `/mb-sync` | No-op manual sync | Только sync-local inspection, без lint/doctor; post-sync gates возвращены explicit owner | PASS |

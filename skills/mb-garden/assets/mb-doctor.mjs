@@ -232,7 +232,7 @@ function checkBackboneReadiness() {
         path: SPEC_BACKBONE_REL,
         details: { status: 'missing', migration_hint: migrationHint },
         suggested_fix:
-          `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.`,
+          `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.`,
       }
     );
     return;
@@ -272,12 +272,12 @@ function checkBackboneReadiness() {
     addFinding(
       severity,
       'SPEC_BACKBONE_NOT_READY',
-      `${SPEC_BACKBONE_REL}: pre-PRD framing is prepared for /prd; Global Backbone Status is intentionally pending until /spec-design.`,
+      `${SPEC_BACKBONE_REL}: pre-PRD framing is prepared for /prd-to-features; Global Backbone Status is intentionally pending until /spec-design.`,
       {
         path: SPEC_BACKBONE_REL,
         details,
         suggested_fix:
-          'Continue with /prd, then run /spec-design before /prd-to-tasks, /autopilot, or autonomous scheduler mode.',
+          'Continue with /prd-to-features, then run /spec-design before /feature-to-tasks, /autopilot, or autonomous scheduler mode.',
       }
     );
     return;
@@ -291,7 +291,7 @@ function checkBackboneReadiness() {
       path: SPEC_BACKBONE_REL,
       details,
       suggested_fix:
-        'Run /spec-design after /prd. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /prd-to-tasks.',
+        'Run /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.',
     }
   );
 }
@@ -476,7 +476,7 @@ function checkTaskReadiness() {
   if (!indexRead.ok) {
     addFinding('error', 'TASK_INDEX_INVALID', indexRead.message, {
       path: TASK_INDEX_REL,
-      suggested_fix: 'Create a valid JSON task index or run mb-init/prd-to-tasks.',
+      suggested_fix: 'Create a valid JSON task index or run mb-init/feature-to-tasks.',
     });
     return;
   }
@@ -495,7 +495,7 @@ function checkTaskReadiness() {
     addFinding(severity, 'TASK_INDEX_EMPTY', 'No task records yet. This is valid for a fresh skeleton.', {
       path: TASK_INDEX_REL,
       suggested_fix: options.strict
-        ? 'Create task records via /prd-to-tasks FT-XXX after /write-prd and /prd.'
+        ? 'Create task records via /feature-to-tasks FT-XXX after /write-prd and /prd-to-features.'
         : undefined,
     });
     addQueueSummary([], []);
@@ -672,7 +672,7 @@ function checkFoundationReadiness(orderedRecords, records) {
       path: gate.rel,
       task_id: anchors.gateTask,
       details: { status: gate.task.status },
-      suggested_fix: 'Finish /execute, /verify, and /mb-sync for the foundation gate task before product feature execution.',
+      suggested_fix: 'Finish /execute-task, /verify, and /mb-sync for the foundation gate task before product feature execution.',
     });
   }
 
@@ -1008,7 +1008,7 @@ function checkSddSpecLinkage(record) {
       feature_spec_design_links: featureSpec?.links.existing ?? [],
       missing_feature_spec_design_links: featureSpec?.links.missing ?? [],
     },
-    suggested_fix: `Rerun /prd-to-tasks ${featureId ?? 'FT-<NNN>'} to repair/reconcile feature specs and task cards, or run /spec-auto for autonomous design; then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
+    suggested_fix: `Rerun /feature-to-tasks ${featureId ?? 'FT-<NNN>'} to repair/reconcile feature specs and task cards, or run /spec-auto for autonomous design; then add relevant SDD spec links to source_artifacts, normative_inputs, constraints, invariants, or verification_targets.`,
   });
 }
 
@@ -1068,7 +1068,7 @@ function checkSingleCardHandoffCompleteness(record) {
     task_id: id,
     details: { issues },
     suggested_fix:
-      'Repair the indexed task card through /prd-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and write_boundary only for a deliberate hard boundary.',
+      'Repair the indexed task card through /feature-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and write_boundary only for a deliberate hard boundary.',
   });
 }
 
@@ -1102,7 +1102,7 @@ function checkFeatureClarificationReadiness() {
       addFinding(severity, 'FEATURE_CLARIFICATION_PENDING', `${feature.rel}: feature clarification is ${feature.status}.`, {
         path: feature.rel,
         details: { feature: feature.id, status: feature.status },
-        suggested_fix: `Run /clarify-feature ${feature.id} until critical ambiguity is resolved before /prd-to-tasks.`,
+        suggested_fix: `Run /feature-doctor ${feature.id} until critical ambiguity is resolved before /feature-to-tasks.`,
       });
     }
   }
@@ -1164,7 +1164,7 @@ function checkTasksFromUnclarifiedFeatures(records) {
           feature_paths: group.featurePaths,
           tasks: group.tasks,
         },
-        suggested_fix: `Complete /clarify-feature ${group.featureId} before generating or running task records for that feature.`,
+        suggested_fix: `Complete /feature-doctor ${group.featureId} before generating or running task records for that feature.`,
       }
     );
   }

@@ -5,7 +5,7 @@ status: active
 # /spec-design - Global SDD backbone gate
 
 <objective>
-Create or update the mandatory global architecture/design backbone after `/prd`
+Create or update the mandatory global architecture/design backbone after `/prd-to-features`
 has created the product feature set and before product task design.
 
 The outcome is a compact set of technical decisions, boundaries, and canonical
@@ -22,7 +22,7 @@ creates task records, implementation plans, `REQ-000`, or `FT-000`.
 </objective>
 
 <input_contract>
-Run after `/prd`, with no argument or `--all`.
+Run after `/prd-to-features`, with no argument or `--all`.
 
 Require and read relevant evidence from:
 - `.memory-bank/constitution.md`;
@@ -77,7 +77,7 @@ scenario review or create the file only to satisfy a template.
   applicable subject specs; do not invent a fallback testing-policy path.
 - Feature docs remain composition roots for behavior and exact applicable spec
   links. Feature-level concern completion and `spec_design_status` normally
-  belong to `/prd-to-tasks` or `/spec-auto`.
+  belong to `/feature-to-tasks` or `/spec-auto`.
 - Foundation work is product-enabling infrastructure only. Do not move product
   behavior into the foundation path.
 </hard_invariants>
@@ -351,7 +351,7 @@ Report backbone status/mode, artifact strategy, specs changed, matrix summary,
 `not_applicable` rationale, affected features, Foundation decision, durable
 operator decisions, blockers, and the immediate next command:
 - ready backbone + `Foundation Required: true` -> `/foundation-to-tasks`;
-- ready backbone + `Foundation Required: false` -> `/prd-to-tasks FT-<NNN>` in
+- ready backbone + `Foundation Required: false` -> `/feature-to-tasks FT-<NNN>` in
   manual flow, or `/spec-auto --all` for autonomous feature design;
 - `blocked` -> no downstream handoff; obtain the named operator/owner decision
   and rerun `/spec-design`.

@@ -109,6 +109,6 @@ Before handoff, verify that:
 <handoff_contract>
 The only normal immediate handoff is `/brief`. If unresolved questions prevent
 a coherent Product Brief, continue `/brainstorm` after the operator answers
-instead of implying readiness. Do not route directly to `/prd-to-tasks` or
+instead of implying readiness. Do not route directly to `/feature-to-tasks` or
 execution commands.
 </handoff_contract>

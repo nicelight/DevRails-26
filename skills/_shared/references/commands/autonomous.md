@@ -63,7 +63,7 @@ state, not a second task registry.
   waves, Foundation dependencies, and hard runtime scopes.
 - Scheduler owns promotion, `ready -> in_progress`, final
   `done|failed|blocked` decisions, dependent block/unblock, queue state, and
-  terminal run state. `/execute`, `/verify`, `/red-verify`, and `/mb-sync` keep
+  terminal run state. `/execute-task`, `/verify`, `/red-verify`, and `/mb-sync` keep
   the ownership defined by tier policy.
 - Scheduler writes every task closure/failure/blocking decision, status, and
   evidence link to the authoritative `.task.json` before any sync boundary.
@@ -93,7 +93,7 @@ dependency/verification/Foundation/human-checkpoint branch:
   `HALT_CLARIFICATION_REQUIRED` for product/feature clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract/operator decisions;
 - name the exact interactive resume skill (`/constitution`, `/write-prd`,
-  `/clarify-feature`, `/spec-design`, `/prd-to-tasks`, or another existing owner).
+  `/feature-doctor`, `/spec-design`, `/feature-to-tasks`, or another existing owner).
 
 After the operator answer is durably applied by the owning skill and its gates
 pass, resume from the recorded boundary without replaying completed work.
@@ -126,7 +126,7 @@ contract proves it already complete:
      halt on the unresolved governance decision;
    - `/write-prd` when PRD is not complete/current;
    - `/spec-auto --init`;
-   - `/prd`;
+   - `/prd-to-features`;
    - `/review-feat-plan` until `APPROVE`, within review budget;
    - `/spec-design --all`;
    - required Foundation route below;
@@ -140,7 +140,7 @@ contract proves it already complete:
    When Foundation is not required, require truthful `not_required` anchors and
    create no FT-000 queue.
 4. Product tasking:
-   - `/prd-to-tasks --all`;
+   - `/feature-to-tasks --all`;
    - fresh-context `/review-tasks-plan FT-<NNN>` separately for every
      task-linked product feature until `APPROVE`, within review budget;
    - lint plus `/mb-doctor --strict` after the real product queue exists.
@@ -180,7 +180,7 @@ Select one eligible `ready` task by earliest wave and stable index order. Before
 writing `ready -> in_progress`, require the current strict-doctor pass. Then:
 
 1. scheduler writes `ready -> in_progress`;
-2. `/execute <TASK_ID>`;
+2. `/execute-task <TASK_ID>`;
 3. `/verify <TASK_ID>` using authoritative `task.tier`;
 4. per-task `/red-verify <TASK_ID>` for T3 only (optional for T2);
 5. scheduler records final lifecycle decision and evidence in `.task.json`;

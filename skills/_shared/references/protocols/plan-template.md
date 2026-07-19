@@ -58,7 +58,7 @@ linked specs/PRD, or repository configuration.
 
 ## MB-SYNC handoff / owner
 Scheduler or explicit standalone owner performs sync after verification/status
-decision. `/execute` only records handoff notes.
+decision. `/execute-task` only records handoff notes.
 
 An `explicit standalone owner` exists only when the user directly asked the
 current top-level agent to close the task, or when the top-level

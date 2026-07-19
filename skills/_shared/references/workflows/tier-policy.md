@@ -15,7 +15,7 @@ Allowed values: `T0`, `T1`, `T2`, `T3`.
 Do not use a separate risk model in task records. If execution or verification
 reveals a higher tier, stop scope growth and record the required tier. Because
 tier is embedded in task identity, route the target task through
-`/prd-to-tasks FT-<NNN>` for a controlled rebuild or split, then rerun task-plan
+`/feature-to-tasks FT-<NNN>` for a controlled rebuild or split, then rerun task-plan
 review and applicable doctor gates before executing the replacement task ID.
 
 `touched_files` is advisory and non-exhaustive. Discovering another file for the
@@ -26,7 +26,7 @@ blast radius triggers the higher tier. A non-empty
 
 ## Execute Evidence Reuse
 
-`/execute` may optionally offer a well-known local deterministic gate result as
+`/execute-task` may optionally offer a well-known local deterministic gate result as
 a self-attested `reuse candidate` in the existing task protocol. A receipt is
 supporting evidence, not independent or trusted provenance. Unknown, implicit,
 broad, stale, flaky, external-state-dependent, input-mutating, or incompletely
@@ -46,7 +46,7 @@ ownership:
   `/red-verify` and human-checkpoint rules still apply.
 
 Receipt eligibility, current-attempt selection, state/freshness comparison,
-fallback, and reporting are fully defined in the installed `/execute` and
+fallback, and reporting are fully defined in the installed `/execute-task` and
 `/verify` runtime commands. No receipt task field, registry, status, cache, or
 artifact family exists.
 
@@ -57,7 +57,7 @@ Status transitions have two modes.
 Scheduler mode:
 - `/autopilot` and `/autonomous` own task status transitions.
 - Scheduler decides closure/failure/blocking eligibility.
-- `/execute` returns scoped implementation handoff; it does not close tasks.
+- `/execute-task` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
 - `/red-verify` gives semantic verdict for per-task T3 checks and T2 feature-completion checks; in scheduler mode it does not close/fail/block/promote.
 - Scheduler must write the closure/failure/blocking decision, final task status, and evidence links to the authoritative indexed `.memory-bank/tasks/TASK-*.task.json` record immediately after each task and before the next `/mb-sync` boundary.
@@ -70,12 +70,12 @@ Scheduler mode:
 - T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
 
 Manual mode:
-- Expected T0/T1 simple flow: `/execute TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
+- Expected T0/T1 simple flow: `/execute-task TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
 - `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
-- `/execute` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, semantic scope stayed task-local, no hard runtime boundary or T2/T3 trigger appeared, and compact evidence was written. Extra files outside advisory `touched_files` do not invalidate fast-lane closure when they are necessary for the same local outcome and recorded in evidence.
-- When those conditions pass, `/execute` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
-- When any condition is missing, `/execute` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
+- `/execute-task` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, semantic scope stayed task-local, no hard runtime boundary or T2/T3 trigger appeared, and compact evidence was written. Extra files outside advisory `touched_files` do not invalidate fast-lane closure when they are necessary for the same local outcome and recorded in evidence.
+- When those conditions pass, `/execute-task` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
+- When any condition is missing, `/execute-task` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.
 - `/verify PASS` may mark `T0` / `T1` `status: done` only when explicit closure ownership is present and completed evidence has been written to the task record `verify` field and the compact/full protocol required by tier.
 - If explicit closure owner is absent, `/verify` records `VERDICT: PASS`, evidence, and a closure recommendation, leaves `status` unchanged, and tells the scheduler/owner to close.
 - `T2` manual task closure requires full protocol, applicable task/spec gates,
@@ -98,13 +98,13 @@ Manual mode:
   stays inside the accepted task identity, outcome, scope, tier, dependencies,
   specs, and hard runtime boundaries. The retry must not repeat an unsafe or
   non-idempotent side effect. Keep the task `in_progress`, record the attempt and
-  evidence in the run status/task protocol, then rerun `/execute` and every
+  evidence in the run status/task protocol, then rerun `/execute-task` and every
   required verification gate.
 - If no safe same-task retry exists or its budget is exhausted, write
   `in_progress -> failed` with the functional/semantic evidence and failure
   decision in the authoritative task record. Before the next strict doctor,
   create a `.memory-bank/bugs/` note mentioning the failed task or route a
-  normal indexed follow-up task through `/prd-to-tasks` or
+  normal indexed follow-up task through `/feature-to-tasks` or
   `/foundation-to-tasks`. A follow-up joins the same run only after its normal
   review and readiness gates pass.
 - `VERDICT: NEEDS-CLARIFICATION`, `SEMANTIC_VERDICT: semantic-concern`, or an
@@ -120,7 +120,7 @@ Manual mode:
   yields `HALT_FAILURE_BUDGET`; a successful task resets the consecutive-failure
   count.
 
-The scheduler owns these lifecycle decisions. `/execute`, `/verify`,
+The scheduler owns these lifecycle decisions. `/execute-task`, `/verify`,
 `/red-verify`, and `/mb-sync` only return or reconcile their existing evidence
 and ownership deltas.
 
@@ -129,7 +129,7 @@ Tier summary:
 - T2 tasks: full protocol + applicable task/spec gates + verify PASS before scheduler marks done; T2 feature completion then requires feature-level red-verify.
 - T3 tasks: verify + per-task red-verify before scheduler marks done.
 - T3: human checkpoint before scheduler marks done.
-- Manual mode: T0/T1 may close in `/execute` with compact evidence when the explicit manual top-level owner conditions are met, or through `/verify PASS` when independent verification is requested; T2 tasks do not require per-task /red-verify for closure; T2 feature completion requires feature-level /red-verify semantic-pass recorded in the feature doc; T3 tasks require per-task /red-verify semantic-pass before closure.
+- Manual mode: T0/T1 may close in `/execute-task` with compact evidence when the explicit manual top-level owner conditions are met, or through `/verify PASS` when independent verification is requested; T2 tasks do not require per-task /red-verify for closure; T2 feature completion requires feature-level /red-verify semantic-pass recorded in the feature doc; T3 tasks require per-task /red-verify semantic-pass before closure.
 
 ## Single-card execution context
 
@@ -146,7 +146,7 @@ Use for typos, formatting, broken links, or safe documentation changes with no r
 
 - Protocol: compact allowed. Full protocol not required.
 - Scheduler mode: `/verify TASK` is the ordered verification step; compact protocol/evidence may be enough.
-- Manual mode: separate `/verify` is not default; `/execute` may close with compact evidence when explicit top-level owner conditions pass.
+- Manual mode: separate `/verify` is not default; `/execute-task` may close with compact evidence when explicit top-level owner conditions pass.
 - `/red-verify`: not required
 - Evidence: `VERDICT: PASS` or clear compact evidence accepted by current lint/doctor policy
 - MB-SYNC: not required when only task `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed; run if broader durable Memory Bank docs/state changed
@@ -158,7 +158,7 @@ Use for one local function, one small component, a local unit test, or a contain
 - Protocol: compact allowed. Full protocol not required.
 - Checks: relevant local lint/typecheck/unit tests when available
 - Scheduler mode: `/verify TASK` is the ordered verification step; compact protocol/evidence may be enough.
-- Manual mode: separate `/verify` is optional; `/execute` should run the cheapest relevant local check when available, or record why no meaningful runnable check exists, and may close with compact evidence when explicit top-level owner conditions pass.
+- Manual mode: separate `/verify` is optional; `/execute-task` should run the cheapest relevant local check when available, or record why no meaningful runnable check exists, and may close with compact evidence when explicit top-level owner conditions pass.
 - `/red-verify`: not required
 - Evidence: `VERDICT: PASS` or clear compact evidence accepted by current lint/doctor policy
 - MB-SYNC: not required when only task `status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed; run if broader durable Memory Bank docs/state changed

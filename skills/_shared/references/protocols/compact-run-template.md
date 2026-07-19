@@ -36,7 +36,7 @@ status: active
 ## Reuse Candidates (optional)
 Receipt is executor self-attestation and supporting evidence, not independent
 provenance or task closure. Repeat this block only for current-attempt results
-that `/execute` offers to `/verify`; mark older same-claim blocks superseded.
+that `/execute-task` offers to `/verify`; mark older same-claim blocks superseded.
 
 - receipt_status: current | superseded | supporting-only
 - attempt:

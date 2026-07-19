@@ -46,7 +46,7 @@ repair route.
   `ready -> in_progress`, final `done|failed|blocked` decisions, dependent
   block/unblock, failure budget, and terminal queue state.
 - Child ownership remains canonical in
-  `.memory-bank/workflows/tier-policy.md`: `/execute` implements, `/verify`
+  `.memory-bank/workflows/tier-policy.md`: `/execute-task` implements, `/verify`
   provides functional verdict, `/red-verify` provides semantic verdict, and
   `/mb-sync` only reconciles already-written state.
 - Canonical execution is sequential. Select and finish one task's execute,
@@ -83,7 +83,7 @@ an operator decision.
 <agent_discretion>
 The scheduler chooses efficient context refreshes, executor invocation, and
 bounded retry tactics within policy/budgets. It does not duplicate or constrain
-the internal method of `/execute`, `/verify`, or `/red-verify`.
+the internal method of `/execute-task`, `/verify`, or `/red-verify`.
 </agent_discretion>
 
 <required_outputs>
@@ -103,7 +103,7 @@ In canonical mode, select one `ready` task by earliest wave and stable index
 order. Require current strict-doctor PASS before `ready -> in_progress`, then:
 
 1. scheduler writes `ready -> in_progress`;
-2. `/execute <TASK_ID>`;
+2. `/execute-task <TASK_ID>`;
 3. `/verify <TASK_ID>` by authoritative tier;
 4. per-task `/red-verify <TASK_ID>` for T3 only (optional for T2);
 5. scheduler writes final closure/failure/blocking decision and evidence:

@@ -77,7 +77,7 @@ Doctor сообщает несогласованность или неготов
    документированному default/strict contract.
 5. В canonical документации явно закрепить: lint проверяет структуру, doctor —
    readiness, scheduler/manual owner — transition decision.
-6. Обновить release fixtures так, чтобы structurally valid, но closure-
+6. Обновить agent-run regression fixtures так, чтобы structurally valid, но closure-
    incomplete task проходила lint и получала ожидаемый doctor finding.
 
 ## Expected implementation surface
@@ -85,7 +85,6 @@ Doctor сообщает несогласованность или неготов
 Primary:
 
 - `skills/mb-garden/assets/mb-lint.mjs`
-- `.github/workflows/release-check.yml`
 - `skills/_shared/references/commands/mb-doctor.md`
 
 Conditional:
@@ -117,7 +116,7 @@ Generated `.memory-bank/`, `.protocols/`, `.agents/`, `.claude/` и vendored
 - не давать doctor право менять task status;
 - не добавлять новый validator, policy registry или evidence format;
 - не делать strict doctor обязательным для каждого manual T0/T1 run;
-- не превращать standalone lint CI в scheduler closure gate.
+- не превращать agent-run standalone lint в scheduler closure gate.
 
 ## Acceptance criteria
 

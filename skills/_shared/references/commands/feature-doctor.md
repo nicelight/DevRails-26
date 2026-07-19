@@ -2,7 +2,7 @@
 description: Optional adaptive clarification of one feature before task decomposition.
 status: active
 ---
-# /clarify-feature - Feature ambiguity pass
+# /feature-doctor - Feature ambiguity pass
 
 <objective>
 Resolve decomposition-affecting ambiguity in exactly one
@@ -17,10 +17,10 @@ plans, tiers, behavior specs, or canonical SDD design specs.
 Require `$ARGUMENTS` with one `FT-<NNN>`. Do not auto-select a feature. If the
 ID is absent, ask for it in interactive mode. In unattended flow, halt before
 any write with `HALT_CLARIFICATION_REQUIRED` and report:
-- reason: `missing required FT-<NNN> argument for /clarify-feature`;
-- affected command: `/clarify-feature`;
+- reason: `missing required FT-<NNN> argument for /feature-doctor`;
+- affected command: `/feature-doctor`;
 - owner and next action: the operator supplies the exact feature ID;
-- exact resume command: `/clarify-feature FT-<NNN>`.
+- exact resume command: `/feature-doctor FT-<NNN>`.
 
 Use the caller's existing halt handoff; do not create a durable artifact solely
 for this missing argument.
@@ -39,7 +39,7 @@ ambiguity or design-impact assessment.
   `clarification_questions` count.
 - Preserve feature design statuses `complete|not_required|blocked`; do not add a
   `stale` status.
-- `/clarify-feature` may detect design impact but must not repair linked SDD
+- `/feature-doctor` may detect design impact but must not repair linked SDD
   specs, create tasks/plans, or change tier.
 - A recommendation/default is not accepted without an explicit operator answer.
 </hard_invariants>
@@ -78,7 +78,7 @@ After every accepted answer:
 If an accepted answer invalidates linked design:
 - preserve `spec_design_links` as historical routing evidence;
 - set misleading `spec_design_status: complete|not_required` to `blocked`;
-- route feature-local canonical reconciliation to `/prd-to-tasks FT-<NNN>`;
+- route feature-local canonical reconciliation to `/feature-to-tasks FT-<NNN>`;
 - route shared/global backbone, Architecture Spine, or competing canonical path
   issues to `/spec-design`;
 - note behavior-spec refresh without editing behavior JSON unless explicitly
@@ -103,11 +103,11 @@ design incomplete, contradictory, or unverifiable.
 </validation>
 
 <handoff_contract>
-- feature wording changed without design invalidation -> `/prd-to-tasks
+- feature wording changed without design invalidation -> `/feature-to-tasks
   FT-<NNN>` after the global backbone and any required Foundation Gate are
   ready;
-- feature-local canonical design invalidated -> `/prd-to-tasks FT-<NNN>` for
+- feature-local canonical design invalidated -> `/feature-to-tasks FT-<NNN>` for
   reconciliation before task slicing;
 - shared/global design or canonical-path conflict -> `/spec-design`;
-- unresolved operator decision -> answer it and rerun `/clarify-feature`.
+- unresolved operator decision -> answer it and rerun `/feature-doctor`.
 </handoff_contract>

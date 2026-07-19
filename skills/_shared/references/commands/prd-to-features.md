@@ -2,7 +2,7 @@
 description: Decompose a clarified PRD into Memory Bank product, requirements, epics, and features.
 status: active
 ---
-# /prd - Clarified PRD -> product plan
+# /prd-to-features - Clarified PRD -> product plan
 
 <objective>
 Derive the canonical L1-L3 product structure from an already clarified PRD:
@@ -38,7 +38,7 @@ links:
 <hard_invariants>
 - Do not write/clarify the PRD, perform architecture design, create TASK records
   or implementation plans, choose test levels, define global testing gates, or
-  create/modify `.memory-bank/testing/*`. `/prd` does not create or modify files
+  create/modify `.memory-bank/testing/*`. `/prd-to-features` does not create or modify files
   under `.memory-bank/testing/`.
 - Do not let a lower-precedence PRD or feature override Constitution or an
   authoritative canonical spec.
@@ -89,7 +89,7 @@ Each feature records:
 - `status: draft` by default;
 - an `## SDD Design Gate` note routing immediately to mandatory
   `/spec-design`, with feature-level canonical design completed later by
-  `/prd-to-tasks` or `/spec-auto` after any required Foundation Gate;
+  `/feature-to-tasks` or `/spec-auto` after any required Foundation Gate;
 - candidate canonical links only when grounded in evidence; omit
   `spec_design_status` unless its existing truthful state must be preserved.
 
@@ -129,7 +129,7 @@ fresh-context `/review-feat-plan`. For small manual work it is recommended unles
 the Constitution/operator requires it. After applicable approval, continue to
 `/spec-design`.
 
-If one feature is explicitly pending/blocked, `/clarify-feature FT-<NNN>` may
+If one feature is explicitly pending/blocked, `/feature-doctor FT-<NNN>` may
 resolve it before review/design. Do not copy or recommend the entire downstream
 execution chain from this leaf command.
 </handoff_contract>

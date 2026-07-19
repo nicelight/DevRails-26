@@ -29,7 +29,7 @@ configuration needed for the chosen check.
 - Do not weaken assertions, disable failures, introduce decorative tests, or
   substitute screenshots for behavior proof.
 - Do not create or modify `.memory-bank/testing/`; durable testing specs route
-  through `/spec-design`, `/foundation-to-tasks`, or `/prd-to-tasks`.
+  through `/spec-design`, `/foundation-to-tasks`, or `/feature-to-tasks`.
 - `/add-tests` does not own task closure or scheduler transitions.
 </hard_invariants>
 
@@ -41,8 +41,8 @@ decision.
 
 Interactive flow asks the operator and resumes only after the owning
 feature/spec/task plan is durably repaired. Unattended flow returns the blocker
-to the scheduler without choosing and names `/prd-to-tasks FT-<NNN>`,
-`/spec-design`, or `/clarify-feature FT-<NNN>` as the applicable resume route.
+to the scheduler without choosing and names `/feature-to-tasks FT-<NNN>`,
+`/spec-design`, or `/feature-doctor FT-<NNN>` as the applicable resume route.
 A recommendation is not an accepted decision.
 </operator_decisions>
 
@@ -71,8 +71,8 @@ do not authorize or encode an unresolved product/design decision.
 </validation>
 
 <handoff_contract>
-Return immediately to `/execute`, `/verify`, the scheduler, or the explicit task
+Return immediately to `/execute-task`, `/verify`, the scheduler, or the explicit task
 owner under `.memory-bank/workflows/tier-policy.md`. Out-of-scope coverage routes
-to normal `/prd-to-tasks FT-<NNN>` planning instead of being smuggled into the
+to normal `/feature-to-tasks FT-<NNN>` planning instead of being smuggled into the
 current task.
 </handoff_contract>

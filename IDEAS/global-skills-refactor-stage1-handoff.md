@@ -13,10 +13,10 @@ Stage 1 is implemented for the Product and Design path only:
 - `/brief`
 - `/constitution`
 - `/write-prd`
-- `/clarify-feature`
+- `/feature-doctor`
 - `/discuss`
 - `/spec-init`
-- `/prd`
+- `/prd-to-features`
 - `/review-feat-plan`
 - `/spec-design`
 - `/spec-auto`
@@ -34,17 +34,16 @@ Canonical command specs:
 - `skills/_shared/references/commands/brief.md`
 - `skills/_shared/references/commands/constitution.md`
 - `skills/_shared/references/commands/write-prd.md`
-- `skills/_shared/references/commands/clarify-feature.md`
+- `skills/_shared/references/commands/feature-doctor.md`
 - `skills/_shared/references/commands/discuss.md`
 - `skills/_shared/references/commands/spec-init.md`
-- `skills/_shared/references/commands/prd.md`
+- `skills/_shared/references/commands/prd-to-features.md`
 - `skills/_shared/references/commands/review-feat-plan.md`
 - `skills/_shared/references/commands/spec-design.md`
 - `skills/_shared/references/commands/spec-auto.md`
 
 Related source/docs/checks:
 
-- `.github/workflows/release-check.yml`
 - `README.md`
 - `howItWorks.md`
 - `IDEAS/global-skills-refactor-stage1-handoff.md` (this planning-only handoff)
@@ -60,13 +59,13 @@ source tree.
 | `/brief` | concept/brainstorm -> `product-brief.md` + analysis index | `Decision: proceed|blocked` | `/constitution`, `/write-prd`, or rerun `/brief` |
 | `/constitution` | brief/project evidence -> Constitution | `project_principles: ratified|partial|framework-default|skipped`; unresolved conflict blocks; skip must be explicit | `/write-prd` or rerun `/constitution` |
 | `/write-prd` | Product Brief/PRD source + Constitution -> PRD | `clarification_status: complete|pending|blocked`; `constitution_checked: true` only after the current content passes | `/spec-init`, or repair `/write-prd`/`/constitution` |
-| `/clarify-feature` | explicit `FT-<NNN>` -> target feature + clarification protocol | clarification `pending|complete|blocked`; design impact `none|feature_design_stale|global_design_stale|blocked`; design status remains `complete|not_required|blocked` | `/prd-to-tasks FT-*`, `/spec-design`, or rerun clarification |
+| `/feature-doctor` | explicit `FT-<NNN>` -> target feature + clarification protocol | clarification `pending|complete|blocked`; design impact `none|feature_design_stale|global_design_stale|blocked`; design status remains `complete|not_required|blocked` | `/feature-to-tasks FT-*`, `/spec-design`, or rerun clarification |
 | `/discuss` | bounded ambiguity scope -> existing decision log + owning canonical artifact | unresolved choice keeps the owning existing blocker/status | return to the immediate owning Product/Design skill |
-| `/spec-init` | PRD with `type: prd`, `clarification_status: complete`, `constitution_checked: true` -> spec-backbone framing + pure spec-index | `Pre-PRD Spec Status: ready_for_prd|blocked`; created scenario artifact keeps review `draft|reviewed|blocked`; Global Backbone intentionally pending | `/prd` or PRD/framing repair |
-| `/prd` | complete/checked PRD + ready framing/index -> product/REQ/EP/FT | stable `REQ-*`; epic document status `draft -> active` only after open questions close; feature clarification metadata only for real blockers; `FT-000` reserved | `/review-feat-plan`, `/spec-design`, or `/clarify-feature` |
+| `/spec-init` | PRD with `type: prd`, `clarification_status: complete`, `constitution_checked: true` -> spec-backbone framing + pure spec-index | `Pre-PRD Spec Status: ready_for_prd|blocked`; created scenario artifact keeps review `draft|reviewed|blocked`; Global Backbone intentionally pending | `/prd-to-features` or PRD/framing repair |
+| `/prd-to-features` | complete/checked PRD + ready framing/index -> product/REQ/EP/FT | stable `REQ-*`; epic document status `draft -> active` only after open questions close; feature clarification metadata only for real blockers; `FT-000` reserved | `/review-feat-plan`, `/spec-design`, or `/feature-doctor` |
 | `/review-feat-plan` | fresh-context L1-L3 review -> fixed review report | `VERDICT: APPROVE|REJECT`; reviewer does not choose an ambiguous interpretation | `/spec-design` or named repair owner |
-| `/spec-design` | PRD/REQ/EP/FT + current canonical specs -> global backbone, canonical routes, Foundation decision | Global Backbone `complete|minimal|blocked`; mode/artifact strategy may remain existing `pending` only while blocked; matrix `authoritative|needed_before_tasks|not_applicable|blocked`; Foundation `required|not_required|blocked` | `/foundation-to-tasks`, `/prd-to-tasks`/`/spec-auto`, or rerun after decision |
-| `/spec-auto` | authoritative unattended inputs -> pre-PRD or feature design | same pre-PRD/backbone/feature statuses; unresolved decision uses existing `HALT_BLOCKING_QUESTIONS|HALT_CLARIFICATION_REQUIRED` | `/prd`, foundation route, `/prd-to-tasks`, or named interactive repair skill |
+| `/spec-design` | PRD/REQ/EP/FT + current canonical specs -> global backbone, canonical routes, Foundation decision | Global Backbone `complete|minimal|blocked`; mode/artifact strategy may remain existing `pending` only while blocked; matrix `authoritative|needed_before_tasks|not_applicable|blocked`; Foundation `required|not_required|blocked` | `/foundation-to-tasks`, `/feature-to-tasks`/`/spec-auto`, or rerun after decision |
+| `/spec-auto` | authoritative unattended inputs -> pre-PRD or feature design | same pre-PRD/backbone/feature statuses; unresolved decision uses existing `HALT_BLOCKING_QUESTIONS|HALT_CLARIFICATION_REQUIRED` | `/prd-to-features`, foundation route, `/feature-to-tasks`, or named interactive repair skill |
 
 Successful Product/Design handoff now explicitly requires the durable bundle:
 
@@ -110,13 +109,12 @@ Stage 1 did not change:
 - JSON task generation or task registry/index semantics;
 - task IDs, tier policy, task lifecycle, waves, or status ownership;
 - Foundation task generation, `REQ-000`/`FT-000`/W0 task rules;
-- `/prd-to-tasks`, `/foundation-to-tasks`, `/review-tasks-plan`;
-- `/execute`, `/verify`, `/red-verify`, or evidence/protocol routing;
+- `/feature-to-tasks`, `/foundation-to-tasks`, `/review-tasks-plan`;
+- `/execute-task`, `/verify`, `/red-verify`, or evidence/protocol routing;
 - `/autonomous`, `/autopilot`, scheduler ordering/budgets/transitions;
 - `/mb-sync` ownership and synchronization behavior.
 
-`.github/workflows/release-check.yml` gained prompt-contract assertions only;
-it does not change runtime mechanics.
+Agent-run prompt-contract checks do not change runtime mechanics.
 
 ## Verification evidence
 
@@ -146,10 +144,10 @@ Passed:
   canonical paths, and Foundation ambiguity.
 - Start Stage 2 with an exact contract inventory of the remaining skills before
   slimming them. Likely hotspots from the source brief are `/red-verify`,
-  `/prd-to-tasks`, `/foundation-to-tasks`, `/execute`, `/review-tasks-plan`,
+  `/feature-to-tasks`, `/foundation-to-tasks`, `/execute-task`, `/review-tasks-plan`,
   `/autonomous`, `/autopilot`, and `/mb-sync`.
 - `howItWorks.md` still intentionally describes the current fixed/internal
-  behavior of out-of-scope Stage 2 skills (for example `/prd-to-tasks`). Update
+  behavior of out-of-scope Stage 2 skills (for example `/feature-to-tasks`). Update
   those passages only when their owning skills are refactored.
 - Do not weaken mechanical doctor/lint gates merely to match shorter prompts.
 - Recheck immediate runtime reference availability after any Stage 2

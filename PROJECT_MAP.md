@@ -8,7 +8,6 @@ Before changing this repository, read:
 - `package.json`
 - `scripts/install-framework.mjs`
 - `scripts/vendor-shared.mjs`
-- `.github/workflows/release-check.yml`
 
 ## Core Invariant: Source-Only Skill Packaging
 
@@ -22,7 +21,7 @@ skills/<skill>/SKILL.md   package skill entrypoints
 skills/<skill>/shared-*   not committed in source-only form
 ```
 
-Installation and CI generate the missing package-local copies in a temporary prepared repository:
+The installer generates the missing package-local copies in a temporary prepared repository:
 
 ```text
 source-only repo
@@ -55,7 +54,6 @@ Packaging and install:
 - `package.json`: package bin and scripts.
 - `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
-- `.github/workflows/release-check.yml`: CI source-only hygiene, syntax checks, install smoke, bootstrap smoke.
 
 Canonical shared source:
 
@@ -85,16 +83,15 @@ For updates that change the JSON-only task registry or indexed task record model
 - `skills/_shared/references/structure-template.md`
 - `skills/_shared/references/commands/foundation-to-tasks.md`
 - `skills/_shared/references/commands/write-prd.md`
-- `skills/_shared/references/commands/clarify-feature.md`
-- `skills/_shared/references/commands/prd-to-tasks.md`
+- `skills/_shared/references/commands/feature-doctor.md`
+- `skills/_shared/references/commands/feature-to-tasks.md`
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/autonomous.md`
-- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/execute-task.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/mb-sync.md`
 - `skills/mb-garden/assets/mb-lint.mjs` (packaged deterministic lint asset)
 - `skills/mb-garden/assets/mb-doctor.mjs` (current packaged deterministic readiness asset)
-- `.github/workflows/release-check.yml`
 - `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 ## Foundation Dev Path Hotspots
@@ -109,14 +106,13 @@ Primary source files:
   `.memory-bank/foundation.md` and the Feature Pressure Map
 - `skills/_shared/references/commands/foundation-to-tasks.md` for `REQ-000`,
   `FT-000`, foundation task records, and the final foundation gate
-- `skills/_shared/references/commands/prd-to-tasks.md` for rejecting `FT-000`,
+- `skills/_shared/references/commands/feature-to-tasks.md` for rejecting `FT-000`,
   excluding it from `--all`, and adding final gate dependencies to product tasks
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/mb-doctor.md`
 - `skills/_shared/scripts/init-mb.js`
 - `skills/mb-garden/assets/mb-doctor.mjs`
-- `.github/workflows/release-check.yml`
 - `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
@@ -135,7 +131,7 @@ Primary source files for this behavior:
   spine during the global SDD backbone gate
 - `skills/_shared/references/commands/spec-auto.md` for applying the same KISS
   AD rules during autonomous feature design
-- `skills/_shared/references/commands/prd-to-tasks.md` for registry-first
+- `skills/_shared/references/commands/feature-to-tasks.md` for registry-first
   feature concern discovery, subject-based canonical spec reconciliation, and
   copying relevant AD/boundary links into task fields
 - `skills/_shared/references/commands/review-tasks-plan.md` for fresh-context
@@ -159,12 +155,12 @@ feature/task links and search.
 
 Primary source files:
 
-- `skills/_shared/references/commands/prd-to-tasks.md`
+- `skills/_shared/references/commands/feature-to-tasks.md`
 - `skills/_shared/references/commands/spec-design.md`
 - `skills/_shared/references/commands/spec-auto.md`
 - `skills/_shared/references/commands/foundation-to-tasks.md`
 - `skills/_shared/references/commands/review-tasks-plan.md`
-- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/execute-task.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/scripts/init-mb.js`
 - `skills/_shared/references/structure-template.md`
@@ -187,12 +183,12 @@ read alias; new or repaired task cards emit `write_boundary`.
 
 Primary source files for this behavior:
 
-- `skills/_shared/references/commands/prd-to-tasks.md` for copying
+- `skills/_shared/references/commands/feature-to-tasks.md` for copying
   boundary-map/contract evidence into existing task link fields and
   `runtime_context`
 - `skills/_shared/references/commands/review-tasks-plan.md`
 - `skills/_shared/references/commands/mb-doctor.md`
-- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/execute-task.md`
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/red-verify.md`
 - `skills/_shared/references/commands/autopilot.md`
@@ -215,7 +211,7 @@ Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-ban
 
 Behavior specs are optional JSON `given / when / then` examples under
 `.memory-bank/behavior-specs/`. They have no registry, schema, validator,
-doctor gate, task field, or verification-gate semantics. `/prd-to-tasks` may
+doctor gate, task field, or verification-gate semantics. `/feature-to-tasks` may
 create 0-3 specs per feature when evidence shows concrete behavior examples
 will reduce implementation ambiguity. Feature docs link them in `## Behavior
 specs`; task records link task-relevant specs only through `source_artifacts`.
@@ -224,11 +220,10 @@ Primary source files for this behavior:
 
 - `skills/_shared/scripts/init-mb.js`
 - `skills/_shared/references/structure-template.md`
-- `skills/_shared/references/commands/prd.md`
-- `skills/_shared/references/commands/prd-to-tasks.md`
-- `skills/_shared/references/commands/execute.md`
+- `skills/_shared/references/commands/prd-to-features.md`
+- `skills/_shared/references/commands/feature-to-tasks.md`
+- `skills/_shared/references/commands/execute-task.md`
 - `skills/_shared/references/commands/verify.md`
-- `.github/workflows/release-check.yml`
 - `README.md`, `howItWorks.md`
 
 Do not add a behavior registry, JSON Schema, lint/doctor gate, new task field,

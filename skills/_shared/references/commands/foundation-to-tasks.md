@@ -186,7 +186,7 @@ Report queue action, specs reused/extended/created, task IDs, final gate ID or
 - Queue created/reconciled: stop before execution and hand off immediately to
   `/mb-doctor --strict` for the FT-000 queue.
 - No Foundation required/proven brownfield baseline: hand off to
-  `/prd-to-tasks FT-<NNN>`.
+  `/feature-to-tasks FT-<NNN>`.
 - Unresolved Foundation/design decision: no affected queue handoff;
   `/spec-design` is the repair/resume owner.
 </handoff_contract>

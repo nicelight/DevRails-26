@@ -60,7 +60,7 @@ If such a branch could change the verdict:
 - return `REJECT` with the exact operator question, affected tasks/specs, and
   repair owner;
 - route feature-level product/design/tasking repair to
-  `/prd-to-tasks FT-<NNN>` or `/clarify-feature FT-<NNN>`;
+  `/feature-to-tasks FT-<NNN>` or `/feature-doctor FT-<NNN>`;
 - route shared/global design or competing canonical identity to `/spec-design`;
 - do not treat a recommendation as an accepted answer.
 
@@ -128,7 +128,7 @@ plan, spec, requirement, dependency, or doctor finding; the report uses only
 
 <handoff_contract>
 - `APPROVE` manual route -> conditional `/mb-doctor` when required, then
-  `/execute TASK-...` only for a task whose lifecycle context is currently
+  `/execute-task TASK-...` only for a task whose lifecycle context is currently
   executable; approval does not promote `planned` tasks or normalize status.
 - Complete scheduler review coverage -> `/mb-doctor --strict`, then the selected
   scheduler, which retains promotion/status ownership.

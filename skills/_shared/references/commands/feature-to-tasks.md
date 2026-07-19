@@ -2,7 +2,7 @@
 description: Plan or reconcile one product feature into canonical SDD coverage, an implementation plan, and complete JSON task cards.
 status: active
 ---
-# /prd-to-tasks - Feature design -> implementation plan -> JSON tasks
+# /feature-to-tasks - Feature design -> implementation plan -> JSON tasks
 
 <objective>
 Close or safely reconcile one product feature's tasking surface:
@@ -100,7 +100,7 @@ or canonical spec identity belongs to the operator.
   contradictory wording, and revalidate before task writes.
 - Shared/global decisions and competing canonical paths route to
   `/spec-design`; feature product ambiguity routes to
-  `/clarify-feature FT-<NNN>` or its owning feature source.
+  `/feature-doctor FT-<NNN>` or its owning feature source.
 - Unattended flow records the question and affected scope, writes no affected
   tasks, returns `HALT_CLARIFICATION_REQUIRED` for product clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract decisions, and names the exact
@@ -249,7 +249,7 @@ Final report:
 - Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
 - Successful `--all` -> one fresh-context `/review-tasks-plan FT-<NNN>` per
   task-linked product feature.
-- Blocked product decision -> `/clarify-feature FT-<NNN>` or owning feature
+- Blocked product decision -> `/feature-doctor FT-<NNN>` or owning feature
   repair; blocked shared/global decision -> `/spec-design`.
 
 Conditional `/mb-doctor` and execution happen only after the task-plan review;

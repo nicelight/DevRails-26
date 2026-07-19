@@ -6,13 +6,13 @@ status: active
 
 <objective>
 Prepare enough evidence-backed product/domain framing after clarified
-`/write-prd` for `/prd` to derive meaningful requirements, epics, and features
+`/write-prd` for `/prd-to-features` to derive meaningful requirements, epics, and features
 without cutting across the wrong scenario, domain, lifecycle, or boundary.
 
 `/spec-init` is a decomposition-safety gate, not architecture design. Its result
 is `Pre-PRD Spec Status: ready_for_prd|blocked`; the global SDD backbone and
 Foundation Dev Path remain intentionally pending for `/spec-design` after
-`/prd`.
+`/prd-to-features`.
 </objective>
 
 <input_contract>
@@ -41,7 +41,7 @@ frame truthfully, stop and route to `/write-prd`.
   or `FT-*` design specs, full architecture decisions, source-of-truth
   hierarchy, API/OpenAPI details, DB migrations, deployment design, detailed
   state machines, or invented security posture.
-- Do not set feature `spec_design_status`; `/prd` creates features and later
+- Do not set feature `spec_design_status`; `/prd-to-features` creates features and later
   design skills own that status.
 - Keep `.memory-bank/spec-index.md` a pure registry. Readiness, open design
   questions, matrices, and handoffs belong in `spec-backbone.md`.
@@ -139,7 +139,7 @@ Keep `spec-backbone.md` parseable with:
 
 ## Open Design Questions
 
-## Handoff To /prd
+## Handoff To /prd-to-features
 - Ready: yes|no
 - Required reads:
 - Stop conditions:
@@ -161,7 +161,7 @@ mandatory sequence. Do not create a file when a precise PRD link is enough.
 
 <validation>
 Set `ready_for_prd` only when the evidence is sufficient for meaningful L1-L3
-decomposition. Set `blocked` when `/prd` would likely invent scope or cut the
+decomposition. Set `blocked` when `/prd-to-features` would likely invent scope or cut the
 product incorrectly. Verify that `spec-index.md` remains pure, all links resolve,
 scenario-sensitive inputs are reviewed or otherwise authoritative, accepted
 answers were applied consistently, and no architecture/foundation decision was
@@ -172,7 +172,7 @@ not ready is expected: `/spec-design` has not run yet.
 </validation>
 
 <handoff_contract>
-- `ready_for_prd` -> `/prd`.
+- `ready_for_prd` -> `/prd-to-features`.
 - `blocked` -> resolve the recorded product/domain decision through
   `/write-prd` or focused discussion, then rerun `/spec-init`.
 

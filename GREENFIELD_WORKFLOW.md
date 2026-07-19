@@ -8,7 +8,7 @@ flowchart TD
   brief --> constitution["/constitution"]
   constitution --> writePrd["/write-prd"]
   writePrd --> specInit["/spec-init"]
-  specInit --> prd["/prd"]
+  specInit --> prd["/prd-to-features"]
   prd --> reviewFeat{"High-risk / large work?"}
   reviewFeat -- "да" --> reviewFeatPlan["/review-feat-plan"]
   reviewFeat -- "нет" --> specDesign["/spec-design"]
@@ -17,8 +17,8 @@ flowchart TD
   specDesign --> foundation{"Нужен executable baseline?"}
   foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
   foundationTasks --> foundationDoctor["/mb-doctor --strict<br/>foundation/task-queue"]
-  foundationDoctor --> foundationExec["/execute + /verify<br/>FT-000 до final gate done"]
-  foundationExec --> tasking["/prd-to-tasks FT-001"]
+  foundationDoctor --> foundationExec["/execute-task + /verify<br/>FT-000 до final gate done"]
+  foundationExec --> tasking["/feature-to-tasks FT-001"]
   foundation -- "нет" --> tasking
 
   tasking --> reviewTasks["/review-tasks-plan<br/>FT-001<br/>contract readiness"]
@@ -27,7 +27,7 @@ flowchart TD
   doctorNeeded -- "нет" --> mode
   doctor --> mode{"Как выполнять JSON task queue?"}
 
-  mode -- "Manual" --> exec["/execute<br/>TASK-NNN-TN-FT-NNN-WN"]
+  mode -- "Manual" --> exec["/execute-task<br/>TASK-NNN-TN-FT-NNN-WN"]
   exec --> fastLane{"T0/T1 fast-lane?<br/>explicit owner + compact evidence"}
   fastLane -- "да" --> localDone["Task done<br/>compact evidence / no-runnable-check note"]
   fastLane -- "нет / T2-T3 / uncertainty" --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]

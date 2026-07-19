@@ -51,7 +51,7 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 - Для blocker назови finding, затронутые files, отсутствующее owner decision и
   existing handoff: operator для destructive/canonical choice,
   `/constitution` для governance amendment, `/spec-design` или
-  `/prd-to-tasks FT-<NNN>` для принадлежащего им design/task решения.
+  `/feature-to-tasks FT-<NNN>` для принадлежащего им design/task решения.
 - Obsolete generated runtime skill entry не удаляй автоматически: верни
   recommendation использовать installer sync. User-owned skills не меняй.
 

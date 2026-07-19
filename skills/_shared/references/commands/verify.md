@@ -50,7 +50,7 @@ or normative evidence remains a required-input blocker under the rule above.
 - Apply only spec families demanded by actual scope. Missing/conflicting/wrong
   canonical coverage is a planning/design blocker, not an implementation FAIL.
 - Evidence requirements and verification targets state what must be proved;
-  they are not proof. `/execute` local PASS is input, not automatic PASS.
+  they are not proof. `/execute-task` local PASS is input, not automatic PASS.
 - An execute receipt is self-attested supporting evidence. It does not prove
   that its declared snapshot preceded the command or that the reported result
   occurred, and it is never an independent observation by `/verify`.
@@ -73,9 +73,9 @@ do not choose one.
   acceptance. The owning skill durably updates the canonical artifact and the
   task is revalidated/re-executed before verification resumes.
 - Route task scope/tier/feature-level spec repair to
-  `/prd-to-tasks FT-<NNN>`, shared/global design to `/spec-design`, product
-  ambiguity to `/clarify-feature FT-<NNN>`, and missing implementation evidence
-  to `/execute <TASK_ID>`.
+  `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-design`, product
+  ambiguity to `/feature-doctor FT-<NNN>`, and missing implementation evidence
+  to `/execute-task <TASK_ID>`.
 - Unattended flow returns the blocker and exact route to the scheduler for
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS`.
 
@@ -188,7 +188,7 @@ auditably reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
 tier and trigger, and routes controlled rebuild/split through
-`/prd-to-tasks FT-<NNN>`, then review/doctor/re-execution of the replacement ID.
+`/feature-to-tasks FT-<NNN>`, then review/doctor/re-execution of the replacement ID.
 </validation>
 
 <handoff_contract>

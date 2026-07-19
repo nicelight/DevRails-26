@@ -79,16 +79,16 @@ Use generated `/cold-start` as a router. It should inspect:
 Routing summary:
 
 - code + PRD/delta/clear product input: `/map-codebase` first, then
-  `/constitution` if needed, `/write-prd --delta`, `/spec-init`, `/prd`,
+  `/constitution` if needed, `/write-prd --delta`, `/spec-init`, `/prd-to-features`,
   `/review-feat-plan` for high-risk/large work, `/spec-design`,
   `/foundation-to-tasks --verify-existing` only when baseline proof is still
-  needed, then `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`,
-  conditional `/mb-doctor`, and tier-routed `/execute TASK`
+  needed, then `/feature-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`,
+  conditional `/mb-doctor`, and tier-routed `/execute-task TASK`
 - code only: `/map-codebase` as an as-is baseline, then ask for PRD/delta
 - no code + existing PRD: `/constitution` if needed, `/write-prd`,
-  `/spec-init`, `/prd`, `/review-feat-plan` when needed, `/spec-design`, then
-  `/prd-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional
-  `/mb-doctor`, and tier-routed `/execute TASK` after foundation requirements
+  `/spec-init`, `/prd-to-features`, `/review-feat-plan` when needed, `/spec-design`, then
+  `/feature-to-tasks FT-<NNN>`, `/review-tasks-plan FT-<NNN>`, conditional
+  `/mb-doctor`, and tier-routed `/execute-task TASK` after foundation requirements
   are handled
 - no code + product brief: `/constitution` if needed, then `/write-prd`
 - clear concept but no PRD: `/brief`, then `/constitution` if needed, then
@@ -99,7 +99,7 @@ Routing summary:
 
 ## Downstream Gates
 
-After `/prd-to-tasks FT-<NNN>`, run `/review-tasks-plan FT-<NNN>` before
+After `/feature-to-tasks FT-<NNN>`, run `/review-tasks-plan FT-<NNN>` before
 execution. For autonomous/autopilot handoff, every task-linked product feature
 needs latest `/review-tasks-plan FT-<NNN>` `APPROVE` plus strict doctor.
 

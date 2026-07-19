@@ -6,7 +6,7 @@ status: active
 
 <objective>
 Create or update `.memory-bank/prd.md` as the clarified, Constitution-checked
-product source for `/spec-init` and `/prd`.
+product source for `/spec-init` and `/prd-to-features`.
 
 This command resolves product-level ambiguity. It does not decompose the PRD
 into epics/features or perform architecture/task design.

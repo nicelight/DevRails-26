@@ -16,7 +16,7 @@ Supported arguments:
 
 <input_contract>
 `--init` requires the normal `/spec-init` inputs after `/write-prd` and before
-`/prd`.
+`/prd-to-features`.
 
 `FT-<NNN>` and `--all` require:
 - clarified PRD, product, requirements, epics, and product features;
@@ -28,8 +28,8 @@ Supported arguments:
   work is required, a closed Foundation Gate before product task handoff;
 - relevant canonical specs and accepted operator decisions.
 
-If no argument is given, infer `--init` only when clearly before `/prd`, or
-`--all` only when clearly after `/prd`; otherwise halt and report the missing
+If no argument is given, infer `--init` only when clearly before `/prd-to-features`, or
+`--all` only when clearly after `/prd-to-features`; otherwise halt and report the missing
 argument. Exclude reserved `FT-000` from product feature targets.
 </input_contract>
 
@@ -59,7 +59,7 @@ When a relevant ambiguity or branch is not already resolved authoritatively:
 - stop with existing `HALT_BLOCKING_QUESTIONS` or
   `HALT_CLARIFICATION_REQUIRED`;
 - report the interactive resume skill (`/write-prd`, `/spec-init`,
-  `/clarify-feature`, or `/spec-design`).
+  `/feature-doctor`, or `/spec-design`).
 
 Do not apply a recommendation, conservative/reversible default, or agent
 assumption as the missing operator decision. Non-decision implementation detail
@@ -73,7 +73,7 @@ may still be chosen under the agent-discretion contract below.
 Produce the same boundary contract as `/spec-init`:
 - `.memory-bank/spec-backbone.md` with
   `Pre-PRD Spec Status: ready_for_prd|blocked`, decomposition inputs, open
-  design questions, and `/prd` handoff;
+  design questions, and `/prd-to-features` handoff;
 - `.memory-bank/spec-index.md` as a pure registry;
 - only evidence-backed minimal framing artifacts when they are useful.
 
@@ -120,7 +120,7 @@ Set feature status:
   unresolved.
 
 For `--all`, every targeted product feature must end in one of those statuses;
-any `blocked` feature prevents `/prd-to-tasks --all` handoff.
+any `blocked` feature prevents `/feature-to-tasks --all` handoff.
 </required_outputs>
 
 <agent_discretion>
@@ -158,10 +158,10 @@ accepted operator decisions in existing canonical artifacts.
 <handoff_contract>
 Report mode, targets, specs changed, status per feature, accepted decision
 sources used, blockers, and one immediate next command:
-- successful `--init` -> `/prd`;
+- successful `--init` -> `/prd-to-features`;
 - ready backbone with required foundation work not yet complete ->
   `/foundation-to-tasks` or continuation of its existing gate;
-- successful one-feature design -> `/prd-to-tasks FT-<NNN>`;
-- successful `--all` -> `/prd-to-tasks --all`;
+- successful one-feature design -> `/feature-to-tasks FT-<NNN>`;
+- successful `--all` -> `/feature-to-tasks --all`;
 - unresolved decision -> named interactive repair skill; no task handoff.
 </handoff_contract>

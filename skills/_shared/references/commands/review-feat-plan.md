@@ -66,7 +66,7 @@ coverage criteria, not a required reasoning script:
   present;
 - coherent feature value, sizing, boundaries, acceptance, and failure behavior;
 - truthful `clarification_status: pending|blocked` handling;
-- no bypass from analysis to tasking around `/write-prd`, `/spec-init`, `/prd`,
+- no bypass from analysis to tasking around `/write-prd`, `/spec-init`, `/prd-to-features`,
   `/spec-design`, or required Foundation Dev Path;
 - `FT-000` reservation;
 - visible Foundation pressure signals for `/spec-design` without creating
@@ -83,7 +83,7 @@ artifacts checked and distinguish evidence gaps from actual defects.
 <handoff_contract>
 - `APPROVE` -> `/spec-design`.
 - `REJECT` -> the named owner command, normally `/write-prd`, `/spec-init`,
-  `/prd`, `/clarify-feature FT-<NNN>`, or `/constitution`; rerun this review
+  `/prd-to-features`, `/feature-doctor FT-<NNN>`, or `/constitution`; rerun this review
   after repair.
 
 Do not restate the full downstream task/execution workflow.
