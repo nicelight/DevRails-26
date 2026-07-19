@@ -973,6 +973,7 @@ status: active
 - Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial
 - PRD → MB: /write-prd, lightweight /spec-init, /prd, /spec-design, /foundation-to-tasks when required, close the FT-000 foundation gate, then /prd-to-tasks
 - SDD design: /spec-init for lightweight route-map preflight, /spec-design for mandatory adaptive global backbone and foundation decision after /prd, foundation tasking inside /foundation-to-tasks, foundation gate closure before product tasking, initial and repair feature-level design/task reconciliation inside /prd-to-tasks, /spec-auto for autonomous design
+- Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
 - Map codebase: /map-codebase
 - Execution: /execute
 - Verification (UAT): /verify

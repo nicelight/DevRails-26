@@ -1,114 +1,215 @@
 # Как работает DevRails 26
 
-Это подробный справочник по `DevRails 26`. Короткие README-файлы остаются дружелюбными точками входа, а здесь собрана механика: packaging, установка/bootstrap, workflows, task model, поведение scheduler, command reference и проверки.
+Этот документ — подробный справочник по текущим contracts DevRails 26:
+архитектуре skills, установке, Memory Bank, Product/Design boundary, JSON task
+model, reviews, readiness, tier routing и автоматическим режимам. Короткая
+точка входа находится в [README.md](README.md).
 
-Если вы только начинаете, сначала пройдите ручной workflow из README.
+## 1. Mental model
 
-## 1. Что такое DevRails 26
-
-`DevRails 26` - это source-only skill pack/framework для Codex CLI, Claude Code и совместимых agent runtimes.
-
-Он генерирует project-local runtime command skills, а затем bootstrap-ит целевой репозиторий в workspace Memory Bank:
+DevRails превращает агентную разработку из набора chat prompts в
+repository-backed workflow:
 
 ```text
-.agents/skills/<command>/SKILL.md  full Codex runtime command skills
-.claude/skills/<command>/SKILL.md  full Claude runtime command skills
-.memory-bank/  durable project knowledge/state
-.memory-bank/contracts/boundary-map.md lightweight responsibility/scope boundary notes
-.memory-bank/behavior-specs/ optional JSON given/when/then examples linked through task source_artifacts
-.protocols/   resumable execution и verification protocols
-.tasks/       runtime evidence, reports и handoff material
+product intent
+  -> clarified PRD
+  -> requirements / epics / features
+  -> global SDD backbone + Foundation decision
+  -> feature-level canonical specs + JSON tasks
+  -> implementation
+  -> functional and semantic verification
+  -> durable lifecycle state and evidence
 ```
 
-Цель - дать агентам возможность работать от файлов и проверяемого состояния, а не полагаться на историю чата.
+В target-проекте агенты работают не от памяти одной сессии, а от четырёх
+связанных surfaces:
 
-## 2. Source-only packaging
+```text
+.memory-bank/   durable product, design, task и lifecycle state
+.agents/skills/ full Codex runtime command skills
+.claude/skills/ full Claude runtime command skills
+.protocols/     resumable task/run state
+.tasks/         substantive evidence, reports и handoffs
+```
 
-Этот fork намеренно не коммитит generated package-local файлы `shared-*`.
+Фреймворк следует KISS: создаётся минимальный набор artifacts и checks,
+достаточный для текущего риска и contract. Это не разрешает пропускать
+correctness, security, compatibility или обязательные verification gates.
 
-Canonical shared source:
+## 2. Что изменилось в contracts skills
+
+Core Product/Design, tasking, execution и scheduler skills теперь отделяют
+обязательный workflow contract от внутренней тактики агента. Типовая структура
+такого skill включает:
+
+- `<objective>` — какой outcome принадлежит skill;
+- `<input_contract>` — authoritative inputs и preconditions;
+- `<hard_invariants>` — что нельзя нарушать;
+- `<operator_decisions>` — какие развилки агент не решает сам;
+- `<agent_discretion>` — где агент свободен выбирать тактику;
+- `<required_outputs>` — durable artifacts и verdicts;
+- `<validation>` — условия правдивого завершения;
+- `<handoff_contract>` — единственный допустимый следующий owner/step.
+
+### Свобода тактики
+
+Внутри уже принятого objective, scope, specs, tier и hard boundaries агент сам
+выбирает:
+
+- порядок чтения и exploration;
+- инструменты и форму временных notes;
+- локальную implementation strategy;
+- минимальную cohesive artifact shape;
+- task slicing, когда skill владеет planning;
+- самые дешёвые достаточные project-native checks;
+- глубину анализа пропорционально реальному риску.
+
+Architecture, Interfaces/Contracts, Data, Verification, security, runtime и
+operations используются как coverage criteria, а не как обязательный порядок
+мышления или требование создать файл каждого типа.
+
+### Граница operator decisions
+
+Material branch остаётся у оператора, если она может изменить product behavior,
+scope/acceptance, architecture, public/component/API/event/data contract,
+state/storage ownership, security/compliance, compatibility, Foundation path,
+task boundary, tier, dependencies, verification policy или human checkpoint.
+
+В interactive flow skill задаёт адаптивный вопрос и может рекомендовать
+вариант. Recommendation, framework default, reversible choice и молчание не
+являются принятым решением. Уже однозначное authoritative evidence не требует
+декоративного интервью.
+
+В unattended flow агент не задаёт вопрос и не выбирает за оператора. Он
+записывает exact question, affected scope и owner, затем завершает run через
+существующий `HALT_CLARIFICATION_REQUIRED` или `HALT_BLOCKING_QUESTIONS` с
+точным interactive resume skill.
+
+## 3. Package skills и runtime-skills
+
+В source repo существуют два разных слоя.
+
+### Package entrypoints
+
+Tracked installable package entrypoints всего три:
+
+- `skills/cold-start/SKILL.md` — package/start surface;
+- `skills/mb-init/SKILL.md` — skeleton bootstrap surface;
+- `skills/mb-garden/SKILL.md` — packaged lint/doctor/CI assets.
+
+Они нужны для source-only упаковки и не являются вторым набором runtime
+workflow contracts.
+
+### Canonical runtime commands
+
+Текущие 29 runtime-skills определены в:
+
+```text
+skills/_shared/references/commands/*.md
+```
+
+Installer превращает каждый command spec в полноценные target files:
+
+```text
+.agents/skills/<command>/SKILL.md
+.claude/skills/<command>/SKILL.md
+```
+
+Обе runtime copies содержат одинаковый полный command contract. Target
+`.memory-bank/` хранит project state и не содержит `.memory-bank/commands/` или
+proxy skills.
+
+## 4. Роли агентов
+
+Bootstrap разворачивает role contracts в `.memory-bank/roles/` и связывает их
+с `AGENTS.md`.
+
+| Role | Назначение | Ограничение |
+|---|---|---|
+| `GENERAL` | самостоятельная top-level работа одним агентом | не запускает subagents без явного запроса оператора |
+| `ORCHESTRATOR` | strategy, decomposition, delegation, risk control и final judgment | не выполняет executor work без явного разрешения |
+| `Explorer` | bounded read-only discovery и optional `/context-manifest` routing | delegated worker, не принимает product/design decisions |
+| `Implementer` | bounded implementation с preflight и evidence | останавливается при scope/spec conflict |
+| `Reviewer` | independent read-only critique | не исправляет reviewed work |
+
+Роль фиксируется при назначении и не меняется по ходу работы. Delegated worker
+не становится `GENERAL` или `ORCHESTRATOR` автоматически. Lifecycle ownership
+также не возникает только из факта delegation.
+
+`/context-manifest` нужен только когда broad discovery, вероятно, обойдётся
+дороже direct reads. Delegated Explorer возвращает compact ordered
+`Context Read Manifest` с существующими paths, ranges, anchors и gaps, но не
+source summary и не durable artifact. Caller всё равно лично читает mandatory
+sources и расширяет read set по новым links/evidence. Для obvious small read
+set и простой T0/T1 работы direct reads обычно дешевле.
+
+## 5. Source-only packaging
+
+Единственный canonical shared source находится в `skills/_shared/`:
 
 ```text
 skills/_shared/agents/*
 skills/_shared/references/commands/*
 skills/_shared/references/workflows/*
 skills/_shared/references/protocols/*
+skills/_shared/references/roles/*
+skills/_shared/references/structure-template.md
 skills/_shared/scripts/init-mb.js
 ```
 
-Generated package-local assets:
+Package-local files вида
+`skills/<skill>/{agents,references,scripts}/shared-*` намеренно не хранятся в
+git. Нормальная установка выполняет:
 
 ```text
-skills/<skill>/agents/shared-*
-skills/<skill>/references/shared-*
-skills/<skill>/scripts/shared-*
+source-only repo
+  -> temporary repository copy
+  -> scripts/vendor-shared.mjs
+  -> temporary package-local shared-* assets
+  -> full runtime commands in target .agents/.claude
+  -> optional Memory Bank bootstrap/sync
+  -> temporary copy cleanup
 ```
 
-В source tree generated файлы `shared-*` намеренно отсутствуют. Если `SKILL.md` или command spec ссылается на `shared-*`, эта ссылка становится валидной только после того, как vendoring/install подготовит временную installable copy.
+Поэтому прямой `npx skills add <repo>` для framework не поддерживается. Он не
+выполняет обязательную temporary vendoring/generation цепочку.
 
-Не устанавливайте этот source-only fork прямым flow `npx skills add <repo>`. Используйте wrapper ниже.
+Правила изменения source repo:
 
-Правила разработки:
+- shared behavior меняется только в `skills/_shared/`;
+- generated package-local `shared-*` нельзя редактировать или коммитить;
+- локальные `.memory-bank/`, `.agents/`, `.claude/`, `.protocols/` и `.tasks/`
+  в source repo являются ignored dogfood/runtime output, не canonical source.
 
-- меняйте shared behavior в `skills/_shared/`;
-- не редактируйте и не коммитьте generated package-local `shared-*`;
-- держите source tree чистым:
+## 6. Установка и bootstrap
 
-```bash
-find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
-```
+### Интерактивный путь
 
-Ожидаемый результат для source tree: `0`.
-
-## 3. Установка и bootstrap
-
-Основной путь - интерактивный installer:
-
-Запускайте из репозитория framework:
+Из checkout DevRails:
 
 ```bash
 node scripts/install-framework.mjs
 ```
 
-Wrapper:
+Installer:
 
-1. Показывает folder picker: можно открыть папку по номеру, подняться вверх, выбрать открытую папку, ввести путь вручную или создать новую папку внутри открытой.
-2. Проверяет target: существует ли директория, writable ли она, git status, наличие `.memory-bank/` и `AGENTS.md`.
-3. Показывает предупреждения и один общий confirmation; если `.memory-bank/` уже есть, после подтверждения запускается sync/update generated assets.
-4. Копирует текущий репозиторий во временную директорию.
-5. Запускает `scripts/vendor-shared.mjs` внутри этой копии.
-6. Генерирует package-local assets `shared-*` для каждого installable skill.
-7. Генерирует full runtime command skills напрямую из `skills/_shared/references/commands/*.md` в `.agents/skills/` и `.claude/skills/`.
-8. Запускает bootstrap script из prepared temp repo с `cwd=target`.
-9. Удаляет временный репозиторий, если не задан `DEVRAILS_KEEP_INSTALL_TMP=1` или legacy `MEMOBANK_KEEP_INSTALL_TMP=1`.
+1. предлагает выбрать или создать target directory;
+2. проверяет writable state, git status, `.memory-bank/` и `AGENTS.md`;
+3. показывает warnings и запрашивает confirmation;
+4. при существующем `AGENTS.md` предлагает replace или merge policy;
+5. готовит временную vendored copy source repo;
+6. генерирует все runtime command skills в `.agents/skills/` и
+   `.claude/skills/`;
+7. создаёт fresh Memory Bank или выполняет sync существующей установки;
+8. удаляет temporary repo.
 
-Explicit install-only flow остается рабочим и не открывает interactive UI:
-
-```bash
-node scripts/install-framework.mjs --skill '*' --yes
-```
-
-Можно выбрать конкретный runtime command skill:
+### Non-interactive bootstrap
 
 ```bash
-node scripts/install-framework.mjs --skill cold-start --yes
+node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes
 ```
 
-Чтобы посмотреть временно подготовленный репозиторий:
-
-```bash
-DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
-```
-
-### Bootstrap целевого репозитория вручную
-
-При работе напрямую из checkout этого framework целевой репозиторий можно bootstrap-нуть исходным script:
-
-```bash
-node /path/to/DevRails-26/skills/_shared/scripts/init-mb.js
-```
-
-Чтобы обновить runtime command skills, skeleton docs и runtime scripts в уже bootstrap-нутом целевом репозитории:
+Существующий Memory Bank автоматически переводит flow в sync. Явный вариант:
 
 ```bash
 node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes --sync
@@ -116,226 +217,78 @@ node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes -
 
 `--force` сейчас эквивалентен `--sync`.
 
-Для CI/smoke без interactive UI installer поддерживает non-interactive bootstrap:
+### Install-only
+
+Все runtime-skills в текущий target без Memory Bank bootstrap:
 
 ```bash
-node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes
+node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-Этот режим использует тот же source-only путь: temp copy -> `scripts/vendor-shared.mjs` -> full runtime skills -> bootstrap из prepared temp repo.
+Один выбранный runtime-skill:
 
-## 4. Generated bootstrap artifacts
+```bash
+node scripts/install-framework.mjs --skill verify --yes
+```
 
-`skills/_shared/scripts/init-mb.js` создает или обновляет workspace Memory Bank. По умолчанию он не перезаписывает существующие файлы; `--sync` обновляет generated skeleton docs и runtime scripts.
+Для inspection временно подготовленной package copy:
 
-Основные generated artifacts:
+```bash
+DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
+```
+
+После install-only, если `.memory-bank/` отсутствует, нужен `/mb-init`, затем
+`/cold-start`.
+
+## 7. Fresh bootstrap state
+
+Fresh bootstrap создаёт skeleton, но не roadmap. Основные artifacts:
 
 ```text
 .memory-bank/
-  adrs/ADR-000-template.md
+  adrs/
   agents/
+  architecture/system-architecture.md
   archive/
-  architecture/
   behavior-specs/
   bugs/
   constitution.md
-  contracts/
   contracts/boundary-map.md
   domains/
   epics/
   features/
   glossary.md
   guides/
-  index.md
   invariants.md
   mbb/index.md
   product.md
   quality/
   requirements.md
+  roles/{general,orchestrator,worker}.md
   runbooks/
   schemas/task.schema.json
   skills/index.md
+  spec-backbone.md
   spec-index.md
   states/
   tasks/index.json
   tasks/plans/
   testing/index.md
   testing/strategy.md
-  workflows/autonomy-policy.md
-  workflows/execute-loop.md
-  workflows/mb-sync.md
-  workflows/tier-policy.md
+  workflows/{index,autonomy-policy,execute-loop,mb-sync,tier-policy}.md
   changelog.md
-.tasks/
 .protocols/
+.tasks/
+.agents/skills/<command>/SKILL.md
+.claude/skills/<command>/SKILL.md
 scripts/mb-lint.mjs
 scripts/mb-doctor.mjs
 AGENTS.md
 CLAUDE.md
 GEMINI.md
-.claude/skills/<command>/SKILL.md
-.agents/skills/<command>/SKILL.md
 ```
 
-В развернутом target-проекте `.claude/skills/*` и `.agents/skills/*` содержат полный текст runtime command specs. В source repo canonical command specs живут в `skills/_shared/references/commands/`; target `.memory-bank/` хранит project state/docs, но не command specs.
-
-В fresh target `testing/index.md` является только router, а компактная
-framework baseline policy живёт в зарегистрированном `testing/strategy.md`.
-Она задаёт risk-based выбор проверок и место хранения evidence, но не диктует
-обязательную test pyramid. Sync существующего Memory Bank не создаёт этот файл
-и не переписывает legacy testing index/spec registry; миграция выполняется
-только явным project-level решением. Если legacy target не имеет testing
-router, sync создаёт минимальный `testing/index.md` со ссылкой на spec registry,
-но не seed-ит strategy. Отсутствующие root index/spec registry регистрируют
-только реально существующую testing policy и не создают broken links на
-fresh-only strategy.
-
-## 5. Package skills
-
-- `cold-start` - package entrypoint / generated scenario router; skeleton
-  creation остается за installer bootstrap или `mb-init`.
-- `mb-init` - генерация skeleton, agent guides и runtime scripts.
-- `mb-garden` - maintenance Memory Bank и packaged deterministic lint/readiness tool assets.
-
-## 6. Workflows
-
-### Сначала ручной workflow
-
-Рекомендуемый путь для новичка:
-
-```text
-idea / rough draft
-  -> /brainstorm для raw ideas или /brief для clear concepts
-  -> /constitution, если project principles еще не ratified|partial
-  -> /write-prd
-  -> /spec-init
-  -> /prd
-  -> /review-feat-plan for high-risk/large work
-  -> /spec-design
-  -> /foundation-to-tasks if required
-  -> /mb-doctor --strict at foundation/task-queue boundary
-  -> /execute + /verify FT-000 until foundation gate is done
-  -> /prd-to-tasks FT-001
-  -> /review-tasks-plan FT-001
-  -> conditional /mb-doctor at feature/task-queue boundary for complex/T3/autonomous cases
-  -> tier-routed /execute TASK-001-TN-FT-001-W1
-  -> /verify TASK-001-TN-FT-001-W1 для T2/T3 или uncertainty
-  -> /red-verify TASK-001-T3-FT-001-W1 для T3
-  -> /red-verify --feature FT-001 для T2 feature completion
-  -> record task status/closure/evidence immediately
-  -> /mb-sync once at the end of the wave
-  -> повторять feature/task loop
-```
-
-`/brainstorm` может создать brainstorming report для raw ideas. `/brief` создает Product Brief как вход для `/constitution` и `/write-prd`. Ни один из этих discovery-шагов не создает runnable task records. Все Product/Design skills используют один operator-decision принцип: реальная неоднозначность или развилка, влияющая на outcome/handoff, требует явного ответа; recommendation, conservative default или молчание не являются решением. Формат интервью адаптивный, без фиксированной анкеты и искусственного лимита ответа. Если authoritative evidence уже однозначно, вопрос не задаётся. Unattended flow применяет только ранее принятое решение, иначе использует существующий clarification/blocking halt.
-
-`/constitution` читает Product Brief, если он есть, и адаптивно закрывает только неразрешённые governing branches по project principles, Definition of Done, автономности агентов, human checkpoints и non-negotiables. Это нормальный шаг перед `/write-prd`, когда principles еще не `ratified|partial`, но не hard-blocker: если пользователь явно пропускает его, flow продолжает идти с `project_principles: framework-default|skipped`, а Constitution можно ratify позже.
-
-`/write-prd` нормализует вход в `.memory-bank/prd.md` с `type: prd`, `clarification_status: complete` и `constitution_checked: true`. `/spec-init` обновляет `.memory-bank/spec-backbone.md` как lightweight pre-PRD route/state map по evidence из PRD/brief/existing specs: decomposition inputs, gaps, handoff и expected locations; `.memory-bank/spec-index.md` при этом остается чистым registry/index спецификаций, без readiness/status state. `/prd` декомпозирует PRD в L1-L3 docs Memory Bank: product, requirements, epics и features. Для high-risk/large work `/review-feat-plan` проверяет PRD/REQ/EP/FT перед SDD design.
-
-`/spec-design` является обязательным gate после `/prd`: он потребляет `spec-backbone` и чистый `spec-index` из `/spec-init`, а Architecture, Interfaces/Contracts, Data и Verification использует как coverage criteria, не как обязательные фазы или единый порядок анализа. Агент свободно выбирает инструменты, порядок и минимальную artifact shape, но сохраняет parseable status/matrix, canonical routing, blockers и handoff. Concrete feature-level gaps маршрутизируются как `needed_before_tasks` только при уже однозначном canonical path. Data Contract описывает payload, пересекающий component/API/event/protocol boundary; Data Specification описывает внутренние модели, БД, persistence, migrations и internal validation/serialization. Для local/simple feature-set pressure gate может записать minimal backbone и `not_applicable`, а для shared-boundary, contract, state/data/runtime/security или strict pressure фиксирует source-of-truth, boundaries, data/contracts и конкретные verification concerns либо blockers. Bootstrap-owned testing policy разрешается через `spec-index.md`, но `/spec-design` не расширяет и не перепроектирует её. Для serious design pressure он держит короткий `Architecture Spine` с `AD-*` executable rules внутри `architecture/system-architecture.md`, без отдельного architecture workflow. `/spec-design` всегда пишет явное Foundation Dev Path решение в `.memory-bank/foundation.md`; когда executable baseline нужен, `/foundation-to-tasks` сам выбирает минимальный walking skeleton, spec coverage и cohesive task slicing внутри уже принятого Foundation decision. Architecture/Interfaces/Data/Verification/security/runtime являются coverage criteria, а не предписанным анализом. Команда создаёт только необходимые subject-based substrate specs, normal `FT-000` JSON tasks и final foundation gate; новую material design branch она возвращает оператору или в unattended режиме останавливает. Product task generation waits until that gate is `done`. При `Foundation Required: false` queue не создаётся. Architecture может остаться в одном `architecture/system-architecture.md` только когда это лучший readable scaffold shape; split architecture docs создаются только когда split снижает реальную сложность или нужен как canonical reference.
-
-Product/Design boundary готов только когда согласован полный durable contract: clarified PRD; product/requirements/epics/features; `Global Backbone Status: complete|minimal`; canonical `spec-index`; Foundation Dev Path decision; и accepted operator decisions в существующих canonical artifacts. `blocked` status или unanswered material branch запрещает task handoff.
-
-`/prd-to-tasks` полноценно закрывает feature-level SDD concern coverage и для новой, и для уже разложенной feature. До durable task draft команда обязательно читает schema и tier policy, но порядок discovery, инструменты, форму временного concern audit и cohesive task slicing выбирает сама. Для каждого применимого concern всё равно требуется ровно одно доказанное действие: `reuse|extend|create|not_applicable|block`. Architecture, Interfaces/Contracts, Data, state, security, runtime, operations и Verification служат критериями полноты без фиксированного порядка. Feature остаётся composition root; новые specs получают предметные canonical paths без `FT-*` и не хранят reverse `used_by`. Новые shared/global решения или competing canonical paths возвращаются в `/spec-design`. Любая material product/design/contract/task-boundary/tier/dependency/verification branch требует explicit operator answer; recommendation/default не считается ответом, а unattended run завершает существующим halt с resume route. Если task queue уже существует, команда по умолчанию согласует specs, plan и task records без смены task identity, lifecycle status или verification evidence; изменения identity, tier, wave, dependencies, acceptance criteria или material scope требуют явной полной передекомпозиции. Для T2/T3 concrete concern должен иметь canonical spec с `shape`, `rules`, `edge cases/errors` и `verification target`, а task card — purpose/outcome, direct spec links, expected change surface и verification path. `touched_files` является advisory non-exhaustive гипотезой; `write_boundary`, если заполнен, является deliberate hard boundary. Нерешённая неоднозначность блокирует task creation. После этого `/review-tasks-plan FT-<NNN>` независимо и в выбранном reviewer-ом порядке покрывает structural integrity, acceptance/REQ coverage и slicing, final design readiness и execution readiness; он не исправляет planning surface и не выбирает неоднозначную трактовку, а возвращает `APPROVE|REJECT` с вопросом и repair route.
-
-### Понятный PRD или concept
-
-Если есть понятный concept, но нет PRD:
-
-```text
-/brief -> /constitution if principles are not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK
-```
-
-Если уже есть внешний PRD или PRD-like text:
-
-```text
-/constitution if principles are not ratified|partial -> /write-prd -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK
-```
-
-Если project principles уже `ratified` или `partial`, можно сразу продолжать с `/write-prd`.
-
-### Brownfield
-
-Для существующего codebase сначала соберите as-is baseline:
-
-```text
-/map-codebase -> /constitution if principles are not ratified|partial -> /write-prd --delta -> /spec-init -> /prd -> /review-feat-plan for high-risk/large work -> /spec-design -> if baseline proof is needed: /foundation-to-tasks --verify-existing -> /mb-doctor --strict -> execute/verify FT-000 until gate done; otherwise skip FT-000 -> /prd-to-tasks FT-001 -> /review-tasks-plan FT-001 -> conditional /mb-doctor -> tier-routed /execute TASK
-```
-
-Можно использовать `/brief`, чтобы сформировать delta input, но route не должен обходить `/write-prd`; перед `/write-prd --delta` запускайте `/constitution`, если project principles еще не `ratified|partial`. Brownfield rule: без PRD/delta нельзя создавать roadmap epics, features или runnable task records. `/map-codebase` документирует текущую систему; он не придумывает план. Если существующий executable baseline уже доказан, brownfield route по умолчанию не создает `FT-000`; `.memory-bank/foundation.md` фиксирует `Foundation Required: false` и `Foundation Gate Task: not_required`.
-
-### Manual task loop
-
-Interactive mode для одной задачи:
-
-```text
-T0/T1: /execute TASK -> compact evidence or no-runnable-check note -> optional local closure by explicit owner
-T2: /execute TASK -> /verify TASK -> /mb-sync at wave/feature boundary
-T3: /execute TASK -> /verify TASK -> /red-verify TASK -> explicit owner closure
-Wave boundary: /mb-sync -> mb-lint -> /mb-doctor --strict
-```
-
-В manual mode T0/T1 task можно закрыть прямо в `/execute`, если есть explicit top-level closure owner, semantic task-local scope, no T2/T3 trigger, and compact evidence in `task.verify` plus `.protocols/<TASK>/run.md`. `/execute` использует `touched_files` как стартовую гипотезу, а порядок исследования, implementation tactic, actual files и cheapest sufficient checks выбирает внутри outcome/spec/hard scopes. Нарушение hard allowed/forbidden scope или новая material product/design/contract/dependency/tier/verification branch останавливает работу: interactive flow спрашивает оператора, unattended возвращает blocker и exact repair route. Если фактический scope требует higher tier, исходный task ID передается в `/prd-to-tasks FT-*` для controlled rebuild/split, затем повторяются `/review-tasks-plan`, применимый `/mb-doctor` и `/execute` replacement task ID. `/verify` независимо выбирает минимально убедительные checks, но сохраняет `PASS|FAIL|NEEDS-CLARIFICATION` и task-scoped basis. Для T2 task closure per-task `/red-verify` не требуется: нужны full protocol, applicable task/spec gates и `/verify PASS`; перед T2 feature completion нужен `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанный в сам feature doc. Для T3 `/verify PASS` не является финальным done: `/red-verify` самостоятельно строит hostile model и probes, а closure требует `semantic-pass` и exact `HUMAN_CHECKPOINT: done`. Explicit owner сразу записывает closure/status/evidence в task record. Full `/mb-sync` выполняется один раз в конце текущей wave; ранний sync допустим только при реальной зависимости текущей wave от согласованного RTM/index/spec/contract/changelog state или по явному запросу owner.
-
-Для manual feature work `node scripts/mb-doctor.mjs` is conditional, not a
-default gate for simple T0/T1. Запускайте его для T3, autonomous/autopilot
-handoff, and complex T2/foundation/dependency/stale-doc/risky-link
-cases. `--strict` остается precondition для autopilot/autonomous handoff.
-
-### Scheduler mode: `/autopilot`
-
-`/autopilot` - это scheduler/executor только для уже существующей JSON task queue. Канонический режим последователен: одна task должна получить execute/verify/closure decision до выбора следующей. `--experimental-parallel` остаётся тестовой opt-in возможностью и требует isolated worktrees/sandboxes и pairwise-disjoint hard `write_boundary`; `touched_files` не доказывает независимость.
-
-Preconditions:
-
-- `.memory-bank/tasks/index.json` содержит indexed task records;
-- у каждой task есть обязательный `tier`;
-- every task-linked product feature has latest `/review-tasks-plan FT-<NNN>`
-  `APPROVE`;
-- `node scripts/mb-doctor.mjs --strict` проходит;
-- ни одна task-linked feature не имеет pending или blocked clarification.
-- every T2/T3 task satisfies the single-card handoff contract.
-
-`/autopilot` не запускает `/write-prd`, `/prd`, `/prd-to-tasks` и не создает task queue.
-
-### Full unattended mode: `/autonomous`
-
-`/autonomous` - это полный unattended flow:
-
-```text
-PRD/Product Brief/delta
--> inspect constitution; use ratified|partial or an explicitly accepted skip/default, otherwise halt on unresolved governance decision
--> /write-prd
--> /spec-auto --init
--> /prd
--> /review-feat-plan
--> /spec-design --all
--> /foundation-to-tasks if required
--> /mb-doctor --strict at foundation/task-queue boundary
--> execute/verify FT-000 until foundation gate is done
--> /spec-auto --all
--> /prd-to-tasks --all
--> /review-tasks-plan FT-<NNN> for each task-linked product feature
--> strict doctor
--> scheduler loop
--> conditional `/review-tasks-plan FT-<NNN>` when a wave changed task/spec planning
--> terminal state
-```
-
-Он строит SDD route map, L1-L3, feature-level design и JSON task queue через child-skill contracts, не копируя их внутреннюю методику. Scheduler остаётся sequential, владеет transitions/budgets/terminal state и останавливается на любой новой operator-owned branch вместо silent assumption. `/mb-sync` остаётся тонким adapter к canonical sync workflow и не принимает closure/promotion decisions. Terminal state остаётся одним из: `SUCCESS`, `HALT_BLOCKING_QUESTIONS`, `HALT_CLARIFICATION_REQUIRED`, `HALT_REVIEW_REJECT`, `HALT_FAILURE_BUDGET`, `HALT_DEPENDENCY_DEADLOCK`, `HALT_POLICY_VIOLATION`, `HALT_QUALITY_GATES` или `HALT_BUDGET_EXCEEDED`.
-
-## 7. Task model
-
-Task registry является JSON-only:
-
-```text
-.memory-bank/tasks/index.json
-.memory-bank/tasks/TASK-001-T1-FT-001-W1.task.json
-.memory-bank/schemas/task.schema.json
-```
-
-Fresh bootstrap создает:
+Fresh `.memory-bank/tasks/index.json` содержит только:
 
 ```json
 {
@@ -344,152 +297,645 @@ Fresh bootstrap создает:
 }
 ```
 
-Fresh bootstrap не создаёт `.memory-bank/tech-specs/`, `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-T1-FT-000-W0`, `.memory-bank/tasks/TASK-001-T2-FT-001-W1.task.json` и runnable task records. Task records появляются через `/foundation-to-tasks` when required, closed `FT-000` foundation gate, then `/prd-to-tasks FT-001`; autonomous runs use the same foundation gate before `/spec-auto --all` + `/prd-to-tasks --all`.
+Bootstrap не создаёт `.memory-bank/foundation.md`, `REQ-000`, `FT-000`,
+product features, implementation plans или runnable `TASK-*.task.json`.
+`.memory-bank/tech-specs/` также не создаётся.
 
-Минимальная форма task record:
+В fresh target `testing/index.md` является router, а зарегистрированный
+`testing/strategy.md` задаёт компактную baseline risk-based policy. Sync
+legacy target не seed-ит новый `testing/strategy.md` и не переписывает
+существующую testing policy/spec registry без явного project-level решения.
+
+## 8. Канонический Product/Design flow
+
+### Greenfield
+
+```text
+raw idea -> /brainstorm -> /brief
+clear concept ---------> /brief
+existing PRD ----------> /write-prd
+
+/brief
+  -> /constitution when principles are not ratified|partial
+  -> /write-prd
+  -> /spec-init
+  -> /prd
+  -> /review-feat-plan when high-risk|large|autonomous
+  -> /spec-design
+  -> Foundation route
+  -> feature tasking route
+```
+
+Stages do not own each other's outputs:
+
+1. `/brainstorm` explores directions but does not promote ideas to
+   requirements.
+2. `/brief` owns only the concise Product Brief and analysis index.
+3. `/constitution` owns governing principles, Definition of Done, autonomy,
+   checkpoints и non-negotiables. An explicit skip may continue as
+   `framework-default|skipped`; silence is not a skip.
+4. `/write-prd` owns product-level clarification. Handoff requires
+   `type: prd`, `clarification_status: complete` и
+   `constitution_checked: true`.
+5. `/spec-init` owns decomposition-safety framing, not architecture. It writes
+   `Pre-PRD Spec Status: ready_for_prd|blocked` in `spec-backbone.md`.
+6. `/prd` owns L1-L3 product decomposition: product, stable `REQ-*`, epics и
+   product `FT-*`. It does not create task records or testing policy.
+7. `/review-feat-plan` independently checks PRD -> REQ -> EP -> FT. It is
+   required for high-risk, large и autonomous work and recommended for small
+   manual work.
+8. `/spec-design` is mandatory for every feature set and owns the global SDD
+   backbone plus Foundation Dev Path decision.
+
+### Brownfield
+
+```text
+/map-codebase
+  -> request authoritative PRD/delta
+  -> /constitution if needed
+  -> /write-prd --delta
+  -> /spec-init
+  -> /prd
+  -> applicable /review-feat-plan
+  -> /spec-design
+```
+
+`/map-codebase` creates an as-is baseline from code/config/tests, separates
+facts from inferences and does not generate roadmap entities without PRD/delta.
+When existing executable baseline sufficiency is not proved,
+`/foundation-to-tasks --verify-existing` can create only the minimum probe
+queue. A credibly proven baseline produces no `FT-000` queue.
+
+### Product/Design boundary
+
+Product task handoff разрешён только когда весь durable bundle согласован:
+
+- clarified, Constitution-checked `.memory-bank/prd.md`;
+- product, requirements, epics и product features;
+- `Global Backbone Status: complete` или valid `minimal`;
+- pure canonical `.memory-bank/spec-index.md`;
+- explicit Foundation Dev Path decision;
+- все material operator decisions записаны в существующих owning artifacts;
+- required Foundation final gate закрыт.
+
+`blocked` status или unanswered material branch запрещает task generation.
+
+## 9. SDD backbone и canonical specs
+
+### `spec-backbone.md`
+
+`/spec-init` сначала использует файл как pre-PRD route/state map. После `/prd`
+`/spec-design` добавляет parseable global contract:
+
+```text
+Global Backbone Status: complete | minimal | blocked
+Mode: local_simple_backbone | standard_architecture_scaffold |
+      strict_architecture_scaffold | pending
+Architecture artifact strategy: single-file | split-core-docs |
+                                split-by-boundary-topic | pending
+```
+
+Backbone Area Matrix использует только:
+
+- `authoritative`;
+- `needed_before_tasks`;
+- `not_applicable` с rationale;
+- `blocked`.
+
+`needed_before_tasks` допустим только для уже однозначно routed concrete detail.
+Он не заменяет нерешённое design decision и должен быть закрыт до успешного
+product task handoff.
+
+`minimal` допустим только для доказанно local/simple pressure и требует
+явных `not_applicable - <rationale>` entries. Shared boundary, contracts,
+state/data, runtime, security, production-sensitive или irreversible pressure
+обычно требует `complete` scaffold.
+
+### `spec-index.md`
+
+Это pure registry:
+
+```text
+Type | Path | Status | Scope | Change route
+```
+
+Он не хранит decision bodies, matrices, feature status map, ownership или
+reverse `used_by`. Canonical identity определяется зарегистрированным
+subject-based path. Перед созданием нового spec skills обязаны найти соседние и
+registered specs; два competing paths нельзя обходить созданием третьего.
+
+### Subject-based paths
+
+Новые canonical specs живут по предмету, а не по feature ID:
+
+```text
+.memory-bank/architecture/*
+.memory-bank/contracts/*
+.memory-bank/domains/*
+.memory-bank/states/*
+.memory-bank/testing/*
+.memory-bank/runbooks/*
+.memory-bank/guides/*
+.memory-bank/adrs/*
+```
+
+Feature остаётся composition root для behavior, acceptance criteria и exact
+applicable spec links. Legacy `.memory-bank/tech-specs/FT-*.md` можно читать как
+brownfield evidence, но нельзя расширять как default T2/T3 hub.
+
+### Architecture Spine
+
+Shared/strict executable decisions получают стабильные `AD-*` anchors внутри
+`.memory-bank/architecture/system-architecture.md#Architecture Spine`:
+
+```text
+AD-NNN
+  Binds
+  Prevents
+  Rule
+  Verification
+  Source
+```
+
+AD создаётся только для реального shared/strict rule. Detailed rationale
+выносится в ADR, только если оно имеет durable value. Локальная простая работа
+не требует обязательных ADR или отдельного architecture workflow.
+
+### Contracts, Data и Verification
+
+- Data Contract описывает payload, пересекающий component/API/event/protocol
+  boundary.
+- Data Specification описывает internal models, DB/storage, persistence,
+  migrations, validation и serialization.
+- Verification concern маршрутизируется в owning contract, testing spec или
+  runbook, а не превращается в обязательный global testing row.
+- Bootstrap-owned testing policy read-only для `/spec-design`; project-specific
+  design расширяется только через свой owning route.
+
+### Optional behavior specs
+
+`/prd-to-tasks` может создать 0-3 коротких JSON examples:
+
+```text
+.memory-bank/behavior-specs/FT-NNN-BHV-NNN-<slug>.behavior.json
+```
+
+Они используют только `id`, `feature_id`, `title`, `given`, `when`, `then`.
+Feature ссылается на них в `## Behavior specs`, task — только через
+`source_artifacts`. Это не registry, schema, test runner, readiness gate,
+verification target или done criterion.
+
+## 10. Foundation Dev Path
+
+`/spec-design` фиксирует одно из трёх состояний:
+
+- `Foundation Required: true` — до product tasks нужен executable walking
+  skeleton или compatibility proof;
+- `Foundation Required: false` — existing baseline/project simplicity уже
+  доказаны;
+- blocked Foundation decision — material branch возвращается оператору.
+
+При `true` `/foundation-to-tasks`:
+
+1. выбирает минимальный walking skeleton и proof path;
+2. создаёт только нужные substrate-level canonical specs;
+3. добавляет reserved `REQ-000`;
+4. создаёт pseudo-feature `FT-000`;
+5. создаёт normal schema-backed foundation task records;
+6. создаёт ровно один final Foundation Gate task, зависящий от всех required
+   implementation/probe tasks;
+7. записывает concrete gate ID в `.memory-bank/foundation.md`.
+
+Foundation использует обычные JSON tasks, lifecycle, tiers и protocols. Для неё
+нет отдельной schema, registry или status machine. `W0` разрешён только для
+`FT-000`; product tasks используют `W1+` и зависят от final gate напрямую или
+transitively.
+
+Перед выполнением FT-000 queue обязателен `/mb-doctor --strict`. Product
+tasking продолжается только после `done` final gate. `FT-000` не участвует в
+T2 product feature-completion semantics.
+
+## 11. Feature design и JSON task planning
+
+После ready global backbone и Foundation route:
+
+```text
+/prd-to-tasks FT-<NNN>
+  -> /review-tasks-plan FT-<NNN>
+  -> conditional /mb-doctor
+  -> /execute <TASK_ID> или /autopilot
+```
+
+`/clarify-feature FT-<NNN>` используется только для реальной feature-level
+ambiguity. Он может обновить feature wording и отметить design impact, но не
+создаёт specs, implementation plan, tiers или tasks.
+
+`/prd-to-tasks` для каждого applicable concern выбирает ровно один результат:
+
+```text
+reuse | extend | create | not_applicable | block
+```
+
+Затем он создаёт или reconciles:
+
+- `.protocols/FT-<NNN>/plan.md` и `decision-log.md`;
+- `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`;
+- subject-based canonical specs и feature links;
+- optional behavior examples;
+- indexed `.memory-bank/tasks/TASK-*.task.json` records.
+
+Task slicing строится вокруг cohesive independently verifiable outcomes, а не
+вокруг файлов, слоёв, modules или отдельной «task на tests».
+
+### JSON-only registry
+
+Единственный durable task model:
+
+```text
+.memory-bank/tasks/index.json
+.memory-bank/tasks/TASK-NNN-TN-FT-NNN-WN.task.json
+.memory-bank/schemas/task.schema.json
+```
+
+Concrete ID segments обязаны совпадать с record fields `tier`, `feature` и
+`wave`. Lifecycle фиксирован:
+
+```text
+planned | ready | in_progress | blocked | done | failed
+```
+
+`ready` допустим только при закрытых dependencies и отсутствии blocker.
+`planned` остаётся корректным для future waves или unmet dependencies. Legacy
+`risk`/`risk.level` не используются; routing идёт только по `task.tier`.
+
+Schema-valid пример:
 
 ```json
 {
-  "id": "TASK-001-T1-FT-001-W1",
-  "title": "Short task title",
-  "status": "planned",
+  "id": "TASK-001-T2-FT-001-W1",
+  "title": "Implement the accepted boundary behavior",
+  "status": "ready",
   "wave": "W1",
   "feature": "FT-001",
   "reqs": ["REQ-001"],
   "depends_on": [],
-  "touched_files": [],
-  "tier": "T1",
-  "gates": [],
+  "touched_files": ["src/component/", "tests/component/"],
+  "tier": "T2",
+  "gates": [
+    {
+      "name": "component tests",
+      "command": "npm test -- component",
+      "required": true
+    }
+  ],
   "verify": [],
   "docs": [],
   "evidence_required": [],
-  "source_artifacts": [],
+  "purpose": "Apply the accepted component boundary contract.",
+  "success_outcome": "The boundary behavior is observable and verified.",
+  "anti_goals": [],
+  "runtime_context": {
+    "write_boundary": ["src/component/", "tests/component/"],
+    "forbidden_scope": ["deploy/"],
+    "stop_conditions": ["A public contract change becomes necessary."]
+  },
+  "source_artifacts": [
+    ".memory-bank/contracts/component-boundary.md"
+  ],
   "normative_inputs": [],
   "constraints": [],
   "invariants": [],
-  "verification_targets": []
+  "verification_targets": [
+    "The accepted request and error shapes pass contract tests."
+  ]
 }
 ```
 
-Allowed `status`: `planned`, `ready`, `in_progress`, `blocked`, `done`, `failed`.
+### Single-card handoff для T2/T3
 
-Allowed `tier`: `T0`, `T1`, `T2`, `T3`.
+До execution T2/T3 record обязан содержать:
 
-Legacy `risk` и `risk.level` удалены. Execution, verification, red-verification, scheduler routing и doctor checks должны использовать только `task.tier`.
+- non-empty `purpose`;
+- scalar `success_outcome`;
+- concrete `REQ-*` и `FT-*` linkage;
+- direct task-relevant canonical SDD path;
+- expected change surface в advisory `touched_files` и/или обоснованный hard
+  `runtime_context.write_boundary`;
+- real gate command и/или non-empty verification target;
+- valid dependency graph.
 
-Optional task runtime context may be present when backed by PRD/feature/spec
-evidence:
+Feature links или `spec-index.md` сами по себе не заменяют direct task context.
+Linked concrete spec должен задавать shape, `MUST`/`MUST NOT`, edge
+cases/errors и verification target, применимые именно к task.
 
-```json
-{
-  "purpose": "Why this task exists.",
-  "success_outcome": "Observable result that proves real success.",
-  "anti_goals": [],
-  "runtime_context": {
-    "forbidden_scope": [],
-    "stop_conditions": []
-  }
-}
+`touched_files` не является write allow-list. Исполнитель подтверждает actual
+files на preflight и может добавить файл для того же outcome/spec/tier.
+Непустой `write_boundary`, `forbidden_scope` и `stop_conditions` являются hard.
+`allowed_write_scope` поддерживается только как deprecated read alias и не
+эмитится в новых cards.
+
+### Reconciliation
+
+Повторный `/prd-to-tasks` по умолчанию согласует existing specs, plan и cards,
+сохраняя task identity, tier, wave, dependencies, lifecycle и verification
+evidence. Изменение identity, tier, dependency, AC или material scope требует
+явного `rebuild_required`, а не скрытого repair.
+
+## 12. Review, lint, doctor и verification ownership
+
+Эти gates не взаимозаменяемы:
+
+| Gate | Проверяет | Не делает |
+|---|---|---|
+| `/review-feat-plan` | PRD -> REQ -> EP -> FT traceability и boundaries | не ревьюит JSON task queue |
+| `/review-tasks-plan` | schema/coverage/slicing/design/execution readiness одной feature | не исправляет planning surface и не меняет lifecycle |
+| `mb-lint` | structural/mechanical Memory Bank consistency | не принимает semantic decisions |
+| `/mb-doctor` | deterministic executable-readiness поверх lint | не заменяет reviews или verification |
+| `/verify` | task-scoped functional outcome и evidence | не проверяет всю feature, не чинит implementation/specs |
+| `/red-verify` | adversarial semantic correctness | не заменяет functional PASS и не закрывает scheduler task |
+
+Оба review skills требуют fresh context или отдельную fresh session и возвращают
+findings, а не silently repair. `/review-tasks-plan --all` всё равно создаёт
+отдельный bounded verdict для каждой product feature.
+
+### Doctor modes
+
+```bash
+node scripts/mb-doctor.mjs
+node scripts/mb-doctor.mjs --strict
+node scripts/mb-doctor.mjs --json
+node scripts/mb-doctor.mjs --strict --json
 ```
 
-For T2/T3, `/prd-to-tasks` and `/foundation-to-tasks` require a complete single
-task card before execution: non-empty `purpose` and scalar `success_outcome`, an
-existing direct task-linked canonical SDD path, an expected change surface in
-advisory non-exhaustive `touched_files` and/or a deliberate hard
-`runtime_context.write_boundary`, and a real gate command and/or non-empty
-`verification_target`. Optional evidence-driven fields remain empty when no
-grounded value exists.
+- Default mode — human health report. Fresh skeleton с empty task index valid;
+  `TASK_INDEX_EMPTY` является info.
+- Strict mode — non-empty executable queue readiness gate. Empty queue — error.
+- JSON mode сохраняет machine-readable `status`, `summary`, `findings`.
 
-Boundary notes live in `.memory-bank/contracts/boundary-map.md` as a normal
-contract/spec document. Tasks reference it through existing source/normative/
-constraint/verification fields and copy executable limits into
-`runtime_context`; there are no boundary-specific task fields.
+Strict doctor обязателен:
 
-## 8. Manual mode vs scheduler mode
+- после `/foundation-to-tasks` перед FT-000 execution;
+- перед `/autopilot` и scheduler phase `/autonomous`;
+- перед scheduler task selection;
+- после wave-boundary `/mb-sync` перед promotion;
+- перед final scheduler success.
 
-Владение статусами отличается по mode.
+В manual flow doctor conditional: T3, complex T2, Foundation, dependency,
+stale-doc, risky-link или autonomous handoff. Простая local T0/T1 работа не
+получает mandatory doctor gate по умолчанию.
 
-Manual mode:
+Doctor механически проверяет наличие single-card evidence, но не решает,
+действительно ли spec применим и достаточен. Это semantic ownership
+`/review-tasks-plan`.
 
-- `/execute` реализует task и записывает evidence/handoff;
-- T0/T1 task можно закрыть прямо в `/execute` только при явном top-level closure owner, task-local scope, no T2/T3 trigger и compact evidence;
-- standalone `/verify` для T0/T1 optional и нужен для uncertainty, widened scope или explicit request;
-- T2 task можно считать финально `done` после full protocol, applicable task/spec gates и `/verify PASS`; per-task `/red-verify` не требуется для T2 task closure;
-- T2 feature нельзя считать complete, пока после всех feature tasks не прошел `/red-verify --feature FT-*` с `SEMANTIC_VERDICT: semantic-pass`, записанным в feature doc; scheduler запускает этот gate при закрытии последней feature task до wave-boundary `/mb-sync` и strict doctor;
-- T3 task нельзя считать финально `done` по одному `/verify PASS`; перед closure нужен per-task `/red-verify` с `SEMANTIC_VERDICT: semantic-pass` и exact `HUMAN_CHECKPOINT: done`;
-- explicit owner сразу записывает task status, closure decision и evidence; `/mb-sync` синхронизирует Memory Bank, RTM, changelog и task records один раз в конце wave и сам не выводит решение о закрытии;
-- ранний full sync допустим только если продолжение текущей wave зависит от reconciled RTM/index/spec/contract/changelog state или owner явно запросил sync; local T0/T1 closure не требует sync, если изменились только `task.status`, `task.verify` и `.protocols/<TASK>/run.md`.
+## 13. Execution protocols и lifecycle ownership
 
-Scheduler mode (`/autopilot`, `/autonomous`):
+### Protocol depth
 
-- canonical selection is sequential: one task completes its
-  execute/verify/closure decision before the next is selected;
-- `--experimental-parallel` is non-canonical and requires isolated execution,
-  pairwise-disjoint hard scopes, no T3/shared-governing writes, and sequential
-  fallback when independence cannot be proved;
-- scheduler владеет переходами `planned -> ready`, `ready -> in_progress`, `in_progress -> done|failed|blocked`, dependent block/unblock и terminal state;
-- functional/semantic failure может повторить ту же task только в пределах retry budget и без изменения identity/scope/tier/contracts; иначе task фиксируется как `failed`, получает bug либо normal planned follow-up, а dependents блокируются;
-- `/execute` не закрывает tasks;
-- `/verify` не закрывает, не fail-ит и не promote-ит dependents;
-- `/red-verify` не закрывает, не fail-ит и не promote-ит dependents;
-- scheduler записывает closure/failure/blocking decision, final status и evidence links в authoritative `.task.json` сразу после каждой task;
-- before `/execute`, scheduler requires a green `/mb-doctor --strict`; an
-  incomplete T2/T3 single-card handoff is `HALT_QUALITY_GATES`;
-- `/mb-sync` только synchronizes/reconciles already-written task state и не принимает closure/promotion decisions сам; обычный full sync запускается один раз в конце wave;
-- после wave-boundary `/mb-sync`, lint и strict doctor scheduler выполняет отдельный promotion/dependent blocking pass для следующей wave.
+T0/T1 могут использовать compact:
 
-Не смешивайте manual и scheduler mode внутри одного task run.
+```text
+.protocols/<TASK_ID>/run.md
+```
 
-## 9. Tier policy
+T2/T3 требуют full protocol:
 
-| Tier | Когда использовать | Protocol | Verification | Scheduler closure |
+```text
+.protocols/<TASK_ID>/context.md
+.protocols/<TASK_ID>/plan.md
+.protocols/<TASK_ID>/progress.md
+.protocols/<TASK_ID>/verification.md
+.protocols/<TASK_ID>/handoff.md
+```
+
+T3 дополнительно использует `red-verification.md`. Substantive logs, reports и
+artifacts записываются в `.tasks/<TASK_ID>/`.
+
+`/add-tests` работает только внутри существующей indexed task со статусом
+`in_progress`. Он выбирает narrowest credible test level, не создаёт synthetic
+testing task и не меняет `.memory-bank/testing/`.
+
+### Manual mode
+
+Manual mode означает явный top-level owner, а не ручное написание кода.
+
+- T0/T1 `/execute` может закрыть task только если current agent — explicit
+  manual top-level closure owner, scope остался local, не возник T2/T3 trigger,
+  hard boundaries соблюдены и compact PASS evidence записан в protocol и
+  task `verify`.
+- Если ownership отсутствует, `/execute` или `/verify` оставляет status без
+  изменения и передаёт closure recommendation owner/scheduler.
+- T2 closure требует full protocol, applicable task/spec gates, `/verify PASS`
+  и explicit owner, который записывает lifecycle decision. Per-task
+  `/red-verify` optional.
+- T2 product feature completion отдельно требует
+  `/red-verify --feature FT-<ID>` и exact
+  `SEMANTIC_VERDICT: semantic-pass` в feature doc.
+- T3 closure требует `/verify PASS`, per-task semantic-pass, exact standalone
+  `HUMAN_CHECKPOINT: done` и explicit owner.
+
+Не смешивайте manual и scheduler ownership внутри одного task run.
+
+### Scheduler mode
+
+`/autopilot` и `/autonomous` владеют:
+
+- `planned -> ready` promotion;
+- `ready -> in_progress`;
+- final `done|failed|blocked` decision;
+- dependent blocking/unblocking;
+- retry/failure budgets;
+- terminal run state.
+
+`/execute` реализует, `/verify` возвращает functional verdict,
+`/red-verify` — semantic verdict. В scheduler mode эти child skills не меняют
+final lifecycle. Scheduler записывает status, closure/failure/blocking decision
+и evidence links в authoritative `.task.json` сразу после task и до следующего
+sync boundary.
+
+### `/mb-sync`
+
+`/mb-sync` — thin reconciliation adapter. Он согласует уже принятые решения с
+RTM, feature/epic lifecycle, spec links, indexes, routers и changelog, но не
+делает closure, failure, blocking или promotion inference.
+
+Full sync выполняется один раз в конце wave. Early sync допустим только если
+current wave реально зависит от reconciled RTM/index/spec/contract/changelog
+state или owner явно его запросил. Local manual T0/T1 closure без broader
+durable changes full sync не требует.
+
+### Failure handling
+
+Scheduler может безопасно retry ту же task только в пределах budget и
+неизменных identity, outcome, scope, tier, dependencies, specs и hard
+boundaries. Unsafe/non-idempotent side effect нельзя повторять.
+
+Если retry невозможен или budget исчерпан:
+
+- task получает `failed` и functional/semantic evidence;
+- создаётся bug note или normal schema-backed follow-up через planning owner;
+- direct dependents `failed|blocked` task блокируются до следующего promotion;
+- clarification/semantic concern становится `blocked`, а не automatic failure.
+
+## 14. Tier policy
+
+| Tier | Scope | Protocol | Manual completion | Scheduler completion |
 |---|---|---|---|---|
-| `T0` | typo, links, formatting, safe docs-only | допустим compact `.protocols/TASK/run.md` | отдельный `/verify` обычно не нужен | compact evidence / functional PASS достаточно |
-| `T1` | local code/local behavior с низким blast radius | compact допустим | local gates; `/verify` optional | compact evidence / functional PASS достаточно |
-| `T2` | API, contracts, schema/state/data/domain, cross-module | full protocol required | `/verify` required; per-task `/red-verify` optional | task: `VERDICT: PASS`; feature: `/red-verify --feature FT-*` + feature-doc `SEMANTIC_VERDICT: semantic-pass` before feature completion |
-| `T3` | auth, security, secrets, prod/deploy, irreversible/data-loss, payments, compliance | full protocol required | `/verify` + per-task `/red-verify` + human checkpoint | `VERDICT: PASS` + `SEMANTIC_VERDICT: semantic-pass` + exact `HUMAN_CHECKPOINT: done` + explicit owner/scheduler closure; `/mb-sync` at wave boundary |
+| `T0` | typo, formatting, links, safe docs-only | compact | `/execute` fast lane или optional `/verify` у explicit owner | ordered `/verify`; compact evidence may be enough |
+| `T1` | local function/component/test, low blast radius | compact | local check + explicit-owner closure; `/verify` optional | ordered `/verify`; compact functional evidence may be enough |
+| `T2` | API, contracts, events, state/data/domain, migration, cross-module | full | `/verify PASS` + applicable gates + explicit owner | scheduler task done after functional PASS; feature complete only after feature semantic-pass |
+| `T3` | auth, security, secrets, production/deploy, irreversible/data-loss, payments, compliance | full | functional PASS + task semantic-pass + human checkpoint + explicit owner | те же gates до scheduler `done` |
 
-Если evidenced scope однозначно триггерит несколько tiers, используется самый высокий triggered tier. Если же tier зависит от неразрешённой scope/verification развилки или evidence недостаточно, interactive flow спрашивает оператора, а unattended flow останавливается без higher-tier default.
+Если evidenced scope однозначно триггерит несколько tiers, применяется самый
+высокий triggered tier. Если сам scope или требуемый tier неоднозначен, это
+operator decision: interactive planning спрашивает, unattended planning
+останавливается. «На всякий случай взять выше» не заменяет решение.
 
-The task lifecycle remains `planned|ready|in_progress|blocked|done|failed`.
+Tier входит в task ID, поэтому его нельзя изменить in-place. Higher-tier
+discovery возвращает исходную task в `/prd-to-tasks FT-<NNN>` для controlled
+rebuild/split, затем повторяются `/review-tasks-plan`, applicable doctor и
+`/execute` replacement ID.
 
-## 10. Generated command reference
+## 15. Автоматические режимы
 
-| Command | Purpose | Creates/updates | Does not do | Next step |
-|---|---|---|---|---|
-| `/cold-start` | Scenario router после skeleton creation | routing decision, next command recommendation | не создает EP/FT/TASK без PRD; не обходит `/write-prd`; не заменяет `/mb-init` | `/brainstorm`, `/brief`, `/constitution`, `/write-prd`, `/map-codebase` или stop |
-| `/mb` | Prime agent context из Memory Bank | обычно без writes; может создать `.protocols/<TASK>/plan.md` для unknowns | не реализует | выбранная task/workflow command |
-| `/mb-init` | Initialize Memory Bank skeleton | `.memory-bank/`, `.tasks/`, `.protocols/`, agent files, runtime scripts | не планирует roadmap/tasks | `/cold-start` |
-| `/brainstorm` | Facilitated ideation | `.memory-bank/analysis/brainstorming/BR-*.md`, analysis index | не создает PRD, Product Brief, tasks | `/brief` |
-| `/brief` | Product Brief input contract | `.memory-bank/analysis/product-brief.md`, analysis index | не создает features/tasks; не заменяет PRD | `/write-prd` если principles `ratified|partial`; иначе `/constitution`, затем `/write-prd` |
-| `/constitution` | Adaptive interview for unresolved governing principles | `.memory-bank/constitution.md` | не добавляет Spec Kit hooks, governance engines или command aliases; recommendation не заменяет operator decision | `/write-prd` или repair unresolved governance blocker |
-| `/write-prd` | Product Brief/context -> clarified PRD | `.memory-bank/prd.md` | не создает EP/FT/TASK; не обходит Constitution conflicts | `/spec-init` |
-| `/spec-init` | Bootstrap lightweight pre-PRD framing | `.memory-bank/spec-backbone.md` pre-PRD status, decomposition inputs, gaps, handoff; `.memory-bank/spec-index.md` as pure spec registry/index | не проводит architecture interview; не создаёт canonical design specs или global backbone; не пишет readiness/status state в `spec-index.md` | `/prd` |
-| `/prd` | Clarified PRD -> L1-L3 Memory Bank | product, requirements, epics, features | не создаёт task queue и не изменяет testing documentation | `/review-feat-plan` for high-risk/large work, then `/spec-design`; `/clarify-feature` если blocked |
-| `/spec-design` | Mandatory adaptive architecture scaffold and foundation decision | consumes lightweight spec-index; writes backbone status; covers applicable Architecture, Interfaces/Contracts, Data, and Verification concerns in any suitable order; writes serious design-pressure `Architecture Spine` AD rules and an explicit `.memory-bank/foundation.md` decision (`required` or `not_required`); routes contract areas and canonical paths as `authoritative`, `needed_before_tasks`, `not_applicable`, or `blocked`; uses one `architecture/system-architecture.md` hub only when it is the best readable global scaffold shape | не создаёт tasks/plans/default feature-owned specs; не принимает unresolved operator decisions; не дублирует detailed API/state/message contracts в `architecture/*`; не вводит отдельный architecture workflow | `/foundation-to-tasks` only if foundation proof is required, иначе `/prd-to-tasks FT-*` или `/spec-auto --all`; blocked -> `/spec-design` after decision |
-| `/foundation-to-tasks` | Foundation Dev Path -> FT-000 JSON tasks or brownfield verified-baseline no-op | минимальный agent-selected walking skeleton; applicable Architecture/Interfaces/Data/Verification coverage; `REQ-000`, `FT-000`, `.protocols/FT-000/*`, `IMPL-FT-000.md`, indexed complete foundation `TASK-NNN-TN-FT-000-WN` records; or `Foundation Required: false` with `Foundation Gate Task: not_required` | не создаёт product feature tasks; не вводит отдельную task schema/lifecycle; не принимает новую design branch за оператора; не заполняет будущие product contracts вместо `/prd-to-tasks` | `/mb-doctor --strict` when tasks were created, then `/execute`/`/verify`; otherwise `/prd-to-tasks` |
-| `/spec-auto` | Unattended SDD init/design from authoritative decisions | spec-index, feature design status, accepted-decision references/blockers | не спрашивает пользователя и не выбирает за него; unresolved branch завершает существующим halt; не обрабатывает `FT-000` как product feature | `/prd`, `/foundation-to-tasks` + foundation gate closure, `/prd-to-tasks --all`, или interactive repair skill |
-| `/clarify-feature` | Resolve feature-level blockers | target `.memory-bank/features/FT-*.md` clarification metadata/answers | не назначает tier; не создает task records | `/spec-design`, required foundation gate closure, then `/prd-to-tasks FT-*` |
-| `/prd-to-tasks` | Initial product feature concern design or safe reconciliation -> implementation plan + complete JSON tasks | agent-selected discovery/audit/slicing tactics; `reuse|extend|create|not_applicable|block`; subject-based specs; direct task links; optional behavior examples; IMPL plan; indexed T2/T3-complete cards | не создаёт default `FT-*` hubs; не принимает operator-owned product/design/tasking decisions; не запускает execution; reconciliation сохраняет identity/lifecycle/evidence | `/review-tasks-plan FT-*` или named clarification/design repair |
-| `/review-tasks-plan` | Fresh-context gate for one feature's runnable planning surface | `APPROVE|REJECT` report over structural integrity, acceptance/REQ coverage and slicing, canonical design readiness/direct task links, and execution readiness | не исправляет specs/plans/tasks; отклоняет hub-only T2/T3 coverage; behavior specs не являются readiness gate; не заменяет `/review-feat-plan` или `/mb-doctor` | feature-level canonical repair через `/prd-to-tasks`, shared/global repair через `/spec-design`, либо conditional `/mb-doctor` и execution |
-| `/execute` | Implement one scoped task using direct task-linked canonical Architecture, Component/API/Event/Data Contract, and Data Specification inputs | `.protocols/<TASK>/...`, `.tasks/<TASK>/...`, code/docs в task scope; for manual T0/T1 may update task `verify`/`status` only under fast-lane owner conditions | не считает feature links или `spec-index` заменой direct T2/T3 task context; не закрывает scheduler tasks; не запускает verify/red-verify/mb-sync; не меняет tier-encoded task identity in place | compact T0/T1 closure, `/verify`, or higher-tier handoff through `/prd-to-tasks FT-*` |
-| `/verify` | Task-scoped functional verification одной реализованной task | tier-selected verification protocol, task `verify` evidence и `PASS|FAIL|NEEDS-CLARIFICATION`; checks only mapped AC/REQ and direct task-linked applicable canonical specs | не чинит specs/tasks, не создаёт BUG/follow-up task, не меняет tier identity; T2/T3 lifecycle остаётся explicit owner/scheduler | T0/T1 explicit-owner closure, T2 closure recommendation, T3 `/red-verify`, либо repair route в `/prd-to-tasks`/`/spec-design` |
-| `/red-verify` | Adversarial semantic verification | самостоятельно построенная hostile model/probes, `.protocols/<TASK>/red-verification.md`, `.tasks/<TASK>/...`, exact semantic verdict | не дублирует `/verify`; не выбирает неоднозначную трактовку; в scheduler mode не закрывает | scheduler/explicit owner decision или named repair route |
-| `/review-feat-plan` | Fresh-context feature plan review | `.tasks/TASK-MB-REVIEW-FEAT-PLAN/*`, fix list/verdict | не ревьюит JSON task queue | `/spec-design` или исправить PRD/REQ/EP/FT |
-| `/review-tasks-plan` | Fresh-context feature task-plan review; no args infer latest decomposed product feature; `--all` expands to per-feature reviews | `.tasks/TASK-MB-REVIEW-TASKS-PLAN/*`, per-feature fix list/verdict, concrete contract readiness answer for T2/T3 | не заменяет `/mb-doctor`, `/verify`, `/red-verify`; не ревьюит PRD decomposition как основной surface; не схлопывает batch features в один широкий prompt | исправить rejected feature task plan или manual `/mb-doctor`; every task-linked product feature needs `APPROVE` для `/autopilot`/`/autonomous` |
-| `/map-codebase` | Brownfield as-is mapping | `.memory-bank/*` baseline docs, `.tasks/TASK-MB-MAP/*` | не создает roadmap/tasks без PRD | `/write-prd --delta`, затем `/prd` |
-| `/mb-sync` | Thin adapter to canonical wave-boundary reconciliation | indexes, RTM/lifecycle, changelog, task/spec consistency already decided by owners | не принимает closure/promotion/product/design decisions; не запускается после каждой ordinary task | lint + strict doctor, then separate scheduler promotion |
-| `/mb-garden` | Maintain Memory Bank hygiene | cleanup/archive recommendations, hygiene findings | не меняет product scope; не является doctor workflow gate | исправить docs или rerun checks |
-| `/mb-doctor` | Deterministic readiness gate over `mb-lint` | report only; optional JSON output | не заменяет `/review-feat-plan`, `/review-tasks-plan`, `/verify`, `/red-verify`; не default для simple manual T0/T1; нет markdown task-card fallback | исправить findings, перейти к scheduler, or skip for simple T0/T1 |
-| `/autopilot` | Sequential scheduler for an existing reviewed JSON queue | scheduler-owned task statuses, protocols, evidence, wave sync/review loop | не создаёт PRD/FT/TASK queue; не повторяет child implementation methods; не выбирает unresolved operator branch | terminal state или exact interactive repair route |
-| `/autonomous` | Full unattended PRD -> done orchestration | PRD/L1-L3/tasks/protocols/reviews/status through child contracts | не выбирает за оператора; не обходит hard stops; не меняет sequential canonical scheduler | terminal state with exact resume route |
-| `/discuss` | Clarify unknowns/contradictions before implementation | decision log/protocol notes when useful | не реализует; не создает tasks сам | resolved command, например `/write-prd`, `/execute` |
-| `/add-tests` | Add risk-based coverage inside an existing indexed `in_progress` task | scoped tests and tier-selected evidence in `.protocols/<TASK_ID>/` / `.tasks/<TASK_ID>/` | не создаёт task identity, не меняет `.memory-bank/testing/`, не добавляет decorative/flaky tests | return to `/execute`, `/verify`, scheduler, or explicit owner |
-| `/find-skills` | Find relevant installed/marketplace skills | recommendation list | не устанавливает marketplace skills без confirmation | use/install selected skills |
+### `/autopilot`
 
-## 11. Checks
+Используется только для уже подготовленной queue. Preconditions:
 
-Проверки framework/source repo:
+- non-empty, schema-valid JSON registry;
+- valid Global Backbone и Foundation anchors/dependencies;
+- latest `/review-tasks-plan FT-<NNN>` `APPROVE` для каждой task-linked product
+  feature;
+- complete T2/T3 single-card handoffs;
+- no unresolved operator decision;
+- `/mb-doctor --strict` PASS.
+
+Canonical scheduler loop:
+
+```text
+refresh JSON state
+  -> promotion pass
+  -> select one ready task by wave/index order
+  -> strict doctor precondition
+  -> ready -> in_progress
+  -> /execute
+  -> /verify
+  -> per-task /red-verify for T3
+  -> scheduler lifecycle/evidence write
+  -> T2 feature semantic gate when its last task closes
+  -> next task in wave
+  -> wave-boundary /mb-sync
+  -> lint + strict doctor
+  -> conditional task-plan re-review if planning surface changed
+  -> next promotion pass
+```
+
+Status/evidence-only closure не вызывает повторный `/review-tasks-plan`.
+Re-review нужен, если изменились task cards, specs, dependencies, tier, scope
+или plan assumptions.
+
+### `/autonomous`
+
+Это полный unattended orchestration:
+
+```text
+authoritative Product Brief / PRD / delta
+  -> pre-queue lint + default doctor
+  -> Constitution decision check
+  -> /write-prd
+  -> /spec-auto --init
+  -> /prd
+  -> /review-feat-plan
+  -> /spec-design --all
+  -> Foundation queue and gate when required
+  -> /spec-auto --all
+  -> /prd-to-tasks --all
+  -> per-feature /review-tasks-plan
+  -> lint + strict doctor
+  -> sequential scheduler loop
+  -> terminal state
+```
+
+`/autonomous` orchestrates child contracts, но не переписывает их внутреннюю
+тактику. Он не проводит unattended Constitution interview и не принимает
+missing operator decisions.
+
+Allowed terminal states:
+
+```text
+SUCCESS
+HALT_BLOCKING_QUESTIONS
+HALT_CLARIFICATION_REQUIRED
+HALT_REVIEW_REJECT
+HALT_FAILURE_BUDGET
+HALT_DEPENDENCY_DEADLOCK
+HALT_POLICY_VIOLATION
+HALT_QUALITY_GATES
+HALT_BUDGET_EXCEEDED
+```
+
+### Experimental parallel
+
+Canonical execution sequential. `--experimental-parallel` требует:
+
+- explicit opt-in;
+- isolated worktrees/sandboxes;
+- pairwise-disjoint non-empty hard `runtime_context.write_boundary`;
+- отсутствие T3, shared/governing files, package manifests, lockfiles, CI и
+  global config в parallel set.
+
+`touched_files` не доказывает независимость. Если isolation/non-overlap нельзя
+доказать, scheduler делает sequential fallback без ошибки.
+
+## 16. Reference всех runtime-skills
+
+### Entry, context и discovery
+
+| Command | Owns | Не владеет / handoff |
+|---|---|---|
+| `/cold-start` | scenario detection и next route | не создаёт EP/FT/TASK без PRD; route в discovery, PRD, mapping или stop |
+| `/mb-init` | Memory Bank skeleton, agent guides, runtime scripts | не создаёт roadmap; затем `/cold-start` |
+| `/mb` | минимально достаточный context priming | не реализует task; может записать plan неизвестных |
+| `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
+| `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
+| `/brainstorm` | traceable ideation report | не создаёт requirements/PRD; затем `/brief` |
+| `/brief` | concise Product Brief | не создаёт features/tasks; затем `/constitution` или `/write-prd` |
+| `/constitution` | governing principles, DoD, autonomy, checkpoints | не заменяет PRD/specs; затем `/write-prd` |
+| `/write-prd` | clarified Constitution-checked PRD | не декомпозирует; затем `/spec-init` |
+| `/discuss` | bounded accepted decisions в owning artifacts/protocol | не обходит owning skill gate |
+| `/map-codebase` | evidence-backed as-is baseline | не создаёт roadmap без delta; затем PRD route |
+| `/clarify-feature` | ambiguity одной feature и design-impact routing | не создаёт specs/tasks; затем owning repair или tasking |
+
+### Product, SDD и tasking
+
+| Command | Owns | Не владеет / handoff |
+|---|---|---|
+| `/spec-init` | pre-PRD decomposition framing | не создаёт architecture/Foundation; затем `/prd` |
+| `/prd` | product, REQ, epics, product features | не создаёт tasks/testing policy; затем review/design |
+| `/review-feat-plan` | fresh-context `APPROVE|REJECT` PRD decomposition review | не исправляет product docs; затем `/spec-design` или repair |
+| `/spec-design` | mandatory global backbone и Foundation decision | не создаёт tasks/plans; затем Foundation или feature design |
+| `/spec-auto` | unattended `--init`, `FT-*` или `--all` SDD from authoritative decisions | не спрашивает и не выбирает missing decision |
+| `/foundation-to-tasks` | minimum FT-000 queue или proven-baseline no-op | не реализует product features; затем strict doctor или product tasking |
+| `/prd-to-tasks` | feature canonical coverage, IMPL plan, behavior examples и JSON tasks | не выполняет tasks; затем `/review-tasks-plan` |
+| `/review-tasks-plan` | fresh-context `APPROVE|REJECT` runnable planning review | не чинит specs/cards/status; затем doctor/execution или repair |
+
+### Execution, verification, maintenance и automation
+
+| Command | Owns | Не владеет / handoff |
+|---|---|---|
+| `/execute` | implementation одной indexed task и tier-routed evidence | не закрывает scheduler task и не запускает child verification |
+| `/add-tests` | cheapest sufficient tests внутри current `in_progress` task | не создаёт testing lifecycle или `.memory-bank/testing/` policy |
+| `/verify` | task-scoped functional `PASS|FAIL|NEEDS-CLARIFICATION` | не исправляет implementation/spec и не создаёт follow-up task |
+| `/red-verify` | independent hostile model и semantic verdict | не заменяет functional PASS и не меняет scheduler lifecycle |
+| `/mb-sync` | reconciliation already-decided durable state | не принимает closure/promotion/design decisions |
+| `/mb-garden` | lint/cleanup/archive/drift maintenance | не является readiness owner и не меняет governance silently |
+| `/mb-doctor` | deterministic readiness report | не заменяет semantic review или verification |
+| `/autopilot` | existing queue scheduler и terminal state | не создаёт PRD/features/initial queue |
+| `/autonomous` | full Product/Design-to-terminal-state orchestration | не принимает unresolved operator decisions |
+
+## 17. Проверки
+
+### Source repo
 
 ```bash
 npm run check:syntax --silent
@@ -498,22 +944,21 @@ node scripts/install-framework.mjs --skill '*' --yes
 tmpdir="$(mktemp -d)"; node scripts/install-framework.mjs --bootstrap --target "$tmpdir" --yes
 ```
 
-Команда `find` должна вывести `0`.
+Source-only count должен быть `0`.
 
-Проверки target repo после bootstrap:
+### Target repo
 
 ```bash
 node scripts/mb-lint.mjs
 node scripts/mb-doctor.mjs
 ```
 
-Используйте strict doctor только после появления реальной executable task queue:
+Strict только после появления executable queue или на явно требуемом
+readiness boundary:
 
 ```bash
 node scripts/mb-doctor.mjs --strict
 ```
-
-В fresh skeleton пустой `.memory-bank/tasks/index.json` валиден в default doctor mode и невалиден в strict mode, потому что executable queue отсутствует.
 
 ## License
 

@@ -21,6 +21,9 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 - Mandatory: the spawn prompt must include: `Read .memory-bank/roles/worker.md`.
 - Every delegation must include role, intent, constraints, boundary, expected output, and where to report.
 - ORCHESTRATOR defines intent and boundary; exact touched files are confirmed by worker preflight, not assumed upfront by ORCHESTRATOR.
+- Use `/context-manifest` only when broad discovery is likely to cost more context than direct reads; skip it for obvious small read sets and simple T0/T1 work.
+- Reusable prompt: `ROLE: Explorer. Read .memory-bank/roles/worker.md. Explore <target> with /context-manifest; return only the Context Read Manifest. Do not execute the target workflow or summarize source contents.`
+- A context manifest routes initial reads; ORCHESTRATOR still reads mandatory sources personally and expands the read set when evidence requires it.
 - Do not run parallel subagents when their file scope, responsibility, or decisions may overlap.
 - Do not create worker ping-pong. If a worker reports a blocker or conflict, decide the next step or escalate to the operator instead of bouncing the same ambiguity between workers.
 

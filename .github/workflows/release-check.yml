@@ -51,6 +51,7 @@ jobs:
           test ! -e skills/_shared/references/commands/review.md
           test -f skills/_shared/references/commands/execute.md
           test -f skills/_shared/references/commands/verify.md
+          test -f skills/_shared/references/commands/context-manifest.md
           test ! -e skills/_shared/references/commands/mb-harness.md
           test ! -e skills/_shared/references/commands/mb-packet.md
           test ! -e skills/_shared/references/protocols/packet-template.json
@@ -83,6 +84,9 @@ jobs:
           grep -Fq 'Canonical execution is sequential' skills/_shared/references/workflows/execute-loop.md
           grep -Fq -- '--experimental-parallel' skills/_shared/references/workflows/autonomy-policy.md
           grep -Fq 'Optional hard write boundary; omit unless evidence justifies one.' skills/_shared/scripts/init-mb.js
+          grep -Fq '<hard_invariants>' skills/_shared/references/commands/context-manifest.md
+          grep -Fq '## Explorer Contract' skills/_shared/references/roles/worker.md
+          grep -Fq 'Explore <target> with /context-manifest' skills/_shared/references/roles/orchestrator.md
 
           product_design_commands=(brainstorm brief constitution write-prd clarify-feature discuss spec-init prd review-feat-plan spec-design spec-auto)
           for command in "${product_design_commands[@]}"; do
@@ -171,12 +175,15 @@ jobs:
           test -f .claude/skills/spec-design/SKILL.md
           test -f .agents/skills/foundation-to-tasks/SKILL.md
           test -f .claude/skills/foundation-to-tasks/SKILL.md
+          test -f .agents/skills/context-manifest/SKILL.md
+          test -f .claude/skills/context-manifest/SKILL.md
           test ! -e .agents/skills/analysis/SKILL.md
           test ! -e .claude/skills/analysis/SKILL.md
           test ! -e .agents/skills/mb-harness/SKILL.md
           test ! -e .claude/skills/mb-harness/SKILL.md
           grep -q '# /spec-design' .agents/skills/spec-design/SKILL.md
           grep -q '# /foundation-to-tasks' .claude/skills/foundation-to-tasks/SKILL.md
+          grep -q '# /context-manifest' .agents/skills/context-manifest/SKILL.md
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' .agents/skills/spec-design/SKILL.md
           test ! -e .memory-bank
 
@@ -240,6 +247,7 @@ jobs:
           test -f "$TARGET/.memory-bank/spec-backbone.md"
           test -f "$TARGET/.memory-bank/constitution.md"
           test -f "$TARGET/.memory-bank/requirements.md"
+          test -f "$TARGET/.memory-bank/skills/index.md"
           test -f "$TARGET/.memory-bank/tasks/index.json"
           test -f "$TARGET/.memory-bank/schemas/task.schema.json"
           test ! -e "$TARGET/.memory-bank/packets"
@@ -264,6 +272,8 @@ jobs:
           test -f "$TARGET/.agents/skills/review-feat-plan/SKILL.md"
           test -f "$TARGET/.claude/skills/review-tasks-plan/SKILL.md"
           test -f "$TARGET/.agents/skills/review-tasks-plan/SKILL.md"
+          test -f "$TARGET/.claude/skills/context-manifest/SKILL.md"
+          test -f "$TARGET/.agents/skills/context-manifest/SKILL.md"
           test ! -e "$TARGET/.claude/skills/analysis/SKILL.md"
           test ! -e "$TARGET/.agents/skills/analysis/SKILL.md"
           test ! -e "$TARGET/.claude/skills/review/SKILL.md"
@@ -300,6 +310,7 @@ jobs:
           grep -Fq 'independently builds its own hostile model' "$TARGET/.agents/skills/red-verify/SKILL.md"
           grep -q '# /spec-design' "$TARGET/.agents/skills/spec-design/SKILL.md"
           grep -q '# /execute' "$TARGET/.claude/skills/execute/SKILL.md"
+          grep -q '# /context-manifest' "$TARGET/.claude/skills/context-manifest/SKILL.md"
           ! grep -q 'Read and follow the instructions in `.memory-bank/commands/' "$TARGET/.agents/skills/execute/SKILL.md"
 
           grep -q 'ROLE: GENERAL' "$TARGET/AGENTS.md"
@@ -313,6 +324,9 @@ jobs:
           ! grep -q '.memory-bank/commands' "$TARGET/AGENTS.md"
           grep -q 'Роль GENERAL' "$TARGET/.memory-bank/roles/general.md"
           grep -q 'Роль: Оркестратор' "$TARGET/.memory-bank/roles/orchestrator.md"
+          grep -Fq '/context-manifest' "$TARGET/.memory-bank/skills/index.md"
+          grep -Fq '## Explorer Contract' "$TARGET/.memory-bank/roles/worker.md"
+          grep -Fq 'Explore <target> with /context-manifest' "$TARGET/.memory-bank/roles/orchestrator.md"
           grep -q '## Architecture Spine' "$TARGET/.memory-bank/architecture/system-architecture.md"
           grep -q '#### AD-NNN' "$TARGET/.memory-bank/architecture/system-architecture.md"
           ! grep -q '^## Testing Strategy$' "$TARGET/.memory-bank/architecture/system-architecture.md"

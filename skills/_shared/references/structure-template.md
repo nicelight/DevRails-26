@@ -862,6 +862,7 @@ status: active
 - Scenario routing: cold-start
 - Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
 - SDD design: /spec-init, mandatory adaptive /spec-design, foundation tasking inside /foundation-to-tasks, close the FT-000 foundation gate when required, initial and repair feature-level design/task reconciliation inside /prd-to-tasks, /spec-auto
+- Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
 - PRD decomposition: /prd
 - Codebase mapping: /map-codebase
 - Execution: /execute

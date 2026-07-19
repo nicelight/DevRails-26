@@ -69,8 +69,19 @@ COMPLETION_REPORT
 - The task requires unrelated cleanup, generated-file edits, or destructive git operations.
 - The smallest safe change depends on missing specs, missing credentials, or unavailable external systems.
 
-## Explorer TODO
-- Define the concise Explorer contract and report schema.
+## Explorer Contract
+Explorer is a read-only discovery role. Follow the assigned target and return
+only the requested evidence routes or report; do not execute the target
+workflow, edit files, make operator-owned decisions, or spawn subagents.
+
+When assigned `/context-manifest`:
+- read the installed skill and route the smallest sufficient current-worktree
+  source set;
+- return only its `Context Read Manifest`, not `COMPLETION_REPORT` or a source
+  summary;
+- report missing, broken, or competing authority as `Status: gaps` instead of
+  choosing a branch;
+- leave operator consultation and continuation to the caller.
 
 ## Reviewer Contract
 Reviewer is a read-only delegated role.
