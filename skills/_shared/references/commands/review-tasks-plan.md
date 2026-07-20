@@ -116,6 +116,19 @@ Cover:
      canonical path per concrete concern; sufficient shape/rules/errors/
      verification block; relevant AD/boundary/contract links; no hub-only T2/T3
      design; persistence proof where applicable; no source contradictions.
+   - only when the accepted target defines modules or capability slices, verify
+     that each affected task makes its primary owning module/slice and code root
+     discoverable through the card and direct links, carries applicable public
+     boundary, semantic/write-owner, and forbidden-bypass rules, names one
+     orchestration owner for a cross-slice outcome, and has a credible proof
+     path. For a capability-sliced target, that owner must be one capability
+     slice; reject business
+     orchestration placed in an HTTP/UI/bot handler, generic utility/shared
+     helper, or composition root, and reject an orchestration slice invented
+     during task planning rather than accepted in the global architecture.
+     Reject when execution would have to invent a material boundary; do not
+     require slices from an accepted architecture that uses another primary
+     change unit.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
      context and owner; `ready` is valid iff every dependency is `done` and no
@@ -124,7 +137,8 @@ Cover:
    - existing `in_progress|blocked|done|failed` records are reviewed for evidence and
      ownership consistency, never normalized or mutated by this skill;
      Foundation final gate `done` and linked when required; complete T2/T3
-     single-card handoff; hard runtime scope respected.
+     single-card handoff; hard runtime scope respected; no slice code root was
+     mechanically treated as a task hard write boundary.
 
 Verdicts:
 - `APPROVE`: all coverage groups pass. Non-blocking notes are allowed.

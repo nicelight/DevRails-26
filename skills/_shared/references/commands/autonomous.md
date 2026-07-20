@@ -87,10 +87,24 @@ state, not a second task registry.
 </hard_invariants>
 
 <operator_decisions>
-Unattended mode never answers a material operator branch. It may apply only a
-decision already fixed by Constitution, clarified PRD, accepted operator
-policy/decision, production baseline, ADR, canonical spec, task card, or other
-authoritative evidence.
+Unattended mode never answers a material operator branch. It may apply a
+material target decision only when it is already fixed by Constitution, an
+explicit accepted operator decision or policy, an active accepted ADR, an
+authoritative canonical spec, or clarified product sources.
+
+Runtime observations, production code, and mapped baseline may establish
+current behavior, constraints, and compatibility or migration evidence; they do
+not authorize a new target architecture, contract, data ownership, or migration
+route. Indexed task cards and workflow state remain authoritative for their
+existing task, lifecycle, scheduler, and verification fields; they are not
+independent sources of a new product or architecture target.
+
+A difference between current state and an accepted target is a reconciliation
+delta, not an authority conflict. If the accepted target and applicable
+constraints yield one unambiguous route, record it in the existing owning
+artifact and continue without re-asking. Conflicting target authorities or an
+unresolved material compatibility, migration, or irreversible-behavior branch
+must halt through the existing route below.
 
 When any child skill or scheduler step finds an unresolved product/design/
 contract/state/data/storage/security/compatibility/task-boundary/tier/

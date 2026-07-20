@@ -475,6 +475,36 @@ product task handoff.
 state/data, runtime, security, production-sensitive или irreversible pressure
 обычно требует `complete` scaffold.
 
+### Preferred architecture для application greenfield
+
+Если `architecture_style` ещё не принят, проект является application-shaped
+greenfield и concrete evidence не указывает на другой trade-off, `/spec-design`
+первым рекомендует один deployable modular monolith с capability/vertical
+slices, одной runtime-композицией, узкими module contracts и явным write
+ownership. Recommendation задаёт порядок предложения, но не authority:
+interactive flow подтверждает style и coherent initial slice map одним focused
+decision, а unattended flow продолжает только по уже принятой policy и
+материально однозначному evidence. Явно принятая альтернатива всегда имеет
+приоритет.
+
+Library/package, CLI, firmware, pipeline, plugin/protocol system, устойчивый
+brownfield и независимо развёртываемые services используют свою естественную
+primary change unit. Гипотетические future scale или reuse сами по себе не
+оправдывают отклонение или распределённую сложность.
+
+Для принятого capability-sliced target существующие
+`architecture/system-architecture.md`, Boundary Map и subject specs вместе
+фиксируют один deployable/composition root и эквивалент следующих фактов для
+каждого значимого slice: code roots, owns, must-not-own, public boundary,
+allowed dependencies, semantic/write ownership и credible proof path. Exact
+таблица или heading не обязательны; маленькое приложение может иметь один
+cohesive slice. Slice выражает законченную user/operator capability: один
+feature не превращается автоматически в slice, а один slice может обслуживать
+несколько features. Shared code, event bus, mediator и DI/plugin machinery
+появляются только при текущей доказанной необходимости. Новый slice registry и
+per-file ownership не создаются. Общая БД не означает shared business
+ownership: каждый mutable invariant/transition сохраняет одного write owner.
+
 ### `spec-index.md`
 
 Это pure registry:
@@ -575,6 +605,12 @@ Foundation использует обычные JSON tasks, lifecycle, tiers и p
 `FT-000`; product tasks используют `W1+` и зависят от final gate напрямую или
 transitively.
 
+Если accepted target определяет capability slices, Foundation применяет его
+composition root и создаёт только slice roots, необходимые walking skeleton.
+Она не строит layer-centric scaffold, пустые будущие slices, product behavior
+или speculative shared abstractions. Foundation tasks получают применимые
+architecture/boundary specs через существующие direct link fields.
+
 Перед выполнением FT-000 queue обязателен `/mb-doctor --strict`. Product
 tasking продолжается только после `done` final gate. `FT-000` не участвует в
 T2 product feature-completion semantics.
@@ -610,6 +646,17 @@ reuse | extend | create | not_applicable | block
 
 Task slicing строится вокруг cohesive independently verifiable outcomes, а не
 вокруг файлов, слоёв, modules или отдельной «task на tests».
+
+Feature, slice и task остаются разными сущностями. Для принятой module/slice
+architecture implementation plan называет primary owning slice/module и code
+root, а task card переносит применимые architecture/boundary links,
+ownership/bypass constraints, expected advisory change surface и proof path
+через существующие поля. Cohesive cross-slice task допустима с одним явным
+owning capability slice. Business orchestration не размещается в HTTP/UI/bot
+handler, generic util/shared helper или composition root; task planning не
+создаёт новый orchestration slice, если accepted architecture не назвала
+подходящего owner. Поле `owning_slice` не добавляется, а slice code root не
+копируется автоматически в hard `write_boundary`.
 
 ### JSON-only registry
 
@@ -1127,7 +1174,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/spec-init` | glossary gate и pre-PRD decomposition framing | не создаёт architecture/Foundation; затем `/prd-to-features` |
 | `/prd-to-features` | product, REQ, epics, product features | не создаёт tasks/testing policy; затем review/design |
 | `/review-feat-plan` | fresh-context `APPROVE|REJECT` PRD decomposition review | не исправляет product docs; затем `/spec-design` или repair |
-| `/spec-design` | mandatory global backbone и Foundation decision | не создаёт tasks/plans; затем Foundation или feature design |
+| `/spec-design` | mandatory global backbone, preferred architecture recommendation и Foundation decision | не создаёт tasks/plans; затем Foundation или feature design |
 | `/spec-auto` | unattended `--init`, `FT-*` или `--all` SDD from authoritative decisions | не спрашивает и не выбирает missing decision |
 | `/foundation-to-tasks` | minimum FT-000 queue или proven-baseline no-op | не реализует product features; затем strict doctor или product tasking |
 | `/feature-to-tasks` | feature canonical coverage, IMPL plan, behavior examples и JSON tasks | не выполняет tasks; затем `/review-tasks-plan` |

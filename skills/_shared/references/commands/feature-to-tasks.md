@@ -74,6 +74,10 @@ new execution mode.
   file, module, layer, artifact, or tests. Split only for independent outcomes,
   hard dependencies/waves, or materially different risk/rollback. Task count
   is not an optimization target.
+- Product feature, architecture slice/module, and task are distinct. A feature
+  may cross slices and a slice may support several features. A task normally
+  has one primary owning slice/module, but a cohesive cross-slice outcome is
+  valid when one orchestration owner and every crossed boundary are explicit.
 - `touched_files` is advisory and non-exhaustive. A non-empty
   `runtime_context.write_boundary` is a deliberate hard boundary and not a
   copy of `touched_files`; `forbidden_scope` and stop conditions remain hard.
@@ -145,6 +149,17 @@ dependencies, expected advisory change surface, tests/gates/UAT, applicable
 Constitution constraints, source/normative inputs, invariants, verification
 targets, and direct canonical links. A concise provisional outline may be kept
 in `plan.md` only when it improves resume safety; it is not another task model.
+
+When the accepted architecture defines modules or capability slices, the plan
+also identifies the primary owning slice/module and code root for each planned
+outcome. A cross-slice outcome names one orchestration owner, the public
+boundaries crossed, and the ownership or direct-write bypasses that remain
+forbidden. That owner must be one capability slice; do not place business
+orchestration in an HTTP/UI/bot handler, generic utility/shared helper, or the
+composition root. Use an owner already accepted in the global architecture;
+if none applies unambiguously, route the material boundary to `/spec-design`
+instead of creating an orchestration slice during task planning. Do not derive
+task count from slice, layer, or file count.
 
 ## Canonical SDD coverage
 
@@ -234,6 +249,18 @@ Additionally require:
 - fields such as `source_artifacts`, `normative_inputs`, `constraints`,
   `invariants`, `verification_targets`, purpose/outcome, and runtime context
   contain only task-relevant evidence;
+- for a task governed by accepted module/slice boundaries, put the directly
+  relevant architecture and boundary paths in existing `source_artifacts`
+  and/or `normative_inputs`, the expected code surface in advisory
+  `touched_files`, and applicable ownership/bypass rules in existing
+  constraints, invariants, anti-goals, or runtime context;
+- express the primary owning slice/module and any cross-slice orchestration
+  through those existing fields and linked specs; do not add an `owning_slice`
+  field, mechanically copy a slice code root into `write_boundary`, or forbid
+  task-required tests, migrations, composition, or public-contract changes;
+- for a cross-slice task, make the owning capability and the prohibition on
+  transport-handler, generic-util, and composition-root business orchestration
+  directly legible through existing linked specs and constraint fields;
 - optional `anti_goals`, forbidden scope, constraints, invariants,
   `evidence_required`, and stop conditions remain empty/absent when not
   grounded;
@@ -262,6 +289,11 @@ Before handoff:
 - confirm canonical identity is unique, linked concrete blocks are sufficient,
   feature design state is truthful, and each T2/T3 card is independently
   executable without guessing;
+- when accepted module/slice boundaries apply, confirm a fresh executor can
+  locate the primary owner/code root, public boundary, forbidden bypasses,
+  eligible cross-slice orchestration owner when relevant, forbidden technical
+  placements for that orchestration, and proof path directly from the card and
+  its linked specs;
 - confirm every accepted operator decision is durably applied and no material
   branch remains unresolved.
 

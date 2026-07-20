@@ -25,6 +25,7 @@ const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
 const tierPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'tier-policy.md');
+const autonomyPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'autonomy-policy.md');
 const lintSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs');
 const doctorSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs');
 const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-install-sync-'));
@@ -98,6 +99,10 @@ function replaceInstalledBody(content, body) {
   const match = content.match(/^## Installed\r?\n[\s\S]*?(?=^## .+\r?$)/m);
   if (!match) fail('Fixture has no replaceable Installed section.');
   return `${content.slice(0, match.index)}## Installed\n${body}\n\n${content.slice(match.index + match[0].length)}`;
+}
+
+function normalizeProse(content) {
+  return content.replace(/\s+/g, ' ').trim();
 }
 
 function runTargetLint() {
@@ -239,11 +244,13 @@ try {
 
   const schemaRel = '.memory-bank/schemas/task.schema.json';
   const tierPolicyRel = '.memory-bank/workflows/tier-policy.md';
+  const autonomyPolicyRel = '.memory-bank/workflows/autonomy-policy.md';
   const lintRel = 'scripts/mb-lint.mjs';
   const doctorRel = 'scripts/mb-doctor.mjs';
   const runtimeSkillRel = '.agents/skills/cold-start/SKILL.md';
   const expectedSchema = readTarget(schemaRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
+  const expectedAutonomyPolicy = readFileSync(autonomyPolicySource, 'utf8');
   const expectedLint = readFileSync(lintSource, 'utf8');
   const expectedDoctor = readFileSync(doctorSource, 'utf8');
   const expectedRuntimeSkill = readTarget(runtimeSkillRel);
@@ -396,6 +403,23 @@ try {
     'Fresh bootstrap did not deploy the canonical tier policy.',
   );
   assert(
+    readTarget(autonomyPolicyRel) === expectedAutonomyPolicy,
+    'Fresh bootstrap did not deploy the canonical autonomy policy.',
+  );
+  const deployedAutonomyPolicy = normalizeProse(readTarget(autonomyPolicyRel));
+  assert(
+    deployedAutonomyPolicy.includes(
+      'Runtime observations, production code, and mapped baseline may establish current behavior, constraints, and compatibility or migration evidence; they do not authorize a new target architecture, contract, data ownership, or migration route.',
+    )
+      && deployedAutonomyPolicy.includes(
+        'A difference between current state and an accepted target is a reconciliation delta, not an authority conflict.',
+      )
+      && !deployedAutonomyPolicy.includes(
+        'accepted operator policy/decision, production baseline',
+      ),
+    'Deployed autonomy policy does not separate current evidence from target authority.',
+  );
+  assert(
     readTarget(lintRel) === expectedLint,
     'Fresh bootstrap did not deploy the canonical mb-lint asset.',
   );
@@ -405,6 +429,10 @@ try {
   );
 
   const parsedSchema = JSON.parse(expectedSchema);
+  assert(
+    !Object.prototype.hasOwnProperty.call(parsedSchema.properties, 'owning_slice'),
+    'Preferred architecture unexpectedly added owning_slice to the task schema.',
+  );
   const runtimeContextSchema = parsedSchema.properties.runtime_context.properties;
   const writeBoundarySchema = runtimeContextSchema.write_boundary.items;
   const aliasBoundarySchema = runtimeContextSchema.allowed_write_scope.items;
@@ -535,10 +563,19 @@ try {
     const autonomousSkill = readTarget(`${runtimeRoot}/autonomous/SKILL.md`);
     const exeSkill = readTarget(`${runtimeRoot}/exe/SKILL.md`);
     const autopilotSkill = readTarget(`${runtimeRoot}/autopilot/SKILL.md`);
+    const mapCodebaseSkill = readTarget(`${runtimeRoot}/map-codebase/SKILL.md`);
+    const specAutoSkill = readTarget(`${runtimeRoot}/spec-auto/SKILL.md`);
     const specDesignSkill = readTarget(`${runtimeRoot}/spec-design/SKILL.md`);
     const foundationToTasksSkill = readTarget(`${runtimeRoot}/foundation-to-tasks/SKILL.md`);
     const featureToTasksSkill = readTarget(`${runtimeRoot}/feature-to-tasks/SKILL.md`);
     const reviewTasksPlanSkill = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
+    const normalizedAutonomous = normalizeProse(autonomousSkill);
+    const normalizedMapCodebase = normalizeProse(mapCodebaseSkill);
+    const normalizedSpecAuto = normalizeProse(specAutoSkill);
+    const normalizedSpecDesign = normalizeProse(specDesignSkill);
+    const normalizedFoundationToTasks = normalizeProse(foundationToTasksSkill);
+    const normalizedFeatureToTasks = normalizeProse(featureToTasksSkill);
+    const normalizedReviewTasksPlan = normalizeProse(reviewTasksPlanSkill);
     assert(
       autonomousSkill.includes('return `HALT_POLICY_VIOLATION` in the command\nresponse only')
         && autonomousSkill.includes('leave any existing\n`.protocols/AUTONOMOUS-RUN/*` untouched')
@@ -563,6 +600,161 @@ try {
         && specDesignSkill.includes('increment the revision exactly once')
         && specDesignSkill.includes('`/feature-to-tasks --all`, `/review-tasks-plan --all`'),
       `${runtimeRoot}/spec-design does not expose the global planning-revision rerun contract.`,
+    );
+    assert(
+      normalizedSpecDesign.includes('Normative target authority is:')
+        && normalizedSpecDesign.includes('As-is evidence strength is:')
+        && normalizedSpecDesign.includes(
+          'A current/target difference is a planning delta, not an authority conflict.',
+        )
+        && !normalizedSpecDesign.includes('Source precedence is:')
+        && !normalizedSpecDesign.includes(
+          'existing production code and authoritative brownfield baseline',
+        ),
+      `${runtimeRoot}/spec-design does not separate current evidence from target authority.`,
+    );
+    assert(
+      normalizedSpecDesign.includes(
+        'first recommend one deployable modular monolith whose primary change units are capability/vertical slices',
+      )
+        && normalizedSpecDesign.includes(
+          'This recommendation order does not create target authority.',
+        )
+        && normalizedSpecDesign.includes('one coherent initial slice map')
+        && normalizedSpecDesign.includes('An explicit alternative always wins.')
+        && normalizedSpecDesign.includes(
+          'A previously accepted operator/project policy may authorize this preferred style and an evidence-determined slice map only when the evidence yields one materially unambiguous decomposition',
+        )
+        && normalizedSpecDesign.includes(
+          'Do not force this recommendation onto a library/package, CLI, firmware, data pipeline, plugin/protocol system, established brownfield boundary, or genuinely independently deployed services.',
+        )
+        && normalizedSpecDesign.includes(
+          'Equivalent prose or tables are valid; no exact heading or table schema is required.',
+        )
+        && normalizedSpecDesign.includes(
+          'A code root is a discovery location and is not a task hard write boundary.',
+        )
+        && normalizedSpecDesign.includes(
+          'Business orchestration must not live in an HTTP/UI/bot handler, generic utility/shared helper, or the composition root',
+        )
+        && normalizedSpecDesign.includes(
+          'A significant slice represents a complete user- or operator-observable capability, not a technical layer and not automatically one product feature.',
+        )
+        && normalizedSpecDesign.includes(
+          'A shared database does not create shared business ownership.',
+        )
+        && normalizedSpecDesign.includes(
+          'another slice\'s physical read access does not grant command authority or permission to duplicate the owner\'s business rules.',
+        )
+        && normalizedSpecDesign.includes(
+          'Add shared code, event bus, mediator, DI/plugin registry, or similar cross-slice machinery only for a current evidenced requirement.',
+        )
+        && !normalizedSpecDesign.includes(
+          'It is not a default, a separate mandatory question',
+        ),
+      `${runtimeRoot}/spec-design does not expose the preferred capability-sliced modular-monolith decision contract.`,
+    );
+    assert(
+      normalizedMapCodebase.includes('`/map-codebase` владеет только as-is mapping.')
+        && normalizedMapCodebase.includes(
+          'не создавай и не изменяй target `AD-*`, normative rules или architecture decisions',
+        )
+        && normalizedMapCodebase.includes('Само отличие является delta, а не authority conflict'),
+      `${runtimeRoot}/map-codebase does not preserve accepted target while mapping current state.`,
+    );
+    assert(
+      normalizedSpecAuto.includes(
+        'Runtime observations, production code, and mapped baseline establish current behavior, constraints, and compatibility or migration evidence only',
+      )
+        && normalizedSpecAuto.includes(
+          'A difference between current state and an accepted target is not itself a blocking authority conflict.',
+        )
+        && !normalizedSpecAuto.includes(
+          'accepted operator policy/decision, production baseline',
+        ),
+      `${runtimeRoot}/spec-auto does not separate current evidence from target authority.`,
+    );
+    assert(
+      normalizedSpecAuto.includes(
+        'inherit the accepted global architecture and material module/slice map',
+      )
+        && normalizedSpecAuto.includes(
+          'preserve the applicable owning slice/code root, semantic and write ownership, public boundary, allowed/forbidden dependencies, cross-slice orchestration owner, and proof path',
+        )
+        && normalizedSpecAuto.includes(
+          'mark the feature `blocked` and use the existing `/spec-design` resume route instead of choosing it',
+        ),
+      `${runtimeRoot}/spec-auto does not inherit the accepted slice target or preserve its blocker.`,
+    );
+    assert(
+      normalizedFoundationToTasks.includes(
+        'Apply the accepted architecture, composition, module/slice boundaries, and code roots that constrain the walking skeleton',
+      )
+        && normalizedFoundationToTasks.includes(
+          'scaffold only the composition root and slice roots required by the walking skeleton',
+        )
+        && normalizedFoundationToTasks.includes(
+          'link task-relevant substrate, architecture, and boundary specs through existing link-bearing fields',
+        ),
+      `${runtimeRoot}/foundation-to-tasks does not preserve accepted composition/slice boundaries.`,
+    );
+    assert(
+      normalizedFeatureToTasks.includes(
+        'Product feature, architecture slice/module, and task are distinct.',
+      )
+        && normalizedFeatureToTasks.includes(
+          'A task normally has one primary owning slice/module, but a cohesive cross-slice outcome is valid when one orchestration owner and every crossed boundary are explicit.',
+        )
+        && normalizedFeatureToTasks.includes(
+          'put the directly relevant architecture and boundary paths in existing `source_artifacts` and/or `normative_inputs`',
+        )
+        && normalizedFeatureToTasks.includes(
+          'That owner must be one capability slice; do not place business orchestration in an HTTP/UI/bot handler, generic utility/shared helper, or the composition root.',
+        )
+        && normalizedFeatureToTasks.includes(
+          'Use an owner already accepted in the global architecture; if none applies unambiguously, route the material boundary to `/spec-design` instead of creating an orchestration slice during task planning.',
+        )
+        && normalizedFeatureToTasks.includes(
+          'make the owning capability and the prohibition on transport-handler, generic-util, and composition-root business orchestration directly legible through existing linked specs and constraint fields',
+        )
+        && normalizedFeatureToTasks.includes('do not add an `owning_slice` field')
+        && normalizedFeatureToTasks.includes(
+          'mechanically copy a slice code root into `write_boundary`',
+        ),
+      `${runtimeRoot}/feature-to-tasks does not propagate slice ownership through existing task fields.`,
+    );
+    assert(
+      normalizedReviewTasksPlan.includes(
+        'only when the accepted target defines modules or capability slices',
+      )
+        && normalizedReviewTasksPlan.includes(
+          'carries applicable public boundary, semantic/write-owner, and forbidden-bypass rules',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'names one orchestration owner for a cross-slice outcome',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'reject business orchestration placed in an HTTP/UI/bot handler, generic utility/shared helper, or composition root',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'reject an orchestration slice invented during task planning rather than accepted in the global architecture',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'do not require slices from an accepted architecture that uses another primary change unit',
+        ),
+      `${runtimeRoot}/review-tasks-plan does not conditionally review slice legibility.`,
+    );
+    assert(
+      normalizedAutonomous.includes(
+        'Runtime observations, production code, and mapped baseline may establish current behavior, constraints, and compatibility or migration evidence; they do not authorize a new target architecture, contract, data ownership, or migration route.',
+      )
+        && normalizedAutonomous.includes(
+          'A difference between current state and an accepted target is a reconciliation delta, not an authority conflict.',
+        )
+        && !normalizedAutonomous.includes(
+          'accepted operator policy/decision, production baseline',
+        ),
+      `${runtimeRoot}/autonomous does not separate current evidence from target authority.`,
     );
     assert(
       foundationToTasksSkill.includes('positive integer\n  `Planning Revision`')

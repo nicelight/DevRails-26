@@ -5,7 +5,8 @@ status: active
 # /map-codebase — Brownfield mapping
 
 <objective>
-Построить baseline Memory Bank по существующему репозиторию.
+Построить evidence-backed as-is baseline текущего состояния существующего
+репозитория.
 </objective>
 
 <process>
@@ -26,15 +27,24 @@ status: active
 Записывай substantive mapping evidence и отчёты в `.tasks/TASK-MB-MAP/`
 независимо от выбранной тактики.
 
-3) Синтезируй evidence-backed as-is baseline `.memory-bank/` по чеклисту:
+3) Синтезируй evidence-backed as-is current-state baseline `.memory-bank/` по
+чеклисту:
 - product
 - architecture (C4)
-- spec-index / spec-backbone / glossary / invariants (если есть достаточно evidence для явного normative routing или backbone state)
+- spec-index / spec-backbone / glossary / invariants (только для регистрации
+  существующих artifacts и явно обозначенного current-state routing; не
+  выводи normative target или Global Backbone decision из кода)
 - runbooks
 - contracts
 - states (если lifecycle/state rules очевидны из кода, workflow или тестов)
 - testing
 - index
+
+`/map-codebase` владеет только as-is mapping. При наличии evidence он может
+фиксировать наблюдаемые current change units/code roots, write paths/writers,
+ownership signals, exposed call/API boundaries, runtime entrypoints и
+существующие proof paths. Эти observations не устанавливают target authority и
+не являются architecture decisions.
 
 > **PRD-less rule (non-negotiable)**: если **нет `prd.md`**, запрещено генерировать roadmap сущности:
 > - `.memory-bank/epics/*`
@@ -49,6 +59,16 @@ status: active
 - противоречия, недоказанные выводы и неполное покрытие запиши как
   `needs verification` / unresolved evidence;
 - не заменяй существующие baseline facts догадками.
+- помечай as-is claims как current state, чтобы downstream skill не принял их
+  за желаемую архитектуру;
+- если обновляемый artifact уже содержит accepted target, сохрани его и явно
+  отдели от current state; не создавай и не изменяй target `AD-*`, normative
+  rules или architecture decisions на основании одного as-is evidence;
+- если current отличается от accepted target, зафиксируй оба состояния и уже
+  известный reconciliation route в существующем owning artifact. Само отличие
+  является delta, а не authority conflict; неизвестную material route оставь
+  unresolved для её downstream owner. Не вводи обязательный новый heading или
+  artifact для этого разделения.
 
 5) Заверши immediate handoff:
 - если authoritative PRD/delta уже передан вызывающим workflow, сохрани его как

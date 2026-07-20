@@ -52,6 +52,9 @@ route to `/spec-design`.
 <hard_invariants>
 - Foundation is the minimum executable baseline, not product implementation or
   a future-ready platform.
+- Apply the accepted architecture, composition, module/slice boundaries, and
+  code roots that constrain the walking skeleton; do not revise or reinterpret
+  them while tasking Foundation.
 - `REQ-000`, `FT-000`, and product-foundation `W0` are reserved. Product
   features must not use `FT-000`; product tasks must not use `W0`.
 - Foundation uses only `.memory-bank/tasks/TASK-*.task.json`,
@@ -74,6 +77,10 @@ route to `/spec-design`.
 - Do not invent future endpoints, event payloads, domain behavior, state
   machines, schemas, migrations, security policy, or operational layers that
   are not needed to prove the baseline.
+- When the accepted target uses capability slices, scaffold only the
+  composition root and slice roots required by the walking skeleton. Do not
+  create layer-centric application structure, empty future slices,
+  cross-slice business behavior, or speculative shared abstractions.
 - Never resolve competing canonical paths by creating a third spec.
 </hard_invariants>
 
@@ -138,6 +145,9 @@ When `Foundation Required: true`:
      schema/migration source;
    - proof harness/evidence -> `.memory-bank/testing/*`;
    - local bootstrap/runtime/troubleshooting -> `.memory-bank/runbooks/*`.
+   For an accepted capability-sliced target, preserve its composition root,
+   required slice roots, public boundaries, ownership, dependency rules, and
+   proof paths; do not design product behavior or additional slices here.
 2. Add/update `REQ-000` in `.memory-bank/requirements.md` as the verified
    executable-baseline requirement.
 3. Create/update `.memory-bank/features/FT-000-foundation.md` with lifecycle
@@ -161,7 +171,9 @@ Task-record rules:
 - choose tier only from `tier-policy.md`;
 - populate schema fields only from evidence and leave optional grounded-only
   fields empty/absent rather than inventing filler;
-- link task-relevant substrate specs through existing link-bearing fields;
+- link task-relevant substrate, architecture, and boundary specs through
+  existing link-bearing fields so a Foundation executor can locate every
+  accepted composition/slice constraint that applies;
 - every T2/T3 record has non-empty `purpose`, scalar `success_outcome`, at
   least one existing direct task-linked canonical SDD path, advisory expected
   change surface and/or justified hard write scope, and a real gate command
@@ -174,6 +186,9 @@ Before handoff, prove:
 - `REQ-000`, `FT-000`, W0, and final-gate rules;
 - one and only one final gate with complete dependencies and an acyclic graph;
 - no product behavior or speculative substrate escaped the Foundation scope;
+- accepted composition/module/slice boundaries were applied without inventing
+  layer-centric scaffolding, extra slices, or a hard write boundary copied from
+  a code root;
 - canonical-path uniqueness and spec-index purity;
 - every T2/T3 card satisfies the complete single-card handoff contract;
 - Gate Anchors name the final gate or `not_required` truthfully;

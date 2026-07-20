@@ -37,12 +37,19 @@ argument. Exclude reserved `FT-000` from product feature targets.
 <hard_invariants>
 - `/spec-auto` does not ask the operator during the unattended run and never
   treats that as permission to choose for them.
-- It may apply only decisions already fixed by Constitution, clarified PRD,
-  accepted operator policy/decision, production baseline, ADR, or canonical
-  spec.
+- It may apply a material target decision only when already fixed by
+  Constitution, an explicit accepted operator decision or policy, an active
+  accepted ADR, an authoritative canonical spec, or clarified product sources.
+- Runtime observations, production code, and mapped baseline establish current
+  behavior, constraints, and compatibility or migration evidence only; they do
+  not authorize a new target architecture, contract, data ownership, or
+  migration route.
 - Do not invent external contracts, architecture boundaries, security posture,
   migrations, irreversible data behavior, Foundation sufficiency, or competing
   canonical-path resolution.
+- In post-PRD modes, inherit the accepted global architecture and material
+  module/slice map. Do not reopen, weaken, or replace them with a framework
+  recommendation, feature-local heuristic, or one-slice-per-feature mapping.
 - Keep spec-index a registry, use subject-based canonical paths, and do not
   create feature-owned design hubs, a coverage-map artifact, task records, or a
   new status/terminal state.
@@ -51,6 +58,8 @@ argument. Exclude reserved `FT-000` from product feature targets.
 - `--init` preserves Global Backbone `Planning Revision`. Feature design changes
   it only under the global-rule rule below and never uses task lifecycle state as
   a freshness marker.
+- Current-state drift or baseline correction alone does not change Planning
+  Revision while the accepted target remains unchanged.
 </hard_invariants>
 
 <operator_decisions>
@@ -68,6 +77,13 @@ When a relevant ambiguity or branch is not already resolved authoritatively:
 Do not apply a recommendation, conservative/reversible default, or agent
 assumption as the missing operator decision. Non-decision implementation detail
 may still be chosen under the agent-discretion contract below.
+
+A difference between current state and an accepted target is not itself a
+blocking authority conflict. When the target and applicable compatibility or
+migration constraints yield one unambiguous route, record the delta and route
+in the existing owning artifact and continue without re-asking. Conflicting
+target authorities or an unresolved material reconciliation branch use the
+existing blocker above.
 </operator_decisions>
 
 <required_outputs>
@@ -117,6 +133,14 @@ Rules:
   it;
 - carry relevant Architecture Spine, ADR, boundary, contract, and verification
   links into feature `spec_design_links`;
+- when the accepted target defines capability slices, preserve the applicable
+  owning slice/code root, semantic and write ownership, public boundary,
+  allowed/forbidden dependencies, cross-slice orchestration owner, and proof
+  path in the owning canonical specs; carry the directly relevant architecture
+  and boundary paths into feature `spec_design_links`;
+- if the accepted style requires capability slices but a feature depends on a
+  missing or materially ambiguous slice boundary, mark the feature `blocked`
+  and use the existing `/spec-design` resume route instead of choosing it;
 - update `.memory-bank/spec-index.md` only as registry/discovery routing.
 
 Set feature status:
@@ -154,6 +178,9 @@ For feature design, verify:
 - no relevant area remains planned, candidate, unknown, conflicting, or hidden
   behind an assumption when status is `complete`;
 - spec-index has one active path per concrete concern and no decision body;
+- an accepted capability-sliced target remains legible through the feature's
+  direct architecture/boundary links without changing global ownership or
+  treating a product feature as a slice;
 - blockers use existing statuses/terminal states and name the interactive
   resume route.
 

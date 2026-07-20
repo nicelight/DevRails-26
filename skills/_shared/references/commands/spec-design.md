@@ -36,18 +36,33 @@ Require and read relevant evidence from:
 - task records only as stale-state evidence when this command is rerun after
   task generation.
 
-Source precedence is:
-1. Constitution and explicit accepted operator decisions;
-2. existing production code and authoritative brownfield baseline;
-3. ADRs;
-4. authoritative contracts/specs;
-5. PRD, requirements, and features;
-6. user scenarios;
-7. existing task records on a rerun;
-8. labelled agent assumptions.
+Resolve accepted target and observed current state through separate source
+roles.
 
-A lower source cannot override a higher source. Conflicts requiring judgment
-remain blocked until their owner resolves them.
+Normative target authority is:
+1. Constitution and explicit accepted operator decisions or policies;
+2. active accepted ADRs and authoritative canonical specs;
+3. clarified PRD, requirements, features, and applicable reviewed user
+   scenarios.
+
+A lower target source cannot override a higher one. A conflict that the
+hierarchy does not resolve remains blocked until its owner decides it.
+
+As-is evidence strength is:
+1. runtime observations;
+2. production code, configuration, schemas, and migrations;
+3. tests and CI;
+4. mapped brownfield baseline and descriptive documentation.
+
+Existing task records are stale-planning evidence on a rerun, not independent
+target authority. Labelled agent assumptions are non-authoritative working
+input only.
+
+As-is evidence establishes current behavior, constraints, and compatibility or
+migration pressure; it cannot override or create an accepted target. A
+current/target difference is a planning delta, not an authority conflict. Block
+only when target authorities conflict or a material target, compatibility,
+migration, or irreversible-behavior branch remains unresolved.
 
 Treat `.memory-bank/user-scenarios.md` as authoritative scenario evidence only
 when an architecture decision is actually scenario-sensitive and the file has
@@ -96,17 +111,44 @@ Ask adaptively: one question or a small group of tightly related questions,
 multiple choice or open form as useful. Explain what changes, cite the evidence,
 and optionally recommend an option. A preferred, conservative, reversible, or
 KISS option is not an accepted decision until the operator explicitly answers.
-Do not ask questions for choices already fixed by authoritative evidence.
+Do not ask questions for choices already fixed by normative target authority.
 
-Brownfield special case: when meaningful code exists but an authoritative
-baseline is missing, ask the operator to choose the immediate route unless the
-accepted scope already proves a strictly local delta:
+When `architecture_style` is unresolved, evidence identifies an
+application-shaped greenfield project, and no accepted decision or concrete
+trade-off points elsewhere, first recommend one deployable modular monolith
+whose primary change units are capability/vertical slices. Include one runtime
+composition, narrow module contracts, explicit write ownership including a
+shared-database case, and a credible verification path per significant
+capability. Present another style first only when current evidence supports the
+trade-off; hypothetical future scale or reuse is insufficient.
+
+This recommendation order does not create target authority. Propose one
+coherent initial slice map and its material ownership/boundary choices as part
+of the same focused architecture decision, then obtain one explicit operator
+confirmation rather than a questionnaire per slice. An explicit alternative
+always wins. A previously accepted operator/project policy may authorize this
+preferred style and an evidence-determined slice map only when the evidence
+yields one materially unambiguous decomposition; otherwise unattended mode
+uses the existing blocker below.
+
+Do not force this recommendation onto a library/package, CLI, firmware, data
+pipeline, plugin/protocol system, established brownfield boundary, or genuinely
+independently deployed services. Recommend the evidence-backed natural primary
+change unit for those shapes. Brownfield migration to the preferred target
+still requires an accepted target decision.
+
+Brownfield special case: when meaningful code exists but a credible mapped
+current-state baseline is missing, ask the operator to choose the immediate
+route unless the accepted scope already proves a strictly local delta:
 - run `/map-codebase` first;
 - explicitly accept PRD-only drift risk;
 - constrain the work to an evidenced local delta.
 
-In unattended mode, apply only a decision already resolved by Constitution,
-PRD, accepted operator policy, production baseline, ADR, or canonical spec. If a
+In unattended mode, apply a material target decision only when already resolved
+by Constitution, an explicit accepted operator decision or policy, an active
+accepted ADR, an authoritative canonical spec, or clarified product sources.
+Use runtime observations, production code, and mapped baseline only to establish
+current behavior, constraints, and compatibility or migration evidence. If a
 material branch is unresolved:
 - record the question, affected requirements/features/areas, and owner;
 - set the applicable backbone/feature state to `blocked`;
@@ -116,7 +158,8 @@ material branch is unresolved:
 
 Accepted decisions must be written to their owning canonical spec, ADR when
 durable trade-off rationale warrants one, or `.memory-bank/foundation.md`.
-Remove conflicting superseded wording and revalidate before handoff.
+Remove conflicting superseded normative wording, preserve useful as-is evidence
+as explicitly current state, and revalidate before handoff.
 </operator_decisions>
 
 <required_outputs>
@@ -140,8 +183,10 @@ Planning revision rules:
 - `0` is pre-design; the first successful backbone sets `1`, and
   `complete|minimal` requires a positive value.
 - On later runs, increment the revision exactly once only when a durable global
-  rule, boundary, contract, matrix route, or Foundation decision changes in a
-  way that can affect feature/task planning; otherwise preserve it.
+  target rule, boundary, contract, matrix route, or Foundation decision changes
+  in a way that can affect feature/task planning; otherwise preserve it.
+- A newly observed current-state drift or baseline correction alone does not
+  increment Planning Revision when the accepted target is unchanged.
 - Repair a missing/invalid legacy value on the next successful run.
 - An increment after task generation makes all product task-plan reviews stale;
   preserve task statuses and use the all-feature handoff below.
@@ -194,6 +239,10 @@ Allowed row statuses are
 affected features, and missing detail are already unambiguous. It is not a way
 to defer a product or architecture decision.
 
+An `authoritative` row cites normative target authority. As-is evidence may be
+linked in Notes to explain constraints or drift, but cannot satisfy that status
+by itself.
+
 ## 3. Canonical SDD specs
 
 Create or update only specs needed to satisfy applicable coverage. Architecture,
@@ -232,6 +281,43 @@ Choose the smallest evidence-backed shape. Do not create
 `architecture/index.md` unless there are more than three architecture docs, and
 do not churn an existing useful split. Keep detailed API schemas, lifecycle
 machines, message envelopes, and feature behavior out of `architecture/*`.
+
+When the accepted target is a capability-sliced modular monolith, the existing
+architecture artifacts must make that target directly usable downstream:
+- `system-architecture.md` identifies the single deployable, composition root,
+  significant capability slices, and their project-relative code roots;
+- `contracts/boundary-map.md` and applicable subject specs record, for each
+  significant slice, what data, behavior-sensitive invariants, transitions,
+  and commands it owns and must not own, its public application boundary,
+  allowed dependencies, mutable-state/write authority, and minimum credible
+  verification path;
+- a cross-slice use case names one capability slice as its orchestration owner
+  and forbids bypassing a neighbor's public boundary or writing its state
+  directly. Business orchestration must not live in an HTTP/UI/bot handler,
+  generic utility/shared helper, or the composition root; the composition root
+  is limited to settings, adapters, wiring, lifecycle, start, and shutdown.
+
+A significant slice represents a complete user- or operator-observable
+capability, not a technical layer and not automatically one product feature.
+Keep behavior that shares an invariant and write path under one owner; split
+independently owned or independently changing outcomes when evidence supports
+the boundary. A feature may cross slices and a slice may support several
+features.
+
+A shared database does not create shared business ownership. For every mutable
+invariant or transition, name one slice as write owner; another slice's physical
+read access does not grant command authority or permission to duplicate the
+owner's business rules.
+
+Equivalent prose or tables are valid; no exact heading or table schema is
+required. A small application may have one cohesive slice. Do not create empty
+multi-slice scaffolding, use technical layers such as controllers/services/
+repositories as primary slices, add per-file ownership, or create a slice
+registry. Keep internal presentation/application/domain/infrastructure roles
+conceptual unless concrete complexity justifies structure. Add shared code,
+event bus, mediator, DI/plugin registry, or similar cross-slice machinery only
+for a current evidenced requirement. A code root is a discovery location and
+is not a task hard write boundary.
 
 For shared-boundary, contract, state/data, runtime, security, or strict pressure,
 maintain `.memory-bank/architecture/system-architecture.md#Architecture Spine`
@@ -302,7 +388,9 @@ Set `Foundation Required: false` with evidence when an existing baseline or
 project simplicity makes a separate queue unnecessary, and set
 `Foundation Gate Task: not_required`. Brownfield defaults are not decisions:
 use existing executable evidence, or ask/halt if baseline sufficiency is
-ambiguous.
+ambiguous. Existing executable evidence can prove current baseline sufficiency
+for an accepted path; it does not independently authorize the target
+architecture.
 
 The Feature Pressure Map is evidence for the minimum baseline, not a product
 backlog. Do not create `REQ-000`, `FT-000`, tasks, protocols, or plans here.
@@ -333,8 +421,10 @@ within KISS and existing registry boundaries. Design coverage areas and risk
 lists are completeness criteria, not a mandatory thought process.
 
 The agent may decide local tactics and concrete spec organization when evidence
-leaves no material operator branch. It may not choose product, architecture,
-contract, Foundation, security, compatibility, or irreversible behavior on the
+leaves no material operator branch. It may classify the project shape and
+prepare the preferred recommendation from authoritative evidence, but it may
+not choose product, architecture, material slice ownership, contract,
+Foundation, security, compatibility, or irreversible behavior on the
 operator's behalf.
 </agent_discretion>
 
@@ -348,6 +438,16 @@ Before handoff:
 - verify canonical spec-index paths are unique, linked, and contain only
   registry metadata;
 - verify accepted decisions live in owning specs/ADRs/foundation evidence;
+- verify current-state evidence is labelled separately and has not been used as
+  normative target authority;
+- when the accepted target uses capability slices, verify the system shape,
+  composition root, slice code roots, semantic/write ownership, forbidden
+  ownership, public boundaries, allowed dependencies, cross-slice
+  orchestration owner and its eligible location, and proof paths are legible
+  across the existing architecture and boundary artifacts;
+- verify no recommendation or silence was recorded as acceptance, no technical
+  layer was substituted for a capability slice, and no code root was promoted
+  to a task hard write boundary;
 - verify Foundation anchors and decision are explicit;
 - verify no TASK/plan or feature-owned spec hub was created;
 - rerun applicable link/lint/readiness checks and preserve any blocker.
