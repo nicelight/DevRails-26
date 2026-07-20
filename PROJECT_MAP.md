@@ -56,9 +56,9 @@ Packaging and install:
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
 - `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned
   schema/protocol-template/validator/workflow sync, write-boundary grammar,
-  filesystem-derived runtime skill inventory, task/project state preservation,
-  stable runtime paths, idempotent reporting, and bootstrap-only repair
-  semantics.
+  selected-task start ownership, filesystem-derived runtime skill inventory,
+  task/project state preservation, stable runtime paths, idempotent reporting,
+  and bootstrap-only repair semantics.
 - `scripts/test-mb-doctor.mjs`: isolated Foundation readiness fixture matrix for
   default/strict severity, gate state, FT-000/product boundaries, and dependency
   semantics.
@@ -198,6 +198,11 @@ is a deliberate hard boundary. `/mb-doctor` checks only mechanical completeness;
 `/review-tasks-plan` owns semantic applicability and sufficiency.
 Existing `runtime_context.allowed_write_scope` is accepted only as a deprecated
 read alias; new or repaired task cards emit `write_boundary`.
+
+The caller or scheduler selects a concrete task. `/exe` alone prepares its
+tier-routed neutral Execution Attempt and writes `ready -> in_progress`; it does
+not select queue work, and the attempt adds no task field, owner/basis
+provenance, persisted mode, or registry.
 
 Primary source files for this behavior:
 

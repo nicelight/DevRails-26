@@ -22,6 +22,9 @@ status: active
 - Foundation execution is not delegated to `/autopilot` and introduces no
   scope flag, persisted mode, second queue, registry, schema, lifecycle, or
   protocol family.
+- Each active scheduler selects and checkpoints only tasks in its phase; the
+  invoked `/exe` owns protocol preparation and `ready -> in_progress` for that
+  concrete selected task.
 - If product execution creates an approved FT-000 foundation-extension task,
   `/autopilot` halts with the existing exact evidence/owner/resume contract;
   `/autonomous` resumes its Foundation phase and returns to product execution

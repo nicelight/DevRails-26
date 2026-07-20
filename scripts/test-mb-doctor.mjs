@@ -71,7 +71,7 @@ function foundationMarkdown(required, gateTask) {
 `;
 }
 
-function createFixture(name, { foundation, tasks = [] }) {
+function createFixture(name, { foundation, tasks = [], directories = [], files = [] }) {
   const root = join(tempRoot, name);
   mkdirSync(root, { recursive: true });
 
@@ -121,6 +121,13 @@ description: Fixture feature.
 ---
 # ${featureId}
 `);
+  });
+
+  directories.forEach((rel) => {
+    mkdirSync(join(root, rel), { recursive: true });
+  });
+  files.forEach(({ rel, content }) => {
+    writeFixture(root, rel, content);
   });
 
   return root;
@@ -261,6 +268,27 @@ try {
     tasks: [task(FOUNDATION_GATE, { status: 'failed' })],
   }, ['--strict']);
   expectFinding(failedNamedGate, 'FOUNDATION_GATE_TASK_INVALID', 'error');
+
+  const compactDirectoryOnly = runCase('compact-in-progress-directory-only', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_FIRST, { status: 'in_progress' })],
+    directories: [`.protocols/${PRODUCT_FIRST}`],
+  }, ['--strict']);
+  expectFinding(compactDirectoryOnly, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', 'error');
+
+  const compactRunPresent = runCase('compact-in-progress-run-present', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_FIRST, { status: 'in_progress' })],
+    files: [{
+      rel: `.protocols/${PRODUCT_FIRST}/run.md`,
+      content: '# Compact Run\n\n## Execution Attempt\n- attempt: attempt-1\n- started: fixture\n',
+    }],
+  }, ['--strict']);
+  assert(
+    !findFinding(compactRunPresent, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL'),
+    'Compact in-progress task with run.md was rejected as missing protocol.',
+    compactRunPresent,
+  );
 
   console.log('mb-doctor Foundation readiness regression passed');
 } finally {

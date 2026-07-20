@@ -7,12 +7,19 @@ status: active
 ## Metadata
 - task: TASK-NNN-TN-FT-NNN-WN
 - tier: T0 | T1
-- started:
 - finished:
 - local evidence verdict: <PASS|FAIL|BLOCKED>
 - closure owner: scheduler | explicit standalone owner | human | none
 - manual /exe decision: <status unchanged|status: done>
 - scheduler decision: <none|status: done|status: failed|status: blocked>
+
+## Execution Attempt
+- attempt:
+- started:
+
+Reuse this block when `/exe` resumes the unfinished attempt. Create a new
+attempt only for a tier-policy-eligible retry; keep older receipt blocks as
+`superseded` or `supporting-only`.
 
 ## Goal
 - ...

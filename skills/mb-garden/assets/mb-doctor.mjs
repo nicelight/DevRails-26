@@ -843,13 +843,14 @@ function checkInProgressProtocol(record) {
   const { id, rel, task } = record;
   if (task.status !== 'in_progress') return;
   if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
-  if (isDirectory(path.join(ROOT, '.protocols', id))) return;
+  const runRel = normalizeRel(path.join('.protocols', id, 'run.md'));
+  if (isFile(path.join(ROOT, runRel))) return;
 
   const severity = options.strict ? 'error' : 'warning';
-  addFinding(severity, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', `${rel}: in_progress task has no .protocols/${id}/ directory.`, {
+  addFinding(severity, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', `${rel}: in_progress task has no compact ${runRel}.`, {
     path: rel,
     task_id: id,
-    suggested_fix: `Create .protocols/${id}/ with the tier-appropriate protocol files or move the task out of in_progress.`,
+    suggested_fix: `Create ${runRel} from the framework template or move the task out of in_progress.`,
   });
 }
 

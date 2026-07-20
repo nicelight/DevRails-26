@@ -7,6 +7,14 @@ status: active
 ## Purpose
 This file captures the **minimal reproducible context** so a fresh session can resume work safely.
 
+## Execution Attempt
+- attempt:
+- started:
+
+Reuse this block when `/exe` resumes the unfinished attempt. Create a new
+attempt only for a tier-policy-eligible retry; keep older receipt blocks as
+`superseded` or `supporting-only`.
+
 ## Inputs (what drives this task)
 - Task record: `.memory-bank/tasks/<TASK_ID>.task.json`
 - Task index: `.memory-bank/tasks/index.json`
@@ -43,4 +51,3 @@ Keep this list short (2–8 items). Prefer SSOT pointers.
 ## Next session
 - Start by reading: `context.md`, `plan.md`, `progress.md`
 - Next action (one concrete step): ...
-

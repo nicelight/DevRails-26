@@ -417,9 +417,35 @@ try {
         `${runtimeRoot}/${skill} references a source-only protocol path.`,
       );
     });
+
+    const exeSkill = readTarget(`${runtimeRoot}/exe/SKILL.md`);
+    const autopilotSkill = readTarget(`${runtimeRoot}/autopilot/SKILL.md`);
+    assert(
+      exeSkill.includes('The caller has already selected this task.')
+        && exeSkill.includes('`/exe` owns `ready -> in_progress`')
+        && exeSkill.includes('Do not add owner, invocation-basis, or\nmode metadata to the attempt.'),
+      `${runtimeRoot}/exe does not expose caller-selected, provenance-free task start ownership.`,
+    );
+    assert(
+      autopilotSkill.includes('checkpoint the selected task at\n   `execute`')
+        && autopilotSkill.includes('invoke `/exe`; `/exe`\n   prepares/reconciles the tier protocol and writes `ready -> in_progress`')
+        && !autopilotSkill.includes('task at `selection`, then write `ready -> in_progress`'),
+      `${runtimeRoot}/autopilot still owns the selected task start transition.`,
+    );
   });
 
   const compactTemplate = expectedProtocolTemplates.get('compact-run-template.md');
+  const contextTemplate = expectedProtocolTemplates.get('context-template.md');
+  const compactAttemptBlock = compactTemplate.split('## Execution Attempt')[1]?.split('## Goal')[0] || '';
+  const contextAttemptBlock = contextTemplate.split('## Execution Attempt')[1]?.split('## Inputs')[0] || '';
+  [compactAttemptBlock, contextAttemptBlock].forEach((attemptBlock) => {
+    assert(
+      attemptBlock.includes('- attempt:')
+        && attemptBlock.includes('- started:')
+        && !/owner|basis|mode|previous status/i.test(attemptBlock),
+      'Tier protocol Execution Attempt is missing neutral metadata or contains provenance/mode fields.',
+    );
+  });
   const compactManualDecision = compactTemplate.match(/^- manual \/exe decision:.*$/m)?.[0] || '';
   const compactManualBranch = compactTemplate.split('### Manual `/exe`')[1]?.split('### Scheduler')[0] || '';
   const compactSchedulerBranch = compactTemplate.split('### Scheduler')[1] || '';

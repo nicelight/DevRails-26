@@ -1,6 +1,6 @@
 # DevRails workflow findings: повторный source-only аудит
 
-Статус документа: review notes; findings №1–4, №7 и №9 реализованы и
+Статус документа: review notes; findings №1–5, №7 и №9 реализованы и
 проверены, остальные пункты остаются без реализации.
 
 Дата повторной проверки: 2026-07-20.
@@ -20,7 +20,7 @@
 - root documentation и `PROJECT_MAP.md`.
 
 При исходном повторном аудите installer/bootstrap не запускались. Для findings
-№1–4, №7 и №9 после одобрения решений выполнены isolated
+№1–5, №7 и №9 после одобрения решений выполнены isolated
 install/bootstrap/sync smoke и regression test; для остальных пунктов
 `подтверждён` означает только source code и contract evidence, а не runtime
 smoke result.
@@ -49,7 +49,7 @@ smoke result.
 | 2 | исправлен; templates deployed/synced по stable target path | 5/5 | 2/5 | 1/5 | 3/5 | закрыт |
 | 3 | исправлен; Foundation doctor regression проходит | 5/5 | 3/5 | 2/5 | 3/5 | закрыт |
 | 4 | исправлен; boundary grammar/install-sync smoke проходит | 5/5 | 4/5 | 5/5 | 4/5 | закрыт |
-| 5 | подтверждён; start и closure ownership нужно разделить | 4/5 | 4/5 | 3/5 | 4/5 | P1 |
+| 5 | исправлен; caller-selected `/exe` start/install smoke проходит | 4/5 | 4/5 | 3/5 | 4/5 | закрыт |
 | 6 | подтверждён source semantics installer | 4/5 | 1/5 | 1/5 | 2/5 | P1 |
 | 7 | исправлен; manual и scheduler closure branches разделены | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 8 | подтверждён, но только для pre-protocol halt | 3/5 | 1/5 | 1/5 | 1/5 | P2 |
@@ -115,83 +115,18 @@ smoke result.
 
 ## 5. Manual `/exe` допускает `planned`, но start-transition owner не определён
 
-**Вердикт:** подтверждён; первая версия недооценивала resume/ordering semantics.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- `/exe` требует абстрактное `executable lifecycle state`, но явно блокирует
-  только `blocked|failed|done`.
-- Следовательно, `planned`, `ready` и `in_progress` проходят этот конкретный
-  lifecycle filter.
-- `feature-to-tasks` может создать `planned` или `ready`; `ready` разрешён только
-  при уже закрытых dependencies/blockers.
-- В manual flow нет scheduler promotion pass, который позже переведёт
-  `planned -> ready` после закрытия dependencies.
-- `execute-loop` требует пройти planning/review/applicable doctor до `/exe`, но
-  не назначает owner самих start transitions.
-- `/verify` правильно запрещает считать `planned|ready` implemented и ожидает
-  normal scheduler input `in_progress`.
-- Compact/full templates имеют closure-owner material, но не однозначный
-  execution-start owner/current-attempt basis.
-
-### Почему execution ownership нельзя смешивать с closure ownership
-
-Прямая просьба top-level agent выполнить task даёт authority начать manual
-execution, но не обязательно закрыть task. Например, T2/T3 `/exe` никогда не
-владеет closure, а T0/T1 fast lane требует отдельного explicit closure basis.
-Один общий флаг owner снова создаст lifecycle ambiguity.
-
-### Оценка
-
-- важность: `4/5` — manual implementation может начаться без durable
-  `in_progress`, а resume/verify увидят противоречивый lifecycle;
-- сложность: `4/5` — нужно согласовать promotion, attempt ownership, protocol
-  ordering и closure separation;
-- риск раздувания: `3/5` — соблазн добавить promoter skill, mode field или новую
-  attempt registry;
-- объём: `4/5` — policy, `/exe`, `/verify` wording и compact/full templates.
-
-### KISS-исправление
-
-Manual top-level execution owner выполняет существующие transitions внутри
-`/exe` preflight:
-
-1. Для `planned` повторно проверяет dependencies, blockers и уже применимые
-   planning/review/readiness gates; затем пишет `planned -> ready`.
-2. Создаёт/reuses tier-appropriate protocol и записывает execution-owner,
-   invocation basis и current attempt.
-3. Непосредственно перед первым implementation write пишет
-   `ready -> in_progress`.
-4. `in_progress` разрешает resume только при согласованном task record и
-   current-attempt protocol. Ambiguous/foreign attempt требует handoff, а не
-   silent adoption.
-5. Без explicit top-level execution ownership `/exe` не начинает
-   `planned|ready`; scheduler-owned invocation должна уже получить
-   `in_progress` от scheduler.
-6. Start authority не даёт closure authority; текущие T0/T1/T2/T3 closure rules
-   сохраняются.
-
-Protocol-before-status ordering уменьшает crash window: `ready` с подготовленным
-protocol допустим, а `in_progress` без protocol уже является doctor defect.
-Implementation не начинается до durable `in_progress`.
-
-Не добавлять promoter command, mode/task field, lifecycle status или отдельный
-attempt registry.
-
-### Поверхность изменений
-
-- `skills/_shared/references/workflows/tier-policy.md`;
-- `skills/_shared/references/commands/exe.md`;
-- `skills/_shared/references/commands/verify.md` только для согласованного
-  implemented/resume precondition;
-- compact template и full plan/context/handoff template для start owner/attempt.
-
-### Acceptance
-
-Нужны отдельные cases: planned с open/closed dependencies; ready; scheduler-owned
-in_progress; matching manual in_progress resume; ambiguous attempt; missing
-execution owner; execution owner без closure owner; T0/T1 fast-lane closure;
-T2/T3 handoff. Ни один case не начинает writes до `in_progress`.
+- Caller выбирает конкретную task; `/exe` не выбирает queue work, готовит
+  tier protocol и нейтральный Execution Attempt, затем пишет
+  `ready -> in_progress`. Runnable `planned` проходит point-of-use
+  `planned -> ready`.
+- Scheduler до вызова сохраняет checkpoint `execute` с exact next
+  `/exe <TASK_ID>`, но start-transition не пишет; manual invocation проходит тот
+  же `/exe` path.
+- Attempt содержит только `attempt` и `started`, не даёт closure authority и не
+  добавляет provenance, mode, task field или registry. Resume/replay guards,
+  doctor regression и isolated install/bootstrap smoke проходят.
 
 ## 6. Partial install `cold-start` ведёт к неполному bootstrap
 
@@ -349,8 +284,8 @@ canonical workflow остаётся единственной полной policy
    registry block на уже определённой ownership policy.
 2. **Executable readiness/safety:** findings 3 и 4. Foundation matrix и
    `write_boundary` grammar независимы по данным, но оба меняют readiness source.
-3. **Manual lifecycle:** finding 7 закрыт; finding 5 остаётся отдельной задачей
-   про start ownership/attempt ordering.
+3. **Task lifecycle:** findings 5 и 7 закрыты; start и closure ownership
+   разделены без нового persisted mode или registry.
 4. **Broken/contradictory routes:** findings 6 и 8.
 5. **Source cleanup:** finding 10.
 

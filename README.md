@@ -112,26 +112,26 @@ task возвращают в `/feature-to-tasks FT-<NNN>` для controlled rebu
 
 ## Ручной и автоматический режимы
 
-- **Manual:** оператор выбирает task и явно задаёт closure ownership. T0/T1
-  могут использовать fast lane с compact evidence. T2/T3 проходят полный
-  protocol и обязательные tier gates.
+- **Manual:** оператор выбирает task, а `/exe` готовит protocol и начинает её.
+  Closure ownership задаётся отдельно. T0/T1 могут использовать fast lane с
+  compact evidence. T2/T3 проходят полный protocol и обязательные tier gates.
 - **`/autopilot`:** sequential scheduler для уже существующей, reviewed и
   strict-ready product JSON queue после закрытия Foundation gate. Перед
-  promotion/selection он восстанавливает
-  незавершённую durable checkpoint action и все доказуемо scheduler-owned
-  product `in_progress` tasks. Он не создаёт PRD/features/tasks и не выполняет
-  `FT-000`.
+  promotion/selection он восстанавливает незавершённую durable checkpoint
+  action и product `in_progress` tasks из task protocol/handoff/verdict. Он не
+  создаёт PRD/features/tasks и не выполняет `FT-000`.
 - **`/autonomous`:** полный unattended orchestration от authoritative Product
   Brief/PRD/delta до terminal state через существующие child-skill contracts.
   Он сам владеет bounded `FT-000` phase, а после Foundation gate передаёт
   product queue `/autopilot`.
 
-`/autonomous` владеет transitions только FT-000 phase; `/autopilot` — только
-product task transitions, failure budgets, dependent blocking и queue terminal
-state. `/exe`, `/verify` и `/red-verify` возвращают evidence и
-verdicts, но не закрывают scheduler-owned tasks. `/mb-sync` один раз на границе
-wave согласует уже записанное authoritative state и сам не принимает closure
-или promotion decisions.
+`/autonomous` владеет promotion/selection/final decisions только FT-000 phase;
+`/autopilot` — теми же scheduler decisions для product queue, failure budgets,
+dependent blocking и queue terminal state. Для уже выбранной задачи `/exe`
+готовит protocol и пишет `ready -> in_progress`; `/verify` и `/red-verify`
+возвращают verdicts, но не закрывают scheduler-owned tasks. `/mb-sync` один раз
+на границе wave согласует уже записанное authoritative state и сам не принимает
+closure или promotion decisions.
 
 No-ready fallback сохраняет уже записанный specific `HALT_*` вместе с reason,
 owner и resume route. `HALT_DEPENDENCY_DEADLOCK` используется только для

@@ -79,14 +79,39 @@ fallback, and reporting are fully defined in the installed `/exe` and
 `/verify` runtime commands. No receipt task field, registry, status, cache, or
 artifact family exists.
 
-## Status Transition Modes
+## Task Start and Status Transition Modes
 
-Status transitions have two modes.
+The caller selects one concrete task. `/exe` never selects from the queue and is
+the sole owner of `ready -> in_progress` for that selected task in both manual
+and scheduler flows.
+
+Start contract:
+- A selected `planned` task may move `planned -> ready` inside `/exe` only when
+  point-of-use preflight proves every dependency done and no recorded blocker or
+  unresolved required gate remains. Otherwise it stays `planned` and no
+  implementation starts.
+- Before `ready -> in_progress`, `/exe` initializes or reconciles the
+  tier-required protocol and one neutral current `Execution Attempt` containing
+  only `attempt` and `started`.
+- `/exe` writes `ready -> in_progress` immediately before the first
+  implementation or external side-effect write. Re-entry with a prepared
+  `ready` attempt or unfinished `in_progress` attempt reuses it.
+- A completed implementation handoff routes forward without replay. An eligible
+  same-task retry creates a new attempt; ambiguous possibly completed unsafe or
+  non-idempotent work stops instead of being replayed.
+- Task selection/start does not grant external permissions or approvals. No
+  task field, owner/basis provenance, persisted mode, or attempt registry is
+  added.
+
+Final status decisions still have two modes.
 
 Scheduler mode:
-- `/autonomous` owns task status transitions only for its bounded FT-000
-  Foundation phase; `/autopilot` owns task status transitions only for the
+- `/autonomous` owns promotion, selection, and final lifecycle decisions only
+  for its bounded FT-000 Foundation phase; `/autopilot` owns them only for the
   reviewed product queue after the Foundation gate closes.
+- Before invoking the selected task, the scheduler durably checkpoints
+  `current stage: execute` and `next action: /exe <TASK_ID>`. `/exe` then owns
+  protocol preparation and `ready -> in_progress`.
 - Scheduler decides closure/failure/blocking eligibility.
 - `/exe` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.
@@ -117,7 +142,8 @@ Manual mode:
   the feature doc.
 - `T3` manual task closure requires `/red-verify` `SEMANTIC_VERDICT: semantic-pass` after `/verify PASS`; if semantic issues are found, the scheduler or explicit owner may reopen/block/fail or create follow-up work.
 - `semantic-concern` in manual mode means do not trust the existing `done` state without human review / follow-up.
-- Do not mix scheduler mode and manual mode inside one task run.
+- Closure authority comes from the active outer workflow; an Execution Attempt
+  carries no manual/scheduler mode and grants no closure authority.
 - No persisted `mode` field is used.
 
 ## Scheduler Failure Handling
@@ -128,9 +154,10 @@ Manual mode:
   is allowed only while `max_retries_per_task` has capacity and the correction
   stays inside the accepted task identity, outcome, scope, tier, dependencies,
   specs, and hard runtime boundaries. The retry must not repeat an unsafe or
-  non-idempotent side effect. Keep the task `in_progress`, record the attempt and
-  evidence in the run status/task protocol, then rerun `/exe` and every
-  required verification gate.
+  non-idempotent side effect. Keep the task `in_progress`, create a new
+  Execution Attempt, record it and the evidence in the run status/task protocol,
+  then rerun `/exe` and every required verification gate. Ordinary re-entry
+  before a completed implementation handoff resumes the existing attempt.
 - If no safe same-task retry exists or its budget is exhausted, write
   `in_progress -> failed` with the functional/semantic evidence and failure
   decision in the authoritative task record. Before the next strict doctor,

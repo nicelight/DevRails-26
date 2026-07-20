@@ -831,6 +831,14 @@ checks` и `new targeted probes`. Оптимизируется повтор ко
 
 Manual mode означает явный top-level owner, а не ручное написание кода.
 
+Caller заранее выбирает конкретный task ID. В manual и scheduler flow `/exe`
+одинаково проверяет выбранную task, готовит tier protocol и нейтральный current
+Execution Attempt (`attempt`, `started`), затем непосредственно перед первым
+implementation write записывает `ready -> in_progress`. Для runnable `planned`
+task `/exe` сначала делает point-of-use `planned -> ready`; иначе status не
+меняется. Attempt не хранит owner, invocation basis или mode и не даёт closure
+authority.
+
 - T0/T1 `/exe` может закрыть task только если current agent — explicit
   manual top-level closure owner, scope остался local, не возник T2/T3 trigger,
   hard boundaries соблюдены и compact PASS evidence записан в protocol и
@@ -846,25 +854,27 @@ Manual mode означает явный top-level owner, а не ручное н
 - T3 closure требует `/verify PASS`, per-task semantic-pass, exact standalone
   `HUMAN_CHECKPOINT: done` и explicit owner.
 
-Не смешивайте manual и scheduler ownership внутри одного task run.
+Manual и scheduler closure authority не смешиваются; Execution Attempt сам по
+себе mode не хранит.
 
 ### Scheduler mode
 
 `/autopilot` владеет только product queue после закрытия Foundation gate:
 
 - `planned -> ready` promotion;
-- `ready -> in_progress`;
+- выбор task и durable checkpoint перед `/exe`;
 - final `done|failed|blocked` decision;
 - dependent blocking/unblocking;
 - retry/failure budgets;
 - terminal queue state.
 
-`/autonomous` владеет Product/Design sequence, transitions ограниченной FT-000
-фазы и внешним end-to-end result. Готовую product queue он передаёт
-каноническому `/autopilot`, не повторяя его product scheduler algorithm.
+`/autonomous` владеет Product/Design sequence, promotion/selection/final
+decisions ограниченной FT-000 фазы и внешним end-to-end result. Готовую product
+queue он передаёт каноническому `/autopilot`, не повторяя его product scheduler algorithm.
 `/autopilot` не выполняет и не изменяет FT-000 records.
 
-`/exe` реализует, `/verify` возвращает functional verdict,
+Для выбранной scheduler task `/exe` готовит protocol, записывает
+`ready -> in_progress` и реализует; `/verify` возвращает functional verdict,
 `/red-verify` — semantic verdict. В scheduler mode эти child skills не меняют
 final lifecycle. Scheduler записывает status, closure/failure/blocking decision
 и evidence links в authoritative `.task.json` сразу после task и до следующего
@@ -957,15 +967,15 @@ refresh JSON state
   -> recover unfinished durable checkpoint action
        -> selected task, feature red-verify, closure or wave-boundary
   -> recover every in_progress task in stable index order
-       -> prove scheduler ownership and current attempt
+       -> reconcile current attempt and durable stage
        -> reconcile task + checkpoint + protocol/handoff/verdict
        -> resume first incomplete durable stage
        -> or record recovery decision and existing exact halt
   -> only with no unresolved in_progress: promotion pass
   -> select one ready task by wave/index order
   -> strict doctor precondition
-  -> ready -> in_progress
-  -> /exe
+  -> checkpoint execute: next action = /exe TASK
+  -> /exe: protocol + attempt -> ready -> in_progress -> implementation
   -> /verify
   -> per-task /red-verify for T3
   -> scheduler lifecycle/evidence write
@@ -985,7 +995,7 @@ implementation handoff — resume идёт в `/exe`; есть handoff без fu
 verdict — в `/verify`; T3 functional PASS без semantic-pass — в per-task
 `/red-verify`; завершённые tier gates — в scheduler closure. Пока хотя бы одна
 `in_progress` task не получила доказуемое продолжение или durable decision,
-promotion и выбор другой ready task запрещены. Ambiguous ownership/stage или
+promotion и выбор другой ready task запрещены. Ambiguous attempt/stage или
 опасность повторного non-idempotent side effect приводит к existing halt с
 evidence, owner и exact resume route, а не к автоматическому replay/adoption.
 
@@ -1107,7 +1117,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/mb-garden` | mechanical links/indexes/routers maintenance и final lint | semantic/destructive decisions блокирует; broader reconcile передаёт `/mb-sync` |
 | `/mb-doctor` | deterministic readiness report | не заменяет semantic review или verification |
 | `/autopilot` | reviewed product queue scheduler и terminal state после Foundation gate | не создаёт PRD/features/initial queue и не выполняет FT-000 |
-| `/autonomous` | full Product/Design-to-terminal-state orchestration и bounded FT-000 execution owner | не принимает unresolved operator decisions и не копирует product scheduler |
+| `/autonomous` | full Product/Design-to-terminal-state orchestration и bounded FT-000 scheduler | не принимает unresolved operator decisions и не копирует product scheduler |
 
 ## 17. Проверки
 

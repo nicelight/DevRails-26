@@ -13,6 +13,9 @@ scheduler.
 <input_contract>
 Expected `$ARGUMENTS`: one concrete `TASK-NNN-TN-FT-NNN-WN`.
 
+The caller has already selected this task. `/exe` never scans the queue or
+chooses another task.
+
 Require and resolve:
 - `.memory-bank/tasks/index.json` and exactly one matching indexed task record;
 - `.memory-bank/workflows/tier-policy.md`;
@@ -31,24 +34,40 @@ Point-of-use preflight must confirm:
 - index/file/ID resolution and matching ID tier/feature/wave segments;
 - valid `tier: T0|T1|T2|T3` and executable lifecycle state;
 - every dependency exists and is `done`;
+- no recorded blocker or unresolved required gate in the resolved task context;
 - success is observable from AC/REQ/spec/gates/verification targets;
 - task, feature, plan, backbone, and linked specs do not contradict;
 - T2/T3 direct canonical coverage is applicable and concrete enough to avoid
   guessing shape, rules, errors, and verification;
 - actual work fits the semantic outcome/AC/REQ/spec boundary, tier, deliberate
   hard allowed/forbidden scopes, and stop conditions.
+- the tier-required existing protocol is coherent, or every missing protocol
+  file can be initialized from its framework-owned template before task start.
 
 Stop before implementation if the task is missing/malformed, already
 `blocked|failed|done`, has unmet dependencies, lacks required T2/T3 context, is
 objectively contradictory, is unverifiable, or is materially under-tiered.
+
+For a selected `planned` task, write `planned -> ready` only when this preflight
+proves it runnable; otherwise leave it `planned` and stop. A selected `ready`
+task may start. A selected `in_progress` task is resume-only: reconcile its
+current Execution Attempt, protocol, handoff, verdicts, and observable work
+before acting. If the implementation handoff is already complete, do not replay
+implementation; return the existing next handoff. If a possibly completed
+unsafe or non-idempotent side effect cannot be reconciled, stop rather than
+replay it.
 </input_contract>
 
 <hard_invariants>
 - Authoritative routing and status ownership come from
   `.memory-bank/workflows/tier-policy.md`; never use legacy `risk` fields.
-- Scheduler mode: `/exe` never writes final task closure/failure/blocking,
-  promotes dependents, or runs scheduler transitions. It returns an
-  implementation handoff.
+- `/exe` owns `ready -> in_progress` for the concrete task selected by its
+  caller in both manual and scheduler flows. It never selects queue work,
+  promotes dependents, or makes final `done|failed|blocked` decisions in
+  scheduler mode.
+- Scheduler flow selects the task and durably checkpoints
+  `current stage: execute` plus `next action: /exe <TASK_ID>` before invocation;
+  it does not write `ready -> in_progress` itself.
 - Manual mode: T0/T1 fast-lane closure is allowed only when the current agent is
   the explicit manual top-level closure owner, scope stayed task-local, no
   T2/T3 trigger appeared, hard scopes were respected, and compact PASS evidence
@@ -64,6 +83,8 @@ objectively contradictory, is unverifiable, or is materially under-tiered.
   `skills/*/{agents,references,scripts}/shared-*` files.
 - Do not change tier in place; tier is embedded in task identity, file path,
   index, and dependencies.
+- Selecting or starting a task does not grant an unapproved production,
+  destructive, privileged, secret-reading, or other external side effect.
 </hard_invariants>
 
 <operator_decisions>
@@ -126,6 +147,25 @@ initial shape only; this command and tier policy own lifecycle/status rules.
 If a required template is absent before file creation, stop and request
 framework bootstrap/sync instead of inventing a shape.
 
+Before any implementation or external side-effect write:
+1. complete preflight and, when applicable, durably write the selected task's
+   `planned -> ready` transition;
+2. initialize or reconcile the tier protocol;
+3. in `run.md` for T0/T1 or `context.md` for T2/T3, create or reuse one neutral
+   `## Execution Attempt` block with `attempt` and `started`;
+4. durably write `ready -> in_progress` immediately before the first
+   implementation write. Protocol/evidence bookkeeping may precede this
+   transition; implementation may not.
+
+Re-entry with `ready` plus a prepared attempt reuses that attempt. Re-entry with
+`in_progress` plus an unfinished coherent attempt resumes it. A completed
+implementation handoff routes forward without replay. After an eligible
+same-task retry decision, create a new attempt and mark older same-claim receipt
+blocks `superseded` or `supporting-only`. Do not add owner, invocation-basis, or
+mode metadata to the attempt. A legacy `in_progress` protocol without the block
+may add it only when durable work/handoff evidence unambiguously identifies the
+unfinished attempt and replay is safe; otherwise stop.
+
 Implementation evidence must record:
 - actual changed files and any advisory `touched_files` deviation rationale;
 - hard allowed-write compliance and whether forbidden scope was touched;
@@ -186,6 +226,8 @@ run owned and recorded by `/exe` may become a reuse candidate.
 
 <validation>
 Before handoff, confirm:
+- no implementation write occurred before durable `in_progress`, and the
+  current task status agrees with its tier protocol and Execution Attempt;
 - implementation achieves only the selected outcome and respects all
   authoritative specs, constraints, invariants, anti-goals, and hard scopes;
 - actual files and local evidence are reproducible and recorded;

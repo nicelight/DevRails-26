@@ -63,10 +63,12 @@ state, not a second task registry.
 - Queue/task metadata comes only from indexed JSON task records. Preserve task
   schema, IDs, lifecycle `planned|ready|in_progress|blocked|done|failed`, tier,
   waves, Foundation dependencies, and hard runtime scopes.
-- During the Foundation phase, `/autonomous` is the explicit scheduler owner
-  only for indexed `feature: "FT-000"` records. After the Foundation gate is
-  `done`, `/autopilot` is the scheduler owner only for product records. Neither
-  phase may adopt or mutate the other phase's tasks.
+- During the Foundation phase, `/autonomous` owns promotion, selection, and
+  final lifecycle decisions only for indexed `feature: "FT-000"` records. After
+  the Foundation gate is `done`, `/autopilot` owns those scheduler decisions
+  only for product records. `/exe` owns `ready -> in_progress` for the concrete
+  task selected by either scheduler. Neither phase may adopt or mutate the other
+  phase's tasks.
 - `/autonomous` must not restage `/autopilot`'s product-queue algorithm or
   reinterpret its task transitions. `/exe`, `/verify`, `/red-verify`, and
   `/mb-sync` keep the ownership defined by tier policy.
@@ -191,9 +193,11 @@ existing exact halt contract.
 
 With no unresolved FT-000 task and a current strict-doctor pass, execute the
 remaining FT-000 dependency order sequentially under tier policy until the
-named final gate is `done`. Foundation resume uses the outer run plan and task
-protocols; the `/autopilot` checkpoint remains inactive and outer `STATE`
-remains `RUNNING` until product handoff.
+named final gate is `done`. Before each selected task, record exact next action
+`/exe <TASK_ID>` in the existing outer run plan/status; `/exe` prepares the tier
+protocol and writes `ready -> in_progress`. Foundation resume uses that outer
+run state plus task protocols; the `/autopilot` checkpoint remains inactive and
+outer `STATE` remains `RUNNING` until product handoff.
 
 ## Product scheduler delegation and resume
 

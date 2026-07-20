@@ -56,7 +56,9 @@ manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
 freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-Status transitions have two modes. In scheduler mode, `/autonomous` owns only
+`/exe` owns protocol preparation and `ready -> in_progress` for the concrete
+task already selected by its caller. Final status transitions have two modes.
+In scheduler mode, `/autonomous` owns only
 FT-000 Foundation closure/failure/blocking decisions and `/autopilot` owns only
 product-task decisions after the Foundation gate closes. T2 task closure
 requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task
@@ -110,7 +112,8 @@ the wave boundary.
   no indexed `FT-000` records.
 - Task dependencies reference known task IDs and do not create cycles or execution deadlock.
 - Task status, dependency, and tier policy allow safe scheduler decisions.
-- `in_progress` `T0` / `T1` tasks have a `.protocols/<TASK_ID>/` directory.
+- `in_progress` `T0` / `T1` tasks have compact
+  `.protocols/<TASK_ID>/run.md`.
 - `T2` / `T3` `planned` / `ready` tasks do not require protocol files yet.
 - `T2` / `T3` `in_progress` tasks have full protocol files: `context.md`, `plan.md`, `progress.md`, `verification.md`, and `handoff.md`.
 - `T0` / `T1` `done` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.

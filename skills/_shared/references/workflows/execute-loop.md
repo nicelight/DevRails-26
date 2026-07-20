@@ -71,10 +71,11 @@ records/protocols; `/autopilot` scheduler stages begin only at product handoff
 5) after Foundation completion, delegate the reviewed strict-ready product queue
 to canonical `/autopilot`; `/autonomous` does not copy its product-queue
 recovery, selection, task-stage, wave-boundary, or no-ready algorithm
-6) `/autopilot` owns product task lifecycle transitions and queue recovery;
-`tier-policy.md` owns tier gates and failure handling; `autonomy-policy.md` owns
-the durable checkpoint, budgets, hard stops, and terminal vocabulary;
-`mb-sync.md` owns boundary reconciliation only
+6) `/autopilot` owns product promotion, selection, final lifecycle decisions,
+and queue recovery; selected-task `/exe` owns protocol preparation and
+`ready -> in_progress`; `tier-policy.md` owns tier gates and failure handling;
+`autonomy-policy.md` owns the durable checkpoint, budgets, hard stops, and
+terminal vocabulary; `mb-sync.md` owns boundary reconciliation only
 7) `/autonomous` preserves any scheduler halt unchanged and reports final
 end-to-end `SUCCESS` only after the product queue and all outer gates pass
 

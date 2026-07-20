@@ -53,9 +53,10 @@ repair route.
 </input_contract>
 
 <hard_invariants>
-- `/autopilot` owns only product task promotion,
-  `ready -> in_progress`, final `done|failed|blocked` decisions, dependent
-  block/unblock, failure budget, and terminal queue result.
+- `/autopilot` owns only product task promotion and selection, final
+  `done|failed|blocked` decisions, dependent block/unblock, failure budget, and
+  terminal queue result. Installed `/exe` owns `ready -> in_progress` for the
+  task selected by the scheduler.
 - It never executes or mutates an FT-000 record.
 - Child ownership remains canonical in
   `.memory-bank/workflows/tier-policy.md`: `/exe` implements, `/verify`
@@ -126,15 +127,18 @@ durable evidence proves the earlier action complete or safely superseded.
 Before inspecting the ready queue, reconcile any checkpoint whose `next action`
 still names scheduler work, even when no task is `in_progress`:
 
-1. A `selection` checkpoint with a selected `ready` task resumes that same
-   task's validated `ready -> in_progress` transition; with an already
-   `in_progress` task it enters task recovery below. `selection` with
-   `current task: none` has no selected-task action to replay.
-2. An `execute`, `verify`, task-level `red-verify`, or `closure` checkpoint
-   reconciles the named task through the task recovery rules below. If the task
-   is already final, first prove the lifecycle/evidence write and derive the
-   next required scheduler action from durable queue/feature state; do not
-   assume selection.
+1. `selection` with `current task: none` has no selected-task action to replay.
+   For backward-compatible recovery only, a legacy `selection` checkpoint that
+   names a task is reconciled without a lifecycle write: a still-runnable
+   `planned|ready` task is checkpointed at `execute` with exact next action
+   `/exe <TASK_ID>`; an `in_progress` or final task uses the rules below.
+2. An `execute` checkpoint with a selected `planned|ready` task re-invokes
+   `/exe <TASK_ID>` after reconciling the checkpoint and any prepared protocol.
+   An `in_progress` task enters task recovery below. `verify`, task-level
+   `red-verify`, and `closure` checkpoints also reconcile the named task through
+   those rules. If the task is already final, first prove the lifecycle/evidence
+   write and derive the next required scheduler action from durable queue/feature
+   state; do not assume selection.
 3. A `red-verify` checkpoint whose exact next action is
    `/red-verify --feature FT-<ID>` reconciles the feature document and current
    verdict. Resume that child only if semantic-pass is absent and replay is
@@ -156,24 +160,20 @@ Reconcile all product `in_progress` tasks sequentially in stable index order. Wh
 unresolved, do not write `planned -> ready` and do not select a different
 `ready` task. For each task:
 
-1. Prove that the task belongs to the current scheduler-owned run/attempt from
-   the run checkpoint plus task protocol/handoff evidence. A task started under
-   manual ownership, or without durable scheduler ownership evidence, must not
-   be adopted automatically.
-2. Reconcile the authoritative `.task.json`, checkpoint, current-attempt task
-   protocol, implementation handoff, functional verdict, semantic verdict, and
-   human checkpoint. The task record and durable evidence win over a stale
-   checkpoint. Determine the first incomplete durable stage; do not replay a
-   stage merely because the scheduler restarted.
-3. Before invoking a child stage, write the task/stage, last durable evidence,
+1. Reconcile the authoritative `.task.json`, checkpoint, task protocol, neutral
+   current-attempt metadata when present, implementation handoff, functional
+   verdict, semantic verdict, and human checkpoint. The task record and durable
+   evidence win over a stale checkpoint. Determine the first incomplete durable
+   stage; do not replay a stage merely because the scheduler restarted.
+2. Before invoking a child stage, write the task/stage, last durable evidence,
    and intended next action to the run checkpoint. After the child writes its
    handoff or verdict, update `last durable child verdict/handoff` and `next
    action` from that artifact before continuing.
-4. Only after ownership, current stage, and any required replay are proved safe,
+3. Only after the current attempt, stage, and any required replay are proved safe,
    continue from the first incomplete stage:
    - no current implementation handoff and no evidence of a possibly completed
      unsafe/non-idempotent execution -> checkpoint `execute`, then
-     `/exe <TASK_ID>`; otherwise use the recovery halt in step 5;
+     `/exe <TASK_ID>`; otherwise use the recovery halt in step 4;
    - current implementation handoff but no functional verdict -> checkpoint
      `verify`, then `/verify <TASK_ID>`;
    - T3 functional `PASS` but no task semantic-pass -> checkpoint `red-verify`,
@@ -184,7 +184,7 @@ unresolved, do not write `planned -> ready` and do not select a different
    - functional FAIL, semantic-fail, NEEDS-CLARIFICATION, semantic-concern, or
      an execution blocker -> apply `## Scheduler Failure Handling` in
      `.memory-bank/workflows/tier-policy.md` without inventing another route.
-5. If current attempt, stage, scheduler ownership, or safe replay cannot be
+4. If current attempt, stage, or safe replay cannot be
    proved, invoke no child and promote/select no work. Record the recovery
    decision, conflicting or missing evidence, owner, and exact resume route,
    then use the existing policy, quality, clarification, or blocking halt that
@@ -206,10 +206,11 @@ selection loop:
    unresolved semantic concern remains; write dependent blocking decisions only
    to affected records;
 3. select one product `ready` task by earliest wave and stable index order;
-4. require current strict-doctor PASS, checkpoint the selected
-   task at `selection`, then write `ready -> in_progress`;
-5. use the same checkpoint rules while running `execute`, `verify`, required
-   T3 `red-verify`, and scheduler-owned `closure` in order;
+4. require current strict-doctor PASS, then checkpoint the selected task at
+   `execute` with exact `next action: /exe <TASK_ID>` and invoke `/exe`; `/exe`
+   prepares/reconciles the tier protocol and writes `ready -> in_progress`;
+5. after `/exe` writes its durable handoff, update the checkpoint and run
+   `verify`, required T3 `red-verify`, and scheduler-owned `closure` in order;
 6. write the final closure/failure/blocking decision and evidence, then update
    the checkpoint from the authoritative lifecycle/evidence write:
    - T0/T1 `done` after tier-valid compact/functional PASS;

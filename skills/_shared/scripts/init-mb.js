@@ -772,6 +772,9 @@ After finishing a meaningful unit of work:
 
 ## Clean context (recommended)
 - Route each \`TASK-NNN-TN-FT-NNN-WN\` by \`task.tier\` and \`.memory-bank/workflows/tier-policy.md\`.
+- The caller selects a concrete task. \`/exe\` prepares/reconciles its tier
+  protocol and neutral current Execution Attempt before writing
+  \`ready -> in_progress\`; it never selects queue work.
 - Delegation and worker reports follow \`.memory-bank/roles/orchestrator.md\` and \`.memory-bank/roles/worker.md\`.
 - T0/T1 may use compact \`.protocols/TASK-NNN-TN-FT-NNN-WN/run.md\`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and \`/verify\` \`VERDICT: PASS\`; per-task \`/red-verify\` is not required for T2 task closure.

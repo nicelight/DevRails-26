@@ -79,7 +79,7 @@ As applicable, reconcile:
 - `.memory-bank/changelog.md` for the current wave/change.
 
 Report consistency gaps and promotion eligibility without applying
-scheduler-owned transitions.
+scheduler-owned promotion or final lifecycle transitions.
 </required_outputs>
 
 <validation>
