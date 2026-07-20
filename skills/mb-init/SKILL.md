@@ -37,4 +37,8 @@ executable command.
 
 Do not run local bootstrap logic, copy a helper into the target, install a
 dependency, or create the skeleton manually. When `.memory-bank/` already
-exists and no sync was requested, make no changes and hand off to `/cold-start`.
+exists and no sync was requested, make no changes. Hand off to `/cold-start`
+only when its `SKILL.md` exists in the active `.agents/skills/` or
+`.claude/skills/` runtime surface. Otherwise report that the skeleton is ready
+and stop; do not claim `/cold-start` is available. Runtime command installation
+remains an explicit external installer action.

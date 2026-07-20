@@ -46,11 +46,12 @@ explicitly supplied another target. Accept `<devrails-checkout>` only when the
 operator supplied it or its `scripts/install-framework.mjs` is already
 verifiable at a known path. Never guess or invent `<devrails-checkout>`.
 
-Return this external bootstrap command with both placeholders replaced by
-verified, shell-safe paths:
+Explain that this route installs or updates the full DevRails runtime command
+set and creates the skeleton. Then return this external bootstrap command with
+both placeholders replaced by verified, shell-safe paths:
 
 ```bash
-node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
 ```
 
 If the checkout is unknown or unavailable, stop with an honest blocker: ask the

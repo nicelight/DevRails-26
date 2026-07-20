@@ -21,11 +21,12 @@ status: active
 2. Принимай `<devrails-checkout>` только когда путь предоставлен оператором или
    `scripts/install-framework.mjs` уже можно проверить по известному пути.
    Never guess or invent `<devrails-checkout>`.
-3. Верни external bootstrap command, заменив оба placeholders проверенными,
-   shell-safe paths:
+3. Объясни, что route установит или обновит полный DevRails runtime command set
+   и создаст skeleton. Затем верни external bootstrap command, заменив оба
+   placeholders проверенными, shell-safe paths:
 
    ```bash
-   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
+   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
    ```
 
 4. Если доступный DevRails checkout неизвестен, остановись с честным blocker:

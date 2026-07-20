@@ -48,5 +48,8 @@ the skeleton itself.
 - After a successful external bootstrap or sync, rerun `/mb-init` to confirm
   `.memory-bank/` is present.
 - If the Memory Bank is present and no sync was requested, make no changes and
-  hand off to `/cold-start`.
+  hand off to `/cold-start` only when its `SKILL.md` exists in the active
+  `.agents/skills/` or `.claude/skills/` runtime surface. Otherwise report that
+  the skeleton is ready and stop; do not claim `/cold-start` is available.
+  Runtime command installation remains an explicit external installer action.
 </handoff_contract>

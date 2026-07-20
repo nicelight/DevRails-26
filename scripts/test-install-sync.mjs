@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -16,6 +17,11 @@ import { spawnSync } from 'node:child_process';
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, '..');
 const installer = join(repoRoot, 'scripts', 'install-framework.mjs');
+const commandSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'commands');
+const coldStartCommandSource = join(commandSourceDir, 'cold-start.md');
+const mbInitCommandSource = join(commandSourceDir, 'mb-init.md');
+const coldStartPackageSource = join(repoRoot, 'skills', 'cold-start', 'SKILL.md');
+const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
 const tierPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'tier-policy.md');
@@ -25,6 +31,8 @@ const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-install-sync-'));
 const target = join(tempRoot, 'target');
 const installedSkillsBeginMarker = '<!-- BEGIN DEVRAILS INSTALLED SKILLS -->';
 const installedSkillsEndMarker = '<!-- END DEVRAILS INSTALLED SKILLS -->';
+const fullBootstrapRoute = 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes';
+const skeletonBootstrapRoute = 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes';
 
 function fail(message, output = '') {
   const detail = output ? `\n\n${output}` : '';
@@ -155,6 +163,78 @@ function boundaryTask(runtimeContext) {
 }
 
 try {
+  const coldStartSources = [coldStartCommandSource, coldStartPackageSource]
+    .map((source) => readFileSync(source, 'utf8'));
+  coldStartSources.forEach((source) => {
+    assert(
+      source.includes(fullBootstrapRoute)
+        && !source.includes(skeletonBootstrapRoute)
+        && source.includes('DevRails runtime command'),
+      'A cold-start source does not expose the full command-set bootstrap recovery route.',
+    );
+  });
+
+  const mbInitSources = [mbInitCommandSource, mbInitPackageSource]
+    .map((source) => readFileSync(source, 'utf8'));
+  mbInitSources.forEach((source) => {
+    assert(
+      source.includes(skeletonBootstrapRoute)
+        && source.includes('only when its `SKILL.md` exists')
+        && source.includes('do not claim `/cold-start` is available')
+        && source.includes('Runtime command installation')
+        && source.includes('explicit external installer action'),
+      'An mb-init source lost skeleton-only bootstrap or its installed-skill handoff guard.',
+    );
+  });
+
+  const partialTarget = join(tempRoot, 'partial-cold-start-target');
+  runInstaller(['--skill', 'cold-start', '--target', partialTarget, '--yes']);
+  assert(
+    JSON.stringify(runtimeSkillNames(partialTarget, '.agents')) === JSON.stringify(['cold-start'])
+      && JSON.stringify(runtimeSkillNames(partialTarget, '.claude')) === JSON.stringify(['cold-start'])
+      && !existsSync(join(partialTarget, '.memory-bank')),
+    'Partial cold-start install unexpectedly created downstream runtime skills or Memory Bank.',
+  );
+  ['.agents', '.claude'].forEach((runtimeRoot) => {
+    const partialColdStart = readFileSync(
+      join(partialTarget, runtimeRoot, 'skills', 'cold-start', 'SKILL.md'),
+      'utf8',
+    );
+    assert(
+      partialColdStart.includes(fullBootstrapRoute)
+        && !partialColdStart.includes(skeletonBootstrapRoute),
+      `${runtimeRoot} partial cold-start does not route missing skeleton to full bootstrap.`,
+    );
+  });
+
+  runInstaller(['--bootstrap', '--target', partialTarget, '--yes']);
+  const recoveredAgentsSkillNames = runtimeSkillNames(partialTarget, '.agents');
+  const recoveredClaudeSkillNames = runtimeSkillNames(partialTarget, '.claude');
+  assert(
+    existsSync(join(partialTarget, '.memory-bank', 'tasks', 'index.json'))
+      && recoveredAgentsSkillNames.length > 1
+      && JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(recoveredClaudeSkillNames),
+    'Full bootstrap did not recover a partial cold-start target to commands plus skeleton.',
+  );
+  ['brief', 'write-prd', 'map-codebase'].forEach((name) => {
+    assert(
+      existsSync(join(partialTarget, '.agents', 'skills', name, 'SKILL.md'))
+        && existsSync(join(partialTarget, '.claude', 'skills', name, 'SKILL.md')),
+      `Recovered cold-start target is missing downstream runtime skill: ${name}`,
+    );
+  });
+  const recoveredSkillIndex = readFileSync(
+    join(partialTarget, '.memory-bank', 'skills', 'index.md'),
+    'utf8',
+  );
+  const recoveredSkillRows = installedSkillRows(recoveredSkillIndex);
+  assert(
+    JSON.stringify(recoveredSkillRows.map(({ name }) => name))
+      === JSON.stringify(recoveredAgentsSkillNames)
+      && recoveredSkillRows.every(({ agents, claude }) => agents === 'yes' && claude === 'yes'),
+    'Recovered cold-start target skill registry does not match its runtime surfaces.',
+  );
+
   runInstaller(['--bootstrap', '--target', target, '--yes']);
 
   const schemaRel = '.memory-bank/schemas/task.schema.json';
@@ -179,6 +259,11 @@ try {
     'Fresh full bootstrap did not install the same runtime skill set into both surfaces.',
   );
   assert(
+    JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(agentsSkillNames)
+      && JSON.stringify(recoveredClaudeSkillNames) === JSON.stringify(claudeSkillNames),
+    'Recovered partial cold-start target does not match a fresh full bootstrap runtime set.',
+  );
+  assert(
     JSON.stringify(freshSkillRows.map(({ name }) => name)) === JSON.stringify(expectedSkillNames)
       && freshSkillRows.every(({ agents, claude }) => agents === 'yes' && claude === 'yes'),
     'Fresh skill registry does not deterministically reflect both runtime surfaces.',
@@ -191,6 +276,21 @@ try {
       && !freshSkillIndex.includes('## Installed\n- cold-start'),
     'Fresh skill registry is missing its managed inventory boundary or conditional guidance.',
   );
+  ['.agents/skills', '.claude/skills'].forEach((runtimeRoot) => {
+    const deployedColdStart = readTarget(`${runtimeRoot}/cold-start/SKILL.md`);
+    const deployedMbInit = readTarget(`${runtimeRoot}/mb-init/SKILL.md`);
+    assert(
+      deployedColdStart.includes(fullBootstrapRoute)
+        && !deployedColdStart.includes(skeletonBootstrapRoute),
+      `${runtimeRoot}/cold-start lost the full bootstrap recovery route during deployment.`,
+    );
+    assert(
+      deployedMbInit.includes(skeletonBootstrapRoute)
+        && deployedMbInit.includes('only when its `SKILL.md` exists')
+        && deployedMbInit.includes('do not claim `/cold-start` is available'),
+      `${runtimeRoot}/mb-init lost skeleton-only bootstrap or its installed-skill handoff guard.`,
+    );
+  });
 
   const structureTemplate = readFileSync(structureTemplateSource, 'utf8');
   assert(
@@ -207,7 +307,9 @@ try {
   assert(
     installedSkillRows(emptySkillIndex).length === 0
       && emptySkillIndex.includes('No runtime skills detected')
-      && !emptySkillIndex.includes('- cold-start'),
+      && !emptySkillIndex.includes('- cold-start')
+      && runtimeSkillNames(emptyTarget, '.agents').length === 0
+      && runtimeSkillNames(emptyTarget, '.claude').length === 0,
     'Bootstrap-only fresh target invented an installed runtime skill.',
   );
   const modifiedLegacyIndex = replaceInstalledBody(

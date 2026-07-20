@@ -938,20 +938,8 @@ status: active
 - [.memory-bank/workflows/mb-sync.md](mb-sync.md): Durable state synchronization boundaries and checklist.
 ```
 
-```markdown
-
----
-description: Чеклист синхронизации Memory Bank после wave/изменений.
-status: active
----
-# MB-SYNC Checklist
-
-- [ ] Duo docs consistent where the classic pair model is used (architecture ↔ guides)
-- [ ] Optional normative docs, if present, are linked and do not contradict duo docs
-- [ ] RTM up to date (requirements.md)
-- [ ] Feature statuses updated
-- [ ] JSON task records and `.memory-bank/tasks/index.json` updated
-- [ ] Changelog entry added
-- [ ] index.md links valid
-- [ ] Lint passes (0 errors)
-```
+The complete MB-SYNC workflow policy lives only in
+`skills/_shared/references/workflows/mb-sync.md` and is deployed as
+`.memory-bank/workflows/mb-sync.md`; do not inline a second copy here.
+`/mb-sync` performs sync-local validation only. Applicable post-sync
+lint/doctor gates remain caller-owned according to that workflow.

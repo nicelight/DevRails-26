@@ -1,7 +1,7 @@
 # DevRails workflow findings: повторный source-only аудит
 
-Статус документа: review notes; findings №1–5 и №7–9 реализованы и
-проверены, остальные пункты остаются без реализации.
+Статус документа: review notes; findings №1–9 реализованы и проверены, пункт
+№10 остаётся без реализации.
 
 Дата повторной проверки: 2026-07-20.
 
@@ -20,8 +20,8 @@
 - root documentation и `PROJECT_MAP.md`.
 
 При исходном повторном аудите installer/bootstrap не запускались. Для findings
-№1–5 и №7–9 после одобрения решений выполнены isolated
-install/bootstrap/sync smoke и regression test; для остальных пунктов
+№1–9 после одобрения решений выполнены isolated install/bootstrap/sync smoke и
+regression test; для оставшегося пункта
 `подтверждён` означает только source code и contract evidence, а не runtime
 smoke result.
 
@@ -50,7 +50,7 @@ smoke result.
 | 3 | исправлен; Foundation doctor regression проходит | 5/5 | 3/5 | 2/5 | 3/5 | закрыт |
 | 4 | исправлен; boundary grammar/install-sync smoke проходит | 5/5 | 4/5 | 5/5 | 4/5 | закрыт |
 | 5 | исправлен; caller-selected `/exe` start/install smoke проходит | 4/5 | 4/5 | 3/5 | 4/5 | закрыт |
-| 6 | подтверждён source semantics installer | 4/5 | 1/5 | 1/5 | 2/5 | P1 |
+| 6 | исправлен; partial cold-start recovery/install smoke проходит | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 7 | исправлен; manual и scheduler closure branches разделены | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 8 | исправлен; response-only halt/install smoke проходит | 3/5 | 1/5 | 1/5 | 1/5 | закрыт |
 | 9 | исправлен; filesystem registry install/sync smoke проходит | 3/5 | 4/5 | 3/5 | 3/5 | закрыт |
@@ -130,54 +130,19 @@ smoke result.
 
 ## 6. Partial install `cold-start` ведёт к неполному bootstrap
 
-**Вердикт:** полностью подтверждён source semantics installer.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- `/cold-start` при missing `.memory-bank/` возвращает `--bootstrap-only`.
-- Installer вычисляет `install = !bootstrapOnly`; следовательно,
-  `--bootstrap-only` действительно пропускает runtime command installation.
-- При `--bootstrap` installer включает и install, и bootstrap, а отсутствие
-  explicit selection приводит к default `--skill '*'`.
-- `howItWorks.md` сейчас объединяет `/cold-start` и `/mb-init` под одним
-  `--bootstrap-only` route.
-- После поддерживаемого `--skill cold-start` target может получить skeleton, но
-  не получить `/brief`, `/write-prd`, `/map-codebase` и остальные routes,
-  которые рекомендует сам `/cold-start`.
-
-### Оценка
-
-- важность: `4/5` — поддерживаемый entry/recovery route приводит к
-  нефункциональному downstream;
-- сложность: `1/5`;
-- риск раздувания: `1/5`;
-- объём: `2/5` — command doc, root doc и smoke.
-
-### KISS-исправление
-
-Только missing-skeleton route установленного `/cold-start` должен вернуть:
-
-```bash
-node <devrails-checkout>/scripts/install-framework.mjs \
-  --bootstrap --target <target-repo> --yes
-```
-
-`/mb-init` остаётся thin router: missing-skeleton bootstrap сохраняет
-`--bootstrap-only`, а explicit framework sync использует согласованный в
-finding №1 полный `--bootstrap --sync`. CLI flags и partial install semantics
-менять не нужно.
-
-### Поверхность изменений
-
-- `skills/_shared/references/commands/cold-start.md`;
-- `howItWorks.md`, где routes сейчас объединены;
-- README только если там появится/есть тот же partial recovery example.
-
-### Acceptance
-
-`cold-start` missing-skeleton route логически ведёт к full command set +
-skeleton; `mb-init` не устанавливает commands при fresh bootstrap, но full
-framework sync не оставляет schema/workflows и runtime commands разных версий.
+- Missing-skeleton route `/cold-start` возвращает полный `--bootstrap`, который
+  устанавливает/обновляет runtime commands и создаёт skeleton из одной prepared
+  source copy.
+- Canonical runtime command и package-level `cold-start` entrypoint согласованы;
+  documentation больше не объединяет `/cold-start` и `/mb-init` под одним
+  route.
+- `/mb-init` сохраняет `--bootstrap-only` и передаёт управление в
+  `/cold-start` только когда skill установлен в активной runtime surface.
+- Regression покрывает partial `cold-start` install, recovery до полного набора
+  в Codex/Claude surfaces, factual skill inventory и отсутствие command install
+  у fresh `--bootstrap-only`.
 
 ## 7. Compact template допускает manual `failed|blocked` transition
 
@@ -260,7 +225,7 @@ canonical workflow остаётся единственной полной policy
    `write_boundary` grammar независимы по данным, но оба меняют readiness source.
 3. **Task lifecycle:** findings 5 и 7 закрыты; start и closure ownership
    разделены без нового persisted mode или registry.
-4. **Broken/contradictory routes:** finding 8 закрыт; finding 6 остаётся.
+4. **Broken/contradictory routes:** findings 6 и 8 закрыты.
 5. **Source cleanup:** finding 10.
 
 После каждого implementation batch: syntax check, source-only `shared-*` count,

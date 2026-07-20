@@ -239,13 +239,24 @@ node scripts/install-framework.mjs --skill verify --yes
 DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 ```
 
-После install-only, если `.memory-bank/` отсутствует, `/cold-start` и
-`/mb-init` не создают skeleton локально. Они возвращают точную external command
-через доступный checkout DevRails:
+После install-only, если `.memory-bank/` отсутствует, `/cold-start` не создаёт
+skeleton локально. Он возвращает через доступный checkout DevRails full
+bootstrap route, который устанавливает или обновляет полный runtime command set
+и создаёт skeleton:
+
+```bash
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
+```
+
+`/mb-init` сохраняет skeleton-only route и не устанавливает runtime commands:
 
 ```bash
 node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
 ```
+
+После такого bootstrap `/mb-init` передаёт управление в `/cold-start` только
+если skill установлен в активной runtime surface; иначе он подтверждает готовый
+skeleton и останавливается, не заявляя отсутствующую команду как доступную.
 
 Для coherent framework sync существующего target используется полный route:
 
@@ -1086,7 +1097,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
 | `/cold-start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
-| `/mb-init` | external installer route для Memory Bank bootstrap или coherent framework sync | сам не создаёт skeleton; затем повторный `/mb-init` и `/cold-start` |
+| `/mb-init` | external installer route для Memory Bank bootstrap или coherent framework sync | сам не создаёт skeleton; после повторного `/mb-init` передаёт управление только в установленный `/cold-start`, иначе останавливается с готовым skeleton |
 | `/fill` | минимально достаточный context priming | строго read-only; возвращает gaps и рекомендуемые reads, не создаёт artifacts |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
