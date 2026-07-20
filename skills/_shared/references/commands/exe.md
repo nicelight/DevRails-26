@@ -47,7 +47,12 @@ Point-of-use preflight must confirm:
 - T2/T3 direct canonical coverage is applicable and concrete enough to avoid
   guessing shape, rules, errors, and verification;
 - actual work fits the semantic outcome/AC/REQ/spec boundary, tier, deliberate
-  hard allowed/forbidden scopes, and stop conditions.
+  hard allowed/forbidden scopes, and stop conditions;
+- when linked rules define architecture boundaries, the tactic keeps state
+  changes and cross-module orchestration with their accepted owners, uses
+  required public boundaries, preserves source-of-truth and dependency
+  direction, creates no unaccepted cross-module contract or forbidden
+  command/write bypass, and honors linked orchestration-placement rules;
 - the tier-required existing protocol is coherent, or every missing protocol
   file can be initialized from its framework-owned template before task start.
 
@@ -91,6 +96,10 @@ replay it.
   and inside hard scopes.
 - A non-empty `runtime_context.write_boundary` is hard. Never touch
   `forbidden_scope`; any needed widening or accidental violation stops work.
+- Limit architecture checks to direct task links and the actual change surface;
+  do not turn task execution into a broad repository architecture audit. A
+  tactic that needs or introduces a departure from an applicable linked rule
+  stops work.
 - Preserve unrelated user changes and do not edit generated package-local
   `skills/*/{agents,references,scripts}/shared-*` files.
 - Do not change tier in place; tier is embedded in task identity, file path,
@@ -113,6 +122,10 @@ before choosing or widening work.
 - Feature/task repair or tier rebuild routes to
   `/feature-to-tasks FT-<NNN>`; shared/global design routes to `/spec-design`;
   product clarification routes to `/feature-doctor FT-<NNN>`.
+- Current implementation drift that the task can handle inside its accepted
+  target and semantic boundary is evidence, not a new design choice. If work
+  requires changing accepted write authority, public boundary, source of truth,
+  orchestration owner, or dependency direction, route it to `/spec-design`.
 - Unattended/scheduler flow returns a blocker without choosing, keeps the task
   non-closed, and tells the scheduler to use
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` with the exact
@@ -184,7 +197,8 @@ Implementation evidence must record:
 - task/spec outcome compliance;
 - exact commands, results, concise output/evidence paths, and unavailable-gate
   blockers;
-- linked boundary/spec rules followed and any drift discovered;
+- linked boundary/spec rules followed, including write owner and public
+  boundary when applicable, and any drift discovered;
 - next verification targets and recommended owner.
 
 Run task gates, applicable linked-spec verification targets, and the cheapest

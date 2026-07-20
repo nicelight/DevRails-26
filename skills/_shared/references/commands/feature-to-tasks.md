@@ -261,6 +261,12 @@ Additionally require:
 - for a cross-slice task, make the owning capability and the prohibition on
   transport-handler, generic-util, and composition-root business orchestration
   directly legible through existing linked specs and constraint fields;
+- carry an applicable existing project-native architecture check through
+  `gates` or `verification_targets`. If an accepted rule requires a missing
+  check, plan that accepted work instead of emitting a nonexistent command;
+- when a linked runtime/state rule requires reproducibility, carry its known
+  initial state, safe rerun, observable result, and cleanup/isolation proof;
+  do not infer this process for simple/stateless work;
 - optional `anti_goals`, forbidden scope, constraints, invariants,
   `evidence_required`, and stop conditions remain empty/absent when not
   grounded;

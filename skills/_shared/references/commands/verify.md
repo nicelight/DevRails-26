@@ -56,6 +56,9 @@ or normative evidence remains a required-input blocker under the rule above.
   occurred, and it is never an independent observation by `/verify`.
 - Advisory `touched_files` deviation is not material expansion by itself; hard
   allowed/forbidden scopes and semantic task boundaries remain strict.
+- When direct task links define architecture boundaries, `PASS` requires both
+  the functional outcome and the allowed architectural path. Limit this to the
+  actual change surface; do not run a repository-wide architecture audit.
 - Do not edit implementation, specs, AC, dependencies, tier/wave, task scope,
   BUG records, or follow-up tasks.
 - Scheduler mode: never close/fail/block/promote tasks or dependents.
@@ -99,6 +102,19 @@ Build the minimum complete verification basis from:
 - mapped feature AC and concrete REQ behavior;
 - gates/evidence requirements;
 - execution handoff, actual changes, local results, and artifacts.
+
+For each applicable linked architecture rule, confirm that accepted owners
+change state and retain cross-module orchestration, required public boundaries
+are used, no unaccepted cross-module contract, forbidden command/write path, or
+second source of truth appeared, dependency direction is preserved, and no
+technical location gained business responsibility forbidden by that rule. An
+observed violation uses `VERDICT: FAIL`; missing, conflicting, or ambiguous
+canonical coverage uses `VERDICT: NEEDS-CLARIFICATION`. Unrelated pre-existing
+drift is evidence unless it invalidates the task outcome or proof.
+
+When a linked runtime/state rule requires reproducibility, verify its known
+initial state, safe rerun, observable result, and cleanup/isolation conditions.
+Do not introduce this proof process without task-scoped normative evidence.
 
 The verifier may ignore reuse candidates and immediately run a safe gate or
 replacement probe. Prefer that direct path when the gate is cheap, receipt

@@ -164,6 +164,9 @@ Primary source files for this behavior:
 - `skills/_shared/references/commands/autopilot.md` and
   `skills/_shared/references/commands/exe.md` for rejecting stale product
   approvals without task lifecycle mutation
+- `skills/_shared/references/commands/exe.md` and
+  `skills/_shared/references/commands/verify.md` for point-of-use boundary
+  protection and task-scoped verification of the allowed architectural path
 - `skills/_shared/references/workflows/autonomy-policy.md` and
   `skills/_shared/references/workflows/execute-loop.md` for the shared
   all-feature reconciliation/review route

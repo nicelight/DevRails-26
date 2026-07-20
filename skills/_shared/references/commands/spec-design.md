@@ -260,7 +260,10 @@ Coverage meanings:
   schemas/migrations, states/lifecycles, validation/serialization, retention,
   seed data, and runtime data paths;
 - Verification: concrete proof/evidence concerns routed to the owning contract,
-  testing, or runbook spec without adding a global testing backbone row.
+  testing, or runbook spec without adding a global testing backbone row. When
+  evidenced runtime/state risk exceeds the ordinary Foundation smoke path,
+  define known initial state, safe rerun, observable result, and cleanup or
+  isolation; do not add this process to simple/stateless projects.
 
 Use subject paths under `architecture/`, `contracts/`, `domains/`, `states/`,
 `testing/`, `runbooks/`, `guides/`, or `adrs/`. Mark a genuinely irrelevant
@@ -335,7 +338,10 @@ with stable compact rules:
 Create `AD-*` only for executable shared/strict decisions. Do not renumber
 existing IDs or silently delete a retired rule. Each active rule has `Binds`,
 `Prevents`, and an actionable `Rule`; detailed rationale goes to an ADR only
-when it has durable value.
+when it has durable value. In `Verification`, name an existing project-native
+mechanical check only for a recurring, high-blast-radius, security/safety, or
+cheap unambiguous violation. Record a required missing check as accepted work,
+not a runnable gate; do not require a universal architecture validator.
 
 ## 4. Foundation Dev Path decision
 

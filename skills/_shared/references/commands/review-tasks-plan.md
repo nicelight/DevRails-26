@@ -129,6 +129,9 @@ Cover:
      Reject when execution would have to invent a material boundary; do not
      require slices from an accepted architecture that uses another primary
      change unit.
+   - reject when an applicable linked architecture rule loses its existing
+     mechanical gate or required runtime reproducibility proof; require neither
+     without canonical evidence.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
      context and owner; `ready` is valid iff every dependency is `done` and no

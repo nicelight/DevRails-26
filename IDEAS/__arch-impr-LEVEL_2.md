@@ -1,137 +1,100 @@
-# Agentic-first архитектура DevRails — второй слой
+# Agentic-first architecture — LEVEL 2
 
-## Предпосылка
+## Статус
 
-Второй слой предполагает, что KISS-версия уже реализована:
+Implemented in canonical runtime commands, deployed-surface regression checks,
+and project documentation.
 
-* current architecture отделена от accepted target;
-* ownership и authority boundaries описываются в существующих canonical artifacts;
-* capability slices используются как эвристика, а не обязательный pattern;
-* target architecture наследуется последующими design skills;
-* новые registries, task fields и workflow-сущности не создаются.
+## Scope
 
-## Цель второго слоя
+Этот файл фиксирует реализованное усиление архитектурного runtime-контракта.
 
-Сделать принятую архитектуру не только понятной на этапе design, но и устойчиво сохраняемой при планировании, реализации и проверке изменений.
+Уже реализованные direct task links, fresh-agent legibility, наследование
+accepted architecture и invalidation через существующий `Planning Revision`
+не входят в этот change set.
 
-Agent должен получать ровно ту часть архитектурного контекста, которая относится к текущей задаче, и не должен заново исследовать или переосмысливать уже принятые boundaries.
+Цель этого слоя — не позволить реализации получить функциональный
+`PASS`, если задача выполнена через нарушение применимой accepted architecture.
 
-## 1. Architecture-aware handoff
+## 1. Point-of-use boundary protection в `/exe`
 
-Связанные с задачей ownership, public boundaries, forbidden bypasses и verification rules должны доходить до executor через существующие direct canonical links.
+Когда direct task-linked specs задают ownership или module/slice boundaries,
+`/exe` должен оценивать выбранную implementation tactic относительно этих
+правил.
 
-Архитектурные правила не копируются в feature и task без необходимости. Истина остаётся в owning canonical artifact, а task содержит только минимальный task-relevant маршрут к ней.
+Архитектурным расширением считаются необходимость или фактическая попытка:
 
-Главный критерий:
+* изменить state вне принятого write owner;
+* обойти public boundary или обратиться напрямую к чужому storage;
+* создать альтернативный command/write path или второй source of truth;
+* создать новый cross-module contract;
+* изменить accepted dependency direction;
+* перенести business orchestration в другой owner, transport handler, generic
+  helper или composition root.
 
-> Fresh agent должен понять архитектурное место изменения без broad repository scan.
+Если работа укладывается в accepted target, `/exe` продолжает обычное
+task-scoped выполнение. Локальное расхождение current implementation с target,
+не меняющее решение задачи, фиксируется как evidence.
 
-## 2. Fresh-agent legibility
+Если выполнить задачу можно только изменив accepted ownership, public boundary,
+source of truth, orchestration owner или dependency direction, `/exe` не
+маскирует это как implementation tactic: он останавливается и использует
+существующий handoff в `/spec-design`.
 
-Agentic-first архитектура должна оцениваться не только по логической корректности, но и по тому, насколько легко новый агент способен определить:
+Проверка ограничена direct task links и фактическим change surface. Broad
+repository architecture audit не требуется.
 
-* где находится owning module;
-* кто владеет затронутым state или invariant;
-* через какую boundary разрешено взаимодействие;
-* какие обходы запрещены;
-* каким способом проверить результат.
+## 2. Architecture-aware `/verify`
 
-Если для ответа на эти вопросы требуется читать большую часть системы, архитектура или её документация недостаточно agent-legible.
+Когда для задачи применимы linked architecture/boundary rules, функционального
+outcome недостаточно для `VERDICT: PASS`. Verifier должен также подтвердить,
+что результат достигнут разрешённым путём:
 
-## 3. Point-of-use boundary protection
-
-Во время реализации агент должен замечать случаи, когда локальная задача фактически требует:
-
-* изменения чужого write authority;
-* обхода public boundary;
-* создания нового cross-module contract;
-* переноса orchestration между modules;
-* появления второго source of truth;
-* изменения принятого dependency direction.
-
-Такое расширение не должно скрываться внутри implementation tactic. Оно возвращается к design owner как архитектурное изменение.
-
-## 4. Architecture-aware verification
-
-Успешный functional outcome не должен считаться достаточным, если он достигнут через нарушение принятой architecture boundary.
-
-Применимые проверки должны учитывать не только результат, но и допустимый путь его достижения:
-
-* state изменён правильным owner;
-* соседний module использован через public boundary;
+* state изменяет принятый owner;
+* соседний module используется через public boundary;
 * не появился альтернативный command/write path;
-* не создан скрытый второй источник истины;
-* composition root не получил business responsibility.
+* не появился второй source of truth;
+* composition root, transport handler или generic helper не получили business
+  responsibility.
 
-Это остаётся task-scoped проверкой, а не полным architecture audit.
+Это task-scoped проверка actual change surface и прямых canonical rules, а не
+полный architecture audit.
 
-## 5. Selective mechanical enforcement
+Наблюдаемое нарушение применимой accepted rule является implementation
+`FAIL`. Отсутствующая, противоречивая или неоднозначная canonical rule остаётся
+`NEEDS-CLARIFICATION` с существующим design repair route.
 
-Документация и review остаются основным механизмом.
+## 3. Selective mechanical enforcement
 
-Стабильные и критичные architecture rules могут получать project-native mechanical checks, когда нарушение:
+Стабильная critical architecture rule может ссылаться на project-native check
+через существующие `AD-* Verification`, task `gates` или
+`verification_targets`, когда нарушение:
 
-* повторяется;
-* имеет высокий blast radius;
-* связано с security или safety;
-* дёшево и однозначно определяется.
+* повторяется или имеет высокий blast radius;
+* связано с security/safety; либо
+* дёшево и однозначно обнаруживается.
 
-Возможные кандидаты:
+Возможные примеры: запрещённое import direction, direct access к чужому
+storage, обход authorization boundary или business logic в composition root.
 
-* запрещённые import directions;
-* direct access к чужому storage;
-* обход authorization boundary;
-* business logic в composition root;
-* несколько write paths для одного invariant;
-* нарушение public contract.
+DevRails не создаёт универсальный architecture validator и не требует
+mechanical check для каждой boundary.
 
-DevRails не требует универсального architecture validator. Mechanical enforcement остаётся свойством конкретного target-проекта.
+## 4. Reproducible proof для runtime-sensitive задач
 
-## 6. Reproducible proof path
-
-Для runtime-sensitive проектов cheap proof path может включать не только build и test, но также минимальные условия воспроизводимости:
+Если обычного Foundation smoke path недостаточно, owning spec или task
+verification может требовать минимальный воспроизводимый flow:
 
 * известное начальное состояние;
 * безопасный повторный запуск;
 * наблюдаемый результат;
-* отсутствие влияния предыдущих runs.
+* изоляцию или cleanup, исключающие влияние предыдущих runs.
 
-Это усиливается только там, где обычного Foundation smoke path недостаточно. Простые CLI, libraries и stateless applications не получают дополнительный runtime process.
+Это применяется только при подтверждённом runtime/state risk. Простые CLI,
+libraries и stateless applications не получают дополнительный runtime process.
 
-## 7. Architecture drift propagation
+## Ограничения реализации
 
-Различие между current implementation и accepted target должно сохраняться на всём пути разработки.
-
-Локальный drift может быть зафиксирован как evidence, если он не влияет на решение задачи.
-
-Material drift, меняющий ownership, public boundary, source of truth или dependency direction, возвращает работу к architecture design и делает зависящее от него planning устаревшим через существующий Planning Revision.
-
-Отдельная Architecture Revision или drift lifecycle не нужны.
-
-## 8. Evidence-driven усиление
-
-Второй слой не должен применяться одинаково ко всем проектам и задачам.
-
-Дополнительное architecture wording, проверки или runtime mechanisms оправданы только при наблюдаемой проблеме:
-
-* агент не находит место изменения;
-* ownership трактуется неоднозначно;
-* boundaries регулярно обходятся;
-* verification пропускает архитектурно неверное решение;
-* runtime result невозможно воспроизвести;
-* current implementation ошибочно принимается за target architecture.
-
-Local/simple flow должен оставаться практически неизменным.
-
-## Критерий успеха
-
-Второй слой успешен, если fresh agent способен:
-
-1. быстро определить owning boundary;
-2. получить только применимый architecture context;
-3. реализовать изменение без нарушения чужого authority;
-4. остановиться при material architecture expansion;
-5. доказать не только outcome, но и допустимость пути его достижения;
-6. отличить current implementation от accepted target.
-
-При этом DevRails не получает новую task model, module registry, обязательный validator или дополнительный runtime workflow.
+Этот слой не добавляет новую command, task field, registry, status, verdict,
+revision, validator или workflow step. Он уточняет существующие обязанности
+`/exe`, `/verify`, design verification rules и task-scoped handoff.

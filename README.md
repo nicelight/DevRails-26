@@ -78,6 +78,12 @@ util или composition root. Foundation и product task planning наследу
 `owning_slice` task field или автоматическое превращение code root в hard
 `write_boundary` не создаются.
 
+На execution boundary `/exe` применяет только task-linked architecture rules и
+останавливается, если tactic требует изменить accepted ownership или boundary.
+`/verify` не даёт `PASS` функционально верному обходу: явное нарушение —
+`FAIL`, а отсутствующее или неоднозначное canonical rule —
+`NEEDS-CLARIFICATION`. Repository-wide architecture audit не добавляется.
+
 `/spec-design` также принимает явное Foundation Dev Path decision. Если
 executable baseline нужен, `/foundation-to-tasks` создаёт минимальную `FT-000`
 queue и final gate. Product tasks нельзя генерировать до закрытия этого gate.

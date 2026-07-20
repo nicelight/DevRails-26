@@ -127,6 +127,9 @@ Rules:
 - update Architecture Spine `AD-*` under the same KISS and evidence rules as
   `/spec-design` when shared-boundary, contract, state/data, runtime, security,
   or strict pressure requires executable global rules;
+- for evidenced runtime/state sensitivity, put any required initial-state,
+  safe-rerun, observable-result, and cleanup/isolation proof in the owning
+  canonical spec; do not add it to simple/stateless features;
 - when feature design durably changes an active global `AD-*` or another global
   rule in a way that can change downstream planning, increment Global Backbone
   `Planning Revision` exactly once under `/spec-design` rules; otherwise preserve

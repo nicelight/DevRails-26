@@ -505,6 +505,13 @@ feature не превращается автоматически в slice, а о
 per-file ownership не создаются. Общая БД не означает shared business
 ownership: каждый mutable invariant/transition сохраняет одного write owner.
 
+`AD-* Verification` называет project-native mechanical check только для
+повторяемого, high-blast/security-sensitive или дешёво однозначного нарушения.
+Несуществующая команда не становится gate. Для подтверждённого runtime/state
+risk owning verification spec может дополнительно фиксировать initial state,
+safe rerun, observable result и cleanup/isolation; simple/stateless flow этого
+процесса не получает.
+
 ### `spec-index.md`
 
 Это pure registry:
@@ -658,6 +665,12 @@ handler, generic util/shared helper или composition root; task planning не
 подходящего owner. Поле `owning_slice` не добавляется, а slice code root не
 копируется автоматически в hard `write_boundary`.
 
+Применимый существующий architecture check доходит до task через обычные
+`gates` или `verification_targets`. Если accepted rule требует ещё не созданный
+check, task planning учитывает его как текущую работу, но не публикует
+несуществующую command. То же правило действует для task-scoped reproducible
+runtime proof.
+
 ### JSON-only registry
 
 Единственный durable task model:
@@ -769,7 +782,7 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 | `/review-tasks-plan` | schema/coverage/slicing/design/execution readiness одной feature | не исправляет planning surface и не меняет lifecycle |
 | `mb-lint` | structural/mechanical Memory Bank consistency | не оценивает tier/status-dependent protocol, closure evidence или lifecycle eligibility |
 | `/mb-doctor` | deterministic executable-readiness поверх lint, включая protocol/evidence consistency | не заменяет reviews/verification и не меняет task status |
-| `/verify` | task-scoped functional outcome и evidence | не проверяет всю feature, не чинит implementation/specs |
+| `/verify` | task-scoped functional outcome, applicable linked architecture path и evidence | не проверяет всю feature, не чинит implementation/specs |
 | `/red-verify` | adversarial semantic correctness | не заменяет functional PASS и не закрывает scheduler task |
 
 Оба review skills требуют fresh context или отдельную fresh session и возвращают
@@ -893,6 +906,14 @@ Verification report отдельно показывает `reused execute eviden
 checks` и `new targeted probes`. Оптимизируется повтор команд, а не ownership
 или полнота functional verification.
 
+Для применимых linked architecture rules `/verify PASS` требует не только
+functional outcome, но и разрешённый путь: правильного state owner, public
+boundary, отсутствие forbidden write path/second source of truth и business
+responsibility в запрещённом linked rule техническом месте, включая transport,
+generic helper или composition root. Наблюдаемое нарушение даёт `FAIL`;
+отсутствующее или неоднозначное canonical правило — `NEEDS-CLARIFICATION`.
+Это не full architecture audit.
+
 ### Manual mode
 
 Manual mode означает явный top-level owner, а не ручное написание кода.
@@ -904,6 +925,12 @@ implementation write записывает `ready -> in_progress`. Для runnabl
 task `/exe` сначала делает point-of-use `planned -> ready`; иначе status не
 меняется. Attempt не хранит owner, invocation basis или mode и не даёт closure
 authority.
+
+Если direct task links задают architecture boundaries, point-of-use preflight
+также проверяет write owner, public boundary, source of truth, dependency
+direction и допустимое место orchestration. Проверка ограничена actual change
+surface. Pre-existing current drift может остаться evidence, но необходимость
+изменить accepted target останавливает task и возвращает её в `/spec-design`.
 
 - T0/T1 `/exe` может закрыть task только если current agent — explicit
   manual top-level closure owner, scope остался local, не возник T2/T3 trigger,

@@ -569,13 +569,16 @@ try {
     const foundationToTasksSkill = readTarget(`${runtimeRoot}/foundation-to-tasks/SKILL.md`);
     const featureToTasksSkill = readTarget(`${runtimeRoot}/feature-to-tasks/SKILL.md`);
     const reviewTasksPlanSkill = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
+    const verifySkill = readTarget(`${runtimeRoot}/verify/SKILL.md`);
     const normalizedAutonomous = normalizeProse(autonomousSkill);
+    const normalizedExe = normalizeProse(exeSkill);
     const normalizedMapCodebase = normalizeProse(mapCodebaseSkill);
     const normalizedSpecAuto = normalizeProse(specAutoSkill);
     const normalizedSpecDesign = normalizeProse(specDesignSkill);
     const normalizedFoundationToTasks = normalizeProse(foundationToTasksSkill);
     const normalizedFeatureToTasks = normalizeProse(featureToTasksSkill);
     const normalizedReviewTasksPlan = normalizeProse(reviewTasksPlanSkill);
+    const normalizedVerify = normalizeProse(verifySkill);
     assert(
       autonomousSkill.includes('return `HALT_POLICY_VIOLATION` in the command\nresponse only')
         && autonomousSkill.includes('leave any existing\n`.protocols/AUTONOMOUS-RUN/*` untouched')
@@ -743,6 +746,69 @@ try {
           'do not require slices from an accepted architecture that uses another primary change unit',
         ),
       `${runtimeRoot}/review-tasks-plan does not conditionally review slice legibility.`,
+    );
+    assert(
+      normalizedSpecDesign.includes(
+        'name an existing project-native mechanical check only for a recurring, high-blast-radius, security/safety, or cheap unambiguous violation',
+      )
+        && normalizedSpecDesign.includes(
+          'Record a required missing check as accepted work, not a runnable gate; do not require a universal architecture validator.',
+        )
+        && normalizedSpecDesign.includes(
+          'define known initial state, safe rerun, observable result, and cleanup or isolation; do not add this process to simple/stateless projects.',
+        )
+        && normalizedSpecAuto.includes(
+          'put any required initial-state, safe-rerun, observable-result, and cleanup/isolation proof in the owning canonical spec; do not add it to simple/stateless features;',
+        ),
+      `${runtimeRoot} design skills do not keep architecture enforcement selective and runtime proof evidence-driven.`,
+    );
+    assert(
+      normalizedFeatureToTasks.includes(
+        'carry an applicable existing project-native architecture check through `gates` or `verification_targets`',
+        )
+        && normalizedFeatureToTasks.includes(
+          'plan that accepted work instead of emitting a nonexistent command',
+        )
+        && normalizedFeatureToTasks.includes(
+          'when a linked runtime/state rule requires reproducibility, carry its known initial state, safe rerun, observable result, and cleanup/isolation proof',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'reject when an applicable linked architecture rule loses its existing mechanical gate or required runtime reproducibility proof; require neither without canonical evidence.',
+        ),
+      `${runtimeRoot} task planning does not preserve applicable architecture proof without inventing gates.`,
+    );
+    assert(
+      normalizedExe.includes(
+        'the tactic keeps state changes and cross-module orchestration with their accepted owners, uses required public boundaries, preserves source-of-truth and dependency direction, creates no unaccepted cross-module contract or forbidden command/write bypass',
+      )
+        && normalizedExe.includes(
+          'Limit architecture checks to direct task links and the actual change surface; do not turn task execution into a broad repository architecture audit.',
+        )
+        && normalizedExe.includes(
+          'Current implementation drift that the task can handle inside its accepted target and semantic boundary is evidence, not a new design choice.',
+        )
+        && normalizedExe.includes(
+          'If work requires changing accepted write authority, public boundary, source of truth, orchestration owner, or dependency direction, route it to `/spec-design`.',
+        ),
+      `${runtimeRoot}/exe does not enforce accepted boundaries at point of use.`,
+    );
+    assert(
+      normalizedVerify.includes(
+        '`PASS` requires both the functional outcome and the allowed architectural path',
+      )
+        && normalizedVerify.includes(
+          'accepted owners change state and retain cross-module orchestration, required public boundaries are used, no unaccepted cross-module contract, forbidden command/write path, or second source of truth appeared',
+        )
+        && normalizedVerify.includes(
+          'An observed violation uses `VERDICT: FAIL`; missing, conflicting, or ambiguous canonical coverage uses `VERDICT: NEEDS-CLARIFICATION`.',
+        )
+        && normalizedVerify.includes(
+          'Unrelated pre-existing drift is evidence unless it invalidates the task outcome or proof.',
+        )
+        && normalizedVerify.includes(
+          'Do not introduce this proof process without task-scoped normative evidence.',
+        ),
+      `${runtimeRoot}/verify does not require the allowed task-scoped architectural path or preserve verdict semantics.`,
     );
     assert(
       normalizedAutonomous.includes(
