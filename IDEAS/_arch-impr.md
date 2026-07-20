@@ -2,65 +2,47 @@
 
 ## Статус и scope
 
-Этот документ описывает рекомендуемый подход к архитектуре target-проектов,
-которые разрабатываются и проверяются AI-агентами через DevRails.
+Этот документ описывает архитектурную эвристику для target-проектов, которые
+разрабатываются и проверяются AI-агентами через DevRails. Это не новый runtime
+contract и не новая сущность Memory Bank.
 
 Предложение не вводит:
 
-- новый workflow, status model, registry или task schema;
+- новый workflow, status, task field, schema или registry;
 - новый обязательный artifact или file family;
 - отдельный Agent Harness Contract;
 - обязательный architecture validator;
-- изменения scheduler, lifecycle или protocol family.
-
-Цель — помочь агенту быстро найти место изменения, понять его полномочия и
-доказать результат без чтения и перестройки всей системы.
-
-`Agentic-first architecture` относится к способу разработки проекта. Продукт не
-обязан содержать AI-функции. Если он использует модели или AI-провайдеров, их
-trust boundary проектируется как отдельная применимая concern.
+- изменения scheduler, lifecycle, protocol family или Foundation task model.
 
 DevRails уже является workflow harness: skills, Memory Bank, JSON tasks,
-protocols, verification и scheduler. Target-проекту нужен только минимальный
-executable path, уже принадлежащий Foundation Dev Path.
+protocols, verification и scheduler. Идея касается только того, как сделать
+архитектуру target-проекта легче для локального изменения и проверки агентом.
 
 ## Главный принцип
 
 Agentic-first архитектура должна обеспечивать три свойства:
 
-1. **Change locality** — изменение находится в небольшой предсказуемой части
-   системы.
+1. **Change locality** — место изменения находится без broad repository scan.
 2. **Authority clarity** — ясно, кто владеет invariant/state transition, через
    какую boundary разрешено изменение и какие обходы запрещены.
-3. **Cheap proof path** — существует самый дешёвый достоверный
-   project-native способ доказать outcome.
+3. **Cheap proof path** — существует минимальный достоверный project-native
+   способ доказать outcome.
 
-Dependency direction, source of truth, composition root и documentation важны
-постольку, поскольку поддерживают эти свойства.
+Названия паттернов, структура каталогов, dependency direction, source of truth
+и composition root важны только постольку, поскольку поддерживают эти свойства.
 
-## Рекомендуемый default
+## Capability slices как эвристика, а не обязательная архитектура
 
-Для application-shaped greenfield DevRails первым рассматривает и, если evidence
-не указывает обратное, рекомендует:
+Для application-shaped greenfield агент может первым рассмотреть и рекомендовать
+один deployable modular monolith с capability/vertical slices, узкими module
+contracts, явным write ownership и thin composition root.
 
-- один deployable modular monolith;
-- capability/vertical slices как primary change units;
-- узкие application/module contracts;
-- общую БД с явным write ownership либо отдельные storage boundaries, если они
-  уже нужны;
-- thin composition root;
-- verification вокруг observable capability outcome.
+Это рекомендация, а не принятое решение и не automatic default. Материальный
+выбор architecture style, module/runtime boundaries, public contracts,
+state/storage, security, compatibility или deployment подтверждает оператор.
+В unattended flow отсутствие принятого решения остаётся обычным design blocker.
 
-Это рекомендация, а не принятое решение. Агент даёт один сильный
-evidence-backed вариант; альтернативы показывает только при реальной
-материальной развилке. Решения, меняющие system shape, ownership, public
-contracts, storage, security, compatibility или deployment, подтверждает
-оператор.
-
-### Когда primary change unit должен быть другим
-
-Capability slice не является универсальным правилом. Другой unit естественнее,
-например, для:
+Другой primary change unit естественнее, например, для:
 
 - library/package — public module или package API;
 - CLI — command или command family;
@@ -69,478 +51,273 @@ Capability slice не является универсальным правило
 - plugin ecosystem — host contract и plugin capability;
 - protocol implementation — protocol layer или state machine;
 - устойчивого brownfield — существующий module/bounded context;
-- independently deployed system — service, если independent deployment,
+- independently deployed system — service, когда independent deployment,
   scaling, availability или ownership уже реальны.
 
-Агент называет выбранный unit и объясняет, почему он лучше локализует текущие
-изменения и verification. Гипотетический будущий scale, reuse или integration
-не является достаточной причиной.
+Гипотетический будущий scale, reuse или integration не являются достаточной
+причиной для усложнения архитектуры.
 
-## Ownership решения
-
-Агент самостоятельно:
-
-- исследует codebase и runtime baseline;
-- формирует и рекомендует архитектурный вариант;
-- объясняет trade-offs, риски и обратимость;
-- выбирает внутреннюю раскладку и implementation tactic внутри принятых границ;
-- выбирает минимальную useful artifact shape.
-
-Оператор подтверждает material choices, влияющие на architecture style, write
-authority, module/runtime boundaries, public contracts, state/storage,
-security/safety, compatibility, deployment и irreversible behavior.
-
-## Минимальный Agentic-first Architecture Contract
-
-`/spec-design` записывает в существующий architecture artifact:
-
-```markdown
-## Agentic-first Architecture Contract
-
-- Primary change unit and code location:
-- Ownership and write authority:
-- Public boundary and forbidden bypasses:
-- Dependency direction:
-- Composition/runtime entrypoint:
-- Verification path:
-```
-
-Это не новый файл и не новый status. Для `local_simple_backbone` достаточно
-шести коротких строк. Для standard/strict проекта строки ссылаются на
-существующие subject-based specs.
-
-### Смысл полей
-
-- `Primary change unit and code location` — conceptual unit и основной code
-  root, с которого агент начинает чтение.
-- `Ownership and write authority` — принадлежащие unit invariants, transitions
-  и commands. Один mutable invariant/transition имеет одного write authority.
-- `Public boundary and forbidden bypasses` — минимальный разрешённый contract и
-  самые опасные direct обходы.
-- `Dependency direction` — реальные значимые module edges, а не декоративная
-  линейная layer formula.
-- `Composition/runtime entrypoint` — место wiring и, когда применимо, команда
-  запуска или package entrypoint.
-- `Verification path` — focused test, contract test, runtime smoke, CLI
-  invocation, browser/API flow или другое минимальное credible evidence.
-
-Один write authority не означает одну физическую representation данных. Audit
-log, cache, projection или materialized view могут существовать, но не получают
-command/write authority автоматически.
-
-## Feature, slice и task — разные сущности
+## Feature, module/slice и task — разные понятия
 
 ```text
-Feature = независимо ценный product outcome.
-Slice/module = долгоживущая ownership и authority boundary.
-Task = cohesive independently verifiable изменение.
+Feature      = независимо ценный product outcome.
+Module/slice = долгоживущая code/authority boundary, если она реально есть.
+Task         = cohesive independently verifiable изменение.
 ```
 
 Следствия:
 
-- feature может затрагивать несколько slices;
-- один slice обычно обслуживает несколько features;
-- task обычно имеет один primary owning slice/module;
-- cross-slice task допустима при cohesive outcome и ясном orchestration owner;
-- technical module, migration или integration не становятся product feature без
-  собственного observable outcome.
+- feature может затрагивать несколько modules;
+- один module может обслуживать несколько features;
+- task не создаётся по числу файлов, слоёв или modules;
+- cross-module task допустима, если outcome остаётся cohesive, boundaries ясны,
+  а orchestration не требует нового material decision;
+- migration, integration, security concern или technical module сами по себе не
+  становятся product feature без самостоятельного observable outcome.
 
-Нельзя механически создавать один slice на каждый `FT-*`.
+`Slice` здесь — conceptual architecture term. DevRails не получает
+`.memory-bank/slices/`, slice registry, slice status, `owning_slice` task field
+или правило «один `FT-*` = один slice».
 
-## Capability slices
+## Agentic-first design lens
 
-Slice выражает связную пользовательскую или операционную capability.
+При проектировании или review полезно проверить шесть вопросов:
 
-Хорошие примеры: `catalog`, `checkout-payment`, `delivery-tracking`,
-`photo-intake`, `plant-operations`.
+1. Какова естественная primary change unit и где её code root?
+2. Кто владеет изменяемыми invariants, transitions и writes?
+3. Через какую public boundary разрешено взаимодействие и какие bypasses
+   запрещены?
+4. Какие dependency directions действительно существенны?
+5. Где composition/runtime entrypoint?
+6. Какой минимальный credible verification path доказывает outcome?
 
-Плохие primary slices: `controllers`, `repositories`, `services`, `utils`,
-`database`.
+Это coverage lens, а не обязательный шестистрочный persisted contract, table или
+checklist artifact. Ответы фиксируются только там, где уже живёт соответствующая
+истина:
 
-Технические роли могут существовать внутри slice или в минимальном shared
-substrate, но не становятся primary delivery units.
+- global/shared executable rule — в Architecture Spine;
+- responsibility, write scope или call boundary — в Boundary Map или owning
+  canonical contract;
+- detailed API/state/data/security behavior — в subject-based spec;
+- build/start/entrypoint/smoke baseline — в Foundation Dev Path;
+- task-local scope, links, constraints и proof — в existing single-card task.
 
-### Optional slice table
+Для `local_simple_backbone` не требуется заполнять отдельный architecture block,
+создавать slice table, ADR или дополнительные specs. Достаточно уже существующего
+minimal backbone и evidence-backed `not_applicable` rationales.
 
-Для standard проекта с несколькими значимыми boundaries достаточно:
+## Практические архитектурные правила
 
-```markdown
-| Module / Slice | Code root | Owns / must not own | Public boundary | Allowed dependencies | Verification |
-|---|---|---|---|---|---|
-```
+### Locality и boundaries
 
-Таблица нужна только когда ownership влияет на несколько features, shared state
-или cross-module calls. Local/simple проект обходится шестью строками общего
-контракта.
-
-### Внутренняя структура
-
-Внутри slice могут существовать conceptual роли `presentation`, `application`,
-`domain`, `infrastructure`. Это не обязательные каталоги, interfaces или
-factories.
-
-Фактические правила важнее названий:
-
-- presentation вызывает application boundary;
-- application использует domain rules и нужные ports;
-- infrastructure реализует adapters;
-- framework/transport details не определяют business rules;
-- composition root видит concrete implementations только для wiring.
-
-## Связи между slices
-
-### Public boundary
-
-Slice не импортирует внутренние service, repository, model или helper соседнего
-slice. Вызов проходит через небольшой owning application/module contract.
-Обычной функции, interface или facade часто достаточно.
-
-Не нужно автоматически вводить service bus, mediator, event framework, plugin
-registry или сложную ports system.
+- Начинай изменение в owning module/capability, когда такой boundary доказан.
+- Не импортируй внутренние service, repository, model или helper соседнего
+  module вместо его public boundary.
+- Не вводи service bus, mediator, event framework, plugin registry или сложную
+  ports system без текущей необходимости.
+- Внутренние роли `presentation`, `application`, `domain`, `infrastructure`
+  допустимы как объяснение ответственности, но не требуют отдельных каталогов,
+  interfaces или factories.
 
 ### Write authority
 
-- соседний slice не изменяет чужое state или таблицы напрямую;
-- behavior-sensitive read предпочтительно идёт через owning boundary;
-- direct read допустим, если он явно принят и не копирует чужие business rules;
-- read-only projection не получает write authority;
-- shared database не означает shared business ownership.
+- Один mutable invariant/transition имеет одного write authority.
+- Shared database не означает shared business ownership.
+- Cache, audit log, projection или materialized view не получают command/write
+  authority автоматически.
+- Direct read допустим только когда он принят и не копирует чужие business rules.
 
-### Cross-slice orchestration
+### Orchestration и composition root
 
-Один use case имеет одного orchestration owner: owning application use case,
-реальный workflow slice или существующий application composition boundary.
+- Один cross-module use case имеет одного orchestration owner.
+- Orchestration не должна оседать в HTTP route, UI handler, generic utility или
+  composition root.
+- Composition root отвечает за settings, adapters, wiring, lifecycle, start и
+  shutdown, но не за business rules или второй source of truth.
+- Shared-код появляется после доказанного reuse либо для конкретного
+  cross-cutting invariant, а не ради hypothetical reuse.
 
-Оркестрация не должна оседать в HTTP routes, UI handlers, generic utils или
-composition root. Третья abstraction допустима только как реальная capability
-или shared contract, а не для маскировки dependency cycle.
+### Verification
 
-Transaction, retry, idempotency, rollback и eventual consistency раскрываются
-только при реальном cross-slice write, external side effect, event/queue,
-migration, irreversible operation или partial-failure risk.
+Каждая значимая change unit должна иметь минимальный credible proof path:
+focused test, contract/integration check, runtime smoke, CLI invocation,
+browser/API flow или другой project-native evidence.
 
-## Thin composition root
-
-Composition root отвечает за settings, adapters, wiring, routes/handlers,
-lifecycle hooks, start и shutdown.
-
-Он не должен содержать business rules, state transitions, product data
-transformations, persistence semantics, feature fallbacks или параллельный
-source of truth.
-
-Если wiring растёт, его можно группировать небольшими module factories без
-автоматического DI framework или plugin registry.
-
-## Shared-код
-
-> Начинай в owning slice. Выноси в shared после доказанного повторного
-> использования или когда единый механизм защищает конкретный cross-cutting
-> invariant.
-
-В shared обычно допустимы runtime primitives, bootstrap helpers,
-serialization/error primitives, auth/security primitives, transport-neutral
-contracts и UI primitives без business meaning.
-
-Не следует заранее выносить business rules одного slice, feature orchestration,
-специфичные state machines, generic repositories/services и models ради
-потенциального reuse.
-
-## Presentation contours
-
-Web, Admin UI, bot, CLI и API реализуют presentation boundaries одной
-capability, а не создают отдельные domain models или sources of truth.
-
-Platform-specific outcome проверяется в соответствующей среде. Browser smoke не
-доказывает Telegram, native, embedded или hardware behavior, если различие
-materially влияет на результат.
-
-## AI product boundary
-
-Model output по умолчанию является untrusted candidate input, а не domain fact,
-command или authorization decision.
-
-Применимый путь может выглядеть так:
-
-```text
-authorized input
-  -> provider adapter
-  -> typed candidate
-  -> validation / safety guard
-  -> owning domain command
-  -> authoritative state
-```
-
-Не каждый проект требует всех шагов. Но raw model output, chat, UI presentation,
-audit log и hidden reasoning не должны молча становиться authority.
-
-Development-agent permissions относятся к runtime policy DevRails. Application
-architecture и task `write_boundary` не заменяют sandbox, network, secrets или
-production permissions. Новый capability profile здесь не вводится.
-
-## Verification и mechanical enforcement
-
-Каждый значимый primary change unit имеет минимальный credible verification
-path. Агент выбирает только применимые unit, integration, contract, e2e или
-platform checks пропорционально риску.
-
-Documentation и review являются default. Project-native lint, structural test,
-import rule или contract check добавляется только когда правило:
-
-- стабильное;
-- важное или high-blast-radius;
-- дешёво и достаточно точно проверяется;
-- уже повторно нарушалось либо относится к security/safety.
-
-```text
-Hypothetical one-time concern -> documentation/review
-Repeated forbidden imports   -> project-native import lint
-Critical foreign write       -> structural/integration test
-Subjective organization      -> no validator
-```
-
+Mechanical enforcement добавляется только когда правило стабильно, важно,
+дёшево проверяется и уже повторно нарушалось либо защищает security/safety.
 DevRails не вводит универсальный architecture validator и не добавляет
 target-language analysis в `mb-lint` или `/mb-doctor`.
 
-## Foundation и executable baseline
+### AI product boundary
 
-Отдельный Agent Harness Contract не нужен. Existing Foundation Dev Path доказывает
-только minimum baseline, без которого feature work нельзя безопасно начать:
+Если target-продукт использует модели или AI-провайдеров, model output по
+умолчанию является untrusted candidate input, а не domain fact, command или
+authorization decision. Эта concern раскрывается только когда она применима и
+не создаёт новый DevRails capability profile.
 
-- build/invocation command;
-- primary entrypoint;
-- start path, если нужен runtime;
-- минимальный smoke/test;
-- storage/test seam, только если применим.
-
-Правило:
-
-> Provide the cheapest reproducible path that proves the executable baseline.
-
-Примеры:
-
-| Project shape | Достаточный proof |
-|---|---|
-| Library | build/typecheck + focused test |
-| CLI | build + реальная command invocation |
-| Stateless API | start + primary endpoint smoke |
-| Web UI | start + один browser/HTTP acceptance path |
-| DB application | minimal fixture + persistence proof |
-| External integration | local fake/sandbox либо explicit checkpoint |
-
-Seed, reset, isolated ports/DB, observability и teardown добавляются только
-когда без них повторный запуск недостоверен или autonomous/parallel work реально
-конфликтует.
-
-Foundation не реализует product slices и future-ready platform abstractions.
-Его gates и scheduler policy остаются в `foundation.md` и workflow artifacts, а
-не в product Architecture Spine.
-
-## Brownfield: current и target
+## Brownfield: current evidence и accepted target
 
 Production code является сильным evidence текущего behavior, но не
-автоматически нормативным target.
-
-Нужно разделять:
+автоматически нормативным target. Нужно различать две роли источников.
 
 ```text
-Normative authority:
-accepted operator decisions -> accepted target / ADR -> canonical specs
--> clarified product sources -> labelled assumptions
+Normative target authority:
+Constitution + explicit accepted operator decisions
+  -> accepted target / ADR / canonical specs
+  -> clarified product sources
+  -> labelled assumptions
 
 As-is evidence:
-runtime observations -> code/config/schema/migrations -> tests/CI
--> mapped baseline -> descriptive docs
+runtime observations
+  -> code / config / schemas / migrations
+  -> tests / CI
+  -> mapped baseline / descriptive docs
 ```
 
-При значимом конфликте используется optional block:
+As-is evidence устанавливает, что работает сейчас, и может доказать drift,
+constraint или migration need. Оно не отменяет принятый target только потому,
+что текущий код устроен иначе. И наоборот, target нельзя описывать как уже
+существующий runtime.
 
-```markdown
-## Architecture Drift
+При конфликте нужно зафиксировать current, accepted target и reconciliation
+route в существующем owning architecture/spec/ADR/blocker artifact. Отдельный
+обязательный `Architecture Drift` block не создаётся.
 
-- Current:
-- Accepted target:
-- Reconciliation route:
+`/map-codebase` остаётся владельцем только as-is baseline. Он может фиксировать
+наблюдаемые current change units, code roots, write paths, public boundaries,
+entrypoints и verification paths, но не рекомендует и не выбирает target
+architecture.
+
+## Что уже реализовано в DevRails
+
+| Concern | Existing owner |
+|---|---|
+| Global/shared executable architecture rules | `system-architecture.md#Architecture Spine` с `AD-*` |
+| Responsibility, calls, data/write ownership и forbidden bypasses | `contracts/boundary-map.md` и subject-based contracts |
+| Detailed architecture/API/state/data/security truth | canonical specs + optional ADR rationale |
+| Product outcome и applicable design composition | `Feature` + `spec_design_links` |
+| Task-local outcome, scope, links, constraints и proof | indexed single-card JSON task |
+| Existing-system facts | `/map-codebase` as-is baseline |
+| Build/start/entrypoint/smoke baseline | Foundation Dev Path |
+| Functional и semantic evidence | `/exe`, `/verify`, `/red-verify` |
+| Global design freshness after material change | `Planning Revision` + `REVIEWED_PLANNING_REVISION` |
+
+Эта таблица объясняет существующий ownership и не является новой registry.
+
+Из этого следуют ограничения идеи:
+
+- не создавать отдельный Agentic-first Architecture Contract;
+- не создавать slice/module artifact family или обязательную slice table;
+- не дублировать Foundation Minimal Work Path в Architecture Spine;
+- не копировать canonical contract bodies в feature или task;
+- не добавлять owner/boundary fields в task schema;
+- не менять task lifecycle для отражения architecture drift;
+- при material global target change использовать существующий Planning Revision
+  и полный reconciliation/review route.
+
+## Минимальный implementation scope
+
+### 1. `/spec-design` — точное разделение authority ролей
+
+Требуется одно узкое behavior change: заменить единую precedence ladder,
+где production code/brownfield baseline автоматически выше ADR/spec, на явное
+разделение:
+
+- as-is authority определяет current behavior;
+- normative target authority определяет accepted target;
+- конфликт требует accepted reconciliation decision, а не молчаливого выбора
+  current или target;
+- material target change использует существующий Planning Revision contract.
+
+Новые sections, statuses, files, matrices или validators для этого не нужны.
+
+### 2. `/map-codebase` — только wording clarification
+
+Можно кратко уточнить, что as-is mapping при наличии evidence фиксирует current
+change units/code roots, write authorities, public boundaries, runtime
+entrypoints и существующий proof path. Команда по-прежнему не выбирает target,
+не создаёт roadmap без PRD/delta и не принимает architecture decisions.
+
+### 3. `/spec-auto` — согласовать только authority wording
+
+Unattended feature design наследует принятый global target и не превращает
+production baseline в разрешение выбрать новый architecture style или write
+ownership. Остальные current `/spec-auto` contracts достаточны.
+
+Точный canonical change set:
+
+```text
+skills/_shared/references/commands/spec-design.md
+skills/_shared/references/commands/map-codebase.md
+skills/_shared/references/commands/spec-auto.md
 ```
 
-Если drift отсутствует или не влияет на scope, пустая секция не создаётся.
+## Что менять не нужно
 
-Нельзя объявлять workaround нормативным без решения, описывать target как уже
-работающий runtime, поддерживать два write authority для одного invariant или
-создавать третий competing path для обхода конфликта.
+Текущие contracts уже покрывают идею, поэтому изменения не требуются в:
 
-## Architecture Spine
+- `/prd-to-features` — Feature уже отделена от technical module/task;
+- `/feature-to-tasks` — cohesive outcome, direct canonical links, boundary
+  constraints, `touched_files`, `write_boundary` и verification context уже есть;
+- `/review-tasks-plan` — semantic slicing, applicable boundary/AD/contract links
+  и fresh-executor readiness уже проверяются;
+- `/foundation-to-tasks` — executable baseline и proof path уже принадлежат
+  Foundation;
+- `/exe` — preflight уже останавливает material architecture expansion,
+  contradictions и hard-boundary violation;
+- `/verify` — applicable linked architecture/contract rules уже входят в
+  task-scoped normative basis;
+- `/red-verify` — cross-boundary harm, responsibility drift и semantic bypass
+  уже допустимы как evidence-driven hostile hypotheses;
+- task schema, `mb-lint`, `/mb-doctor`, scheduler, lifecycle, protocol templates,
+  Foundation task model и installer.
 
-Существующая форма сохраняется:
+## Dogfood до дальнейшего расширения
 
-```markdown
-#### AD-NNN - <short decision>
-- Binds:
-- Prevents:
-- Rule:
-- Verification:
-- Source:
-```
+Проверить идею на трёх формах проекта:
 
-В Spine попадают только executable product-architecture rules: write authority,
-module/runtime boundaries, public contracts, AI trust, security/safety,
-compatibility, deployment и irreversible data behavior.
+- небольшое greenfield application;
+- brownfield repository с current/target drift;
+- CLI, library или firmware, где capability slice не является естественным
+  primary unit.
 
-Task lifecycle, Foundation gates, scheduler и DevRails workflow policy остаются
-в своих owning artifacts. ADR создаётся только при durable value.
+Наблюдать:
 
-## Adaptive depth
+1. нашёл ли fresh agent место изменения без broad scan;
+2. понял ли write authority и forbidden bypass;
+3. хватило ли existing task card и direct links;
+4. выбрал ли он дешёвый credible proof;
+5. не превратилась ли рекомендация modular monolith/slices в обязательную;
+6. не появились ли лишние specs, tables, questions или blockers.
 
-### Local/simple
-
-Достаточно общего шестистрочного контракта. Slice table, ADR и отдельные specs
-не создаются без потребности.
-
-### Standard
-
-Ожидаются meaningful slice boundaries, real dependency direction, thin
-composition root, write ownership и acceptance paths. Brownfield drift block
-добавляется только при реальном расхождении.
-
-### Strict/risky
-
-Раскрываются только применимые public contracts, state/data lifecycle,
-authorization/safety, AI trust, migrations, compatibility, runtime isolation,
-failure, retry, idempotency, audit и recovery semantics.
-
-Strict depth не означает больше обязательных files, gates или validators.
+Только повторяющаяся evidence-backed проблема может обосновать последующее
+wording в `/feature-to-tasks`, `/review-tasks-plan`, `/exe` или verification.
+Даже тогда сначала используется существующий artifact и field model.
 
 ## Anti-overengineering guardrails
 
 Подход не должен автоматически вводить:
 
 - microservices;
-- четыре слоя/каталога на каждый slice;
+- четыре слоя/каталога на каждый module;
 - interface/repository/factory для каждого class;
-- event bus, mediator или plugin registry;
-- events, queues, WebSocket/SSE или distributed transactions «на будущее»;
-- provider abstraction вне реальной external boundary;
-- отдельный read model без текущей потребности;
+- event bus, mediator, plugin registry, queue или distributed transaction;
+- отдельный read model или provider abstraction без текущей boundary;
 - generic abstractions без доказанного reuse;
-- новый harness contract или capability profile;
-- architecture workflow, registry, status или task fields;
-- mandatory validators;
-- пустые specs.
+- новые workflow, statuses, fields, registries, validators или artifact families;
+- пустые specs и обязательные architecture tables для local/simple work.
 
-Дополнительная сложность допускается только по текущему requirement, constraint,
-risk или доказанному повторению.
+## Критерий успеха
 
-## Влияние на skills
+Fresh agent, получив task/feature и direct links, должен без чтения всей системы
+понять:
 
-### P0 — первый этап
+- где находится естественное место изменения;
+- кто владеет затронутыми writes/invariants;
+- через какую boundary разрешено взаимодействие;
+- что запрещено расширять или считать authority;
+- каким минимальным project-native evidence проверяется outcome;
+- влияет ли current/target drift на задачу.
 
-`/spec-design`:
-
-- выбирает/recommends primary change unit;
-- использует modular monolith + capability slices как application default;
-- записывает шестистрочный contract;
-- создаёт slice table и drift block только при необходимости;
-- разделяет normative target и as-is evidence;
-- оставляет material decisions оператору.
-
-`/map-codebase` фиксирует current change units, code roots, write authorities,
-public boundaries, composition/runtime entrypoints и существующий verification
-path. Он не выбирает target architecture.
-
-`/spec-auto` наследует принятый global contract и не выбирает architecture или
-ownership заново.
-
-`/feature-to-tasks` без новых task fields:
-
-- определяет primary owning module;
-- добавляет direct task-relevant canonical links через existing fields;
-- фиксирует foreign-boundary constraints только когда они применимы;
-- сохраняет cohesive independently verifiable outcome.
-
-`/review-tasks-plan` добавляет один criterion:
-
-> Fresh executor должен по task card и direct links определить owning module,
-> разрешённую boundary, запрещённое expansion и verification path без broad
-> repository scan и без invention material design.
-
-### P1 — только после dogfood
-
-`/exe` на preflight подтверждает primary owner и останавливается при foreign
-state write, boundary bypass или material architecture expansion.
-
-`/verify` проверяет architecture rule только когда она относится к task outcome
-или linked spec.
-
-`/red-verify` может проверять direct foreign writes, duplicate authority,
-orchestration leakage и boundary bypass как optional hostile hypotheses.
-
-### Не менять сначала
-
-Идея не требует изменений в `/autopilot`, `/autonomous`, `/mb-sync`,
-`/mb-garden`, `/mb-doctor`, `mb-lint`, task schema/IDs/lifecycle, scheduler
-checkpoint model, protocol templates или Foundation task model.
-
-## Phased adoption
-
-### Phase 1
-
-Изменить contracts/documentation:
-
-```text
-IDEAS/_arch-impr.md
-spec-design.md
-map-codebase.md
-spec-auto.md
-feature-to-tasks.md
-review-tasks-plan.md
-```
-
-Опционально добавить одну узкую preflight/hypothesis формулировку в `exe.md` и
-`red-verify.md`.
-
-Scripts, schema, doctor и scheduler не менять.
-
-### Phase 2
-
-Провести dogfood на:
-
-- небольшом greenfield application;
-- brownfield repository;
-- CLI или library.
-
-Проверить:
-
-1. агент быстро нашёл primary change unit;
-2. правильно понял write authority;
-3. не обошёл соседний boundary;
-4. ему хватило direct task context;
-5. он дёшево доказал outcome;
-6. framework не создал лишние specs, questions или blockers.
-
-Только повторяющиеся evidence-backed проблемы становятся следующими framework
-changes.
-
-## Критерии успешности
-
-Fresh agent, получив task/feature и direct links, должен без чтения всего
-проекта ответить:
-
-1. Кто владеет изменением и где code root?
-2. Какие invariants/writes принадлежат owner?
-3. Что запрещено менять или считать authority?
-4. Через какой contract идёт взаимодействие?
-5. Где composition/runtime entrypoint?
-6. Какой минимальный evidence доказывает outcome?
-7. Есть ли current/target drift, влияющий на task?
-
-При этом система не должна платить за ясность новой task model, runtime
-workflow, mandatory validators, duplicated specs или лишними abstractions.
-
-## Итог
-
-> DevRails рекомендует архитектуру, в которой primary change unit локализован,
-> его полномочия и границы явны, а результат проверяется минимальным
-> project-native способом. Для обычных приложений default — modular monolith с
-> capability slices и thin composition root. Другой architecture style допустим,
-> если он лучше соответствует реальной природе проекта. Дополнительные specs,
-> runtime mechanisms и mechanical checks вводятся только по текущей
-> необходимости или подтверждённому риску.
+Это должно достигаться существующими DevRails artifacts и ownership, без второго
+архитектурного контракта и без расширения workflow machinery.
