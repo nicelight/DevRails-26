@@ -46,6 +46,9 @@ const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
 const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
 const ARCHITECTURE_DECISION_ANCHOR_RE = /^AD-[0-9]{3,}$/;
 const RETIRED_ARCHITECTURE_DECISION_RE = /\b(retired|replaced|superseded|deprecated)\b/i;
+const INDEX_ROUTER_EXEMPT_DIRS = new Set([
+  '.memory-bank/templates/protocols',
+]);
 const ARCHITECTURE_REF_PATH_RE =
   /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`),\]}]+/gi;
 const INDEX_TOP_LEVEL_KEYS = new Set(['version', 'tasks']);
@@ -486,7 +489,7 @@ function checkIndexRouters() {
     const mdCount = mdFiles.length;
 
     const relDir = normalizeRel(path.relative(ROOT, dir));
-    if (mdCount > 3 && !hasIndex) {
+    if (mdCount > 3 && !hasIndex && !INDEX_ROUTER_EXEMPT_DIRS.has(relDir)) {
       warnings.push(`${relDir}: has ${mdCount} md files but no index.md router`);
     }
 

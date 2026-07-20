@@ -260,9 +260,9 @@ checkout path является честным blocker; после успешно
 команду запускают повторно.
 
 Whole-file framework ownership задаётся только явными generator call sites:
-task schema, copied canonical workflows/roles, runtime scripts и другие
-canonical copied assets. Inline skeleton docs, project state и mixed routers
-после создания сохраняются; version-critical framework contract нельзя
+task schema, copied canonical workflows/roles/protocol templates, runtime
+scripts и другие canonical copied assets. Inline skeleton docs, project state
+и mixed routers после создания сохраняются; version-critical framework contract нельзя
 размещать только в seed-once файле. Installer sync не является runtime
 `/mb-sync` и не меняет task lifecycle, gates или handoffs.
 Итоговый installer report группирует фактические
@@ -302,6 +302,7 @@ Fresh bootstrap создаёт skeleton, но не roadmap. Основные art
   states/
   tasks/index.json
   tasks/plans/
+  templates/protocols/*.md
   testing/index.md
   testing/strategy.md
   workflows/{index,autonomy-policy,execute-loop,mb-sync,tier-policy}.md
@@ -762,6 +763,13 @@ T2/T3 требуют full protocol:
 
 T3 дополнительно использует `red-verification.md`. Substantive logs, reports и
 artifacts записываются в `.tasks/<TASK_ID>/`.
+
+Canonical shapes разворачиваются в
+`.memory-bank/templates/protocols/*.md`. Runtime skill читает только шаблон,
+нужный для создания отсутствующего protocol file. Уже заполненные
+`.protocols/<TASK_ID>/` являются task-owned resume state и не перезаписываются
+при framework sync; command и tier policy остаются lifecycle authority. Runtime
+`/mb-sync` не редактирует и не добавляет project router для template leaf.
 
 `/add-tests` работает только внутри существующей indexed task со статусом
 `in_progress`. Он выбирает narrowest credible test level, не создаёт synthetic

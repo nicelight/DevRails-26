@@ -54,6 +54,9 @@ status: active
   after its changes, it re-reads the links, indexes, RTM, lifecycle/spec state,
   and other reconciled surfaces it actually changed. It does not run full
   `node scripts/mb-lint.mjs` or `/mb-doctor`.
+- `.memory-bank/templates/protocols/*` is framework-owned installer state.
+  Runtime `/mb-sync` must not edit those files or add a project router/index for
+  that exact template leaf; filled `.protocols/<TASK_ID>/*` remains task-owned.
 - In scheduler flow, `/autonomous` or `/autopilot` is the sole owner of the
   authoritative post-sync `mb-lint` followed by `/mb-doctor --strict`, before
   promotion or success. In manual flow, the successful sync handoff names the
@@ -145,7 +148,9 @@ status: active
 
 ### 9) Index
 - [ ] `.memory-bank/index.md` содержит аннотированные ссылки на все новые/изменённые документы.
-- [ ] Router-индексы в папках с >3 документами присутствуют.
+- [ ] Router-индексы в project documentation folders с >3 документами
+      присутствуют; exact framework-owned `.memory-bank/templates/protocols/`
+      leaf исключён.
 
 ## Формат changelog
 

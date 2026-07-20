@@ -11,7 +11,8 @@ status: active
 - finished:
 - local evidence verdict: <PASS|FAIL|BLOCKED>
 - closure owner: scheduler | explicit standalone owner | human | none
-- closure decision: <none|status unchanged|status: done|status: failed|blocked; reason/evidence link>
+- manual /exe decision: <status unchanged|status: done>
+- scheduler decision: <none|status: done|status: failed|status: blocked>
 
 ## Goal
 - ...
@@ -60,13 +61,25 @@ VERDICT: BLOCKED
 ## Closure Decision
 Record task closure separately from the evidence verdict.
 
+### Manual `/exe`
+
 - explicit standalone owner present: yes | no
-- owner basis: user direct instruction | top-level manual workflow ownership | scheduler | human | none
-- task record status change: none | `status: done` | `status: failed` | `status: blocked`
+- owner basis: user direct instruction | top-level manual workflow ownership | none
+- decision: status unchanged | `status: done`
+- compact PASS and every fast-lane condition satisfied: yes | no
 - task record evidence updated in `verify`: yes | no
 
-If explicit standalone owner is absent, leave task status unchanged and hand off
-the closure recommendation to the scheduler/owner.
+Manual `/exe` may write only `status: done`, and only after exact compact PASS
+plus every tier-policy fast-lane condition. `VERDICT: FAIL|BLOCKED` is evidence,
+not manual lifecycle authority; leave status unchanged and hand off.
+
+### Scheduler
+
+- decision: none | `status: done` | `status: failed` | `status: blocked`
+- reason/evidence link:
+
+Only the scheduler records this branch under tier policy. If no authorized
+closure owner acted, leave task status unchanged and hand off the recommendation.
 
 ## MB-SYNC Handoff
 - owner: scheduler | explicit standalone owner | human | none

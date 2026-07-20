@@ -195,6 +195,14 @@ description: <what it does>
 This keeps the source repo command specs as canonical framework source while
 the target project gets self-contained runtime skills.
 
+### Framework-owned protocol templates
+
+Bootstrap/sync copies every canonical
+`skills/_shared/references/protocols/*.md` file to the stable target path
+`.memory-bank/templates/protocols/`. Runtime commands load only the shape needed
+to initialize a missing task protocol file. Filled `.protocols/<TASK_ID>/`
+files are task-owned resume state and are never overwritten from templates.
+
 ---
 
 ## 2) `.memory-bank/index.md`

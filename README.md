@@ -219,6 +219,8 @@ attempt, а для каждой review surface разрешены ровно п�
   subject-based canonical specs;
 - `.memory-bank/tasks/index.json` и `TASK-*.task.json` — единственный durable
   task registry;
+- `.memory-bank/templates/protocols/` — framework-owned initialization shapes
+  для task-owned `.protocols/<TASK_ID>/` state;
 - `.protocols/` — resumable execution/verification state;
 - `.tasks/` — substantive evidence, reports и handoff material;
 - `.memory-bank/behavior-specs/` — optional JSON `given/when/then` examples,
@@ -253,7 +255,7 @@ node scripts/install-framework.mjs --bootstrap --sync --target /path/to/project 
 assets и не обновляет runtime command skills. Inline skeleton docs и project
 state после создания не перезаписываются; whole-file framework ownership имеют
 только явно управляемые contracts/assets, включая task schema, canonical
-workflows, roles и runtime scripts.
+workflows, roles, protocol templates и runtime scripts.
 Sync report различает `created|updated|unchanged|kept` и не выдаёт сохранённый
 project/mixed файл за обновлённый.
 

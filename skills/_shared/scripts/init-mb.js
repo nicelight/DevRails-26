@@ -281,6 +281,28 @@ function resolveReferenceFile(category, filename) {
   return null;
 }
 
+function listReferenceFilenames(category) {
+  const filenames = new Set();
+  const nestedDir = path.join(REFERENCES_DIR, category);
+
+  if (fs.existsSync(nestedDir)) {
+    fs.readdirSync(nestedDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.md'))
+      .forEach((entry) => filenames.add(entry.name));
+  }
+
+  const flattenedPrefix = `shared-${category}-`;
+  fs.readdirSync(REFERENCES_DIR, { withFileTypes: true })
+    .filter((entry) => (
+      entry.isFile()
+      && entry.name.startsWith(flattenedPrefix)
+      && entry.name.toLowerCase().endsWith('.md')
+    ))
+    .forEach((entry) => filenames.add(entry.name.slice(flattenedPrefix.length)));
+
+  return [...filenames].sort((left, right) => left.localeCompare(right));
+}
+
 function resolveTopLevelReferenceFile(filename) {
   const directPath = path.join(REFERENCES_DIR, filename);
   if (fs.existsSync(directPath)) return directPath;
@@ -356,6 +378,28 @@ function copyRoleReference(filename) {
   writeFile(`${MB}/roles/${filename}`, addGeneratedMarker(readUtf8(absPath)), {
     overwrite: SYNC_MODE,
     ownership: 'framework-owned',
+  });
+}
+
+function copyProtocolReferences() {
+  const filenames = listReferenceFilenames('protocols');
+  if (filenames.length === 0) {
+    console.error(`\nERROR: No protocol references found in ${path.join(REFERENCES_DIR, 'protocols')} or flattened shared-protocols-*.md files.`);
+    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    process.exit(1);
+  }
+
+  filenames.forEach((filename) => {
+    const absPath = resolveReferenceFile('protocols', filename);
+    if (!absPath) {
+      console.error(`\nERROR: Protocol reference not found: ${filename}`);
+      process.exit(1);
+    }
+
+    writeFile(`${MB}/templates/protocols/${filename}`, readUtf8(absPath), {
+      overwrite: SYNC_MODE,
+      ownership: 'framework-owned',
+    });
   });
 }
 
@@ -472,6 +516,7 @@ console.log('\n[1/5] Creating directories...');
   `${MB}/epics`,
   `${MB}/features`,
   `${MB}/behavior-specs`,
+  `${MB}/templates/protocols`,
   `${MB}/schemas`,
   `${MB}/tasks`,
   `${MB}/tasks/plans`,
@@ -1080,6 +1125,7 @@ copyWorkflowReference('execute-loop.md');
 copyRoleReference('orchestrator.md');
 copyRoleReference('general.md');
 copyRoleReference('worker.md');
+copyProtocolReferences();
 
 writeFile(`${MB}/adrs/ADR-000-template.md`, `---
 description: "ADR-000: Шаблон для архитектурных решений."

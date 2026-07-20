@@ -98,8 +98,14 @@ The verifier may pursue unexpected hypotheses when evidence justifies them.
 
 <required_outputs>
 Per-task mode writes:
-- `.protocols/<TASK_ID>/red-verification.md` using the existing template shape;
+- `.protocols/<TASK_ID>/red-verification.md`, initialized only when absent from
+  `.memory-bank/templates/protocols/red-verification-template.md`;
 - `.tasks/<TASK_ID>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`.
+
+An existing `red-verification.md` is task-owned resume state: update it in
+place and never recopy the framework template over it. The template defines
+shape, not lifecycle authority. If it is absent when initialization is needed,
+stop and request framework bootstrap/sync instead of inventing a shape.
 
 Feature mode writes:
 - `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`;

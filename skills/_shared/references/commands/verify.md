@@ -163,6 +163,12 @@ Write:
 - T2/T3 -> `.protocols/<TASK_ID>/verification.md`;
 - substantive artifacts -> `.tasks/<TASK_ID>/`.
 
+The canonical initialization shape for the required existing T2/T3
+`verification.md` is
+`.memory-bank/templates/protocols/verification-template.md`. The task copy is
+task-owned resume state: update it in place and never recopy the framework
+template over it. Command and tier policy rules outrank template placeholders.
+
 Separate the verification evidence into:
 - `reused execute evidence`: accepted candidates, supported claims, state and
   freshness basis, and exact receipt locations;

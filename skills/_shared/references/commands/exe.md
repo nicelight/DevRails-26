@@ -104,11 +104,27 @@ Protocol by tier:
   context, preflight-confirmed change surface, changes, checks, evidence,
   `VERDICT: PASS|FAIL|BLOCKED`, closure owner/decision, and handoff notes.
 - T2/T3: `.protocols/<TASK_ID>/{context,plan,progress,verification,handoff}.md`
-  using available templates; `/exe` fills implementation context/progress
-  and leaves final verification to `/verify`.
+  where `/exe` fills implementation context/progress and leaves final
+  verification to `/verify`.
 - T3 handoff records whether the later exact
   `HUMAN_CHECKPOINT: done` marker is present or still required; it does not
   silently satisfy the checkpoint.
+
+Initialize only missing protocol files from these framework-owned shapes:
+- T0/T1 `run.md` ->
+  `.memory-bank/templates/protocols/compact-run-template.md`;
+- T2/T3 `context.md` -> `.memory-bank/templates/protocols/context-template.md`;
+- T2/T3 `plan.md` -> `.memory-bank/templates/protocols/plan-template.md`;
+- T2/T3 `progress.md` -> `.memory-bank/templates/protocols/progress-template.md`;
+- T2/T3 `verification.md` ->
+  `.memory-bank/templates/protocols/verification-template.md`;
+- T2/T3 `handoff.md` -> `.memory-bank/templates/protocols/handoff-template.md`.
+
+Existing `.protocols/<TASK_ID>/` files are task-owned resume state: update them
+in place and never recopy or sync a template over them. Templates define the
+initial shape only; this command and tier policy own lifecycle/status rules.
+If a required template is absent before file creation, stop and request
+framework bootstrap/sync instead of inventing a shape.
 
 Implementation evidence must record:
 - actual changed files and any advisory `touched_files` deviation rationale;

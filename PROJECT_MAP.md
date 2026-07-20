@@ -54,13 +54,16 @@ Packaging and install:
 - `package.json`: package bin and scripts.
 - `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
-- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned schema sync, project/mixed preservation, idempotent reporting, and bootstrap-only repair semantics.
+- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned schema/protocol-template sync, task/project state preservation, stable runtime paths, idempotent reporting, and bootstrap-only repair semantics.
 
 Canonical shared source:
 
 - `skills/_shared/agents/*.md`: shared worker/reviewer prompts.
 - `skills/_shared/references/commands/*.md`: canonical command specs copied into generated runtime skills by the installer.
-- `skills/_shared/references/protocols/*`: protocol and handoff templates.
+- `skills/_shared/references/protocols/*`: canonical protocol and handoff
+  templates, deployed as framework-owned
+  `.memory-bank/templates/protocols/*`; `.protocols/<TASK_ID>/*` remains
+  task-owned state.
 - `skills/_shared/references/structure-template.md`: Memory Bank structure reference.
 - `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator.
 
@@ -72,7 +75,11 @@ Installable skill entrypoints:
 
 Skill-specific non-shared assets:
 
-- `skills/mb-garden/assets/mb-lint.mjs`: packaged deterministic Memory Bank structural/mechanical hygiene linter.
+- `skills/mb-garden/assets/mb-lint.mjs`: packaged deterministic Memory Bank
+  structural/mechanical hygiene linter; it exempts only
+  `.memory-bank/templates/protocols` from the `>3` Markdown files router
+  warning because runtime commands address those framework-owned shapes
+  directly.
 - `skills/mb-garden/assets/mb-doctor.mjs`: current packaged location for the deterministic workflow/autonomous readiness check over `mb-lint`.
 - `skills/mb-garden/assets/memory-bank-lint.yml`: related lint config asset.
 
