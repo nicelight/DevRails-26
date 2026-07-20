@@ -112,9 +112,14 @@ Examples:
   node scripts/install-framework.mjs --skill '*' --yes
   node scripts/install-framework.mjs --skill cold-start --yes
   node scripts/install-framework.mjs --bootstrap --target ./my-project --yes
+  node scripts/install-framework.mjs --bootstrap --sync --target ./my-project --yes
 
 No options starts the interactive installer. Runtime command skills are generated
 directly into the target project.
+
+--bootstrap --sync is the coherent framework upgrade route. It updates runtime
+command skills and Memory Bank managed assets from the same prepared source copy.
+--bootstrap-only --sync repairs only Memory Bank managed assets.
 
 The repository is source-only. This wrapper copies the repo to a temporary
 directory, runs scripts/vendor-shared.mjs there, then writes full command skills
@@ -1025,6 +1030,9 @@ async function main() {
   }
   if (inspection.memoryBankExists) {
     console.log('Warning: .memory-bank/ already exists; generated assets will be synced.');
+  }
+  if (bootstrapOnly && (hasArg('--sync') || inspection.memoryBankExists)) {
+    console.log('Warning: --bootstrap-only sync repairs Memory Bank managed assets only; runtime command skills are not updated. Use --bootstrap --sync for a coherent framework upgrade.');
   }
 
   await runInstallFlow({

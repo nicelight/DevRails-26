@@ -38,6 +38,15 @@ Runtime skills, shared workflows, protocol shapes и validators являются
 Leaf skill должен описывать собственный outcome и immediate handoff, а общие
 правила получать из доступного в target canonical reference.
 
+## Стиль runtime-инструкций
+
+- Пиши лаконично: без повторов, воды и очевидных пояснений.
+- Каждая инструкция должна защищать workflow contract, корректность, безопасность или совместимость.
+- Inputs, outputs, gates, blockers, validation и handoff формулируй нормативно.
+- Внутреннюю тактику и порядок действий описывай рекомендательно, если контракт не требует иного.
+- Не превращай примеры, предпочтения и best practices в обязательные шаги.
+- Сокращение текста не должно менять statuses, ownership, stop conditions и resume routes.
+
 # Правила рефакторинга framework
 
 При рефакторинге skills, workflows, protocols или installer обязательно проверь:

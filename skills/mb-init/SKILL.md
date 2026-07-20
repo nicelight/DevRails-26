@@ -1,6 +1,6 @@
 ---
 name: mb-init
-description: Route Memory Bank bootstrap or sync through an available external DevRails checkout.
+description: Route Memory Bank bootstrap or coherent framework sync through an available external DevRails checkout.
 ---
 
 # mb-init — External bootstrap router
@@ -20,11 +20,15 @@ by `scripts/install-framework.mjs` in an available DevRails checkout.
   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
   ```
 
-- For an explicit sync of an existing target, return:
+- For an explicit framework sync of an existing target, update runtime command
+  skills and Memory Bank managed assets from the same prepared source copy:
 
   ```bash
-  node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --sync --target <target-repo> --yes
+  node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
   ```
+
+  `--bootstrap-only --sync` repairs only Memory Bank managed assets and does not
+  update runtime command skills. Do not present it as a full framework sync.
 
 Replace both placeholders with verified, shell-safe paths. If the checkout is
 unknown or unavailable, ask the operator to provide one or run the external

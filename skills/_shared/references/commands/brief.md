@@ -1,12 +1,14 @@
 ---
-description: Create or update a concise Product Brief as the PRD input contract.
+description: Create or update a concise Product Brief and initial project glossary.
 status: active
 ---
 # /brief - Product Brief input contract
 
 <objective>
 Create or update `.memory-bank/analysis/product-brief.md` as the concise product
-input contract for `/constitution` when needed and for `/write-prd`.
+input contract for `/constitution` when needed and for `/write-prd`. After the
+brief is formed, create or update `.memory-bank/glossary.md` from its accepted
+terminology.
 
 The Product Brief captures what to build, for whom, why, the MVP boundary, and
 known decisions. It is not a PRD, backlog, marketing document, research report,
@@ -20,6 +22,8 @@ from operator input or after `/brainstorm`.
 Read when present and relevant:
 - the latest `.memory-bank/analysis/brainstorming/BR-*.md`;
 - `.memory-bank/analysis/product-brief.md`;
+- `.memory-bank/glossary.md` and the glossary row in
+  `.memory-bank/spec-index.md`;
 - `.memory-bank/constitution.md` for next-step routing;
 - operator-provided concept, notes, or PRD-like text.
 
@@ -30,7 +34,9 @@ required when the operator supplied a clear concept directly.
 <hard_invariants>
 Allowed outputs are only:
 - `.memory-bank/analysis/index.md`;
-- `.memory-bank/analysis/product-brief.md`.
+- `.memory-bank/analysis/product-brief.md`;
+- `.memory-bank/glossary.md`;
+- the glossary row in `.memory-bank/spec-index.md`.
 
 Do not create features, task records, implementation plans, research reports,
 PRFAQ, command aliases, or `.memory-bank/analysis/assumptions.md`. Preserve the
@@ -75,6 +81,13 @@ Keep the brief concise and cover:
 If `.memory-bank/analysis/index.md` is created, give it analysis-index
 frontmatter. Update the index with the brief status, source artifacts, decision,
 and immediate next command.
+
+After the brief content is formed, create or update
+`.memory-bank/glossary.md`: remove bootstrap placeholders, preserve compatible
+existing definitions, and add only terms grounded in the accepted brief. Do not
+invent definitions or encode unresolved choices as facts. Keep the glossary row
+in `.memory-bank/spec-index.md` consistent and include `/brief` in its change
+route.
 </required_outputs>
 
 <agent_discretion>
@@ -88,7 +101,8 @@ Set `Decision: proceed` only when the brief is coherent enough for governing
 principles and PRD clarification. Set `Decision: blocked` when a missing
 operator choice would make the PRD unreliable. Verify that accepted decisions
 are applied consistently, assumptions remain labelled, and the index agrees
-with the brief.
+with the brief. Verify that the glossary exists, has no bootstrap placeholder,
+and agrees with accepted brief terminology.
 </validation>
 
 <handoff_contract>

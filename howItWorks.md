@@ -95,7 +95,8 @@ Tracked installable package entrypoints всего три:
 
 - `skills/cold-start/SKILL.md` — package/start и external-bootstrap routing
   surface;
-- `skills/mb-init/SKILL.md` — external installer router для bootstrap/sync;
+- `skills/mb-init/SKILL.md` — external installer router для bootstrap или
+  coherent framework sync;
 - `skills/mb-garden/SKILL.md` — packaged lint/doctor/CI assets.
 
 Они нужны для source-only упаковки и не являются вторым набором runtime
@@ -246,8 +247,27 @@ DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
 node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
 ```
 
-Для explicit sync добавляется `--sync`. Неизвестный checkout path является
-честным blocker; после успешного bootstrap исходную команду запускают повторно.
+Для coherent framework sync существующего target используется полный route:
+
+```bash
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
+```
+
+Он обновляет runtime command skills и framework-owned Memory Bank assets из
+одной prepared source copy. `--bootstrap-only --sync` остаётся repair route
+только для Memory Bank managed assets и не обновляет commands. Неизвестный
+checkout path является честным blocker; после успешного bootstrap исходную
+команду запускают повторно.
+
+Whole-file framework ownership задаётся только явными generator call sites:
+task schema, copied canonical workflows/roles, runtime scripts и другие
+canonical copied assets. Inline skeleton docs, project state и mixed routers
+после создания сохраняются; version-critical framework contract нельзя
+размещать только в seed-once файле. Installer sync не является runtime
+`/mb-sync` и не меняет task lifecycle, gates или handoffs.
+Итоговый installer report группирует фактические
+`created|updated|unchanged|kept` actions по ownership и не считает identical
+framework asset обновлённым.
 
 ## 7. Fresh bootstrap state
 
@@ -339,15 +359,18 @@ Stages do not own each other's outputs:
 
 1. `/brainstorm` explores directions but does not promote ideas to
    requirements.
-2. `/brief` owns only the concise Product Brief and analysis index.
+2. `/brief` owns the concise Product Brief, analysis index, and initial draft
+   glossary plus its `spec-index` registry row.
 3. `/constitution` owns governing principles, Definition of Done, autonomy,
    checkpoints и non-negotiables. An explicit skip may continue as
    `framework-default|skipped`; silence is not a skip.
 4. `/write-prd` owns product-level clarification. Handoff requires
    `type: prd`, `clarification_status: complete` и
    `constitution_checked: true`.
-5. `/spec-init` owns decomposition-safety framing, not architecture. It writes
-   `Pre-PRD Spec Status: ready_for_prd|blocked` in `spec-backbone.md`.
+5. `/spec-init` first verifies and reconciles the project glossary, creating it
+   when missing or placeholder-only. It then owns decomposition-safety framing,
+   not architecture, and writes `Pre-PRD Spec Status: ready_for_prd|blocked` in
+   `spec-backbone.md`.
 6. `/prd-to-features` owns L1-L3 product decomposition: product, stable `REQ-*`, epics и
    product `FT-*`. It does not create task records or testing policy.
 7. `/review-feat-plan` independently checks PRD -> REQ -> EP -> FT. It is
@@ -1025,12 +1048,12 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
 | `/cold-start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
-| `/mb-init` | external installer route для Memory Bank bootstrap/sync | сам не создаёт skeleton; затем повторный `/mb-init` и `/cold-start` |
+| `/mb-init` | external installer route для Memory Bank bootstrap или coherent framework sync | сам не создаёт skeleton; затем повторный `/mb-init` и `/cold-start` |
 | `/fill` | минимально достаточный context priming | строго read-only; возвращает gaps и рекомендуемые reads, не создаёт artifacts |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
 | `/brainstorm` | traceable ideation report | не создаёт requirements/PRD; затем `/brief` |
-| `/brief` | concise Product Brief | не создаёт features/tasks; затем `/constitution` или `/write-prd` |
+| `/brief` | concise Product Brief и initial draft glossary | не создаёт features/tasks; затем `/constitution` или `/write-prd` |
 | `/constitution` | governing principles, DoD, autonomy, checkpoints | не заменяет PRD/specs; затем `/write-prd` |
 | `/write-prd` | clarified Constitution-checked PRD | не декомпозирует; затем `/spec-init` |
 | `/discuss` | bounded accepted decisions в owning artifacts/protocol | не обходит owning skill gate |
@@ -1041,7 +1064,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
-| `/spec-init` | pre-PRD decomposition framing | не создаёт architecture/Foundation; затем `/prd-to-features` |
+| `/spec-init` | glossary gate и pre-PRD decomposition framing | не создаёт architecture/Foundation; затем `/prd-to-features` |
 | `/prd-to-features` | product, REQ, epics, product features | не создаёт tasks/testing policy; затем review/design |
 | `/review-feat-plan` | fresh-context `APPROVE|REJECT` PRD decomposition review | не исправляет product docs; затем `/spec-design` или repair |
 | `/spec-design` | mandatory global backbone и Foundation decision | не создаёт tasks/plans; затем Foundation или feature design |

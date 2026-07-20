@@ -1,5 +1,5 @@
 ---
-description: Frame pre-PRD domain, scenario, constraints, and spec context before PRD decomposition.
+description: Validate project vocabulary and frame pre-PRD context before PRD decomposition.
 status: active
 ---
 # /spec-init - Pre-PRD spec framing
@@ -27,14 +27,25 @@ constitution_checked: true
 If any marker is missing or has another value, stop and route to `/write-prd`
 or `/constitution` according to the failed owner contract; do not frame the PRD
 as ready. Read relevant context from the Constitution, Product Brief, existing
-`spec-backbone.md`, pure `spec-index.md`, user scenarios, invariants, and
-canonical subject specs under `architecture/`, `contracts/`, `domains/`,
-`states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/`.
+`glossary.md`, `spec-backbone.md`, pure `spec-index.md`, user scenarios,
+invariants, and canonical subject specs under `architecture/`, `contracts/`,
+`domains/`, `states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/`.
 
 Legacy `.memory-bank/tech-specs/FT-*.md` may be read as brownfield evidence only;
 it is not a target path for new specs. If the PRD is missing or too unclear to
 frame truthfully, stop and route to `/write-prd`.
 </input_contract>
+
+<glossary_gate>
+Before any other framing, inspect `.memory-bank/glossary.md`. It is unfilled if
+missing, empty, or placeholder-only. In that case populate it from the Product
+Brief, clarified PRD, and other authoritative project sources; otherwise
+reconcile existing terms with current evidence.
+
+Keep only evidenced definitions. If a conflicting meaning can affect
+decomposition, use the existing operator-decision blocker. Continue only when
+the glossary has no placeholders and its `spec-index.md` row matches it.
+</glossary_gate>
 
 <hard_invariants>
 - Do not create feature files, task records, implementation plans, feature-owned
@@ -73,6 +84,7 @@ source-precedence, link, and decomposition-safety checks before setting
 
 <required_outputs>
 Update:
+- `.memory-bank/glossary.md` through the mandatory glossary gate;
 - `.memory-bank/spec-index.md` as registry/index only;
 - `.memory-bank/spec-backbone.md` with decomposition state and handoff.
 
@@ -153,10 +165,11 @@ Keep `spec-backbone.md` parseable with:
 </required_outputs>
 
 <agent_discretion>
-Choose evidence-reading order, tools, analysis shape, question grouping, and the
-minimum artifact set. Treat actors/scenarios, domain/lifecycle, constraints,
-non-goals, risks, boundaries, and invariants as coverage criteria rather than a
-mandatory sequence. Do not create a file when a precise PRD link is enough.
+After the mandatory glossary gate, choose evidence-reading order, tools,
+analysis shape, question grouping, and the minimum artifact set. Treat
+actors/scenarios, domain/lifecycle, constraints, non-goals, risks, boundaries,
+and invariants as coverage criteria rather than a mandatory sequence. Do not
+create a file when a precise PRD link is enough.
 </agent_discretion>
 
 <validation>
@@ -164,8 +177,8 @@ Set `ready_for_prd` only when the evidence is sufficient for meaningful L1-L3
 decomposition. Set `blocked` when `/prd-to-features` would likely invent scope or cut the
 product incorrectly. Verify that `spec-index.md` remains pure, all links resolve,
 scenario-sensitive inputs are reviewed or otherwise authoritative, accepted
-answers were applied consistently, and no architecture/foundation decision was
-silently made.
+answers were applied consistently, the glossary is filled and its registry row
+is consistent, and no architecture/foundation decision was silently made.
 
 At this boundary, a non-strict doctor warning that Global Backbone Status is
 not ready is expected: `/spec-design` has not run yet.

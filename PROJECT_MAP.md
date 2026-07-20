@@ -54,6 +54,7 @@ Packaging and install:
 - `package.json`: package bin and scripts.
 - `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
+- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned schema sync, project/mixed preservation, idempotent reporting, and bootstrap-only repair semantics.
 
 Canonical shared source:
 
@@ -236,6 +237,7 @@ Fast syntax/source-only check:
 
 ```bash
 npm run check:syntax --silent
+npm run test:install-sync --silent
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
 ```
 

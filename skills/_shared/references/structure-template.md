@@ -320,7 +320,7 @@ source_of_truth:
 |---|---|---|---|---|
 | governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
-| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary when needed. | /spec-init or /spec-design |
+| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or /spec-design |
 | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Lightweight responsibility/scope notes for task boundaries. | /spec-init or /spec-design |
 | testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |
 

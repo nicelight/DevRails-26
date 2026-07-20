@@ -1,13 +1,14 @@
 ---
-description: Route Memory Bank bootstrap or sync through an available external DevRails checkout.
+description: Route Memory Bank bootstrap or coherent framework sync through an available external DevRails checkout.
 status: active
 ---
 # /mb-init — Route external Memory Bank bootstrap
 
 <objective>
 Inspect the target repository and return the exact external DevRails installer
-command required to create or explicitly sync its Memory Bank. `/mb-init` is a
-thin router: it does not create, sync, or reconstruct the skeleton itself.
+command required to create its Memory Bank or coherently sync the installed
+framework. `/mb-init` is a thin router: it does not create, sync, or reconstruct
+the skeleton itself.
 </objective>
 
 <process>
@@ -23,16 +24,21 @@ thin router: it does not create, sync, or reconstruct the skeleton itself.
    node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
    ```
 
-4. For an explicit sync request on an existing target, return:
+4. For an explicit framework sync request on an existing target, update runtime
+   command skills and Memory Bank managed assets from the same prepared source
+   copy:
 
    ```bash
-   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --sync --target <target-repo> --yes
+   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
    ```
 
-5. Do not run local bootstrap logic, copy a helper into the target, install a
+5. `--bootstrap-only --sync` repairs only Memory Bank managed assets and does
+   not update runtime command skills. Do not present it as a full framework
+   sync.
+6. Do not run local bootstrap logic, copy a helper into the target, install a
    dependency, or create the skeleton manually. The external installer owns
    bootstrap and its existing target-file safety policy.
-6. If the DevRails checkout is unknown or unavailable, stop with a blocker:
+7. If the DevRails checkout is unknown or unavailable, stop with a blocker:
    ask the operator to provide an available checkout path or run the external
    installer action, then rerun `/mb-init`. Do not present a placeholder as an
    executable command.
