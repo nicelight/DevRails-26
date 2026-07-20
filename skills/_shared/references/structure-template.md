@@ -682,13 +682,21 @@ status: draft
       "properties": {
         "write_boundary": {
           "type": "array",
-          "description": "Optional hard write boundary; omit unless evidence justifies one.",
-          "items": { "type": "string" }
+          "description": "Optional hard boundary of literal project-root-relative POSIX paths; omit unless evidence justifies one.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?![A-Za-z]:)(?!.*//)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!.*[\\\\*?\\u0000-\\u001F\\u007F])(?!\\s)(?!.*\\/\\s)(?!.*\\s(?:/|$))[^/]+(?:/[^/]+)*/?$"
+          }
         },
         "allowed_write_scope": {
           "type": "array",
           "description": "Deprecated alias for write_boundary; do not emit in new task cards.",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?![A-Za-z]:)(?!.*//)(?!\\.{1,2}(?:/|$))(?!.*\\/\\.{1,2}(?:/|$))(?!.*[\\\\*?\\u0000-\\u001F\\u007F])(?!\\s)(?!.*\\/\\s)(?!.*\\s(?:/|$))[^/]+(?:/[^/]+)*/?$"
+          }
         },
         "forbidden_scope": {
           "type": "array",
@@ -771,6 +779,9 @@ Optional runtime context rules:
   same task outcome.
 - `write_boundary`, when present, is an optional hard write boundary and
   must not be populated by mechanically copying the exact `touched_files` list.
+- Non-empty boundary entries follow the literal project-root-relative POSIX
+  path and segment-prefix rules in `.memory-bank/workflows/tier-policy.md`;
+  empty/omitted boundaries add no path allow-list.
 - Existing `allowed_write_scope` is a deprecated read alias; never emit both.
 - `forbidden_scope` and `stop_conditions` are hard preflight/evidence contracts.
   These fields do not replace sandbox permissions or role write-scope instructions.
@@ -855,6 +866,11 @@ status: active
 
 ## 8) `.memory-bank/skills/index.md`
 
+`## Installed` is generated from existing
+`.agents/skills/*/SKILL.md` and `.claude/skills/*/SKILL.md`. Sync updates only
+the paired-marker block; authored sections remain project-owned. The example
+below shows the explicit empty state.
+
 ```markdown
 ---
 description: Реестр доступных скиллов (когда применять) в этом репозитории.
@@ -863,9 +879,15 @@ status: active
 # Skills
 
 ## Installed
-- cold-start
+<!-- BEGIN DEVRAILS INSTALLED SKILLS -->
 
-## When to use
+_No runtime skills detected in `.agents/skills` or `.claude/skills`._
+
+Используй guidance ниже только для skill, отмеченного как `yes` в активной runtime surface.
+
+<!-- END DEVRAILS INSTALLED SKILLS -->
+
+## Guidance for installed skills
 - Bootstrap skeleton / memory: mb-init
 - Scenario routing: cold-start
 - Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief

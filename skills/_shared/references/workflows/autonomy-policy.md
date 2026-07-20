@@ -31,7 +31,12 @@ status: active
 - Record the opt-in in `.protocols/AUTONOMOUS-RUN/status.md`.
 - Never use advisory `touched_files` as proof that tasks are disjoint.
 - Parallel candidates require non-empty, deliberately hard, pairwise-disjoint
-  `runtime_context.write_boundary` values and isolated worktrees/sandboxes.
+  `runtime_context.write_boundary` values under the normalized segment rule in
+  `tier-policy.md`, plus isolated worktrees/sandboxes.
+- Lexical disjointness is necessary, not sufficient. The opt-in does not
+  require concurrency; if existing durable checkpoint/recovery, filesystem
+  aliasing, or external-output isolation cannot be proved without new workflow
+  state, keep the canonical sequential execution.
 - T3 tasks and tasks that write shared/governing state, package manifests,
   lockfiles, CI, or global configuration remain sequential.
 - If isolation or non-overlap cannot be proved, fall back to sequential without

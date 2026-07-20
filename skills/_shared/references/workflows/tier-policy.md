@@ -24,6 +24,35 @@ behavior, boundary, data/state/security/runtime impact, dependency shape, or
 blast radius triggers the higher tier. A non-empty
 `runtime_context.write_boundary` remains a hard boundary.
 
+## Hard Write Boundary
+
+`runtime_context.write_boundary` and its deprecated read alias
+`allowed_write_scope` use literal project-root-relative POSIX paths, never
+globs. Omitted or empty values add no path allow-list; semantic task scope,
+`forbidden_scope`, stop conditions, role permissions, and sandbox policy still
+apply.
+
+Each non-empty entry:
+- may have one trailing `/`, removed before comparison;
+- must not be absolute or drive-qualified, contain `.` / `..` segments, empty
+  segments, backslash, ASCII control characters, leading/trailing segment
+  whitespace, `*`, or `?`;
+- permits the normalized path itself and its lexical subtree.
+
+Comparison is case-sensitive and lexical, without requiring path existence.
+Split normalized paths on `/`: a path is inside an entry when the entry's
+segment array is its prefix. Two boundaries overlap when any normalized entry
+from either boundary is a segment prefix of an entry from the other; string
+prefix alone is insufficient. Thus `src` contains `src/a.js`, while `src/a`
+and `src/ab` do not overlap. Brackets and braces are literal path characters,
+so `app/[id]/page.tsx` is valid.
+
+The boundary covers task-outcome creates, modifications, and deletions; both
+sides of a rename must be inside it. Required workflow bookkeeping and evidence
+writes already owned by the active skill do not need to be listed, but retain
+their existing output and lifecycle ownership. This path contract neither
+grants external side effects nor replaces filesystem isolation.
+
 ## Execute Evidence Reuse
 
 `/exe` may optionally offer a well-known local deterministic gate result as

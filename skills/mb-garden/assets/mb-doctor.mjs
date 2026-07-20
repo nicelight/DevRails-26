@@ -24,6 +24,7 @@ const TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$/;
 const FOUNDATION_TASK_ID_FORMAT = 'TASK-NNN-TN-FT-000-WN';
 const FOUNDATION_TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-000-W[0-9]+$/;
 const FOUNDATION_GATE_PENDING = 'pending_foundation_to_tasks';
+const UNRESOLVED_FOUNDATION_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked']);
 const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
@@ -629,9 +630,17 @@ function checkFoundationWave(record) {
 
 function checkFoundationReadiness(orderedRecords, records) {
   const foundationAbs = path.join(ROOT, FOUNDATION_REL);
-  if (!isFile(foundationAbs)) return;
-
   const severity = options.strict ? 'error' : 'warning';
+
+  if (!isFile(foundationAbs)) {
+    addFinding(severity, 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: a non-empty indexed task queue requires an explicit Foundation decision.`, {
+      path: FOUNDATION_REL,
+      details: { issue: 'foundation_file_missing' },
+      suggested_fix: 'Run /spec-design to record the accepted Foundation decision and current Gate Anchors before unattended execution.',
+    });
+    return;
+  }
+
   const text = fs.readFileSync(foundationAbs, 'utf8').replace(/\r\n/g, '\n');
   const anchors = parseFoundationAnchors(text);
   const issues = validateFoundationAnchors(anchors);
@@ -646,8 +655,36 @@ function checkFoundationReadiness(orderedRecords, records) {
     return;
   }
 
-  if (anchors.required !== true) return;
-  if (anchors.gateTask === FOUNDATION_GATE_PENDING) return;
+  const foundationRecords = orderedRecords.filter((record) => record.task.feature === 'FT-000');
+  const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
+
+  if (anchors.required === false) {
+    if (!foundationRecords.length) return;
+
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: Foundation is not required, but indexed FT-000 records still exist.`, {
+      path: FOUNDATION_REL,
+      details: {
+        gate_task: anchors.gateTask,
+        foundation_tasks: foundationRecords.map((record) => ({
+          id: record.id,
+          path: record.rel,
+          status: record.task.status,
+        })),
+      },
+      suggested_fix:
+        'Reconcile the accepted Foundation decision through /spec-design; use /foundation-to-tasks --verify-existing only when existing-baseline evidence is the authoritative route.',
+    });
+    return;
+  }
+
+  if (anchors.gateTask === FOUNDATION_GATE_PENDING) {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: required Foundation still has a pending final gate.`, {
+      path: FOUNDATION_REL,
+      details: { gate_task: anchors.gateTask },
+      suggested_fix: 'Run /foundation-to-tasks to create/reconcile the FT-000 queue and replace the pending anchor with its concrete final gate task ID.',
+    });
+    return;
+  }
 
   const gate = records.get(anchors.gateTask);
   if (!gate || gate.task.feature !== 'FT-000') {
@@ -665,7 +702,16 @@ function checkFoundationReadiness(orderedRecords, records) {
     return;
   }
 
-  const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
+  if (gate.task.status === 'failed') {
+    addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: the named final foundation gate has failed.`, {
+      path: gate.rel,
+      task_id: anchors.gateTask,
+      details: { status: gate.task.status },
+      suggested_fix:
+        'Reconcile a valid replacement final gate through /foundation-to-tasks, then resume the /autonomous-owned FT-000 phase.',
+    });
+    return;
+  }
 
   if (productRecords.length && gate.task.status !== 'done') {
     addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: foundation gate task is not done.`, {
@@ -674,6 +720,29 @@ function checkFoundationReadiness(orderedRecords, records) {
       details: { status: gate.task.status },
       suggested_fix: 'Finish /exe, /verify, and /mb-sync for the foundation gate task before product feature execution.',
     });
+  }
+
+  if (productRecords.length && gate.task.status === 'done') {
+    const unresolvedFoundationRecords = foundationRecords
+      .filter((record) => record.id !== anchors.gateTask)
+      .filter((record) => UNRESOLVED_FOUNDATION_STATUSES.has(record.task.status));
+
+    if (unresolvedFoundationRecords.length) {
+      addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: product tasks exist while FT-000 work remains unresolved.`, {
+        path: FOUNDATION_REL,
+        task_id: anchors.gateTask,
+        details: {
+          gate_task: anchors.gateTask,
+          unresolved_foundation_tasks: unresolvedFoundationRecords.map((record) => ({
+            id: record.id,
+            path: record.rel,
+            status: record.task.status,
+          })),
+        },
+        suggested_fix:
+          'Return to the /autonomous-owned Foundation phase and resolve planned, ready, in_progress, or blocked FT-000 work before /autopilot.',
+      });
+    }
   }
 
   const missing = productRecords

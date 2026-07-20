@@ -37,6 +37,9 @@ is present, the script prints help and exits without running readiness checks.
 - JSON mode: machine-readable report for schedulers and agents.
 
 Default mode may emit warnings for incomplete scheduler readiness evidence that should be fixed before unattended execution. These warnings do not invalidate KISS manual closure. Strict mode promotes those readiness gaps to errors where autonomous/autopilot progression would be unsafe.
+Every non-empty indexed queue requires the current `.memory-bank/foundation.md`
+decision; a missing or incomplete decision is a warning in default mode and an
+error in `--strict`. Empty-index behavior is unchanged.
 
 After `/spec-init` PASS, `.memory-bank/spec-backbone.md` may correctly have `Pre-PRD Spec Status: ready_for_prd` while Global Backbone Status is still absent, `blocked`, or otherwise incomplete. In default mode, report this as "prepared for `/prd-to-features`; Global Backbone Status intentionally pending until `/spec-design`" rather than a fix-now problem. The machine-readable finding code may remain `SPEC_BACKBONE_NOT_READY`; the meaning is downstream task/autonomous readiness, not failure of `/spec-init`.
 
@@ -89,15 +92,22 @@ the wave boundary.
   semantics.
 - `W0` is valid only for tasks with `feature: "FT-000"`. Non-`FT-000` product
   tasks must not use `W0`.
-- When `.memory-bank/foundation.md` exists, its `## Gate Anchors` contract is
-  parseable:
+- Every non-empty indexed queue has `.memory-bank/foundation.md` with a
+  parseable current `## Gate Anchors` contract:
   - `Foundation Required: true|false`
   - `Foundation Requirement: REQ-000`
   - `Foundation Pseudo-Feature: FT-000`
   - `Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required`
-- When foundation is required and a concrete final foundation gate task is named,
-  it exists, is indexed, has `feature: "FT-000"`, and every non-`FT-000` product
-  task depends on it directly or transitively.
+- `Foundation Required: true` is not executable-ready while the gate anchor is
+  `pending_foundation_to_tasks`; a concrete gate exists, is indexed, has
+  `feature: "FT-000"`, and is not `failed`.
+- A foundation-only queue may pass with an open concrete final gate when the
+  normal queue/status checks permit continued FT-000 execution.
+- Once product records exist, the concrete final gate is `done`, no other
+  `FT-000` record remains `planned|ready|in_progress|blocked`, and every product
+  task depends on the gate directly or transitively.
+- `Foundation Required: false` uses `Foundation Gate Task: not_required` and has
+  no indexed `FT-000` records.
 - Task dependencies reference known task IDs and do not create cycles or execution deadlock.
 - Task status, dependency, and tier policy allow safe scheduler decisions.
 - `in_progress` `T0` / `T1` tasks have a `.protocols/<TASK_ID>/` directory.

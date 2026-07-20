@@ -54,7 +54,14 @@ Packaging and install:
 - `package.json`: package bin and scripts.
 - `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
-- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned schema/protocol-template sync, task/project state preservation, stable runtime paths, idempotent reporting, and bootstrap-only repair semantics.
+- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned
+  schema/protocol-template/validator/workflow sync, write-boundary grammar,
+  filesystem-derived runtime skill inventory, task/project state preservation,
+  stable runtime paths, idempotent reporting, and bootstrap-only repair
+  semantics.
+- `scripts/test-mb-doctor.mjs`: isolated Foundation readiness fixture matrix for
+  default/strict severity, gate state, FT-000/product boundaries, and dependency
+  semantics.
 
 Canonical shared source:
 
@@ -65,7 +72,9 @@ Canonical shared source:
   `.memory-bank/templates/protocols/*`; `.protocols/<TASK_ID>/*` remains
   task-owned state.
 - `skills/_shared/references/structure-template.md`: Memory Bank structure reference.
-- `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator.
+- `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator; it
+  derives the managed `.memory-bank/skills/index.md#Installed` block from
+  target `.agents/.claude` `SKILL.md` files while preserving authored sections.
 
 Installable skill entrypoints:
 
@@ -121,6 +130,7 @@ Primary source files:
 - `skills/_shared/references/commands/mb-doctor.md`
 - `skills/_shared/scripts/init-mb.js`
 - `skills/mb-garden/assets/mb-doctor.mjs`
+- `scripts/test-mb-doctor.mjs`
 - `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 Fresh bootstrap must not create `.memory-bank/foundation.md`, `REQ-000`,
@@ -203,6 +213,10 @@ Primary source files for this behavior:
 - `skills/_shared/references/commands/autonomous.md`
 - `skills/_shared/references/workflows/tier-policy.md`
 - `skills/_shared/references/workflows/mb-sync.md`
+- `skills/_shared/scripts/init-mb.js` and
+  `skills/_shared/references/structure-template.md` for task schema
+- `skills/mb-garden/assets/mb-lint.mjs` for mechanical path validation
+- `scripts/test-install-sync.mjs` for grammar and deployed sync regression
 
 Canonical scheduler execution is sequential. Experimental parallel execution
 requires explicit `--experimental-parallel`, isolated worktrees/sandboxes, and
@@ -212,6 +226,14 @@ pairwise-disjoint hard `write_boundary`; never infer independence from
 Do not add a second durable task-context artifact, nested duplicate context
 object, `.memory-bank/modules/`, `.memory-bank/graph/`,
 `.memory-bank/verification/`, or new task lifecycle statuses for this flow.
+
+Hard `runtime_context.write_boundary` entries use the literal project-relative
+POSIX path and segment-prefix semantics in
+`skills/_shared/references/workflows/tier-policy.md`. The same syntax is
+enforced by the generated task schema and `mb-lint`; deprecated
+`allowed_write_scope` is only a read alias. `forbidden_scope` and
+`stop_conditions` remain prose-capable hard constraints. Do not add a glob
+engine, path registry, realpath cache, or parallel scheduler for this contract.
 
 Task planning is JSON-only: `.memory-bank/tasks/index.json` indexes `.memory-bank/tasks/TASK-*.task.json` records, concrete task IDs use `TASK-NNN-TN-FT-NNN-WN`, the ID tier/feature/wave segments must match `task.tier`, `task.feature`, and `task.wave`, and commands must treat those records as the only task model.
 
@@ -244,6 +266,7 @@ Fast syntax/source-only check:
 
 ```bash
 npm run check:syntax --silent
+npm run test:mb-doctor --silent
 npm run test:install-sync --silent
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
 ```

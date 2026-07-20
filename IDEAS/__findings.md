@@ -1,7 +1,7 @@
 # DevRails workflow findings: повторный source-only аудит
 
-Статус документа: review notes; findings №1, №2 и №7 реализованы и проверены,
-остальные пункты остаются без реализации.
+Статус документа: review notes; findings №1–4, №7 и №9 реализованы и
+проверены, остальные пункты остаются без реализации.
 
 Дата повторной проверки: 2026-07-20.
 
@@ -20,7 +20,7 @@
 - root documentation и `PROJECT_MAP.md`.
 
 При исходном повторном аудите installer/bootstrap не запускались. Для findings
-№1, №2 и №7 после одобрения решений выполнены isolated
+№1–4, №7 и №9 после одобрения решений выполнены isolated
 install/bootstrap/sync smoke и regression test; для остальных пунктов
 `подтверждён` означает только source code и contract evidence, а не runtime
 smoke result.
@@ -47,13 +47,13 @@ smoke result.
 |---:|---|---:|---:|---:|---:|---|
 | 1 | исправлен; schema/coherent-upgrade smoke проходит | 5/5 | 2/5 | 2/5 | 3/5 | закрыт |
 | 2 | исправлен; templates deployed/synced по stable target path | 5/5 | 2/5 | 1/5 | 3/5 | закрыт |
-| 3 | подтверждён в deterministic doctor | 5/5 | 3/5 | 2/5 | 3/5 | P0 |
-| 4 | подтверждён; исходное решение слишком широко | 5/5 | 4/5 | 5/5 | 4/5 | P0 |
+| 3 | исправлен; Foundation doctor regression проходит | 5/5 | 3/5 | 2/5 | 3/5 | закрыт |
+| 4 | исправлен; boundary grammar/install-sync smoke проходит | 5/5 | 4/5 | 5/5 | 4/5 | закрыт |
 | 5 | подтверждён; start и closure ownership нужно разделить | 4/5 | 4/5 | 3/5 | 4/5 | P1 |
 | 6 | подтверждён source semantics installer | 4/5 | 1/5 | 1/5 | 2/5 | P1 |
 | 7 | исправлен; manual и scheduler closure branches разделены | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 8 | подтверждён, но только для pre-protocol halt | 3/5 | 1/5 | 1/5 | 1/5 | P2 |
-| 9 | подтверждён; legacy-block migration недооценена | 3/5 | 4/5 | 3/5 | 3/5 | P2 |
+| 9 | исправлен; filesystem registry install/sync smoke проходит | 3/5 | 4/5 | 3/5 | 3/5 | закрыт |
 | 10 | подтверждён только как source-reference drift | 1/5 | 1/5 | 1/5 | 1/5 | P3 |
 
 ## Общие ограничения для всех исправлений
@@ -93,163 +93,25 @@ smoke result.
 
 ## 3. Strict doctor пропускает незавершённый Foundation contract
 
-**Вердикт:** полностью подтверждён в deterministic validator и его command doc.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- При non-empty task index `checkTaskReadiness` вызывает
-  `checkFoundationReadiness`.
-- `checkFoundationReadiness` немедленно возвращается, если
-  `.memory-bank/foundation.md` отсутствует.
-- При parseable `Foundation Required: true` функция также возвращается без
-  finding для `pending_foundation_to_tasks`.
-- Для `Foundation Required: false` функция возвращается до проверки наличия
-  indexed `FT-000` records.
-- `mb-doctor.md` формулирует проверку только как «when foundation.md exists», то
-  есть contract text сейчас повторяет code gap.
-- `/spec-design` обязан записать accepted true/false Foundation decision до
-  product task design; `/feature-to-tasks` требует valid decision и закрытый
-  concrete gate, когда Foundation required.
-
-Agentic `/feature-to-tasks` и `/autopilot` содержат дополнительные preconditions,
-но deterministic strict doctor всё равно может выдать false PASS для вручную
-созданной, legacy или повреждённой queue. Это не отменяется наличием textual
-guard в другом skill.
-
-### Оценка
-
-- важность: `5/5` — mandatory deterministic scheduler gate может пропустить
-  незавершённый global prerequisite;
-- сложность: `3/5` — код локален, но state matrix шире одного `if`;
-- риск раздувания: `2/5` — исправление использует существующие anchors/statuses;
-- объём: `3/5` — validator, contract doc и fixture matrix.
-
-### KISS-исправление
-
-Для non-empty indexed queue:
-
-- strict mode требует `foundation.md` и parseable current Gate Anchors;
-- `Foundation Required: true` плюс `pending_foundation_to_tasks` — strict error;
-- required Foundation требует concrete indexed final gate из `FT-000`;
-- foundation-only queue может проходить pre-execution readiness с ещё не
-  закрытым final gate;
-- как только существуют product records, final gate должен быть `done`, а все
-  product tasks — зависеть от него прямо или транзитивно;
-- `Foundation Required: false` требует `not_required` и отсутствие indexed
-  `FT-000` records.
-
-Default mode может сообщать эти состояния warning, но не должен превращать
-fresh/manual pre-planning в новый blocking gate. Empty index сохраняет текущий
-`info` default и strict error.
-
-Не добавлять Foundation status, registry или отдельный validator phase.
-
-### Поверхность изменений
-
-- `skills/mb-garden/assets/mb-doctor.mjs`;
-- `skills/_shared/references/commands/mb-doctor.md`;
-- `foundation-to-tasks.md` только если после изменения обнаружится точное
-  расхождение, а не для дублирования doctor matrix.
-
-### Acceptance
-
-Fixtures должны покрывать: empty default/strict; non-empty без foundation;
-invalid anchors; required pending; required concrete open foundation-only gate;
-missing/unindexed/wrong-feature gate; product queue с open gate; product queue с
-closed gate без dependency; valid closed gate; false без `FT-000`; false с
-ошибочным `FT-000`.
+- Для non-empty queue `/mb-doctor` требует current `foundation.md`: default
+  сообщает warning, strict блокирует incomplete или contradictory state.
+- Foundation-only queue сохраняет open-gate execution; product queue требует
+  done gate, отсутствие unresolved `FT-000` и direct/transitive dependencies.
+- Existing finding codes и lifecycle ownership сохранены; regression покрывает
+  state matrix, bootstrap/sync и Codex/Claude runtime contract.
 
 ## 4. Hard `write_boundary` не имеет общей path semantics
 
-**Вердикт:** defect подтверждён, но исходное исправление меняло бы лишний public
-contract.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- Task schema задаёт `write_boundary`, deprecated `allowed_write_scope` и
-  `forbidden_scope` как обычные arrays of strings.
-- `mb-lint` проверяет только array/string shape, конфликт нового и deprecated
-  field и warning об alias. Даже empty strings и path syntax не проверяются.
-- Doctor проверяет лишь наличие хотя бы одной non-empty boundary string как
-  части handoff completeness и полагается на lint для structure.
-- `tier-policy`, `/exe`, planning commands и autonomy policy называют
-  `write_boundary` hard boundary, но не определяют path grammar и overlap.
-- Experimental parallel требует pairwise-disjoint boundaries, хотя source не
-  задаёт общий способ отличить `src/a` от `src/ab` или сопоставить `src/` с
-  `src/a.js`.
-
-### Почему исходное решение нужно сузить
-
-`forbidden_scope` в schema означает «hard paths or areas». В нём законно может
-быть смысловой запрет, а не filesystem path. Применение path-only grammar к
-этому полю стало бы breaking contract change. `stop_conditions` тем более
-остаётся текстовым.
-
-Формальная grammar нужна только для:
-
-- `runtime_context.write_boundary`;
-- deprecated read alias `allowed_write_scope`.
-
-### Оценка
-
-- важность: `5/5` — неоднозначен hard write boundary, а parallel proof может
-  дать ложную независимость;
-- сложность: `4/5` — нужны grammar, compatibility, schema/lint и одинаковые
-  lexical examples во всех consumers;
-- риск раздувания: `5/5` — особенно опасны glob engine, path object schema,
-  scope registry или новый parallel planner;
-- объём: `4/5` — policy, task producers/consumers, schema, lint и fixtures.
-
-### Минимальная grammar
-
-- project-relative POSIX path;
-- comparison case-sensitive и lexical, без filesystem existence requirement;
-- разрешён optional single trailing `/`, который удаляется перед сравнением;
-- запрещены absolute paths, `.`/`..` segments, `//`, backslash, NUL и glob
-  metacharacters;
-- entry разрешает сам path и lexical subtree;
-- overlap существует, когда normalized segment array одного entry является
-  prefix другого; string prefix недостаточен.
-
-Примеры:
-
-- `src` и `src/a.js` пересекаются;
-- `src/` нормализуется в `src`;
-- `src/a` и `src/ab` не пересекаются;
-- equal paths пересекаются;
-- `./src`, `../src`, `/src`, `src//a`, `src\\a` и `src/**` невалидны.
-
-Lexical disjointness является необходимым, но не достаточным доказательством
-parallel safety. Symlink/junction/alias или общий external output могут свести
-разные lexical paths к одному ресурсу; при такой неопределённости действует уже
-существующий sequential fallback. Не нужно добавлять realpath registry.
-
-### KISS-исправление
-
-1. Canonical grammar и segment-prefix algorithm определить один раз в
-   `tier-policy.md`.
-2. TASK_SCHEMA должен ограничить syntax, а один helper в `mb-lint` — дать
-   понятные errors и нормализационные tests.
-3. Doctor не должен копировать validator: он уже запускает lint первым.
-4. Producers (`foundation-to-tasks`, `feature-to-tasks`) и consumers
-   (`review-tasks-plan`, `exe`, `autopilot`/autonomy policy) ссылаются на
-   canonical rule, не изобретают свои grammars.
-5. Parallel workflow применяет documented segment algorithm и fallback; новая
-   library или scheduler implementation не нужны.
-
-### Поверхность изменений
-
-- `skills/_shared/references/workflows/{tier-policy,autonomy-policy}.md`;
-- `skills/_shared/references/commands/{foundation-to-tasks,feature-to-tasks,review-tasks-plan,exe,autopilot}.md`;
-- `skills/_shared/scripts/init-mb.js` для schema;
-- `skills/mb-garden/assets/mb-lint.mjs` и focused fixtures.
-
-### Acceptance
-
-Один case table должен использоваться для schema/lint tests и policy examples.
-Experimental parallel допускает только pairwise-disjoint normalized boundaries,
-сохраняет shared-state exclusions и при любой alias/isolation неопределённости
-переходит к sequential без нового status.
+- `write_boundary` и deprecated alias используют literal project-relative
+  POSIX paths с canonical segment-prefix semantics из `tier-policy.md`.
+- Generated schema и `mb-lint` проверяют path syntax; `forbidden_scope` и
+  `stop_conditions` сохраняют prose semantics, doctor не дублирует validator.
+- Sequential execution остаётся canonical; regression покрывает grammar,
+  alias, bootstrap/sync и conservative fallback без новых workflow artifacts.
 
 ## 5. Manual `/exe` допускает `planned`, но start-transition owner не определён
 
@@ -432,64 +294,16 @@ Source contract однозначно различает pre-protocol response-on
 
 ## 9. Fresh skill registry hardcodes только `cold-start`
 
-**Вердикт:** подтверждён; первая оценка недооценивала legacy migration.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- `init-mb.js` всегда seed-ит `## Installed` как `- cold-start`.
-- Full installer устанавливает runtime commands перед bootstrap, но generator не
-  читает `.agents/skills` или `.claude/skills`.
-- `/mb-garden` уже требует сверять registry с обеими runtime surfaces, поэтому
-  framework сам признаёт filesystem источником факта установки.
-- `mb-lint` проверяет наличие skills index, но не его соответствие runtime.
-- Existing `skills/index.md` не имеет generated markers; sync его вообще не
-  обновляет.
-- `## When to use` перечисляет многие commands независимо от partial/empty
-  runtime. Даже после исправления Installed block этот section нужно трактовать
-  как guidance «when installed», а не как второй factual registry.
-
-Наличие `/mb-garden` снижает blast radius: drift можно исправить позже. Но fresh
-generated registry всё равно изначально ложен.
-
-### Оценка
-
-- важность: `3/5` — discovery/maintenance defect, не блокирующий сами installed
-  commands;
-- сложность: `4/5` — fresh generation проста, но безопасный переход legacy
-  unmarked block сложнее;
-- риск раздувания: `3/5` — не нужны manifest, registry DB или parser framework;
-- объём: `3/5` — generator, structure reference, sync migration и fixtures.
-
-### KISS-исправление
-
-1. Сканировать target paths `.agents/skills/*/SKILL.md` и
-   `.claude/skills/*/SKILL.md`.
-2. Писать sorted generated table `skill | agents | claude`.
-3. На fresh file сразу использовать paired markers.
-4. На legacy file мигрировать только точный baseline `## Installed` block;
-   modified/ambiguous block сохранять и сообщать conflict.
-5. Authored sections сохранять; default `## When to use` назвать guidance для
-   installed commands или формулировать условно.
-6. При отсутствии runtime dirs писать явный empty state, не выдумывать
-   `cold-start`.
-
-Directory name достаточно как availability identity для generated DevRails
-commands. Не добавлять второй manifest или installer cache; frontmatter parser
-нужен только если появится отдельное доказанное требование проверять name/dir
-mismatch.
-
-### Поверхность изменений
-
-- `skills/_shared/scripts/init-mb.js`;
-- `skills/_shared/references/structure-template.md`;
-- sync mixed-block handling из finding №1;
-- `mb-garden.md` только если его current filesystem semantics потребуется
-  уточнить, а не для дублирования scan logic.
-
-### Acceptance
-
-Cases: full, partial, empty и asymmetric `.agents`/`.claude`; exact legacy
-baseline; user-modified legacy block; authored sections; deterministic sorting.
+- `## Installed` строится из фактических `.agents/.claude` `SKILL.md` как
+  deterministic per-surface table; отсутствие runtime skills имеет явный empty
+  state.
+- Sync обновляет только paired-marker block, мигрирует exact legacy
+  `- cold-start` и сохраняет authored или неоднозначный state с warning.
+- Guidance условна по active surface; regression покрывает full/empty, drift,
+  legacy migration, authored sections и isolated install/bootstrap без нового
+  manifest, parser или validator gate.
 
 ## 10. `structure-template.md` дублирует устаревший MB-SYNC checklist
 
