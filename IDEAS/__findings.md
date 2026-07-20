@@ -1,6 +1,6 @@
 # DevRails workflow findings: повторный source-only аудит
 
-Статус документа: review notes; findings №1–5, №7 и №9 реализованы и
+Статус документа: review notes; findings №1–5 и №7–9 реализованы и
 проверены, остальные пункты остаются без реализации.
 
 Дата повторной проверки: 2026-07-20.
@@ -20,7 +20,7 @@
 - root documentation и `PROJECT_MAP.md`.
 
 При исходном повторном аудите installer/bootstrap не запускались. Для findings
-№1–5, №7 и №9 после одобрения решений выполнены isolated
+№1–5 и №7–9 после одобрения решений выполнены isolated
 install/bootstrap/sync smoke и regression test; для остальных пунктов
 `подтверждён` означает только source code и contract evidence, а не runtime
 smoke result.
@@ -52,7 +52,7 @@ smoke result.
 | 5 | исправлен; caller-selected `/exe` start/install smoke проходит | 4/5 | 4/5 | 3/5 | 4/5 | закрыт |
 | 6 | подтверждён source semantics installer | 4/5 | 1/5 | 1/5 | 2/5 | P1 |
 | 7 | исправлен; manual и scheduler closure branches разделены | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
-| 8 | подтверждён, но только для pre-protocol halt | 3/5 | 1/5 | 1/5 | 1/5 | P2 |
+| 8 | исправлен; response-only halt/install smoke проходит | 3/5 | 1/5 | 1/5 | 1/5 | закрыт |
 | 9 | исправлен; filesystem registry install/sync smoke проходит | 3/5 | 4/5 | 3/5 | 3/5 | закрыт |
 | 10 | подтверждён только как source-reference drift | 1/5 | 1/5 | 1/5 | 1/5 | P3 |
 
@@ -190,42 +190,16 @@ framework sync не оставляет schema/workflows и runtime commands ра
 
 ## 8. Missing-workflow preflight противоречит terminal handoff
 
-**Вердикт:** подтверждён, но только для halt до protocol creation.
+**Статус:** закрыт.
 
-### Что доказано сырцами
-
-- `/autonomous` требует при missing required workflow вернуть
-  `HALT_POLICY_VIOLATION` до creation/reuse run protocol и любых durable writes.
-- Общий handoff contract без исключения требует записать terminal state,
-  reason, evidence и resume command в
-  `.protocols/AUTONOMOUS-RUN/status.md`.
-- В missing-workflow branch этот status file либо ещё не существует, либо его
-  запрещено reuse/write. Оба требования одновременно выполнить нельзя.
-
-### Оценка
-
-- важность: `3/5` — scenario редкий, но contract логически невыполним;
-- сложность: `1/5`;
-- риск раздувания: `1/5`;
-- объём: `1/5` — один command contract.
-
-### KISS-исправление
-
-- pre-protocol `HALT_POLICY_VIOLATION` возвращает terminal state, missing paths,
-  external installer owner и exact resume command только в command response;
-- общий durable handoff действует только после успешного protocol preflight;
-- обходной status/halt artifact не создаётся.
-
-Это не новый terminal state и не новая protocol phase.
-
-### Поверхность изменений
-
-Только `skills/_shared/references/commands/autonomous.md`.
-
-### Acceptance
-
-Source contract однозначно различает pre-protocol response-only halt и любой
-последующий durable halt.
+- При missing required workflow `/autonomous` возвращает response-only
+  `HALT_POLICY_VIOLATION` с missing paths, external installer owner и resume
+  route, не создавая и не изменяя run protocol.
+- Durable terminal result записывается в `status.md` только после workflow
+  preflight и создания/reconciliation protocol; старый protocol в
+  pre-protocol branch остаётся нетронутым.
+- Новые state, phase и halt artifact не добавлены; install-sync regression и
+  isolated install/bootstrap smoke покрывают Codex/Claude runtime contract.
 
 ## 9. Fresh skill registry hardcodes только `cold-start`
 
@@ -286,7 +260,7 @@ canonical workflow остаётся единственной полной policy
    `write_boundary` grammar независимы по данным, но оба меняют readiness source.
 3. **Task lifecycle:** findings 5 и 7 закрыты; start и closure ownership
    разделены без нового persisted mode или registry.
-4. **Broken/contradictory routes:** findings 6 и 8.
+4. **Broken/contradictory routes:** finding 8 закрыт; finding 6 остаётся.
 5. **Source cleanup:** finding 10.
 
 После каждого implementation batch: syntax check, source-only `shared-*` count,

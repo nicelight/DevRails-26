@@ -1035,6 +1035,12 @@ route. Product queue `SUCCESS` переходит к финальным end-to-e
 `/autonomous` не проводит unattended Constitution interview и не принимает
 missing operator decisions.
 
+Required-workflow preflight выполняется до создания или reuse run protocol.
+Missing path возвращает response-only `HALT_POLICY_VIOLATION` с external
+installer/resume route и не изменяет существующие run artifacts. После
+создания protocol terminal result записывается в
+`.protocols/AUTONOMOUS-RUN/status.md` для resume.
+
 Для `feature-plan` и каждой реально reviewed `task-plan:FT-<NNN>` surface
 допускаются ровно пять завершённых циклов `repair -> re-review`. Initial review
 начинается с counter `0` и не считается попыткой; counter увеличивается после

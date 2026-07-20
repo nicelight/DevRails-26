@@ -29,10 +29,12 @@ Preflight:
   install, deployment, production write, secret read, or out-of-repo
   infrastructure change.
 
-If a required workflow is missing, halt before creating/reusing the run
-protocol or making any other durable write with `HALT_POLICY_VIOLATION`. Name
-every missing path in the reason. The repair owner is the external DevRails
-installer: from an available DevRails checkout run
+If a required workflow is missing, return `HALT_POLICY_VIOLATION` in the command
+response only, before creating/reusing the run protocol or making any other
+durable write. Name every missing path in the reason and state that no run
+protocol was started or changed; leave any existing
+`.protocols/AUTONOMOUS-RUN/*` untouched. The repair owner is the external
+DevRails installer: from an available DevRails checkout run
 `node scripts/install-framework.mjs --bootstrap --target <project-path> --yes --sync`,
 then resume `/autonomous`. Do not copy missing workflow rules inline.
 
@@ -245,8 +247,14 @@ Allowed terminal states remain exactly:
 </validation>
 
 <handoff_contract>
-Write the terminal state, reason, evidence paths, unresolved operator questions,
-and exact resume command to `.protocols/AUTONOMOUS-RUN/status.md`. On success,
-report the closed queue and final gate evidence; on halt, do not claim partial
-coverage as completion.
+After required-workflow preflight passes and the run protocol exists, record the
+terminal result in `.protocols/AUTONOMOUS-RUN/status.md`:
+- on halt, write the state, reason, evidence paths, any unresolved operator
+  questions, and exact resume command; do not claim partial coverage as
+  completion;
+- on success, write `SUCCESS` and report the closed queue and final gate
+  evidence.
+
+The missing-workflow branch above is response-only because that invocation
+neither creates, reuses, nor changes a run protocol.
 </handoff_contract>

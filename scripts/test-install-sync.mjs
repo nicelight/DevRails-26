@@ -418,8 +418,16 @@ try {
       );
     });
 
+    const autonomousSkill = readTarget(`${runtimeRoot}/autonomous/SKILL.md`);
     const exeSkill = readTarget(`${runtimeRoot}/exe/SKILL.md`);
     const autopilotSkill = readTarget(`${runtimeRoot}/autopilot/SKILL.md`);
+    assert(
+      autonomousSkill.includes('return `HALT_POLICY_VIOLATION` in the command\nresponse only')
+        && autonomousSkill.includes('leave any existing\n`.protocols/AUTONOMOUS-RUN/*` untouched')
+        && autonomousSkill.includes('After required-workflow preflight passes and the run protocol exists')
+        && autonomousSkill.includes('The missing-workflow branch above is response-only'),
+      `${runtimeRoot}/autonomous does not preserve the response-only pre-protocol halt boundary.`,
+    );
     assert(
       exeSkill.includes('The caller has already selected this task.')
         && exeSkill.includes('`/exe` owns `ready -> in_progress`')
