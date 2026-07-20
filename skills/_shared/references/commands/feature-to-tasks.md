@@ -28,7 +28,8 @@ Before any durable plan or task write, require:
 - target feature, linked epic, governing REQ/RTM, clarified PRD, and applicable
   Constitution rules;
 - `.memory-bank/spec-backbone.md` Global Backbone Status `complete`, or valid
-  `minimal` with explicit global/shared not-applicable rationales;
+  `minimal` with explicit global/shared not-applicable rationales, and positive
+  integer `Planning Revision`;
 - `.memory-bank/spec-index.md` plus existing feature links and plausible
   subject-based canonical specs;
 - a valid Foundation decision. When Foundation is required, the concrete
@@ -252,6 +253,8 @@ Before handoff:
   entry;
 - verify ID/tier/feature/wave consistency, concrete REQ links, valid Foundation
   dependencies, existing/acyclic dependencies, and legal initial statuses;
+- verify the positive Planning Revision remained unchanged during feature/task
+  reconciliation;
 - map every feature AC/REQ to at least one task and every task back to feature
   scope without orphan, duplicate, or unrelated outcomes;
 - reread changed specs/tasks and reconcile any shared detail changed later in

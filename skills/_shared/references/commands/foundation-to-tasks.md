@@ -21,7 +21,8 @@ Require:
 - clarified PRD, requirements, epics, product features, and current Feature
   Pressure Map;
 - `.memory-bank/spec-backbone.md` with Global Backbone Status `complete`, or
-  valid `minimal` with explicit not-applicable rationales;
+  valid `minimal` with explicit not-applicable rationales, and positive integer
+  `Planning Revision`;
 - pure `.memory-bank/spec-index.md` plus applicable linked canonical specs;
 - `.memory-bank/tasks/index.json` and
   `.memory-bank/schemas/task.schema.json`;

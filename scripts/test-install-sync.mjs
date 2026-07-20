@@ -484,6 +484,18 @@ try {
   writeJsonTarget('.memory-bank/tasks/index.json', { version: 1, tasks: [] });
   rmSync(targetPath(BOUNDARY_TASK_REL), { force: true });
 
+  const specBackbone = readTarget('.memory-bank/spec-backbone.md');
+  assert(
+    specBackbone.includes('## Global Backbone Status')
+      && specBackbone.includes('- Planning Revision: 0'),
+    'Fresh bootstrap spec-backbone does not initialize Planning Revision at 0.',
+  );
+  assert(
+    readTarget('AGENTS.md').includes('Product execution requires task-plan `APPROVE` for the current positive Global')
+      && readTarget('AGENTS.md').includes('`/feature-to-tasks --all` -> `/review-tasks-plan --all`'),
+    'Fresh bootstrap AGENTS.md does not expose the global planning-revision invalidation route.',
+  );
+
   ['.agents/skills', '.claude/skills'].forEach((runtimeRoot) => {
     const doctorSkill = readTarget(`${runtimeRoot}/mb-doctor/SKILL.md`);
     assert(
@@ -523,6 +535,10 @@ try {
     const autonomousSkill = readTarget(`${runtimeRoot}/autonomous/SKILL.md`);
     const exeSkill = readTarget(`${runtimeRoot}/exe/SKILL.md`);
     const autopilotSkill = readTarget(`${runtimeRoot}/autopilot/SKILL.md`);
+    const specDesignSkill = readTarget(`${runtimeRoot}/spec-design/SKILL.md`);
+    const foundationToTasksSkill = readTarget(`${runtimeRoot}/foundation-to-tasks/SKILL.md`);
+    const featureToTasksSkill = readTarget(`${runtimeRoot}/feature-to-tasks/SKILL.md`);
+    const reviewTasksPlanSkill = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
     assert(
       autonomousSkill.includes('return `HALT_POLICY_VIOLATION` in the command\nresponse only')
         && autonomousSkill.includes('leave any existing\n`.protocols/AUTONOMOUS-RUN/*` untouched')
@@ -541,6 +557,33 @@ try {
         && autopilotSkill.includes('invoke `/exe`; `/exe`\n   prepares/reconciles the tier protocol and writes `ready -> in_progress`')
         && !autopilotSkill.includes('task at `selection`, then write `ready -> in_progress`'),
       `${runtimeRoot}/autopilot still owns the selected task start transition.`,
+    );
+    assert(
+      specDesignSkill.includes('- Planning Revision: <non-negative integer>')
+        && specDesignSkill.includes('increment the revision exactly once')
+        && specDesignSkill.includes('`/feature-to-tasks --all`, `/review-tasks-plan --all`'),
+      `${runtimeRoot}/spec-design does not expose the global planning-revision rerun contract.`,
+    );
+    assert(
+      foundationToTasksSkill.includes('positive integer\n  `Planning Revision`')
+        && featureToTasksSkill.includes('positive\n  integer `Planning Revision`'),
+      `${runtimeRoot} task generation does not require a positive Planning Revision.`,
+    );
+    assert(
+      reviewTasksPlanSkill.includes('`REVIEWED_PLANNING_REVISION: <N>`')
+        && reviewTasksPlanSkill.includes('valid only while this\nvalue equals the current positive Planning Revision'),
+      `${runtimeRoot}/review-tasks-plan does not bind its verdict to Planning Revision.`,
+    );
+    assert(
+      autopilotSkill.includes('`REVIEWED_PLANNING_REVISION: <N>` equal to the current Planning Revision')
+        && autopilotSkill.includes('Do not mutate task statuses to represent this invalidation.')
+        && exeSkill.includes('`REVIEWED_PLANNING_REVISION: <N>` equal to it')
+        && exeSkill.includes('Leave all task statuses unchanged'),
+      `${runtimeRoot} execution entrypoints do not reject stale planning approval without lifecycle mutation.`,
+    );
+    assert(
+      autonomousSkill.includes('current positive\n     Global Backbone Planning Revision'),
+      `${runtimeRoot}/autonomous does not require reviews for the current Planning Revision.`,
     );
   });
 

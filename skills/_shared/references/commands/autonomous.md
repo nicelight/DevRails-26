@@ -154,7 +154,8 @@ contract proves it already complete:
 4. Product tasking:
    - `/feature-to-tasks --all`;
    - fresh-context `/review-tasks-plan FT-<NNN>` separately for every
-     task-linked product feature until `APPROVE`, within review budget;
+     task-linked product feature until `APPROVE` records the current positive
+     Global Backbone Planning Revision, within review budget;
    - lint plus `/mb-doctor --strict` after the real product queue exists.
 5. Delegate the strict-ready product queue to default full-queue `/autopilot`.
 
@@ -231,6 +232,8 @@ Use `HALT_FAILURE_BUDGET` or `HALT_BUDGET_EXCEEDED` when exceeded.
 - every T3 closure has functional PASS, task semantic-pass, and exact human
   checkpoint;
 - every task-linked product feature has latest task-plan `APPROVE`;
+- every such approval records the current positive Global Backbone Planning
+  Revision;
 - latest lint and `/mb-doctor --strict` pass;
 - run protocol and authoritative task records agree.
 

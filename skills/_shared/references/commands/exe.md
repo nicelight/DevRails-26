@@ -24,6 +24,12 @@ Require and resolve:
 - behavior specs only when linked in `source_artifacts` and useful as
   non-authoritative examples.
 
+For a product task whose feature is not `FT-000`, also require a positive Global
+Backbone `Planning Revision` and the latest feature-specific
+`/review-tasks-plan` `APPROVE` report with exact standalone
+`REVIEWED_PLANNING_REVISION: <N>` equal to it. FT-000 keeps its dedicated
+Foundation gate and does not use product task-plan review.
+
 Use task `purpose`, `success_outcome`, `anti_goals`, `source_artifacts`,
 `normative_inputs`, `constraints`, `invariants`, `verification_targets`, and
 `runtime_context` when present. For T0/T1, do not load broad global planning
@@ -37,6 +43,7 @@ Point-of-use preflight must confirm:
 - no recorded blocker or unresolved required gate in the resolved task context;
 - success is observable from AC/REQ/spec/gates/verification targets;
 - task, feature, plan, backbone, and linked specs do not contradict;
+- for a product task, reviewed and current Planning Revision are equal;
 - T2/T3 direct canonical coverage is applicable and concrete enough to avoid
   guessing shape, rules, errors, and verification;
 - actual work fits the semantic outcome/AC/REQ/spec boundary, tier, deliberate
@@ -47,6 +54,11 @@ Point-of-use preflight must confirm:
 Stop before implementation if the task is missing/malformed, already
 `blocked|failed|done`, has unmet dependencies, lacks required T2/T3 context, is
 objectively contradictory, is unverifiable, or is materially under-tiered.
+
+If product planning revision evidence is missing, invalid, or mismatched, every
+previous product task-plan approval is stale. Leave all task statuses unchanged
+and route `/feature-to-tasks --all`, then `/review-tasks-plan --all`, the
+applicable doctor gate, and retry the selected task.
 
 For a selected `planned` task, write `planned -> ready` only when this preflight
 proves it runnable; otherwise leave it `planned` and stop. A selected `ready`

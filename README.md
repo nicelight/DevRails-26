@@ -68,6 +68,11 @@ queue и final gate. Product tasks нельзя генерировать до з
 Если baseline уже доказан или отдельная foundation queue не нужна, фиксируется
 `Foundation Required: false` и `Foundation Gate Task: not_required`.
 
+Global Backbone хранит один integer `Planning Revision`. Material rerun
+`/spec-design` повышает его и тем самым делает все прежние product task-plan
+`APPROVE` stale. Task statuses не меняются: перед execution повторяются
+`/feature-to-tasks --all` и `/review-tasks-plan --all`.
+
 ## Brownfield flow
 
 ```text

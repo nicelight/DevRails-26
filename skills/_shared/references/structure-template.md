@@ -93,6 +93,9 @@ After finishing a meaningful unit of work:
 
 ## Clean context (recommended)
 - Route each `TASK-NNN-TN-FT-NNN-WN` by `task.tier` and `.memory-bank/workflows/tier-policy.md`.
+- Product execution requires task-plan `APPROVE` for the current positive Global
+  Backbone `Planning Revision`. A mismatch keeps task statuses unchanged and
+  routes `/feature-to-tasks --all` -> `/review-tasks-plan --all`.
 - The caller selects a concrete task. `/exe` prepares/reconciles its tier
   protocol and neutral current Execution Attempt before writing
   `ready -> in_progress`; it never selects queue work.
@@ -127,7 +130,7 @@ Claude (fresh session):
 
 ## Two modes (manual vs scheduler)
 - **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd-to-features` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/feature-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/exe TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/exe TASK` → `/verify TASK` → `/red-verify TASK`, then explicit owner closure and wave-boundary `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full `/mb-sync` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/feature-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd-to-features`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/feature-doctor FT-<NNN>` only for explicit feature blockers and rerun `/feature-to-tasks FT-<NNN>` for feature-level canonical spec repair.
-- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/feature-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if product JSON task records and required SDD spec links already exist, every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE`, strict doctor passes, and Foundation is `not_required` or its named final gate is `done` with no unresolved FT-000 work; `/autopilot` never executes FT-000. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
+- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/feature-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if product JSON task records and required SDD spec links already exist, every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the current positive Planning Revision, strict doctor passes, and Foundation is `not_required` or its named final gate is `done` with no unresolved FT-000 work; `/autopilot` never executes FT-000. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
 
 `.tasks/` naming:
 - Folder per process: `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
@@ -420,6 +423,7 @@ status: active
 
 ## Global Backbone Status
 - Status: blocked
+- Planning Revision: 0
 - Mode: pending
 - Architecture artifact strategy: pending
 - Not applicable areas:

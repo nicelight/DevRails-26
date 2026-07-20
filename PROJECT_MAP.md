@@ -143,6 +143,12 @@ Architecture Spine is a compact design-pressure guardrail inside
 stable `AD-*` executable rules and does not introduce a separate architecture
 workflow.
 
+Global planning freshness uses one integer
+`.memory-bank/spec-backbone.md#Global Backbone Status` `Planning Revision`.
+Material global-contract changes invalidate all previous product task-plan
+approvals without changing task lifecycle state; current reviews bind through
+`REVIEWED_PLANNING_REVISION`.
+
 Primary source files for this behavior:
 
 - `skills/_shared/references/commands/spec-design.md` for creating/updating the
@@ -153,7 +159,14 @@ Primary source files for this behavior:
   feature concern discovery, subject-based canonical spec reconciliation, and
   copying relevant AD/boundary links into task fields
 - `skills/_shared/references/commands/review-tasks-plan.md` for fresh-context
-  review of shared-boundary AD/boundary routing before execution
+  review of shared-boundary AD/boundary routing and binding `APPROVE` to the
+  current Planning Revision
+- `skills/_shared/references/commands/autopilot.md` and
+  `skills/_shared/references/commands/exe.md` for rejecting stale product
+  approvals without task lifecycle mutation
+- `skills/_shared/references/workflows/autonomy-policy.md` and
+  `skills/_shared/references/workflows/execute-loop.md` for the shared
+  all-feature reconciliation/review route
 - `skills/_shared/references/structure-template.md` and
   `skills/_shared/scripts/init-mb.js` for generated skeleton templates
 - `skills/mb-garden/assets/mb-lint.mjs` and

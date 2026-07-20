@@ -445,11 +445,19 @@ Product task handoff разрешён только когда весь durable b
 
 ```text
 Global Backbone Status: complete | minimal | blocked
+Planning Revision: 0 | positive integer
 Mode: local_simple_backbone | standard_architecture_scaffold |
       strict_architecture_scaffold | pending
 Architecture artifact strategy: single-file | split-core-docs |
                                 split-by-boundary-topic | pending
 ```
+
+`Planning Revision: 0` означает, что successful global backbone ещё не создан.
+Первый successful `/spec-design` устанавливает `1`; material rerun увеличивает
+revision ровно один раз. Старый task-plan `APPROVE` принимается только когда его
+`REVIEWED_PLANNING_REVISION` равен текущей revision. При несовпадении task
+statuses сохраняются, а весь product planning проходит
+`/feature-to-tasks --all -> /review-tasks-plan --all` повторно.
 
 Backbone Area Matrix использует только:
 
@@ -962,7 +970,8 @@ rebuild/split, затем повторяются `/review-tasks-plan`, applicabl
   work;
 - хотя бы одна indexed product task; FT-000 records остаются read-only history;
 - latest `/review-tasks-plan FT-<NNN>` `APPROVE` для каждой task-linked product
-  feature;
+  feature с `REVIEWED_PLANNING_REVISION`, равным текущей positive Planning
+  Revision;
 - complete T2/T3 single-card handoffs;
 - no unresolved operator decision;
 - `/mb-doctor --strict` PASS.
@@ -1012,7 +1021,9 @@ evidence, owner и exact resume route, а не к автоматическому
 
 Status/evidence-only closure не вызывает повторный `/review-tasks-plan`.
 Re-review нужен, если изменились task cards, specs, dependencies, tier, scope
-или plan assumptions.
+или plan assumptions. Изменение Global Backbone Planning Revision инвалидирует
+reviews всей product queue и требует `/feature-to-tasks --all`, затем
+`/review-tasks-plan --all`.
 
 ### `/autonomous`
 

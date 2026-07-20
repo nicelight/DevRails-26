@@ -22,8 +22,9 @@ Supported arguments:
 - clarified PRD, product, requirements, epics, and product features;
 - `.memory-bank/spec-backbone.md` and pure `.memory-bank/spec-index.md`;
 - a Global Backbone Status of `complete`, or valid `minimal` with explicit
-  `not_applicable` rationale; if missing, invoke/perform `/spec-design --all`
-  under the same unattended decision rules;
+  `not_applicable` rationale, plus positive integer `Planning Revision`; if
+  missing or invalid, invoke/perform `/spec-design --all` under the same
+  unattended decision rules;
 - `.memory-bank/foundation.md` with an explicit decision and, when foundation
   work is required, a closed Foundation Gate before product task handoff;
 - relevant canonical specs and accepted operator decisions.
@@ -47,6 +48,9 @@ argument. Exclude reserved `FT-000` from product feature targets.
   new status/terminal state.
 - Preserve feature status vocabulary
   `spec_design_status: complete|not_required|blocked`.
+- `--init` preserves Global Backbone `Planning Revision`. Feature design changes
+  it only under the global-rule rule below and never uses task lifecycle state as
+  a freshness marker.
 </hard_invariants>
 
 <operator_decisions>
@@ -107,6 +111,10 @@ Rules:
 - update Architecture Spine `AD-*` under the same KISS and evidence rules as
   `/spec-design` when shared-boundary, contract, state/data, runtime, security,
   or strict pressure requires executable global rules;
+- when feature design durably changes an active global `AD-*` or another global
+  rule in a way that can change downstream planning, increment Global Backbone
+  `Planning Revision` exactly once under `/spec-design` rules; otherwise preserve
+  it;
 - carry relevant Architecture Spine, ADR, boundary, contract, and verification
   links into feature `spec_design_links`;
 - update `.memory-bank/spec-index.md` only as registry/discovery routing.
@@ -161,6 +169,10 @@ sources used, blockers, and one immediate next command:
 - successful `--init` -> `/prd-to-features`;
 - ready backbone with required foundation work not yet complete ->
   `/foundation-to-tasks` or continuation of its existing gate;
+- Planning Revision increased after indexed task generation ->
+  `/feature-to-tasks --all`, then `/review-tasks-plan --all`; previous product
+  task-plan approvals are stale, task statuses remain unchanged, and this branch
+  overrides the normal feature handoff;
 - successful one-feature design -> `/feature-to-tasks FT-<NNN>`;
 - successful `--all` -> `/feature-to-tasks --all`;
 - unresolved decision -> named interactive repair skill; no task handoff.

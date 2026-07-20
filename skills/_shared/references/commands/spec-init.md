@@ -56,6 +56,9 @@ the glossary has no placeholders and its `spec-index.md` row matches it.
   design skills own that status.
 - Keep `.memory-bank/spec-index.md` a pure registry. Readiness, open design
   questions, matrices, and handoffs belong in `spec-backbone.md`.
+- Preserve any existing Global Backbone `Planning Revision`. `/spec-init` does
+  not initialize or increment the post-PRD planning contract; a fresh bootstrap
+  placeholder remains `0` until `/spec-design` succeeds.
 - Do not turn a later architecture question into a product assumption. Record it
   for `/spec-design` unless it blocks truthful L1-L3 decomposition now.
 </hard_invariants>

@@ -35,6 +35,10 @@ Read current:
 - only linked or otherwise necessary canonical specs and relevant doctor
   findings.
 
+Require Global Backbone `Planning Revision` to be a positive integer. A missing,
+zero, or invalid revision is a blocking design-readiness gap owned by
+`/spec-design`.
+
 For `--all`, repeat this bounded feature-scoped input set; do not collapse the
 queue into one broad reviewer prompt.
 </input_contract>
@@ -87,6 +91,11 @@ Use a feature-specific stage ID such as `S-TASKS-FT-001`. For `--all`, keep one
 independent report and verdict per feature; an optional summary must not replace
 them.
 
+Every feature report records the exact standalone marker
+`REVIEWED_PLANNING_REVISION: <N>` for the current Global Backbone Planning
+Revision, for both `APPROVE` and `REJECT`. `APPROVE` is valid only while this
+value equals the current positive Planning Revision.
+
 Cover:
 
 1. Structural integrity
@@ -130,7 +139,8 @@ replace downstream `/mb-doctor --strict`.
 <validation>
 Before publishing the verdict, verify that every claim cites an inspected task,
 plan, spec, requirement, dependency, or doctor finding; the report uses only
-`APPROVE|REJECT`; and no reviewed durable state was mutated.
+`APPROVE|REJECT`; its reviewed revision marker exactly matches the current
+positive Planning Revision; and no reviewed durable state was mutated.
 </validation>
 
 <handoff_contract>

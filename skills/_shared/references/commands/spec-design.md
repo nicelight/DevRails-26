@@ -78,6 +78,8 @@ scenario review or create the file only to satisfy a template.
 - Feature docs remain composition roots for behavior and exact applicable spec
   links. Feature-level concern completion and `spec_design_status` normally
   belong to `/feature-to-tasks` or `/spec-auto`.
+- Never rewrite task lifecycle state to represent stale planning; Planning
+  Revision mismatch is the invalidation gate.
 - Foundation work is product-enabling infrastructure only. Do not move product
   behavior into the foundation path.
 </hard_invariants>
@@ -126,12 +128,23 @@ Update `.memory-bank/spec-backbone.md` with this parseable contract:
 ```markdown
 ## Global Backbone Status
 - Status: complete|minimal|blocked
+- Planning Revision: <non-negative integer>
 - Mode: local_simple_backbone|standard_architecture_scaffold|strict_architecture_scaffold|pending
 - Architecture artifact strategy: single-file|split-core-docs|split-by-boundary-topic|pending
 - Not applicable areas:
   - event_message_contracts: not_applicable - no event/message boundary in this feature set.
 - Notes:
 ```
+
+Planning revision rules:
+- `0` is pre-design; the first successful backbone sets `1`, and
+  `complete|minimal` requires a positive value.
+- On later runs, increment the revision exactly once only when a durable global
+  rule, boundary, contract, matrix route, or Foundation decision changes in a
+  way that can affect feature/task planning; otherwise preserve it.
+- Repair a missing/invalid legacy value on the next successful run.
+- An increment after task generation makes all product task-plan reviews stale;
+  preserve task statuses and use the all-feature handoff below.
 
 Mode meanings:
 - `local_simple_backbone`: explicitly local/simple feature pressure without a
@@ -308,7 +321,9 @@ For affected product features, add only evidence-backed global backbone links
 or SDD Design Gate notes. Do not set `spec_design_status: complete` unless all
 feature-level concern criteria are already truthfully satisfied. Do not use
 `not_required` for a feature that depends on shared-boundary, contract,
-state/data, runtime, security, or strict design.
+state/data, runtime, security, or strict design. On a post-task revision
+increment, report all task-linked product features for reconciliation; change
+feature status only when its design coverage is no longer truthful.
 </required_outputs>
 
 <agent_discretion>
@@ -327,6 +342,7 @@ operator's behalf.
 Before handoff:
 - verify the Global Backbone Status and Matrix are parseable and mutually
   consistent;
+- verify Planning Revision is valid for the status and advanced at most once;
 - verify every relevant area is authoritative, explicitly not applicable, or a
   narrowly valid `needed_before_tasks` route;
 - verify canonical spec-index paths are unique, linked, and contain only
@@ -340,7 +356,8 @@ The complete Product/Design boundary is ready only when the durable bundle is
 present and consistent:
 - clarified `.memory-bank/prd.md`;
 - product, requirements, epics, and product features;
-- Global Backbone Status `complete` or valid `minimal`;
+- Global Backbone Status `complete` or valid `minimal` with positive Planning
+  Revision;
 - canonical `.memory-bank/spec-index.md`;
 - explicit Foundation Dev Path decision;
 - accepted operator decisions in their existing canonical artifacts.
@@ -349,7 +366,12 @@ present and consistent:
 <handoff_contract>
 Report backbone status/mode, artifact strategy, specs changed, matrix summary,
 `not_applicable` rationale, affected features, Foundation decision, durable
-operator decisions, blockers, and the immediate next command:
+operator decisions, Planning Revision before/after, blockers, and the immediate
+next command:
+- ready backbone + revision increased after indexed task generation -> rerun
+  `/foundation-to-tasks` first when Foundation is required, then
+  `/feature-to-tasks --all`, `/review-tasks-plan --all`, and the applicable
+  doctor/execution gate; this branch overrides the normal ready handoff;
 - ready backbone + `Foundation Required: true` -> `/foundation-to-tasks`;
 - ready backbone + `Foundation Required: false` -> `/feature-to-tasks FT-<NNN>` in
   manual flow, or `/spec-auto --all` for autonomous feature design;

@@ -10,6 +10,10 @@ status: active
 - `/write-prd` = PRD-level ambiguity closure. `/feature-doctor` = optional feature-level ambiguity pass.
 - `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd-to-features`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
 - `/spec-design` is mandatory after `/prd-to-features`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.
+- Global Backbone `Planning Revision` starts at `0`, becomes positive on the
+  first successful `/spec-design`, and increments once for a material global
+  planning-contract change. Product task-plan `APPROVE` is valid only for the
+  current revision.
 - `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
 - `/feature-to-tasks FT-<NNN>` closes applicable canonical concern coverage and
   creates the implementation plan plus complete JSON task records with direct
@@ -57,6 +61,9 @@ use `/mb-doctor --strict` before autonomous handoff
 the planning surface: task cards, specs, dependencies, tier, scope, or
 unresolved plan assumptions. Status/evidence-only closure does not
 trigger another task-plan review.
+14) If `/spec-design` increases Planning Revision after task generation, keep
+all task statuses unchanged and rerun `/feature-to-tasks --all`, then
+`/review-tasks-plan --all`, before any product task execution resumes.
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
@@ -81,7 +88,8 @@ end-to-end `SUCCESS` only after the product queue and all outer gates pass
 
 ## Autonomous executor only
 If JSON task records already exist and `/review-tasks-plan FT-<NNN>` already
-approved every task-linked product feature, and the Foundation gate is already
+approved every task-linked product feature for the current positive Planning
+Revision, and the Foundation gate is already
 `not_required` or its named gate task is `done`, use:
 - `/autopilot`
 

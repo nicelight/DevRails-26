@@ -101,7 +101,8 @@ status: active
 - Product JSON task queue unattended: используй `/autopilot` только когда
   product records уже подготовлены, Foundation is `not_required` or its named
   final gate is `done` with no unresolved FT-000 work, every task-linked
-  product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE`, and strict
-  doctor passes. `/autopilot` never executes FT-000
+  product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the
+  current positive Global Backbone Planning Revision, and strict doctor passes.
+  `/autopilot` never executes FT-000
 - full unattended (`PRD → done`): используй `/autonomous`
 </process>
