@@ -103,5 +103,7 @@ After `/feature-to-tasks FT-<NNN>`, run `/review-tasks-plan FT-<NNN>` before
 execution. For autonomous/autopilot handoff, every task-linked product feature
 needs latest `/review-tasks-plan FT-<NNN>` `APPROVE` plus strict doctor.
 
-Use `/autopilot` only for an already prepared JSON task queue. Use
-`/autonomous` for full unattended PRD-to-terminal-state runs.
+Use `/autopilot` only for an already prepared product JSON task queue after
+Foundation is `not_required` or its named final gate is `done` and no unresolved
+FT-000 work remains. `/autopilot` never executes FT-000. Use `/autonomous` for
+full unattended PRD-to-terminal-state runs.

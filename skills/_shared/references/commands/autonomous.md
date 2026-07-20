@@ -5,17 +5,19 @@ status: active
 # /autonomous - End-to-end unattended run
 
 <objective>
-Orchestrate the existing Product/Design, tasking, review, readiness,
-implementation, verification, synchronization, and scheduler contracts to one
-explicit terminal state. This command owns orchestration, budgets, terminal
-state, and scheduler transitions; child skills own their outcomes and local
-tactics.
+Orchestrate the existing Product/Design, tasking, review, readiness, and queue
+execution contracts to one explicit end-to-end terminal state. This command
+owns Product/Design phase sequencing, review budgets, and the outer run result.
+It owns the bounded FT-000 Foundation execution phase, then delegates the
+prepared product task scheduler and queue recovery to canonical `/autopilot`;
+every child skill owns its outcome and local tactics.
 </objective>
 
 <input_contract>
 Use when an explicit Product Brief, PRD/delta, or existing clarified project
 state authorizes unattended work. Use `/autopilot` instead when the reviewed
-JSON queue already exists.
+product JSON queue already exists and the Foundation gate is already closed or
+truthfully `not_required`.
 
 Preflight:
 - `.memory-bank/` exists, otherwise route `/mb-init`;
@@ -39,7 +41,8 @@ If substantial code already exists, require/update the brownfield baseline via
 
 Create/reuse:
 - `.protocols/AUTONOMOUS-RUN/plan.md`;
-- `.protocols/AUTONOMOUS-RUN/status.md` using the existing run-status shape;
+- `.protocols/AUTONOMOUS-RUN/status.md` using the durable run checkpoint
+  contract in `.memory-bank/workflows/autonomy-policy.md`;
 - `.protocols/AUTONOMOUS-RUN/decision-log.md`;
 - `.tasks/TASK-AUTONOMOUS/`.
 
@@ -54,19 +57,22 @@ state, not a second task registry.
   `.memory-bank/workflows/tier-policy.md`,
   `.memory-bank/workflows/execute-loop.md`, and
   `.memory-bank/workflows/mb-sync.md`.
-- Canonical execution is sequential: select, execute, verify, record the
-  authoritative lifecycle decision/evidence for one task, then select another.
+- Canonical queue execution is sequential.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
   isolation rules. Never infer independence from advisory `touched_files`.
 - Queue/task metadata comes only from indexed JSON task records. Preserve task
   schema, IDs, lifecycle `planned|ready|in_progress|blocked|done|failed`, tier,
   waves, Foundation dependencies, and hard runtime scopes.
-- Scheduler owns promotion, `ready -> in_progress`, final
-  `done|failed|blocked` decisions, dependent block/unblock, queue state, and
-  terminal run state. `/exe`, `/verify`, `/red-verify`, and `/mb-sync` keep
-  the ownership defined by tier policy.
-- Scheduler writes every task closure/failure/blocking decision, status, and
-  evidence link to the authoritative `.task.json` before any sync boundary.
+- During the Foundation phase, `/autonomous` is the explicit scheduler owner
+  only for indexed `feature: "FT-000"` records. After the Foundation gate is
+  `done`, `/autopilot` is the scheduler owner only for product records. Neither
+  phase may adopt or mutate the other phase's tasks.
+- `/autonomous` must not restage `/autopilot`'s product-queue algorithm or
+  reinterpret its task transitions. `/exe`, `/verify`, `/red-verify`, and
+  `/mb-sync` keep the ownership defined by tier policy.
+- The active scheduler writes every task closure/failure/blocking decision,
+  status, and evidence link to the authoritative `.task.json` before any sync
+  boundary.
 - `/mb-sync` reconciles already-written state once per wave unless an explicit
   current-wave durable-state dependency requires an early sync; it never
   chooses closure or promotion.
@@ -134,9 +140,11 @@ contract proves it already complete:
 3. Foundation when `Foundation Required: true`:
    - `/foundation-to-tasks`;
    - lint plus `/mb-doctor --strict` for the FT-000 queue;
-   - execute the FT-000 queue under the same sequential scheduler/tier rules;
-   - wave-boundary `/mb-sync`, lint, strict doctor;
-   - continue only when the named final gate task is `done`.
+   - execute the bounded FT-000 phase under `## Foundation execution and
+     resume` below; do not invoke `/autopilot` and do not select or mutate a
+     product task;
+   - continue only when every required FT-000 task, including the named final
+     gate task, is `done` and the post-boundary gates pass.
    When Foundation is not required, require truthful `not_required` anchors and
    create no FT-000 queue.
 4. Product tasking:
@@ -144,7 +152,7 @@ contract proves it already complete:
    - fresh-context `/review-tasks-plan FT-<NNN>` separately for every
      task-linked product feature until `APPROVE`, within review budget;
    - lint plus `/mb-doctor --strict` after the real product queue exists.
-5. Scheduler loop below.
+5. Delegate the strict-ready product queue to default full-queue `/autopilot`.
 
 ### Review repair cycles
 
@@ -169,53 +177,35 @@ completed `repair -> re-review` cycles per surface.
 
 Missing/failing lint or doctor uses `HALT_QUALITY_GATES`.
 
-## Sequential scheduler loop
+## Foundation execution and resume
 
-Before every selection pass, reread the JSON index/records and apply a separate
-promotion pass: `planned -> ready` only when all dependencies are `done` and no
-blocking review, bug, decision, or unresolved semantic concern remains. Write
-every promotion/dependent block decision to the affected record.
+`/autonomous` directly owns only indexed FT-000 records in this phase. Follow
+`/foundation-to-tasks`, tier policy, autonomy policy, and the existing
+`/mb-sync` boundary; never invoke `/autopilot` or mutate a product task.
 
-Select one eligible `ready` task by earliest wave and stable index order. Before
-writing `ready -> in_progress`, require the current strict-doctor pass. Then:
+Before new work, reconcile every FT-000 `in_progress` task from its
+authoritative record and current-attempt protocol/handoff/verdict. Resume the
+first incomplete required child action without replaying a possibly completed
+unsafe side effect; ambiguity or conflicting product-task ownership uses the
+existing exact halt contract.
 
-1. scheduler writes `ready -> in_progress`;
-2. `/exe <TASK_ID>`;
-3. `/verify <TASK_ID>` using authoritative `task.tier`;
-4. per-task `/red-verify <TASK_ID>` for T3 only (optional for T2);
-5. scheduler records final lifecycle decision and evidence in `.task.json`;
-6. when the last task of a non-FT-000 feature containing T2 work closes, run
-   `/red-verify --feature FT-<ID>` and require the feature-doc
-   `SEMANTIC_VERDICT: semantic-pass` before feature completion;
-7. continue other eligible tasks in the same wave without ordinary per-task
-   full sync.
+With no unresolved FT-000 task and a current strict-doctor pass, execute the
+remaining FT-000 dependency order sequentially under tier policy until the
+named final gate is `done`. Foundation resume uses the outer run plan and task
+protocols; the `/autopilot` checkpoint remains inactive and outer `STATE`
+remains `RUNNING` until product handoff.
 
-At the wave boundary:
-- resolve every required T2 feature semantic gate and T3 human checkpoint;
-- run `/mb-sync` once for already-written authoritative state;
-- run lint then `/mb-doctor --strict`;
-- rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
-  cards, specs, dependencies, tier, scope, or plan assumptions changed during
-  execution; status/evidence-only closure does not trigger a new review;
-- only after lint, doctor, and any triggered review pass, run the next
-  promotion/dependent-blocking pass.
+## Product scheduler delegation and resume
 
-Functional FAIL, semantic-fail, NEEDS-CLARIFICATION, semantic-concern, and
-execution blockers follow `## Scheduler Failure Handling` in tier policy. Tier
-escalation follows the controlled rebuild route. Any follow-up remains a normal
-schema-backed JSON record, joins the same run only after normal planning review
-and readiness gates, and is never created independently by `/verify` or
-`/red-verify`.
+After the Foundation gate is `done`, delegate the reviewed, strict-ready product
+queue to installed `/autopilot`, the only detailed product scheduler. Reuse the
+existing run state and durable evidence without resetting counters, attempts,
+or blockers. Initialize `/autopilot`'s checkpoint only at this handoff; do not
+add Product/Design/Foundation values to its stage vocabulary.
 
-If no eligible task remains:
-- preserve any already-recorded specific `HALT_*` state, reason, owner, and
-  resume route as required by autonomy policy;
-- all queue work closed and success gates pass -> success evaluation;
-- only when every unfinished record is non-runnable solely because its task
-  dependencies are unfinished -> record exact dependency evidence and
-  `HALT_DEPENDENCY_DEADLOCK`;
-- missing/invalid tier/schema/ownership rule -> `HALT_POLICY_VIOLATION`;
-- incomplete task handoff or readiness gate -> `HALT_QUALITY_GATES`.
+Any `/autopilot` `HALT_*` stops `/autonomous` with the same state, reason,
+evidence, owner, and exact resume route. Do not replace it with a generic halt.
+Product-queue `SUCCESS` proceeds to the final end-to-end validation below.
 </required_outputs>
 
 <validation>

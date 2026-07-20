@@ -44,13 +44,15 @@ flowchart TD
   more -- "нет" --> done["Готово"]
 
   mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Sequential scheduler loop:<br/>one task -> execute -> verify -> closure;<br/>red-verify для T3; mb-sync once per wave"]
+  autopilot --> scheduler["Recovery-first sequential scheduler:<br/>resume checkpoint + in_progress; then one task -> execute -> verify -> closure;<br/>red-verify для T3; mb-sync once per wave"]
   scheduler --> terminal{"Queue terminal?"}
   terminal -- "done" --> done
   terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
   repair --> reviewTasks
 ```
 
+`/autonomous` owns the bounded FT-000 phase shown above; `/autopilot` begins
+only at the reviewed product queue and never executes Foundation tasks.
 Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
 parallel execution is available only through explicit `--experimental-parallel`
 with isolated worktrees/sandboxes and pairwise-disjoint hard

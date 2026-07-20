@@ -40,8 +40,8 @@ Default mode may emit warnings for incomplete scheduler readiness evidence that 
 
 After `/spec-init` PASS, `.memory-bank/spec-backbone.md` may correctly have `Pre-PRD Spec Status: ready_for_prd` while Global Backbone Status is still absent, `blocked`, or otherwise incomplete. In default mode, report this as "prepared for `/prd-to-features`; Global Backbone Status intentionally pending until `/spec-design`" rather than a fix-now problem. The machine-readable finding code may remain `SPEC_BACKBONE_NOT_READY`; the meaning is downstream task/autonomous readiness, not failure of `/spec-init`.
 
-Use `--strict` after `/foundation-to-tasks` before any `FT-000` execution,
-before `/autopilot` or the scheduler phase of `/autonomous`, before each
+Use `--strict` after `/foundation-to-tasks` before the `/autonomous`-owned
+`FT-000` phase, before the product-only `/autopilot`, before each applicable
 task-selection pass, and after each `/mb-sync` before promoting dependents or
 declaring success. When the last task of a T2 product feature closes, the
 scheduler must run feature-level `/red-verify --feature FT-<ID>` and record
@@ -53,7 +53,21 @@ manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
 freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-Status transitions have two modes. In scheduler mode, `/autopilot` and `/autonomous` own closure/failure/blocking decisions. T2 task closure requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task `/red-verify` is not required. T2 feature completion separately requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact `HUMAN_CHECKPOINT: done`. In manual mode, T0/T1 may close in `/exe` with compact evidence when explicit top-level owner fast-lane conditions are met, or through `/verify PASS` when independent verification is requested; T2 may close when full protocol plus applicable task/spec gates are satisfied, only with explicit closure ownership; T3 requires per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at the wave boundary.
+Status transitions have two modes. In scheduler mode, `/autonomous` owns only
+FT-000 Foundation closure/failure/blocking decisions and `/autopilot` owns only
+product-task decisions after the Foundation gate closes. T2 task closure
+requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task
+`/red-verify` is not required. T2 feature completion separately requires
+feature-level `/red-verify --feature FT-<ID>` with
+`SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure
+requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact
+`HUMAN_CHECKPOINT: done`. In manual mode, T0/T1 may close in `/exe` with compact
+evidence when explicit top-level owner fast-lane conditions are met, or through
+`/verify PASS` when independent verification is requested; T2 may close when
+full protocol plus applicable task/spec gates are satisfied, only with explicit
+closure ownership; T3 requires per-task `/red-verify`
+`SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at
+the wave boundary.
 
 ## Required checks
 `mb-doctor` must check only readiness-critical conditions:

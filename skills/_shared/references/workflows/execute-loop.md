@@ -60,35 +60,32 @@ trigger another task-plan review.
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
-2) command runs `/write-prd -> /spec-auto --init -> /prd-to-features -> /review-feat-plan -> /spec-design --all -> /foundation-to-tasks when required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until the final foundation gate is done -> /spec-auto --all -> /feature-to-tasks --all -> /review-tasks-plan FT-<NNN> for each task-linked product feature`, then schedules ready TASKs
-3) run `/mb-doctor --strict` again before product scheduler execution; T2/T3 tasks without SDD spec links are blockers
-4) before `/exe`, scheduler requires `/mb-doctor --strict`; structurally incomplete T2/T3 task cards stop execution and require task-card repair
-5) each TASK runs in a **fresh CLI session**, sequentially by default; parallel
-execution is non-canonical and requires explicit `--experimental-parallel` plus
-the autonomy-policy isolation and hard-scope gates
-6) after each task, record status, closure decision, and evidence immediately;
-when the last task of a T2 product feature closes, run feature-level
-`/red-verify --feature FT-<ID>` before the wave-boundary `/mb-sync`; at the end
-of the wave run `/mb-sync` once, then lint and `/mb-doctor --strict` before
-promoting dependents. Early sync is allowed only for a real current-wave
-RTM/index/spec/contract/changelog dependency or an explicit owner request
-   - functional/semantic failures and blockers use tier-policy `Scheduler
-     Failure Handling`: bounded safe same-task retry, otherwise durable
-     `failed|blocked`, required bug/follow-up evidence, and dependent blocking
-7) after a wave, rerun `/review-tasks-plan FT-<NNN>` only for product features
-whose task/spec/dependency/tier/scope planning surface changed; do not
-rerun it for status/evidence-only closure
-8) final success only if every task-linked product feature has latest
-`/review-tasks-plan FT-<NNN>` = `APPROVE`, `/mb-doctor --strict` passes, and no
-blocking tasks remain
+2) it completes Product/Design, applicable Foundation planning, product tasking,
+and required fresh-context reviews through their installed child contracts
+3) `/autonomous` directly owns the bounded FT-000 phase through the existing
+`/foundation-to-tasks -> /mb-doctor --strict -> /exe + /verify -> /mb-sync`
+workflow until the final gate is `done`; it never invokes `/autopilot` for
+Foundation and never mutates product tasks in that phase
+4) Foundation resume uses the outer run plan plus authoritative FT-000 task
+records/protocols; `/autopilot` scheduler stages begin only at product handoff
+5) after Foundation completion, delegate the reviewed strict-ready product queue
+to canonical `/autopilot`; `/autonomous` does not copy its product-queue
+recovery, selection, task-stage, wave-boundary, or no-ready algorithm
+6) `/autopilot` owns product task lifecycle transitions and queue recovery;
+`tier-policy.md` owns tier gates and failure handling; `autonomy-policy.md` owns
+the durable checkpoint, budgets, hard stops, and terminal vocabulary;
+`mb-sync.md` owns boundary reconciliation only
+7) `/autonomous` preserves any scheduler halt unchanged and reports final
+end-to-end `SUCCESS` only after the product queue and all outer gates pass
 
 ## Autonomous executor only
 If JSON task records already exist and `/review-tasks-plan FT-<NNN>` already
-approved every task-linked product feature, use:
+approved every task-linked product feature, and the Foundation gate is already
+`not_required` or its named gate task is `done`, use:
 - `/autopilot`
 
-`/autopilot` must run `/mb-doctor --strict` before task selection and after the
-wave-boundary `/mb-sync` before promotion.
+`/autopilot` must run the strict doctor before task selection and
+after the wave-boundary `/mb-sync` before promotion.
 
 Codex (manual execution, tier-routed minimal context):
 ~~~bash

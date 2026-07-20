@@ -1,14 +1,17 @@
 ---
-description: Sequentially execute an already reviewed and strict-ready indexed JSON task queue to a terminal state.
+description: Sequentially execute an already reviewed and strict-ready indexed product JSON task queue to a terminal state.
 status: active
 ---
-# /autopilot - Run an existing JSON task queue
+# /autopilot - Run an existing product JSON task queue
 
 <objective>
-Act as the scheduler for an already prepared JSON task queue. Select, execute,
-verify, close/block/fail, synchronize, and promote tasks until the queue reaches
-an explicit terminal state. Do not create PRD, product features, design, or the
-initial task queue.
+Act as the scheduler for an already prepared product JSON task queue. Select,
+execute, verify, close/block/fail, synchronize, and promote product tasks until
+the queue reaches an explicit terminal state. Do not create PRD, product
+features, design, the initial task queue, or execute FT-000 Foundation work.
+
+In this command, `task` and `queue` mean only indexed records whose `feature`
+is not `FT-000`. FT-000 records are read-only Foundation history.
 </objective>
 
 <input_contract>
@@ -17,34 +20,43 @@ Require:
   `.memory-bank/tasks/*.task.json` records;
 - `.memory-bank/schemas/task.schema.json`;
 - `.memory-bank/workflows/{tier-policy,execute-loop,autonomy-policy,mb-sync}.md`;
-- valid Global Backbone Status and Foundation anchors/dependencies;
+- valid Global Backbone Status and Foundation anchors/dependencies; when
+  Foundation is required, its named final gate is `done` and no FT-000 record
+  remains `planned|ready|in_progress|blocked`;
+- at least one indexed product task whose `feature` is not `FT-000`;
 - latest `/review-tasks-plan FT-<NNN>` `APPROVE` for every task-linked product
-  feature;
+  feature in the queue;
 - no unresolved blocking operator decision;
-- `node scripts/mb-doctor.mjs --strict` PASS before the run.
+- invoke `node scripts/mb-doctor.mjs --strict` before the run, including resume,
+  and before every later task selection required below. A new run requires
+  `PASS`. A resumed run also requires `PASS` unless its only failing findings
+  are the durable consequences of the exact unfinished scheduler checkpoint
+  being recovered; in that case permit only that recovery action, then require
+  `PASS` again before promotion, selection, or terminal success. Any unrelated
+  finding uses the existing quality halt.
 
-Every task must preserve JSON schema, matching ID/tier/feature/wave segments,
+Every product task must preserve JSON schema, matching ID/tier/feature/wave segments,
 legal lifecycle, valid dependencies, feature existence, product `W1+`/reserved
 FT-000 W0 rules, and authoritative `task.tier`. Every T2/T3 task must have the
 complete single-card handoff: purpose/outcome, direct applicable canonical SDD
 links, expected advisory change surface and/or deliberate hard write boundary,
 verification path, concrete REQ links, and valid dependencies.
 
-If the queue is empty, return
-`HALT_QUALITY_GATES: no schema-backed task records found in .memory-bank/tasks/index.json`.
-Use the existing planning owner identified by authoritative Foundation/product
-state to create and review a non-empty queue. If that state identifies no owner,
-require the operator to provide a reviewed non-empty queue; do not invent a
-planning route. After review and strict readiness pass, resume `/autopilot`.
+If no product record exists, return
+`HALT_QUALITY_GATES: no schema-backed product task records found in .memory-bank/tasks/index.json`
+and route to `/feature-to-tasks`. If the Foundation gate is unfinished or any
+FT-000 work remains unresolved, return `HALT_QUALITY_GATES` with `/autonomous`
+as the Foundation execution/resume owner.
 Missing/invalid tier is `HALT_POLICY_VIOLATION`; clarification/design/Foundation/
 handoff/readiness gaps use the applicable clarification or quality halt and
 repair route.
 </input_contract>
 
 <hard_invariants>
-- `/autopilot` is the scheduler and owns JSON task promotion,
+- `/autopilot` owns only product task promotion,
   `ready -> in_progress`, final `done|failed|blocked` decisions, dependent
-  block/unblock, failure budget, and terminal queue state.
+  block/unblock, failure budget, and terminal queue result.
+- It never executes or mutates an FT-000 record.
 - Child ownership remains canonical in
   `.memory-bank/workflows/tier-policy.md`: `/exe` implements, `/verify`
   provides functional verdict, `/red-verify` provides semantic verdict, and
@@ -52,6 +64,9 @@ repair route.
 - Canonical execution is sequential. Select and finish one task's execute,
   verification, lifecycle decision, and evidence write before selecting the
   next.
+- Run each selected task in a fresh child execution context/session. Resume an
+  interrupted task only from reconciled durable evidence, not from inherited
+  conversational state.
 - `--experimental-parallel` remains opt-in and follows autonomy policy exactly:
   isolated worktrees/sandboxes plus pairwise-disjoint non-empty hard
   `write_boundary`; never infer independence from `touched_files`. Fallback
@@ -90,44 +105,138 @@ the internal method of `/exe`, `/verify`, or `/red-verify`.
 Create/reuse `.protocols/AUTONOMOUS-RUN/status.md` with run metadata, task-plan
 review coverage, operator blockers/applied decisions, queue summary linked to
 JSON records, failure budget, and terminal state. This is not authoritative task
-state.
+state. Maintain the durable run checkpoint required by
+`.memory-bank/workflows/autonomy-policy.md`.
 
-## Selection and task loop
+Scheduler-specific `current stage` values are exactly:
+`selection|execute|verify|red-verify|closure|wave-boundary`. They are
+orchestration checkpoint values, not task lifecycle states. Do not persist them
+in the task schema or use another stage vocabulary.
 
-Before each selection pass, reread index/records and run a separate promotion
-pass. Write `planned -> ready` only when every dependency is `done` and no
-blocking review, bug, decision, or unresolved semantic concern remains. Write
-dependent blocking decisions to the affected records.
+## Recovery-first scheduler loop
 
-In canonical mode, select one `ready` task by earliest wave and stable index
-order. Require current strict-doctor PASS before `ready -> in_progress`, then:
+At scheduler start, after interruption, and before every promotion/selection
+cycle, revalidate the input contract, then reread the run checkpoint and durable
+task evidence. Recovery order is checkpoint, `in_progress` tasks, then
+promotion/selection. Do not overwrite a checkpoint or start new work until
+durable evidence proves the earlier action complete or safely superseded.
 
-1. scheduler writes `ready -> in_progress`;
-2. `/exe <TASK_ID>`;
-3. `/verify <TASK_ID>` by authoritative tier;
-4. per-task `/red-verify <TASK_ID>` for T3 only (optional for T2);
-5. scheduler writes final closure/failure/blocking decision and evidence:
+### Checkpoint recovery
+
+Before inspecting the ready queue, reconcile any checkpoint whose `next action`
+still names scheduler work, even when no task is `in_progress`:
+
+1. A `selection` checkpoint with a selected `ready` task resumes that same
+   task's validated `ready -> in_progress` transition; with an already
+   `in_progress` task it enters task recovery below. `selection` with
+   `current task: none` has no selected-task action to replay.
+2. An `execute`, `verify`, task-level `red-verify`, or `closure` checkpoint
+   reconciles the named task through the task recovery rules below. If the task
+   is already final, first prove the lifecycle/evidence write and derive the
+   next required scheduler action from durable queue/feature state; do not
+   assume selection.
+3. A `red-verify` checkpoint whose exact next action is
+   `/red-verify --feature FT-<ID>` reconciles the feature document and current
+   verdict. Resume that child only if semantic-pass is absent and replay is
+   safe; after its durable verdict, checkpoint the derived next action.
+4. A `wave-boundary` checkpoint resumes the first incomplete boundary action in
+   canonical order: required feature/T3 gates, `/mb-sync`, lint, strict doctor,
+   then any planning-surface-triggered task-plan reviews. Use `last durable child
+   verdict/handoff` plus the referenced artifacts to skip completed actions;
+   do not replace the checkpoint with `selection` until every required boundary
+   action passes.
+5. If checkpoint stage, selected task, prior side effect, or completion
+   cannot be reconciled safely, invoke no child and promote/select no task.
+   Record the recovery decision, evidence, owner, and exact resume route, then
+   use the existing halt matching the cause.
+
+### In-progress task recovery
+
+Reconcile all product `in_progress` tasks sequentially in stable index order. While any remains
+unresolved, do not write `planned -> ready` and do not select a different
+`ready` task. For each task:
+
+1. Prove that the task belongs to the current scheduler-owned run/attempt from
+   the run checkpoint plus task protocol/handoff evidence. A task started under
+   manual ownership, or without durable scheduler ownership evidence, must not
+   be adopted automatically.
+2. Reconcile the authoritative `.task.json`, checkpoint, current-attempt task
+   protocol, implementation handoff, functional verdict, semantic verdict, and
+   human checkpoint. The task record and durable evidence win over a stale
+   checkpoint. Determine the first incomplete durable stage; do not replay a
+   stage merely because the scheduler restarted.
+3. Before invoking a child stage, write the task/stage, last durable evidence,
+   and intended next action to the run checkpoint. After the child writes its
+   handoff or verdict, update `last durable child verdict/handoff` and `next
+   action` from that artifact before continuing.
+4. Only after ownership, current stage, and any required replay are proved safe,
+   continue from the first incomplete stage:
+   - no current implementation handoff and no evidence of a possibly completed
+     unsafe/non-idempotent execution -> checkpoint `execute`, then
+     `/exe <TASK_ID>`; otherwise use the recovery halt in step 5;
+   - current implementation handoff but no functional verdict -> checkpoint
+     `verify`, then `/verify <TASK_ID>`;
+   - T3 functional `PASS` but no task semantic-pass -> checkpoint `red-verify`,
+     then `/red-verify <TASK_ID>`;
+   - every tier-required gate already passes -> checkpoint `closure`, then the
+     scheduler writes the lifecycle decision and evidence immediately and
+     updates the checkpoint from the authoritative task record;
+   - functional FAIL, semantic-fail, NEEDS-CLARIFICATION, semantic-concern, or
+     an execution blocker -> apply `## Scheduler Failure Handling` in
+     `.memory-bank/workflows/tier-policy.md` without inventing another route.
+5. If current attempt, stage, scheduler ownership, or safe replay cannot be
+   proved, invoke no child and promote/select no work. Record the recovery
+   decision, conflicting or missing evidence, owner, and exact resume route,
+   then use the existing policy, quality, clarification, or blocking halt that
+   matches the cause. In particular, never replay a possibly completed unsafe
+   or non-idempotent side effect to manufacture missing evidence.
+
+Continue to the next stranded `in_progress` task only after the current task has
+a durable scheduler decision and no terminal halt was recorded. The recovery
+pass completes only when no unresolved `in_progress` task remains.
+
+Only after checkpoint recovery leaves no unfinished scheduler action and task
+recovery leaves no unresolved `in_progress` task, run the normal
+selection loop:
+
+1. checkpoint `current task: none`, `current stage: selection`, and the next
+   promotion/selection action;
+2. run a separate product promotion pass, writing `planned -> ready` only when
+   every dependency is `done` and no blocking review, bug, decision, or
+   unresolved semantic concern remains; write dependent blocking decisions only
+   to affected records;
+3. select one product `ready` task by earliest wave and stable index order;
+4. require current strict-doctor PASS, checkpoint the selected
+   task at `selection`, then write `ready -> in_progress`;
+5. use the same checkpoint rules while running `execute`, `verify`, required
+   T3 `red-verify`, and scheduler-owned `closure` in order;
+6. write the final closure/failure/blocking decision and evidence, then update
+   the checkpoint from the authoritative lifecycle/evidence write:
    - T0/T1 `done` after tier-valid compact/functional PASS;
    - T2 `done` after full protocol, applicable gates, and functional PASS;
    - T3 `done` only after functional PASS, task semantic-pass, and exact
      `HUMAN_CHECKPOINT: done`;
    - concern remains non-done pending the recorded owner decision/fix;
-   - functional FAIL, semantic-fail, NEEDS-CLARIFICATION, semantic-concern, and
-     execution blockers follow `## Scheduler Failure Handling` in
-     `.memory-bank/workflows/tier-policy.md`;
-6. when this closes the last task of a non-FT-000 feature containing T2 work,
-   run `/red-verify --feature FT-<ID>` and require feature-doc semantic-pass
-   before feature completion;
-7. continue eligible work in the wave without ordinary per-task full sync.
+   - failures and blockers follow the referenced tier-policy contract;
+7. when this closes the last task of a non-FT-000 feature containing T2 work,
+   checkpoint `current task: none`, `current stage: red-verify`, the lifecycle
+   write as last durable evidence, and exact
+   `next action: /red-verify --feature FT-<ID>`; run that child and require
+   feature-doc semantic-pass before feature completion, then update the
+   checkpoint from its durable verdict;
+8. continue eligible work in the wave without ordinary per-task full sync.
 
 At each wave boundary:
-1. resolve required T2 feature semantic gates and T3 checkpoints;
-2. run `/mb-sync` once for authoritative already-written state;
-3. run lint then `/mb-doctor --strict`;
-4. rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
+1. checkpoint `current task: none` and `current stage: wave-boundary`;
+2. resolve required T2 feature semantic gates and T3 checkpoints;
+3. run `/mb-sync` once for authoritative already-written state, updating the
+   checkpoint only after its durable handoff;
+4. run lint then the strict doctor;
+5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
    cards, specs, dependencies, tier, scope, or plan assumptions changed; pure
    status/evidence closure does not trigger it;
-5. only after all triggered gates pass, run the next promotion/dependent-
+6. only after all triggered gates pass, run the next recovery-first cycle and
+   then the next promotion/dependent-
    blocking pass.
 
 Tier policy owns retry eligibility, `failed|blocked` mapping, failed-task
@@ -136,12 +245,14 @@ follow-up created through the normal planning owner is considered in the same
 run only after its review and readiness gates pass; verifiers do not create it
 independently.
 
-If no `ready` task remains:
+If recovery leaves no unresolved product `in_progress` task and no product
+`ready` task remains:
 - preserve any already-recorded specific `HALT_*` state, reason, owner, and
   resume route as required by autonomy policy;
-- all work closed -> run final task-plan review coverage and success checks;
-- only when every unfinished record is non-runnable solely because its task
-  dependencies are unfinished -> record exact dependency evidence and
+- all product work closed -> run final review coverage and success
+  checks;
+- only when every unfinished product record is non-runnable solely because its
+  task dependencies are unfinished -> record exact dependency evidence and
   `HALT_DEPENDENCY_DEADLOCK`;
 - for any other cause, keep the applicable specific halt and its owner/resume
   route.
@@ -152,11 +263,13 @@ Keep existing `max_retries_per_task`, `max_consecutive_failures`,
 `max_open_blockers`, configured `max_files_changed_per_task`, and any explicit
 token/time/run budgets plus terminal vocabulary from autonomy policy/run status.
 Do not claim success unless:
-- no task is `ready|in_progress` and no blocking queue work remains;
+- no product task is `ready|in_progress` and no blocking product queue work
+  remains;
 - every task-linked product feature has latest final `APPROVE`;
-- all required functional, T2 feature semantic, T3 task semantic/human, and
-  Foundation gates pass;
-- latest lint plus `/mb-doctor --strict` pass;
+- all required functional, T2 feature semantic, T3 task semantic/human gates
+  pass, and Foundation remains `not_required` or its named gate task remains
+  `done`;
+- latest lint plus strict doctor pass;
 - run protocol matches authoritative JSON records.
 
 Terminal states remain:
@@ -164,8 +277,8 @@ Terminal states remain:
 </validation>
 
 <handoff_contract>
-Record terminal state, reason, evidence, unresolved decisions, and exact resume
-route in `.protocols/AUTONOMOUS-RUN/status.md`. `/autopilot` does not route back
-into PRD/design/task generation except through an explicit halt and named repair
-owner.
+Record terminal `STATE`, reason, evidence, unresolved decisions, and exact
+resume route in `.protocols/AUTONOMOUS-RUN/status.md`. `/autopilot` does not
+route back into PRD/design/task generation except through an explicit halt with
+a named repair owner.
 </handoff_contract>

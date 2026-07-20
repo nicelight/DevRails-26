@@ -55,7 +55,9 @@ artifact family exists.
 Status transitions have two modes.
 
 Scheduler mode:
-- `/autopilot` and `/autonomous` own task status transitions.
+- `/autonomous` owns task status transitions only for its bounded FT-000
+  Foundation phase; `/autopilot` owns task status transitions only for the
+  reviewed product queue after the Foundation gate closes.
 - Scheduler decides closure/failure/blocking eligibility.
 - `/exe` returns scoped implementation handoff; it does not close tasks.
 - `/verify` gives functional verdict/evidence; in scheduler mode it does not close/fail/block/promote.

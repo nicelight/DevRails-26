@@ -694,6 +694,11 @@ Strict doctor обязателен:
 - после wave-boundary `/mb-sync` перед promotion;
 - перед final scheduler success.
 
+Resume также начинает со strict doctor. Если единственные failing findings
+являются durable следствием точно установленной unfinished checkpoint action,
+scheduler может выполнить только её recovery route и обязан снова получить
+strict PASS до promotion, selection или terminal success.
+
 В manual flow doctor conditional: T3, complex T2, Foundation, dependency,
 stale-doc, risky-link или autonomous handoff. Простая local T0/T1 работа не
 получает mandatory doctor gate по умолчанию.
@@ -800,20 +805,41 @@ Manual mode означает явный top-level owner, а не ручное н
 
 ### Scheduler mode
 
-`/autopilot` и `/autonomous` владеют:
+`/autopilot` владеет только product queue после закрытия Foundation gate:
 
 - `planned -> ready` promotion;
 - `ready -> in_progress`;
 - final `done|failed|blocked` decision;
 - dependent blocking/unblocking;
 - retry/failure budgets;
-- terminal run state.
+- terminal queue state.
+
+`/autonomous` владеет Product/Design sequence, transitions ограниченной FT-000
+фазы и внешним end-to-end result. Готовую product queue он передаёт
+каноническому `/autopilot`, не повторяя его product scheduler algorithm.
+`/autopilot` не выполняет и не изменяет FT-000 records.
 
 `/exe` реализует, `/verify` возвращает functional verdict,
 `/red-verify` — semantic verdict. В scheduler mode эти child skills не меняют
 final lifecycle. Scheduler записывает status, closure/failure/blocking decision
 и evidence links в authoritative `.task.json` сразу после task и до следующего
 sync boundary.
+
+Product scheduler checkpoint живёт в
+`.protocols/AUTONOMOUS-RUN/status.md` и содержит current task, current stage,
+last durable child verdict/handoff и next action. Допустимые scheduler stages
+ровно такие:
+`selection|execute|verify|red-verify|closure|wave-boundary`. Checkpoint не
+является task state: при resume scheduler сверяет его с indexed task record,
+current-attempt protocol, handoff и verdict evidence. Он активируется только
+при product handoff в `/autopilot`; Foundation resume использует outer run plan,
+FT-000 task records и их protocols, не изобретая дополнительные scheduler
+stages.
+
+`STATE: RUNNING` — единственное non-terminal run state. `/autonomous` сохраняет
+его на Product/Design и Foundation фазах; закрытие Foundation gate не является
+intermediate `SUCCESS`. `/autopilot` записывает final product-queue result в
+`STATE`.
 
 ### `/mb-sync`
 
@@ -862,17 +888,20 @@ rebuild/split, затем повторяются `/review-tasks-plan`, applicabl
 
 ### `/autopilot`
 
-Используется только для уже подготовленной queue. Preconditions:
+Используется только для уже подготовленной product queue. Preconditions:
 
 - non-empty, schema-valid JSON registry;
 - valid Global Backbone и Foundation anchors/dependencies;
+- Foundation `not_required` или named gate task `done`, без unresolved FT-000
+  work;
+- хотя бы одна indexed product task; FT-000 records остаются read-only history;
 - latest `/review-tasks-plan FT-<NNN>` `APPROVE` для каждой task-linked product
   feature;
 - complete T2/T3 single-card handoffs;
 - no unresolved operator decision;
 - `/mb-doctor --strict` PASS.
 
-Пустой task index нарушает non-empty queue contract и возвращает
+Отсутствие indexed product tasks нарушает product-queue contract и возвращает
 `HALT_QUALITY_GATES`, после чего нужен reviewed non-empty queue и повторный
 strict readiness gate.
 
@@ -880,7 +909,14 @@ Canonical scheduler loop:
 
 ```text
 refresh JSON state
-  -> promotion pass
+  -> recover unfinished durable checkpoint action
+       -> selected task, feature red-verify, closure or wave-boundary
+  -> recover every in_progress task in stable index order
+       -> prove scheduler ownership and current attempt
+       -> reconcile task + checkpoint + protocol/handoff/verdict
+       -> resume first incomplete durable stage
+       -> or record recovery decision and existing exact halt
+  -> only with no unresolved in_progress: promotion pass
   -> select one ready task by wave/index order
   -> strict doctor precondition
   -> ready -> in_progress
@@ -895,6 +931,18 @@ refresh JSON state
   -> conditional task-plan re-review if planning surface changed
   -> next promotion pass
 ```
+
+Checkpoint recovery выполняется даже без `in_progress`: unfinished feature
+`red-verify` или `wave-boundary` сначала продолжает первую не завершённую
+durable action и только затем допускает selection. Task recovery никогда не
+replay-ит уже доказанно завершённый child stage. Нет
+implementation handoff — resume идёт в `/exe`; есть handoff без functional
+verdict — в `/verify`; T3 functional PASS без semantic-pass — в per-task
+`/red-verify`; завершённые tier gates — в scheduler closure. Пока хотя бы одна
+`in_progress` task не получила доказуемое продолжение или durable decision,
+promotion и выбор другой ready task запрещены. Ambiguous ownership/stage или
+опасность повторного non-idempotent side effect приводит к existing halt с
+evidence, owner и exact resume route, а не к автоматическому replay/adoption.
 
 Status/evidence-only closure не вызывает повторный `/review-tasks-plan`.
 Re-review нужен, если изменились task cards, specs, dependencies, tier, scope
@@ -913,24 +961,30 @@ authoritative Product Brief / PRD / delta
   -> /prd-to-features
   -> /review-feat-plan
   -> /spec-design --all
-  -> Foundation queue and gate when required
+  -> autonomous-owned FT-000 queue and final gate through the existing workflow
   -> /spec-auto --all
   -> /feature-to-tasks --all
   -> per-feature /review-tasks-plan
   -> lint + strict doctor
-  -> sequential scheduler loop
+  -> product queue through canonical /autopilot
   -> terminal state
 ```
 
-`/autonomous` orchestrates child contracts, но не переписывает их внутреннюю
-тактику. Он не проводит unattended Constitution interview и не принимает
+`/autonomous` orchestrates child contracts и непосредственно владеет bounded
+FT-000 phase, но не вызывает для неё `/autopilot` и не изменяет product tasks.
+Foundation resume опирается на outer run plan и durable task protocols. После
+доказанного закрытия final Foundation gate `/autonomous` продолжает
+Product/Design и передаёт готовую product queue `/autopilot`.
+Любой `/autopilot` `HALT_*` переносится без замены state/reason/owner/resume
+route. Product queue `SUCCESS` переходит к финальным end-to-end gates.
+`/autonomous` не проводит unattended Constitution interview и не принимает
 missing operator decisions.
 
 Для `feature-plan` и каждой реально reviewed `task-plan:FT-<NNN>` surface
-допускаются ровно два завершённых цикла `repair -> re-review`. Initial review
+допускаются ровно пять завершённых циклов `repair -> re-review`. Initial review
 начинается с counter `0` и не считается попыткой; counter увеличивается после
 re-review и сохраняется в existing run status при resume. `REJECT` после
-второго цикла приводит к existing `HALT_REVIEW_REJECT`.
+пятого цикла приводит к existing `HALT_REVIEW_REJECT`.
 
 Allowed terminal states:
 
@@ -1007,8 +1061,8 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/mb-sync` | reconciliation already-decided durable state | не принимает closure/promotion/design decisions |
 | `/mb-garden` | mechanical links/indexes/routers maintenance и final lint | semantic/destructive decisions блокирует; broader reconcile передаёт `/mb-sync` |
 | `/mb-doctor` | deterministic readiness report | не заменяет semantic review или verification |
-| `/autopilot` | existing queue scheduler и terminal state | не создаёт PRD/features/initial queue |
-| `/autonomous` | full Product/Design-to-terminal-state orchestration | не принимает unresolved operator decisions |
+| `/autopilot` | reviewed product queue scheduler и terminal state после Foundation gate | не создаёт PRD/features/initial queue и не выполняет FT-000 |
+| `/autonomous` | full Product/Design-to-terminal-state orchestration и bounded FT-000 execution owner | не принимает unresolved operator decisions и не копирует product scheduler |
 
 ## 17. Проверки
 

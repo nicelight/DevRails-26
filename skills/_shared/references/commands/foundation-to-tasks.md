@@ -184,7 +184,9 @@ Report queue action, specs reused/extended/created, task IDs, final gate ID or
 
 <handoff_contract>
 - Queue created/reconciled: stop before execution and hand off immediately to
-  `/mb-doctor --strict` for the FT-000 queue.
+  `/mb-doctor --strict` for the FT-000 queue. In an unattended run, return to
+  the `/autonomous`-owned Foundation phase; never hand FT-000 execution to
+  `/autopilot`.
 - No Foundation required/proven brownfield baseline: hand off to
   `/feature-to-tasks FT-<NNN>`.
 - Unresolved Foundation/design decision: no affected queue handoff;
