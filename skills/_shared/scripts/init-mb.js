@@ -728,13 +728,43 @@ Full role contracts live in:
 - \`.memory-bank/roles/general.md\`
 - \`.memory-bank/roles/worker.md\`
 
-## KISS / Avoid overengineering
-- Implement the simplest solution that fully satisfies current requirements and specs.
-- Prefer existing project patterns over new abstractions, layers, registries, frameworks, or workflow artifacts.
-- Do not design for hypothetical future scale, integrations, configurability, or reuse without a concrete current requirement.
-- Do not introduce enterprise architecture or additional process merely because it may be useful later.
-- Added complexity must be justified by an existing requirement, constraint, risk, or demonstrated duplication.
-- KISS does not permit skipping required correctness, security, compatibility, or verification gates.
+## KISS / Complexity and Requirement Gate
+
+- Use the simplest implementation that satisfies current accepted requirements.
+- A discovered risk, edge case or possible failure is not automatically a new
+  requirement.
+- Do not expand requirements, specifications or implementation scope merely to
+  prevent a theoretically possible problem.
+
+Before promoting a problem into a requirement or design decision, perform a
+brief internal assessment:
+
+- verify that the scenario is realistic in the current deployment;
+- estimate its likelihood, consequence and recoverability;
+- check whether restart, retry, re-upload, manual rerun or maintenance is enough;
+- compare the expected problem cost with implementation, testing, operational
+  and maintenance cost of the remedy.
+
+Decision rule:
+
+- remedy cost materially exceeds expected problem cost:
+  accept or defer the risk and do not generate a requirement;
+- problem is covered by an accepted requirement:
+  implement the cheapest sufficient remedy;
+- serious problem is not covered by an accepted requirement:
+  do not expand the target; route it to ROLE: ARCHITECT or ask the operator;
+- small local safeguard with negligible cost and no new state/lifecycle:
+  implementation discretion is allowed.
+
+An accepted requirement authorizes the required outcome, not an unnecessarily
+complex mechanism.
+
+Agent-generated reviews, specifications, brainstorm results and best-practice
+recommendations cannot authorize their own complexity.
+
+Architecture, specification or review candidates that introduce material
+complexity are routed to ROLE: ARCHITECT. Minor rejected candidates are not
+reported or escalated.
 
 ## Communication
 
