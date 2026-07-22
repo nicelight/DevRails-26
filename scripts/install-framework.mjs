@@ -1011,7 +1011,8 @@ function printFolderPicker(openDir, choices) {
   }
 
   uiCardLine();
-  uiCardLine(`${uiKeycap('№')} открыть   ${uiKeycap('U / ..')} вверх   ${uiKeycap('S')} выбрать`);
+  const folderRange = choices.dirs.length > 0 ? `1–${choices.dirs.length}` : 'число';
+  uiCardLine(`${uiKeycap(folderRange)} открыть   ${uiKeycap('U / ..')} вверх   ${uiKeycap('S')} выбрать`);
   uiCardLine(`${uiKeycap('P')} путь      ${uiKeycap('N')} новая    ${uiKeycap('Q')} отмена`);
   uiCardEnd();
 }
@@ -1112,6 +1113,7 @@ async function interactiveInstall() {
   }
 
   console.log(colorizeSplashArt(SPLASH_ART));
+  await wait(1000);
   console.log(`\n${colorizeUiGradient(`SETUP  ·  ${PRODUCT_NAME}`)}`);
   console.log(uiTone('Выберите проект, проверьте настройки и запустите установку.', 'muted'));
 
