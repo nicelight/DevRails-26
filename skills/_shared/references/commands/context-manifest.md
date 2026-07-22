@@ -20,7 +20,7 @@ Resolve from `$ARGUMENTS`:
 - optional downstream read budget;
 - whether codebase/test evidence is needed.
 
-Before discovery, read local `AGENTS.md`, `.memory-bank/roles/worker.md`, and,
+Before discovery, read local `AGENTS.md`, `.memory-bank/roles/explorer.md`, and,
 when a target workflow exists, its installed skill. Resolve IDs through
 existing indexes/registries. Do not invent a separate CLI parser.
 

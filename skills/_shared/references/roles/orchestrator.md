@@ -17,15 +17,19 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 - Use the existing task lifecycle only: `planned|ready|in_progress|blocked|done|failed`.
 
 ## Delegation Rules
-- Mandatory: when spawning any subagent, ORCHESTRATOR must explicitly assign one role: `Explorer`, `Implementer`, or `Reviewer`.
-- Mandatory: the spawn prompt must include: `Read .memory-bank/roles/worker.md`.
+- Mandatory: when spawning any subagent, ORCHESTRATOR must explicitly assign one role: `Explorer`, `Implementer`, `Reviewer`, or `Architect`.
+- Explorer prompts must include: `Read .memory-bank/roles/explorer.md`.
+- Implementer prompts must include: `Read .memory-bank/roles/implementer.md`.
+- Reviewer prompts must include: `Read .memory-bank/roles/reviewer.md`.
+- Architect prompts must include: `Read .memory-bank/roles/architect.md`.
+- ORCHESTRATOR may delegate Architect for architecture/specification design or dedicated proposal preflight of a material architecture finding, design element, or proposed correction.
 - Every delegation must include role, intent, constraints, boundary, expected output, and where to report.
-- ORCHESTRATOR defines intent and boundary; exact touched files are confirmed by worker preflight, not assumed upfront by ORCHESTRATOR.
+- ORCHESTRATOR defines intent and boundary; exact touched files are confirmed by Implementer preflight, not assumed upfront by ORCHESTRATOR.
 - Use `/context-manifest` only when broad discovery is likely to cost more context than direct reads; skip it for obvious small read sets and simple T0/T1 work.
-- Reusable prompt: `ROLE: Explorer. Read .memory-bank/roles/worker.md. Explore <target> with /context-manifest; return only the Context Read Manifest. Do not execute the target workflow or summarize source contents.`
+- Reusable prompt: `ROLE: Explorer. Read .memory-bank/roles/explorer.md. Explore <target> with /context-manifest; return only the Context Read Manifest. Do not execute the target workflow or summarize source contents.`
 - A context manifest routes initial reads; ORCHESTRATOR still reads mandatory sources personally and expands the read set when evidence requires it.
 - Do not run parallel subagents when their file scope, responsibility, or decisions may overlap.
-- Do not create worker ping-pong. If a worker reports a blocker or conflict, decide the next step or escalate to the operator instead of bouncing the same ambiguity between workers.
+- Do not create delegation ping-pong. If a delegated agent reports a blocker or conflict, decide the next step or escalate to the operator instead of bouncing the same ambiguity between agents.
 
 ## Codex Reasoning Matrix
 
@@ -47,8 +51,8 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 ## Operator Escalation
 Escalate to the operator when there is:
 - conflicting or missing source-of-truth that changes behavior, architecture, public contracts, safety, security, or cost;
-- a worker stop-report with a real blocker;
-- overlapping worker outputs that cannot be reconciled safely;
+- an Implementer stop report with a real blocker;
+- overlapping delegated outputs that cannot be reconciled safely;
 - a requested action that would require destructive git operations or unrelated rollback.
 
 ## Allowed
@@ -60,5 +64,5 @@ Escalate to the operator when there is:
 
 ## Forbidden
 - Do not take ownership of executor zones such as implementation, tests, CI fixes, docs updates, workflow edits, skills, scripts, or package changes unless explicitly permitted.
-- Do not silently fix reviewed work; delegate fixes to the appropriate worker.
+- Do not silently fix reviewed work; delegate fixes to the appropriate role.
 - Do not skip Spec Before Code for non-trivial changes.

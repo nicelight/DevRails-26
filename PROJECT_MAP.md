@@ -65,7 +65,7 @@ Packaging and install:
 
 Canonical shared source:
 
-- `skills/_shared/agents/*.md`: shared worker/reviewer prompts.
+- `skills/_shared/agents/*.md`: shared delegated-agent prompts.
 - `skills/_shared/references/commands/*.md`: canonical command specs copied into generated runtime skills by the installer.
 - `skills/_shared/references/protocols/*`: canonical protocol and handoff
   templates, deployed as framework-owned
@@ -161,6 +161,8 @@ Primary source files for this behavior:
 - `skills/_shared/references/commands/review-tasks-plan.md` for fresh-context
   review of shared-boundary AD/boundary routing and binding `APPROVE` to the
   current Planning Revision
+- `skills/_shared/references/commands/architecture-review.md` for the delegated
+  bounded C4 L1-L3, boundary, dependency, and invariant verdict
 - `skills/_shared/references/commands/autopilot.md` and
   `skills/_shared/references/commands/exe.md` for rejecting stale product
   approvals without task lifecycle mutation
@@ -177,6 +179,25 @@ Primary source files for this behavior:
 
 Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
 mandatory ADRs for local/simple work.
+
+## Architect And KISS Review Hotspots
+
+- `skills/_shared/references/roles/architect.md`: canonical Architect policy.
+- `skills/_shared/references/commands/kiss-architect.md`: in-session adapter to
+  that policy.
+- `skills/_shared/references/commands/architecture-review.md`: bounded C4 and
+  architecture review used by `/review-tasks-plan`.
+- `skills/_shared/references/commands/review-tasks-plan.md`: owns the final
+  planning verdict and integrates one architecture review per feature.
+- `skills/_shared/references/roles/orchestrator.md`: Architect delegation route.
+- `skills/_shared/scripts/init-mb.js` and
+  `skills/_shared/references/structure-template.md`: deployed role, index, and
+  generated KISS text.
+
+Keep `architecture-review` read-only; its Reviewer verdict covers only the
+architecture review, while `/review-tasks-plan` owns the final planning verdict.
+Do not create a new architecture lifecycle, task status, protocol family, or
+mandatory ADR gate.
 
 ## Subject-Based Canonical SDD Spec Hotspots
 

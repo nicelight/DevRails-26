@@ -1,55 +1,77 @@
-# DevRails 26 — фабрика агентной разработки
+# 🚂 DevRails 26 — фабрика агентной разработки
 
 ![Схема DevRails 26](devrails.jpg)
 
-`DevRails 26` — source-only фреймворк для Codex CLI, Claude Code и совместимых
-agent runtimes. Он разворачивает в целевом репозитории набор взаимосвязанных
-runtime-skills, Memory Bank, JSON task registry и протоколы, которые проводят
-проект от идеи или brownfield delta до проверенной реализации.
+ `DevRails 26` — это фреймворк, разворачиваемый в ваш текущий проект  для Codex CLI или Claude Code. Проект становится на рельсы из взаимосвязанных
+runtime-skills, Memory Bank, JSON task registry и протоколов, помогая разработчику пройти от идеи (или частично разработанной заготовки) до проверенной реализации.
 
-## Что даёт фреймворк
+**🎛️ Как пользоваться**
 
-- хранит продуктовые решения, требования, SDD specs и состояние работы в
-  репозитории, а не только в истории чата;
-- связывает PRD, `REQ-*`, epics, `FT-*`, implementation plans и
-  `TASK-NNN-TN-FT-NNN-WN` records;
-- даёт каждому агенту достаточный task-scoped handoff, gates и evidence;
-- разделяет planning, implementation, functional verification, adversarial
-  semantic verification и lifecycle ownership;
-- поддерживает greenfield, brownfield, ручное выполнение, `/autopilot` и
-  полный `/autonomous` flow;
-- применяет одну task model и один lifecycle во всех режимах.
+- Можно  идти по рельсам вручную, на лету поправляя Агентов, кующих проект, ревьювя пошаговые изменения. Агенты будут подсказывать следующий шаг workflow.
+- Или же можно запустить автопилот, пройдя ручной flow только для формирования PRD. Раз в пару часов уделяем Оркестратору внимание на развилках. Такой процесс жрет токены, но доводит до ума все таски с минимальным интерактивном.
 
-## Главный принцип переработанных skills
+💾 Благодаря протоколам обрыв сессии не страшен, в новом чате работа продолжится с последнего чекпоинта.
 
-Skill фиксирует objective, inputs, hard boundaries, required outputs,
-validation и handoff, но не навязывает агенту пошаговую внутреннюю методику без
-причины. Внутри принятого scope агент сам выбирает порядок чтения, инструменты,
-тактику, минимальную artifact shape и самые дешёвые достаточные проверки.
+## 📦 Что появится в проекте
 
-Эта свобода не даёт агенту права принимать за оператора material product,
-architecture, contract, data/state, security, task-boundary, tier, dependency
-или verification decisions. В interactive flow такая развилка требует явного
-ответа. Recommendation или default не являются решением. В unattended flow
-используются только уже принятые authoritative decisions; иначе workflow
-останавливается с точным blocker и resume route.
+- `.agents/skills/` и `.claude/skills/` — 31 команда DevRails для Codex и
+Claude Code;
+- `.memory-bank/` — общая память проекта: требования, решения и задачи;
+- `.protocols/` — записи о ходе выполнения и проверки задач;
+- `.tasks/` — отчёты и подтверждения выполненной работы;
+- `AGENTS.md` — общие правила для агентов;
+- `scripts/mb-lint.mjs` и `scripts/mb-doctor.mjs` — автоматические проверки
+структуры и готовности проекта.
 
-## Канонический greenfield flow
+`Memory Bank` — это обычная папка `.memory-bank/` внутри репозитория. Её могут
+читать и люди, и агенты.
+
+## 🚀 Установка
+
+Из локальной копии DevRails запустите:
+
+```bash
+node scripts/install-framework.mjs
+```
+
+Установщик предложит выбрать проект, покажет предупреждения, установит команды
+и создаст Memory Bank.
+
+После установки откройте целевой проект в Codex или Claude Code и запустите:
+
+```text
+/cold-start
+```
+
+`/cold-start` проверит состояние проекта и запустит ближайший правильный шаг.
+Если не хватает исходных данных, он прямо скажет, что нужно предоставить.
+
+> ⚠️ Прямой `npx skills add <repo>` не поддерживается. Для установки DevRails
+> используйте только `scripts/install-framework.mjs`.
+
+## 🌱 Канонический Greenfield flow
+
+Greenfield — новый проект, в котором ещё нет существенной реализации.
 
 ```text
 raw idea ──> /brainstorm ──> /brief
 clear concept ─────────────> /brief
 existing PRD ──────────────> /write-prd
 
+**1. Подготовка идеи**
 /brief
   -> /constitution, если principles ещё не ratified|partial
   -> /write-prd
+
+**2. Генерация C4 + SDD спецификаций**
   -> /spec-init
   -> /prd-to-features
   -> /review-feat-plan для high-risk, large или autonomous flow
-  -> /spec-design                         # mandatory global SDD gate
+  -> /spec-design                    # mandatory global SDD gate
   -> /foundation-to-tasks, если required
   -> /mb-doctor --strict для FT-000 queue
+
+**3. Разворот bootstrap и scaffold** 
   -> /exe + /verify до закрытия Foundation Gate
   -> /feature-to-tasks FT-<NNN>
   -> /review-tasks-plan FT-<NNN>
@@ -57,45 +79,29 @@ existing PRD ──────────────> /write-prd
   -> manual tier-routed loop или /autopilot
 ```
 
-`/review-feat-plan` рекомендован и для небольшого ручного flow, но обязателен
-для high-risk, large и autonomous work. `/spec-design` обязателен всегда: для
-локальной простой работы он может зафиксировать valid `minimal` backbone с
-обоснованными `not_applicable` areas.
 
-Для application-shaped greenfield с ещё не выбранным architecture style
-`/spec-design` первым рекомендует один deployable modular monolith с
-capability/vertical slices. Это preferred recommendation, а не молчаливо
-принятое решение: interactive flow подтверждает style и coherent initial slice
-map, unattended flow применяет их только из уже принятой policy/authority, а
-явно выбранная альтернативная архитектура имеет приоритет.
 
-После принятия target существующие architecture и Boundary Map artifacts
-фиксируют code roots, semantic/write ownership, public boundaries, allowed
-dependencies и proof paths. Cross-slice business use case получает один owning
-capability slice; orchestration не размещается в HTTP/UI/bot handler, generic
-util или composition root. Foundation и product task planning наследуют эти
-границы через прямые existing links/fields; отдельный slice registry,
-`owning_slice` task field или автоматическое превращение code root в hard
-`write_boundary` не создаются.
+&nbsp;
 
-На execution boundary `/exe` применяет только task-linked architecture rules и
-останавливается, если tactic требует изменить accepted ownership или boundary.
-`/verify` не даёт `PASS` функционально верному обходу: явное нарушение —
-`FAIL`, а отсутствующее или неоднозначное canonical rule —
-`NEEDS-CLARIFICATION`. Repository-wide architecture audit не добавляется.
+Что важно:
 
-`/spec-design` также принимает явное Foundation Dev Path decision. Если
-executable baseline нужен, `/foundation-to-tasks` создаёт минимальную `FT-000`
-queue и final gate. Product tasks нельзя генерировать до закрытия этого gate.
-Если baseline уже доказан или отдельная foundation queue не нужна, фиксируется
-`Foundation Required: false` и `Foundation Gate Task: not_required`.
+- `principles ratified|partial` означает, что правила проекта согласованы
+полностью или частично; `SDD` — техническое проектирование до кода;
+- `/review-feat-plan` обязателен для крупной, высокорисковой и полностью
+автоматической работы; для небольшого ручного проекта он рекомендован;
+- `/spec-design` обязателен всегда, но для простого проекта может оставить
+минимальный набор технических решений;
+- `/spec-design` решает, нужна ли сначала базовая рабочая основа проекта;
+- если основа нужна, `/foundation-to-tasks` создаёт служебные задачи `FT-000`;
+продуктовые задачи появятся только после закрытия финальной задачи основы;
+- если отдельная основа не нужна или уже доказана, `FT-000` не создаётся.
 
-Global Backbone хранит один integer `Planning Revision`. Material rerun
-`/spec-design` повышает его и тем самым делает все прежние product task-plan
-`APPROVE` stale. Task statuses не меняются: перед execution повторяются
-`/feature-to-tasks --all` и `/review-tasks-plan --all`.
+`PRD` — документ с целями продукта, поведением, ограничениями и критериями
+приёмки. `/write-prd` уточняет входные данные и создаёт этот документ.
 
-## Brownfield flow
+## 🏗️ Канонический Brownfield flow
+
+Brownfield — существующий проект, в который нужно внести изменения.
 
 ```text
 /map-codebase
@@ -112,194 +118,145 @@ Global Backbone хранит один integer `Planning Revision`. Material reru
   -> execution
 ```
 
-`/map-codebase` документирует фактическое состояние кода и отделяет facts от
-inferences. Для небольшого repository достаточно direct reads одним агентом;
-bounded delegation нужна только для действительно широкого discovery и когда
-её разрешают текущая роль и оператор. Уже переданный authoritative delta не
-запрашивается повторно. Без PRD или delta команда не создаёт roadmap epics,
-product features или runnable task records.
+`/map-codebase` сначала фиксирует реальное состояние кода. Затем агент работает
+с уже переданным описанием изменений — `delta`. Без PRD или delta команда не
+создаёт функции и задачи продукта.
 
-## Task execution по tiers
+Если существующий проект уже собирается, запускается и имеет достаточные
+проверки, отдельная очередь `FT-000` обычно не нужна. Если это не доказано,
+`/foundation-to-tasks --verify-existing` создаст только минимальные проверочные
+задачи.
 
-| Tier | Тип работы | Manual route | Обязательный результат |
-|---|---|---|---|
-| `T0` | safe docs-only | `/exe` | compact evidence; closure только у explicit top-level owner |
-| `T1` | local code или contained behavior | `/exe`, optional `/verify` | relevant local check или объяснение, почему runnable check не нужен |
-| `T2` | API, contract, state/data/domain, cross-module | `/exe -> /verify` | full protocol + functional PASS; feature-level `/red-verify --feature FT-*` перед completion |
-| `T3` | security, production, irreversible/data-loss, payments, compliance | `/exe -> /verify -> /red-verify` | functional PASS + semantic-pass + exact `HUMAN_CHECKPOINT: done` |
+## 🧩 Планирование задач
 
-`touched_files` — advisory, non-exhaustive прогноз. Фактический write set
-подтверждает `/exe` preflight. Только непустой
-`runtime_context.write_boundary` является deliberate hard write boundary;
-`forbidden_scope` и `stop_conditions` также остаются hard constraints.
+Для каждой функции используется короткий маршрут:
 
-Если выполнение обнаружило higher-tier scope, tier не меняют на месте: исходную
-task возвращают в `/feature-to-tasks FT-<NNN>` для controlled rebuild/split, затем
-повторяют review и применимые readiness gates.
-
-## Ручной и автоматический режимы
-
-- **Manual:** оператор выбирает task, а `/exe` готовит protocol и начинает её.
-  Closure ownership задаётся отдельно. T0/T1 могут использовать fast lane с
-  compact evidence. T2/T3 проходят полный protocol и обязательные tier gates.
-- **`/autopilot`:** sequential scheduler для уже существующей, reviewed и
-  strict-ready product JSON queue после закрытия Foundation gate. Перед
-  promotion/selection он восстанавливает незавершённую durable checkpoint
-  action и product `in_progress` tasks из task protocol/handoff/verdict. Он не
-  создаёт PRD/features/tasks и не выполняет `FT-000`.
-- **`/autonomous`:** полный unattended orchestration от authoritative Product
-  Brief/PRD/delta до terminal state через существующие child-skill contracts.
-  Он сам владеет bounded `FT-000` phase, а после Foundation gate передаёт
-  product queue `/autopilot`.
-
-`/autonomous` владеет promotion/selection/final decisions только FT-000 phase;
-`/autopilot` — теми же scheduler decisions для product queue, failure budgets,
-dependent blocking и queue terminal state. Для уже выбранной задачи `/exe`
-готовит protocol и пишет `ready -> in_progress`; `/verify` и `/red-verify`
-возвращают verdicts, но не закрывают scheduler-owned tasks. `/mb-sync` один раз
-на границе wave согласует уже записанное authoritative state и сам не принимает
-closure или promotion decisions.
-
-No-ready fallback сохраняет уже записанный specific `HALT_*` вместе с reason,
-owner и resume route. `HALT_DEPENDENCY_DEADLOCK` используется только для
-dependency-only graph exhaustion; отсутствие product queue у `/autopilot` возвращает
-`HALT_QUALITY_GATES`. В `/autonomous` initial review не считается repair
-attempt, а для каждой review surface разрешены ровно пять завершённых циклов
-`repair -> re-review`; compact counter сохраняется при resume.
-
-Каноническое выполнение последовательно. `--experimental-parallel` разрешён
-только явно и требует isolated worktrees/sandboxes и pairwise-disjoint hard
-`write_boundary`; `touched_files` не доказывает независимость.
-
-## Карта runtime-skills
-
-После полной установки target получает 29 full runtime command skills.
-
-### Старт, контекст и discovery
-
-- `/cold-start` — определяет greenfield или brownfield route; при отсутствующем
-  skeleton возвращает внешний installer route и не зависит от `/mb-init`.
-- `/mb-init` — thin router к bootstrap или coherent framework sync через
-  installer из доступного checkout DevRails; сам skeleton не создаёт.
-- `/fill` — загружает минимально достаточный project context.
-- `/context-manifest` — поручает Explorer вернуть компактный read manifest для
-  дорогого discovery, не выполняя целевой workflow.
-- `/find-skills` — ищет сначала project-installed skills, затем marketplace.
-- `/brainstorm` — превращает сырую идею в traceable ideation report.
-- `/brief` — создаёт компактный Product Brief и после него формирует initial
-  project glossary.
-- `/constitution` — фиксирует governing principles, Definition of Done,
-  autonomy rules и non-negotiables.
-- `/write-prd` — создаёт clarified, Constitution-checked PRD.
-- `/discuss` — закрывает ограниченный набор unknowns и contradictions.
-- `/map-codebase` — строит evidence-backed brownfield baseline.
-- `/feature-doctor` — опционально снимает ambiguity одной feature.
-
-### Product, SDD и task planning
-
-- `/spec-init` — первым gate проверяет и при необходимости формирует glossary,
-  затем готовит pre-PRD domain/scenario/boundary framing.
-- `/prd-to-features` — декомпозирует clarified PRD в product, `REQ-*`, epics и `FT-*`.
-- `/review-feat-plan` — fresh-context review продуктовой декомпозиции.
-- `/spec-design` — mandatory global backbone, preferred architecture
-  recommendation и Foundation decision.
-- `/spec-auto` — unattended SDD framing/design только из authoritative
-  decisions.
-- `/foundation-to-tasks` — создаёт minimum `FT-000` queue или доказывает
-  existing baseline.
-- `/feature-to-tasks` — согласует feature-level canonical specs, implementation
-  plan и JSON task cards.
-- `/review-tasks-plan` — fresh-context semantic review runnable planning
-  surface одной feature.
-
-### Выполнение, проверки и обслуживание
-
-- `/exe` — реализует одну indexed task в её semantic и hard boundaries.
-- `/add-tests` — добавляет cheapest sufficient coverage внутри существующей
-  `in_progress` task.
-- `/verify` — независимо проверяет task-scoped functional outcome.
-- `/red-verify` — проводит adversarial semantic verification для T3 tasks и
-  T2 feature completion.
-- `/mb-sync` — reconciles уже принятые durable decisions на boundary.
-- `/mb-garden` — автоматически чинит только однозначные mechanical
-  links/indexes/routers и после edits запускает final structural lint;
-  `mb-lint` проверяет schema, IDs, links, dependencies и document structure,
-  но не является closure gate. Semantic или destructive decisions garden
-  блокирует, а broader reconciliation передаёт отдельному `/mb-sync`.
-- `/mb-doctor` — deterministic readiness gate поверх `mb-lint`: проверяет
-  tier/status-dependent protocol completeness и closure evidence с
-  предусмотренной default/strict severity, не меняя task status.
-- `/autopilot` — выполняет готовую product JSON queue после Foundation gate до
-  terminal state; FT-000 остаётся у `/autonomous`.
-- `/autonomous` — оркестрирует полный PRD-to-terminal-state workflow.
-
-## Основные артефакты target-проекта
-
-- `.memory-bank/` — durable product, requirements, architecture/specs,
-  lifecycle и task state;
-- `.memory-bank/spec-backbone.md` — pre-PRD framing, global backbone status и
-  design handoff;
-- `.memory-bank/spec-index.md` — pure registry в формате
-  `Type | Path | Status | Scope | Change route`;
-- `.memory-bank/architecture/system-architecture.md#Architecture Spine` —
-  compact executable `AD-*` rules для shared/strict decisions;
-- `.memory-bank/{contracts,domains,states,testing,runbooks,guides,adrs}/` —
-  subject-based canonical specs;
-- `.memory-bank/tasks/index.json` и `TASK-*.task.json` — единственный durable
-  task registry;
-- `.memory-bank/templates/protocols/` — framework-owned initialization shapes
-  для task-owned `.protocols/<TASK_ID>/` state;
-- `.protocols/` — resumable execution/verification state;
-- `.tasks/` — substantive evidence, reports и handoff material;
-- `.memory-bank/behavior-specs/` — optional JSON `given/when/then` examples,
-  не являющиеся отдельным registry или quality gate.
-
-## Установка
-
-Запустите из checkout DevRails:
-
-```bash
-node scripts/install-framework.mjs
+```text
+/feature-to-tasks FT-001
+  -> /review-tasks-plan FT-001
+  -> при необходимости /mb-doctor
+  -> /exe TASK-...
 ```
 
-Интерактивный installer выберет target, проверит его состояние, установит
-runtime-skills в `.agents/skills/` и `.claude/skills/`, затем создаст или
-синхронизирует Memory Bank.
+`FT-001` — идентификатор функции продукта, а `TASK-...` — идентификатор
+конкретной задачи.
 
-Non-interactive bootstrap:
+- `/feature-to-tasks` дополняет техническое описание функции и создаёт задачи;
+- `/review-tasks-plan` проверяет, что задачи покрывают функцию и готовы к
+выполнению. Он возвращает `APPROVE` или `REJECT` и ничего не исправляет;
+- `/architecture-review` помогает этой проверке оценить границы системы и
+зависимости, но не выносит итоговое решение;
+- `/mb-doctor` механически проверяет наличие обязательных файлов и
+подтверждений.
 
-```bash
-node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes
-```
+## 🛠️ Выполнение и уровни риска
 
-Coherent framework sync существующего target обновляет runtime command skills
-и framework-owned Memory Bank assets из одной prepared source copy:
+Каждая задача получает уровень риска:
 
-```bash
-node scripts/install-framework.mjs --bootstrap --sync --target /path/to/project --yes
-```
+- `T0` — безопасная правка документации;
+- `T1` — небольшое локальное изменение кода или теста;
+- `T2` — API, данные, состояние, миграция или несколько модулей;
+- `T3` — безопасность, рабочая система, платежи, необратимые действия или риск
+потери данных.
 
-`--bootstrap-only --sync` является только repair route для Memory Bank managed
-assets и не обновляет runtime command skills. Inline skeleton docs и project
-state после создания не перезаписываются; whole-file framework ownership имеют
-только явно управляемые contracts/assets, включая task schema, canonical
-workflows, roles, protocol templates и runtime scripts.
-Sync report различает `created|updated|unchanged|kept` и не выдаёт сохранённый
-project/mixed файл за обновлённый.
+В ручном режиме `T0/T1` обычно проходят через `/exe`; отдельный `/verify`
+необязателен. Для `T2` нужен `/exe -> /verify`, а после завершения всех задач
+функции — `/red-verify --feature FT-...`. Для `T3` нужен
+`/exe -> /verify -> /red-verify` и подтверждение человеком.
 
-Install-only всех runtime-skills в текущий target:
+`/exe` выполняет одну уже выбранную задачу и не выбирает следующую из очереди.
+Статусы задач едины для всех режимов:
+`planned | ready | in_progress | blocked | done | failed`.
 
-```bash
-node scripts/install-framework.mjs --skill '*' --yes
-```
+## 🤖 Ручной и автоматический режимы
 
-Этот репозиторий использует source-only packaging. Прямой
-`npx skills add <repo>` для установки framework не поддерживается: wrapper
-сначала создаёт временную vendored copy, а затем генерирует full runtime-skills
-в target.
+### 👤 Ручной режим
 
-В source repo общие контракты живут только в `skills/_shared/`. Не редактируйте
-и не коммитьте generated package-local `shared-*` files.
+Оператор выбирает задачу и запускает `/exe TASK-...`. Если агенту прямо
+поручены и выполнение, и закрытие простой `T0/T1` задачи, он может завершить её
+одной командой после подходящей локальной проверки.
 
-Подробная механика: [howItWorks.md](howItWorks.md). Mermaid-карта greenfield
-пути: [GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).
+### ▶️ `/autopilot`
+
+Последовательно выполняет уже созданную и одобренную очередь продуктовых задач.
+Перед запуском должны быть закрыты базовые задачи `FT-000`, а
+`/mb-doctor --strict` должен пройти успешно. `/autopilot` не создаёт требования,
+функции или начальную очередь и никогда не выполняет `FT-000`.
+
+### ✨ `/autonomous`
+
+Проводит весь процесс от переданного краткого описания продукта (`Product Brief`), PRD или описания изменений до конечного результата. Если нужен
+`FT-000`, `/autonomous` выполняет его сам, а готовые продуктовые задачи
+передаёт `/autopilot`.
+
+Если не хватает решения оператора или обязательного подтверждения,
+автоматический запуск останавливается и сообщает причину и точную команду для
+продолжения. По умолчанию задачи выполняются последовательно.
+
+## 🎭 Роли агентов
+
+- `GENERAL` — обычный агент верхнего уровня. Без явного запроса оператора он не
+запускает дополнительных агентов;
+- `ORCHESTRATOR` — координирует работу и назначает отдельным агентам
+исследование, реализацию, проверку или архитектурное проектирование;
+- `ARCHITECT` — проектирует архитектуру и технические спецификации, сопоставляя
+пользу решения со стоимостью реализации и возникающими рисками;
+- `Explorer`, `Implementer` и `Reviewer` — назначаемые роли для исследования,
+реализации и независимой проверки.
+
+Роль фиксируется при запуске и не меняется в ходе работы. `/kiss-architect`
+позволяет применить правила Architect к текущему архитектурному решению, не
+меняя роль и полномочия агента.
+
+## 🧰 Команды DevRails
+
+### 🧭 Старт и контекст
+
+- `/cold-start` — выбирает ближайший правильный путь;
+- `/mb-init` — сообщает внешнюю команду установки или восстановления Memory
+Bank, но сам файлы не создаёт;
+- `/fill` — читает минимально необходимый контекст, ничего не меняя;
+- `/context-manifest` — составляет список файлов для чтения в большом проекте;
+- `/find-skills` — ищет дополнительные skills сначала в проекте, затем во
+внешнем каталоге;
+- `/brainstorm` — исследует сырую идею;
+- `/brief` — создаёт краткое описание продукта;
+- `/constitution` — записывает главные правила проекта;
+- `/write-prd` — создаёт уточнённый PRD;
+- `/discuss` — закрывает конкретные вопросы и противоречия;
+- `/map-codebase` — описывает текущее состояние существующего кода;
+- `/feature-doctor` — уточняет одну проблемную функцию продукта.
+
+### 🏛️ Проектирование и задачи
+
+- `/spec-init` — подготавливает термины и контекст для разделения PRD;
+- `/prd-to-features` — создаёт требования и функции продукта;
+- `/review-feat-plan` — проверяет структуру продукта;
+- `/spec-design` — создаёт общие технические решения;
+- `/spec-auto` — выполняет проектирование в автоматическом режиме только из
+уже принятых решений;
+- `/foundation-to-tasks` — создаёт минимальные базовые задачи `FT-000`, когда
+они нужны;
+- `/feature-to-tasks` — создаёт техническое описание и задачи функции;
+- `/review-tasks-plan` — проверяет готовность задач к выполнению;
+- `/architecture-review` — проверяет архитектурные границы и зависимости;
+- `/kiss-architect` — применяет правила Architect к текущему решению.
+
+### ✅ Реализация, проверки и обслуживание
+
+- `/exe` — выполняет одну выбранную задачу;
+- `/add-tests` — добавляет достаточные тесты внутри выполняемой задачи;
+- `/verify` — проверяет функциональный результат;
+- `/red-verify` — ищет скрытые смысловые и рискованные ошибки;
+- `/mb-sync` — согласует уже принятые изменения между файлами Memory Bank;
+- `/mb-garden` — исправляет однозначные механические ошибки в ссылках и
+индексах;
+- `/mb-doctor` — проверяет готовность проекта или очереди задач;
+- `/autopilot` — выполняет готовую очередь продуктовых задач;
+- `/autonomous` — управляет полным автоматическим процессом.
+
+## 📚 Подробнее
+
+Подробное описание файлов, проверок и правил перехода между командами находится
+в [howItWorks.md](howItWorks.md). Схема Greenfield-пути находится в
+[GREENFIELD_WORKFLOW.md](GREENFIELD_WORKFLOW.md).

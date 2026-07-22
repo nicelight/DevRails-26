@@ -26,6 +26,8 @@ const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'pro
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
 const tierPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'tier-policy.md');
 const autonomyPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'autonomy-policy.md');
+const architectRoleSource = join(repoRoot, 'skills', '_shared', 'references', 'roles', 'architect.md');
+const retiredArchitectPrompt = join(repoRoot, 'skills', '_shared', 'agents', 'review-architect.md');
 const lintSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs');
 const doctorSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs');
 const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-install-sync-'));
@@ -168,6 +170,9 @@ function boundaryTask(runtimeContext) {
 }
 
 try {
+  assert(existsSync(architectRoleSource), 'Canonical Architect role is missing.');
+  assert(!existsSync(retiredArchitectPrompt), 'Retired review-architect agent prompt still exists.');
+
   const coldStartSources = [coldStartCommandSource, coldStartPackageSource]
     .map((source) => readFileSync(source, 'utf8'));
   coldStartSources.forEach((source) => {
@@ -245,12 +250,20 @@ try {
   const schemaRel = '.memory-bank/schemas/task.schema.json';
   const tierPolicyRel = '.memory-bank/workflows/tier-policy.md';
   const autonomyPolicyRel = '.memory-bank/workflows/autonomy-policy.md';
+  const architectRoleRel = '.memory-bank/roles/architect.md';
+  const explorerRoleRel = '.memory-bank/roles/explorer.md';
+  const implementerRoleRel = '.memory-bank/roles/implementer.md';
+  const reviewerRoleRel = '.memory-bank/roles/reviewer.md';
   const lintRel = 'scripts/mb-lint.mjs';
   const doctorRel = 'scripts/mb-doctor.mjs';
   const runtimeSkillRel = '.agents/skills/cold-start/SKILL.md';
   const expectedSchema = readTarget(schemaRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
   const expectedAutonomyPolicy = readFileSync(autonomyPolicySource, 'utf8');
+  const expectedArchitectRole = readTarget(architectRoleRel);
+  const expectedExplorerRole = readTarget(explorerRoleRel);
+  const expectedImplementerRole = readTarget(implementerRoleRel);
+  const expectedReviewerRole = readTarget(reviewerRoleRel);
   const expectedLint = readFileSync(lintSource, 'utf8');
   const expectedDoctor = readFileSync(doctorSource, 'utf8');
   const expectedRuntimeSkill = readTarget(runtimeSkillRel);
@@ -283,9 +296,57 @@ try {
       && !freshSkillIndex.includes('## Installed\n- cold-start'),
     'Fresh skill registry is missing its managed inventory boundary or conditional guidance.',
   );
+  const freshAgents = readTarget('AGENTS.md');
+  const normalizedFreshAgents = normalizeProse(freshAgents);
+  const freshMemoryBankIndex = readTarget('.memory-bank/index.md');
+  const deployedOrchestratorRole = readTarget('.memory-bank/roles/orchestrator.md');
+  assert(
+    expectedArchitectRole.includes('# ROLE: ARCHITECT')
+      && expectedArchitectRole.includes('Every ARCHITECT response starts with `ROLE: ARCHITECT`.')
+      && freshMemoryBankIndex.includes('(roles/architect.md): Architect role contract.'),
+    'Fresh bootstrap did not deploy or index the Architect role.',
+  );
+  assert(
+    expectedExplorerRole.includes('# ROLE: Explorer')
+      && expectedImplementerRole.includes('# ROLE: Implementer')
+      && expectedReviewerRole.includes('# ROLE: Reviewer')
+      && freshMemoryBankIndex.includes('(roles/explorer.md): Explorer role contract.')
+      && freshMemoryBankIndex.includes('(roles/implementer.md): Implementer role contract.')
+      && freshMemoryBankIndex.includes('(roles/reviewer.md): Reviewer role contract.')
+      && !existsSync(targetPath('.memory-bank/roles/worker.md')),
+    'Fresh bootstrap did not deploy the independent delegated role contracts.',
+  );
+  assert(
+    normalizedFreshAgents.includes(
+      'serious problem is not covered by an accepted requirement: do not expand the target; ask the operator;',
+    )
+      && normalizedFreshAgents.includes(
+        'Do not report speculative observations that were rejected before becoming real candidates. Always report evidenced defects and any issue affecting the requested verdict.',
+      )
+      && freshAgents.includes(
+        'If ROLE: ARCHITECT, read `.memory-bank/roles/architect.md`.',
+      )
+      && freshAgents.includes('If ROLE: Explorer, read `.memory-bank/roles/explorer.md`.')
+      && freshAgents.includes('If ROLE: Implementer, read `.memory-bank/roles/implementer.md`.')
+      && freshAgents.includes('If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.'),
+    'Fresh AGENTS.md lost Architect priming or the general KISS gate.',
+  );
+  assert(
+    deployedOrchestratorRole.includes(
+      'ORCHESTRATOR may delegate Architect for architecture/specification design or dedicated proposal preflight of a material architecture finding, design element, or proposed correction.',
+    )
+      && deployedOrchestratorRole.includes('Read .memory-bank/roles/explorer.md')
+      && deployedOrchestratorRole.includes('Read .memory-bank/roles/implementer.md')
+      && deployedOrchestratorRole.includes('Read .memory-bank/roles/reviewer.md'),
+    'Deployed Orchestrator role lost the explicit Architect delegation route.',
+  );
   ['.agents/skills', '.claude/skills'].forEach((runtimeRoot) => {
     const deployedColdStart = readTarget(`${runtimeRoot}/cold-start/SKILL.md`);
     const deployedMbInit = readTarget(`${runtimeRoot}/mb-init/SKILL.md`);
+    const deployedArchitectureReview = readTarget(`${runtimeRoot}/architecture-review/SKILL.md`);
+    const deployedKissArchitect = readTarget(`${runtimeRoot}/kiss-architect/SKILL.md`);
+    const deployedReviewTasksPlan = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
+    const normalizedKissArchitect = normalizeProse(deployedKissArchitect);
     assert(
       deployedColdStart.includes(fullBootstrapRoute)
         && !deployedColdStart.includes(skeletonBootstrapRoute),
@@ -296,6 +357,36 @@ try {
         && deployedMbInit.includes('only when its `SKILL.md` exists')
         && deployedMbInit.includes('do not claim `/cold-start` is available'),
       `${runtimeRoot}/mb-init lost skeleton-only bootstrap or its installed-skill handoff guard.`,
+    );
+    assert(
+      normalizedKissArchitect.includes('.memory-bank/roles/architect.md')
+        && normalizedKissArchitect.includes('Keep the active role, scope, permissions, and mutation authority unchanged.')
+        && normalizedKissArchitect.includes(
+          'every architecture finding, design element, or proposed correction entering an operator response or canonical artifact has passed the Architect proposal preflight',
+        )
+        && normalizedKissArchitect.includes('both supplied and agent-generated architecture candidates')
+        && normalizedKissArchitect.includes('no correction was evaluated only as a local patch')
+        && normalizedKissArchitect.includes('installed skill that owns those artifacts')
+        && !deployedKissArchitect.includes('skills/_shared/'),
+      `${runtimeRoot}/kiss-architect lost its proposal-preflight, authority, or owning-skill contract.`,
+    );
+    assert(
+      deployedArchitectureReview.includes('1. C4 L1-L3')
+        && deployedArchitectureReview.includes('product/system purpose and actors')
+        && deployedArchitectureReview.includes('relevant epic/subsystem boundaries and value')
+        && deployedArchitectureReview.includes('target feature/module responsibilities and dependencies')
+        && deployedArchitectureReview.includes('verdict: APPROVE|REQUEST_CHANGES|OWNER_DECISION_NEEDED')
+        && deployedArchitectureReview.includes('`/review-tasks-plan` owns its')
+        && deployedArchitectureReview.includes('Create no separate report artifact.'),
+      `${runtimeRoot}/architecture-review lost its bounded C4 or Reviewer-verdict contract.`,
+    );
+    assert(
+      deployedReviewTasksPlan.includes('one bounded architecture review per reviewed feature from a fresh\n  Reviewer')
+        && deployedReviewTasksPlan.includes('installed `/architecture-review` skill')
+        && deployedReviewTasksPlan.includes('.memory-bank/roles/reviewer.md')
+        && deployedReviewTasksPlan.includes('If fresh\n  delegation is unavailable or fails, perform the same review locally.')
+        && deployedReviewTasksPlan.includes('Return exactly `APPROVE` or `REJECT` with evidence'),
+      `${runtimeRoot}/review-tasks-plan lost its bounded Reviewer delegation or verdict ownership.`,
     );
   });
 
@@ -568,6 +659,7 @@ try {
     const specDesignSkill = readTarget(`${runtimeRoot}/spec-design/SKILL.md`);
     const foundationToTasksSkill = readTarget(`${runtimeRoot}/foundation-to-tasks/SKILL.md`);
     const featureToTasksSkill = readTarget(`${runtimeRoot}/feature-to-tasks/SKILL.md`);
+    const architectureReviewSkill = readTarget(`${runtimeRoot}/architecture-review/SKILL.md`);
     const reviewTasksPlanSkill = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
     const verifySkill = readTarget(`${runtimeRoot}/verify/SKILL.md`);
     const normalizedAutonomous = normalizeProse(autonomousSkill);
@@ -577,6 +669,7 @@ try {
     const normalizedSpecDesign = normalizeProse(specDesignSkill);
     const normalizedFoundationToTasks = normalizeProse(foundationToTasksSkill);
     const normalizedFeatureToTasks = normalizeProse(featureToTasksSkill);
+    const normalizedArchitectureReview = normalizeProse(architectureReviewSkill);
     const normalizedReviewTasksPlan = normalizeProse(reviewTasksPlanSkill);
     const normalizedVerify = normalizeProse(verifySkill);
     assert(
@@ -727,25 +820,24 @@ try {
       `${runtimeRoot}/feature-to-tasks does not propagate slice ownership through existing task fields.`,
     );
     assert(
-      normalizedReviewTasksPlan.includes(
+      normalizedArchitectureReview.includes(
         'only when the accepted target defines modules or capability slices',
       )
-        && normalizedReviewTasksPlan.includes(
-          'carries applicable public boundary, semantic/write-owner, and forbidden-bypass rules',
+        && normalizedArchitectureReview.includes(
+          'each affected task makes its primary owner and code root discoverable through the card and direct links',
         )
-        && normalizedReviewTasksPlan.includes(
-          'names one orchestration owner for a cross-slice outcome',
+        && normalizedArchitectureReview.includes(
+          'a capability-sliced cross-slice outcome names one accepted capability slice as orchestration owner',
         )
-        && normalizedReviewTasksPlan.includes(
-          'reject business orchestration placed in an HTTP/UI/bot handler, generic utility/shared helper, or composition root',
+        && normalizedArchitectureReview.includes(
+          'business orchestration in transport handlers, generic utilities, or the composition root when accepted architecture forbids it',
         )
-        && normalizedReviewTasksPlan.includes(
-          'reject an orchestration slice invented during task planning rather than accepted in the global architecture',
+        && normalizedArchitectureReview.includes(
+          'reject an orchestration slice invented in planning',
         )
-        && normalizedReviewTasksPlan.includes(
-          'do not require slices from an accepted architecture that uses another primary change unit',
-        ),
-      `${runtimeRoot}/review-tasks-plan does not conditionally review slice legibility.`,
+        && normalizedArchitectureReview.includes('do not require slices from another architecture')
+        && normalizedReviewTasksPlan.includes('integrate the architecture verdict and findings'),
+      `${runtimeRoot} architecture review flow does not conditionally review slice legibility.`,
     );
     assert(
       normalizedSpecDesign.includes(
@@ -772,8 +864,8 @@ try {
         && normalizedFeatureToTasks.includes(
           'when a linked runtime/state rule requires reproducibility, carry its known initial state, safe rerun, observable result, and cleanup/isolation proof',
         )
-        && normalizedReviewTasksPlan.includes(
-          'reject when an applicable linked architecture rule loses its existing mechanical gate or required runtime reproducibility proof; require neither without canonical evidence.',
+        && normalizedArchitectureReview.includes(
+          'applicable linked rules retain existing mechanical gates and required runtime reproducibility proof; require neither without canonical evidence.',
         ),
       `${runtimeRoot} task planning does not preserve applicable architecture proof without inventing gates.`,
     );
@@ -902,6 +994,7 @@ try {
   staleSchema.title = 'STALE TARGET TASK SCHEMA';
   writeTarget(schemaRel, `${JSON.stringify(staleSchema, null, 2)}\n`);
   writeTarget(tierPolicyRel, '# stale tier policy\n');
+  writeTarget(architectRoleRel, '# stale architect role\n');
   writeTarget(lintRel, '# stale lint asset\n');
   writeTarget(doctorRel, '# stale doctor asset\n');
 
@@ -936,6 +1029,7 @@ try {
   const syncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(readTarget(schemaRel) === expectedSchema, 'Full sync did not restore the canonical task schema.', syncOutput);
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Full sync did not restore the canonical tier policy.', syncOutput);
+  assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Full sync did not restore the Architect role.', syncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Full sync did not restore the canonical mb-lint asset.', syncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Full sync did not restore the canonical mb-doctor asset.', syncOutput);
   assert(readTarget(runtimeSkillRel) === expectedRuntimeSkill, 'Full sync did not restore the canonical runtime command skill.', syncOutput);
@@ -954,6 +1048,7 @@ try {
   assert(syncOutput.includes('updated framework-owned'), 'Full sync did not classify the stale schema as framework-owned update.', syncOutput);
   assert(syncOutput.includes(schemaRel), 'Full sync report did not name the task schema.', syncOutput);
   assert(syncOutput.includes(tierPolicyRel), 'Full sync report did not name the tier policy.', syncOutput);
+  assert(syncOutput.includes(architectRoleRel), 'Full sync report did not name the Architect role.', syncOutput);
   assert(syncOutput.includes(lintRel), 'Full sync report did not name the mb-lint asset.', syncOutput);
   assert(syncOutput.includes(doctorRel), 'Full sync report did not name the mb-doctor asset.', syncOutput);
   assert(syncOutput.includes(staleProtocolRel), 'Full sync report did not name the protocol template.', syncOutput);
@@ -963,6 +1058,7 @@ try {
   assert(secondSyncOutput.includes('unchanged framework-owned'), 'Idempotent sync did not classify identical framework assets as unchanged.', secondSyncOutput);
   assert(readTarget(schemaRel) === expectedSchema, 'Idempotent sync changed the canonical task schema.', secondSyncOutput);
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Idempotent sync changed the canonical tier policy.', secondSyncOutput);
+  assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Idempotent sync changed the Architect role.', secondSyncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Idempotent sync changed the canonical mb-lint asset.', secondSyncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Idempotent sync changed the canonical mb-doctor asset.', secondSyncOutput);
   expectedProtocolTemplates.forEach((expected, filename) => {

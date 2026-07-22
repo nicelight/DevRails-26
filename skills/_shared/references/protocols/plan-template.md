@@ -53,8 +53,8 @@ linked specs/PRD, or repository configuration.
 - No meaningful runnable check: `<not applicable | rationale>`
 
 ## Fan-out plan (if needed)
-- Worker A: scope ...
-- Worker B: scope ...
+- Delegated agent A: scope ...
+- Delegated agent B: scope ...
 
 ## MB-SYNC handoff / owner
 Scheduler or explicit standalone owner performs sync after verification/status
@@ -63,7 +63,7 @@ decision. `/exe` only records handoff notes.
 An `explicit standalone owner` exists only when the user directly asked the
 current top-level agent to close the task, or when the top-level
 agent/orchestrator explicitly runs a manual workflow for one TASK and records
-that it owns closure. Subagents/worker prompts do not silently become closure
+that it owns closure. Subagent prompts do not silently become closure
 owners.
 
 Checklist:

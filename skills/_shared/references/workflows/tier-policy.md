@@ -128,7 +128,7 @@ Scheduler mode:
 Manual mode:
 - Expected T0/T1 simple flow: `/exe TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
 - Manual closure is allowed only when an explicit closure owner exists.
-- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagents/worker prompts do not silently become closure owners.
+- `explicit standalone owner` means either the user directly asked the current top-level agent to close the task, or the top-level agent/orchestrator explicitly runs a manual workflow for one TASK and records that it owns closure. Subagent prompts do not silently become closure owners.
 - `/exe` may close a `T0` / `T1` task only when the current agent is the manual top-level executor, explicit closure ownership is present, semantic scope stayed task-local, no hard runtime boundary or T2/T3 trigger appeared, and compact evidence was written. Extra files outside advisory `touched_files` do not invalidate fast-lane closure when they are necessary for the same local outcome and recorded in evidence.
 - When those conditions pass, `/exe` may write/update `.protocols/<TASK>/run.md`, append compact PASS evidence to task `verify`, and set `status: done`.
 - When any condition is missing, `/exe` leaves the task open and reports the next owner action: run `/verify`, ask the explicit owner to close, or use the tier-escalation handoff when scope requires a higher tier.

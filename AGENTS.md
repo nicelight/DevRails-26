@@ -84,20 +84,27 @@ Leaf skill должен описывать собственный outcome и imm
 Подробные контракты ролей для этого source-only repo:
 - `skills/_shared/references/roles/orchestrator.md`
 - `skills/_shared/references/roles/general.md`
-- `skills/_shared/references/roles/worker.md`
+- `skills/_shared/references/roles/explorer.md`
+- `skills/_shared/references/roles/implementer.md`
+- `skills/_shared/references/roles/reviewer.md`
 
 Early priming:
 - If `ROLE: ORCHESTRATOR`, read `skills/_shared/references/roles/orchestrator.md`.
 - If `ROLE: GENERAL`, read `skills/_shared/references/roles/general.md`.
-- If delegated worker, read `skills/_shared/references/roles/worker.md`.
+- If `ROLE: Explorer`, read `skills/_shared/references/roles/explorer.md`.
+- If `ROLE: Implementer`, read `skills/_shared/references/roles/implementer.md`.
+- If `ROLE: Reviewer`, read `skills/_shared/references/roles/reviewer.md`.
 
 Bootstrap/sync целевых проектов разворачивает эти контракты в:
 - `.memory-bank/roles/orchestrator.md`
 - `.memory-bank/roles/general.md`
-- `.memory-bank/roles/worker.md`
+- `.memory-bank/roles/architect.md`
+- `.memory-bank/roles/explorer.md`
+- `.memory-bank/roles/implementer.md`
+- `.memory-bank/roles/reviewer.md`
 
 GENERAL не запускает сабагентов без явного запроса пользователя.
-Для delegated worker/reviewer/explorer: не запускай сабагентов; анализируй последствия работы и сообщай о потенциальных или явных проблемах.
+Для delegated Explorer/Implementer/Reviewer: не запускай сабагентов; анализируй последствия работы и сообщай о потенциальных или явных проблемах.
 
 # Стратегия разработки
 

@@ -21,7 +21,7 @@ product intent
   -> durable lifecycle state and evidence
 ```
 
-В target-проекте агенты работают не от памяти одной сессии, а от четырёх
+В target-проекте агенты работают не от памяти одной сессии, а от пяти
 связанных surfaces:
 
 ```text
@@ -104,7 +104,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 29 runtime-skills определены в:
+Текущие 31 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -123,20 +123,31 @@ proxy skills.
 
 ## 4. Роли агентов
 
-Bootstrap разворачивает role contracts в `.memory-bank/roles/` и связывает их
-с `AGENTS.md`.
+Bootstrap разворачивает role contracts в `.memory-bank/roles/`; `AGENTS.md`
+содержит общие правила работы агентов.
 
 | Role | Назначение | Ограничение |
 |---|---|---|
 | `GENERAL` | самостоятельная top-level работа одним агентом | не запускает subagents без явного запроса оператора |
 | `ORCHESTRATOR` | strategy, decomposition, delegation, risk control и final judgment | не выполняет executor work без явного разрешения |
-| `Explorer` | bounded read-only discovery и optional `/context-manifest` routing | delegated worker, не принимает product/design decisions |
+| `ARCHITECT` | проектирование practical KISS architecture/specs с proposal-level cost/risk analysis | canonical changes выполняет через owning runtime skill |
+| `Explorer` | bounded read-only discovery и optional `/context-manifest` routing | delegated read-only role, не принимает product/design decisions |
 | `Implementer` | bounded implementation с preflight и evidence | останавливается при scope/spec conflict |
 | `Reviewer` | independent read-only critique | не исправляет reviewed work |
 
-Роль фиксируется при назначении и не меняется по ходу работы. Delegated worker
+Роль фиксируется при назначении и не меняется по ходу работы. Delegated agent
 не становится `GENERAL` или `ORCHESTRATOR` автоматически. Lifecycle ownership
 также не возникает только из факта delegation.
+
+Harness сам не переключает агента в `ARCHITECT`. Текущий агент может применить
+архитектурный preflight через `/kiss-architect`. `ORCHESTRATOR` может
+делегировать `Architect`, явно потребовав прочитать
+`.memory-bank/roles/architect.md`. При отдельном запуске оператор назначает
+`ROLE: ARCHITECT`, после чего generated `AGENTS.md` направляет агента к тому же
+контракту роли.
+
+Перед включением finding, design element или correction в ответ либо canonical
+artifact `Architect` выполняет proposal preflight по consequence surface.
 
 `/context-manifest` нужен только когда broad discovery, вероятно, обойдётся
 дороже direct reads. Delegated Explorer возвращает compact ordered
@@ -217,26 +228,25 @@ node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes
 node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes --sync
 ```
 
-`--force` сейчас эквивалентен `--sync`.
-
 ### Install-only
 
-Все runtime-skills в текущий target без Memory Bank bootstrap:
+Все runtime-skills в указанный target без Memory Bank bootstrap:
 
 ```bash
-node scripts/install-framework.mjs --skill '*' --yes
+node scripts/install-framework.mjs --install-only --target /path/to/project --skill '*' --yes
 ```
 
 Один выбранный runtime-skill:
 
 ```bash
-node scripts/install-framework.mjs --skill verify --yes
+node scripts/install-framework.mjs --install-only --target /path/to/project --skill verify --yes
 ```
 
 Для inspection временно подготовленной package copy:
 
 ```bash
-DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
+DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs \
+  --install-only --target /path/to/inspection-target --skill '*' --yes
 ```
 
 После install-only, если `.memory-bank/` отсутствует, `/cold-start` не создаёт
@@ -311,7 +321,7 @@ Fresh bootstrap создаёт skeleton, но не roadmap. Основные art
   product.md
   quality/
   requirements.md
-  roles/{general,orchestrator,worker}.md
+  roles/{architect,explorer,general,implementer,orchestrator,reviewer}.md
   runbooks/
   schemas/task.schema.json
   skills/index.md
@@ -780,14 +790,21 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 |---|---|---|
 | `/review-feat-plan` | PRD -> REQ -> EP -> FT traceability и boundaries | не ревьюит JSON task queue |
 | `/review-tasks-plan` | schema/coverage/slicing/design/execution readiness одной feature | не исправляет planning surface и не меняет lifecycle |
+| `/architecture-review` | bounded C4 L1-L3, architecture support, boundaries и invariants | возвращает Reviewer verdict, но не владеет итоговым `APPROVE|REJECT` |
 | `mb-lint` | structural/mechanical Memory Bank consistency | не оценивает tier/status-dependent protocol, closure evidence или lifecycle eligibility |
 | `/mb-doctor` | deterministic executable-readiness поверх lint, включая protocol/evidence consistency | не заменяет reviews/verification и не меняет task status |
 | `/verify` | task-scoped functional outcome, applicable linked architecture path и evidence | не проверяет всю feature, не чинит implementation/specs |
 | `/red-verify` | adversarial semantic correctness | не заменяет functional PASS и не закрывает scheduler task |
 
-Оба review skills требуют fresh context или отдельную fresh session и возвращают
-findings, а не silently repair. `/review-tasks-plan --all` всё равно создаёт
-отдельный bounded verdict для каждой product feature.
+`/review-feat-plan` и `/review-tasks-plan` требуют fresh context или отдельную
+fresh session и возвращают findings, а не silently repair.
+`/review-tasks-plan --all` всё равно создаёт отдельный bounded verdict для каждой
+product feature.
+
+`/review-tasks-plan` после достаточного task-planning context запускает одного
+fresh Reviewer с `/architecture-review` на feature. Основной reviewer включает
+его architecture verdict в свой report и сохраняет ownership финального verdict; без
+subagent support выполняет тот же bounded review локально.
 
 ### Doctor modes
 
@@ -1206,6 +1223,8 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/foundation-to-tasks` | minimum FT-000 queue или proven-baseline no-op | не реализует product features; затем strict doctor или product tasking |
 | `/feature-to-tasks` | feature canonical coverage, IMPL plan, behavior examples и JSON tasks | не выполняет tasks; затем `/review-tasks-plan` |
 | `/review-tasks-plan` | fresh-context `APPROVE|REJECT` runnable planning review | не чинит specs/cards/status; затем doctor/execution или repair |
+| `/architecture-review` | bounded C4 L1-L3 и architecture verdict для одной feature | read-only; не возвращает итоговый planning verdict и не создаёт отдельный artifact |
+| `/kiss-architect` | Architect proposal preflight для architecture/spec design, findings и corrections | не меняет active role или workflow authority; canonical edits передаёт owning skill |
 
 ### Execution, verification, maintenance и automation
 
@@ -1228,8 +1247,11 @@ Canonical execution sequential. `--experimental-parallel` требует:
 ```bash
 npm run check:syntax --silent
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
-node scripts/install-framework.mjs --skill '*' --yes
-tmpdir="$(mktemp -d)"; node scripts/install-framework.mjs --bootstrap --target "$tmpdir" --yes
+tmp_target="$(mktemp -d)"
+node scripts/install-framework.mjs \
+  --install-only --target "$tmp_target/install-only" --skill '*' --yes
+node scripts/install-framework.mjs \
+  --bootstrap --target "$tmp_target/bootstrap" --yes
 ```
 
 Source-only count должен быть `0`.

@@ -699,8 +699,11 @@ Planning/design priming:
 6. Read \`.memory-bank/index.md\` (table of contents)
 7. If no explicit top-level role is given, use ROLE: GENERAL and read \`.memory-bank/roles/general.md\`.
 8. If ROLE: ORCHESTRATOR, read \`.memory-bank/roles/orchestrator.md\`.
-9. If delegated worker, read \`.memory-bank/roles/worker.md\`.
-10. Read task/feature-specific docs
+9. If ROLE: ARCHITECT, read \`.memory-bank/roles/architect.md\`.
+10. If ROLE: Explorer, read \`.memory-bank/roles/explorer.md\`.
+11. If ROLE: Implementer, read \`.memory-bank/roles/implementer.md\`.
+12. If ROLE: Reviewer, read \`.memory-bank/roles/reviewer.md\`.
+13. Read task/feature-specific docs
 
 Manual execution priming for \`/exe TASK-NNN-TN-FT-NNN-WN\`:
 1. Read \`AGENTS.md\` (this guide)
@@ -726,7 +729,10 @@ The role is fixed and cannot be changed.
 Full role contracts live in:
 - \`.memory-bank/roles/orchestrator.md\`
 - \`.memory-bank/roles/general.md\`
-- \`.memory-bank/roles/worker.md\`
+- \`.memory-bank/roles/architect.md\`
+- \`.memory-bank/roles/explorer.md\`
+- \`.memory-bank/roles/implementer.md\`
+- \`.memory-bank/roles/reviewer.md\`
 
 ## KISS / Complexity and Requirement Gate
 
@@ -752,7 +758,7 @@ Decision rule:
 - problem is covered by an accepted requirement:
   implement the cheapest sufficient remedy;
 - serious problem is not covered by an accepted requirement:
-  do not expand the target; route it to ROLE: ARCHITECT or ask the operator;
+  do not expand the target; ask the operator;
 - small local safeguard with negligible cost and no new state/lifecycle:
   implementation discretion is allowed.
 
@@ -762,9 +768,9 @@ complex mechanism.
 Agent-generated reviews, specifications, brainstorm results and best-practice
 recommendations cannot authorize their own complexity.
 
-Architecture, specification or review candidates that introduce material
-complexity are routed to ROLE: ARCHITECT. Minor rejected candidates are not
-reported or escalated.
+Do not report speculative observations that were rejected before becoming real
+candidates. Always report evidenced defects and any issue affecting the
+requested verdict.
 
 ## Communication
 
@@ -808,7 +814,7 @@ After finishing a meaningful unit of work:
 - The caller selects a concrete task. \`/exe\` prepares/reconciles its tier
   protocol and neutral current Execution Attempt before writing
   \`ready -> in_progress\`; it never selects queue work.
-- Delegation and worker reports follow \`.memory-bank/roles/orchestrator.md\` and \`.memory-bank/roles/worker.md\`.
+- Delegation follows \`.memory-bank/roles/orchestrator.md\`; each delegated agent follows its assigned role contract.
 - T0/T1 may use compact \`.protocols/TASK-NNN-TN-FT-NNN-WN/run.md\`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and \`/verify\` \`VERDICT: PASS\`; per-task \`/red-verify\` is not required for T2 task closure.
 - Scheduler mode: T2 feature completion requires \`/red-verify --feature FT-<ID>\` with \`SEMANTIC_VERDICT: semantic-pass\` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the wave-boundary \`/mb-sync\` and strict doctor.
@@ -875,7 +881,10 @@ status: active
 - [.memory-bank/mbb/index.md](mbb/index.md): Правила ведения Memory Bank (MBB).
 - [.memory-bank/roles/orchestrator.md](roles/orchestrator.md): Orchestrator role contract.
 - [.memory-bank/roles/general.md](roles/general.md): General role contract for one-agent execution.
-- [.memory-bank/roles/worker.md](roles/worker.md): Worker role contracts.
+- [.memory-bank/roles/architect.md](roles/architect.md): Architect role contract.
+- [.memory-bank/roles/explorer.md](roles/explorer.md): Explorer role contract.
+- [.memory-bank/roles/implementer.md](roles/implementer.md): Implementer role contract.
+- [.memory-bank/roles/reviewer.md](roles/reviewer.md): Reviewer role contract.
 - [.memory-bank/product.md](product.md): Продукт (C4 L1).
 - [.memory-bank/requirements.md](requirements.md): Требования + RTM.
 - [.memory-bank/epics/](epics/): Эпики (C4 L2).
@@ -1291,7 +1300,10 @@ copyWorkflowReference('autonomy-policy.md');
 copyWorkflowReference('execute-loop.md');
 copyRoleReference('orchestrator.md');
 copyRoleReference('general.md');
-copyRoleReference('worker.md');
+copyRoleReference('architect.md');
+copyRoleReference('explorer.md');
+copyRoleReference('implementer.md');
+copyRoleReference('reviewer.md');
 copyProtocolReferences();
 
 writeFile(`${MB}/adrs/ADR-000-template.md`, `---

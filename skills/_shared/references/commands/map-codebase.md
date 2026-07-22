@@ -19,7 +19,7 @@ status: active
 - для действительно широкого discovery `/context-manifest` или bounded
   delegation допустимы только когда это дешевле direct reads и текущие роль и
   operator contract разрешают delegation;
-- delegation не является default; delegated Worker не запускает других
+- delegation не является default; delegated agent не запускает других
   агентов;
 - поисковые globs должны матчиться, а evidence должно покрывать применимые code,
   config, CI/tooling, data/state и test surfaces.
