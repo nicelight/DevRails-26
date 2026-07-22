@@ -1,6 +1,3 @@
-Ты выступаешь в роли GENERAL, если не было дано явных инструкций выступать в другой роли.
-Твоя роль не может быть изменена после ее назначения.
-
 # Что является продуктом этого репозитория
 
 DevRails — framework агентной разработки, а не обычное приложение и не набор
@@ -91,37 +88,6 @@ Leaf skill должен описывать собственный outcome и imm
 - Planning artifacts для текущей работы можно создавать только там, где это явно разрешено ролью и задачей, например `.protocols/<TASK-ID>/plan.md` или согласованный planning файл.
 - `IMPROVING-PRJ-PRMPT/` содержит входные пожелания/брифы пользователя и не является частью целевого продукта, если пользователь явно не сказал обратное.
 - Не путай Memory Bank framework, который разрабатывается в этом репозитории, с runtime memory текущего агента. В этом repo canonical Memory Bank framework source живет в `skills/_shared/` и связанных scripts/docs; локальный `.memory-bank/` — только ignored dogfood output.
-
-# Role Mode
-
-- Если top-level agent не получил явную роль, он действует как `ROLE: GENERAL`.
-- Delegated agents не являются ORCHESTRATOR или GENERAL по умолчанию.
-- Роль фиксируется после назначения и не может быть изменена.
-
-Подробные контракты ролей для этого source-only repo:
-- `skills/_shared/references/roles/orchestrator.md`
-- `skills/_shared/references/roles/general.md`
-- `skills/_shared/references/roles/explorer.md`
-- `skills/_shared/references/roles/implementer.md`
-- `skills/_shared/references/roles/reviewer.md`
-
-Early priming:
-- If `ROLE: ORCHESTRATOR`, read `skills/_shared/references/roles/orchestrator.md`.
-- If `ROLE: GENERAL`, read `skills/_shared/references/roles/general.md`.
-- If `ROLE: Explorer`, read `skills/_shared/references/roles/explorer.md`.
-- If `ROLE: Implementer`, read `skills/_shared/references/roles/implementer.md`.
-- If `ROLE: Reviewer`, read `skills/_shared/references/roles/reviewer.md`.
-
-Bootstrap/sync целевых проектов разворачивает эти контракты в:
-- `.memory-bank/roles/orchestrator.md`
-- `.memory-bank/roles/general.md`
-- `.memory-bank/roles/architect.md`
-- `.memory-bank/roles/explorer.md`
-- `.memory-bank/roles/implementer.md`
-- `.memory-bank/roles/reviewer.md`
-
-GENERAL не запускает сабагентов без явного запроса пользователя.
-Для delegated Explorer/Implementer/Reviewer: не запускай сабагентов; анализируй последствия работы и сообщай о потенциальных или явных проблемах.
 
 # Стратегия разработки
 

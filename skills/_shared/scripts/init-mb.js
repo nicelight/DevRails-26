@@ -38,6 +38,8 @@ const SHARED_DIR = path.resolve(__dirname, '..');
 const REFERENCES_DIR = path.join(SHARED_DIR, 'references');
 const WORKFLOW_REFERENCES_DIR = path.join(REFERENCES_DIR, 'workflows');
 const ROLE_REFERENCES_DIR = path.join(REFERENCES_DIR, 'roles');
+const AGENTS_TEMPLATE_CATEGORY = 'deployable';
+const AGENTS_TEMPLATE_FILE = 'AGENTS.md';
 const CONSTITUTION_TEMPLATE_FILE = 'constitution-template.md';
 const RUNTIME_SCRIPT_ASSETS = [
   { asset: 'mb-lint.mjs', target: 'scripts/mb-lint.mjs' },
@@ -479,6 +481,17 @@ function constitutionSkeleton() {
   return readUtf8(absPath).replace(/\{\{TODAY\}\}/g, TODAY);
 }
 
+function agentsGuide() {
+  const absPath = resolveReferenceFile(AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE);
+  if (!absPath) {
+    console.error(`\nERROR: Deployable AGENTS.md not found: ${path.join(REFERENCES_DIR, AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE)} or flattened shared-${AGENTS_TEMPLATE_CATEGORY}-${AGENTS_TEMPLATE_FILE}.`);
+    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    process.exit(1);
+  }
+
+  return readUtf8(absPath);
+}
+
 function resolveRuntimeAsset(filename) {
   const candidates = [
     // Source layout: skills/_shared/scripts/init-mb.js -> skills/mb-garden/assets
@@ -685,189 +698,7 @@ console.log('\n[1/5] Creating directories...');
 
 console.log('\n[2/5] Writing core files...');
 
-writeFile('AGENTS.md', `# Agent Operating Guide (Project Map)
-${GENERATED_MARKER}
-
-## Prime before work
-
-Planning/design priming:
-1. Read \`AGENTS.md\` (this guide)
-2. Read \`.memory-bank/constitution.md\` (top governing policy)
-3. Read \`.memory-bank/mbb/index.md\` (Memory Bank rules)
-4. Read \`.memory-bank/spec-backbone.md\` (spec readiness/backbone state)
-5. Read \`.memory-bank/spec-index.md\` (normative spec registry)
-6. Read \`.memory-bank/index.md\` (table of contents)
-7. If no explicit top-level role is given, use ROLE: GENERAL and read \`.memory-bank/roles/general.md\`.
-8. If ROLE: ORCHESTRATOR, read \`.memory-bank/roles/orchestrator.md\`.
-9. If ROLE: ARCHITECT, read \`.memory-bank/roles/architect.md\`.
-10. If ROLE: Explorer, read \`.memory-bank/roles/explorer.md\`.
-11. If ROLE: Implementer, read \`.memory-bank/roles/implementer.md\`.
-12. If ROLE: Reviewer, read \`.memory-bank/roles/reviewer.md\`.
-13. Read task/feature-specific docs
-
-Manual execution priming for \`/exe TASK-NNN-TN-FT-NNN-WN\`:
-1. Read \`AGENTS.md\` (this guide)
-2. Read the selected indexed \`.memory-bank/tasks/TASK-*.task.json\`
-3. Read \`.memory-bank/workflows/tier-policy.md\`
-4. Read linked feature/REQ/docs only when needed to interpret the task
-5. Read direct task-linked canonical specs; use feature links only for
-   composition context or drift checks
-
-For manual \`T0\` / \`T1\` execution, do not load Constitution, MBB, full
-backbone/index docs, role docs, or broad planning docs by default unless the
-selected task, feature, tier, or linked specs route to them.
-
-## Role Mode
-
-If no explicit role is given to the top-level agent, act as:
-
-ROLE: GENERAL
-
-Delegated agents are not ORCHESTRATOR or GENERAL by default.
-The role is fixed and cannot be changed.
-
-Full role contracts live in:
-- \`.memory-bank/roles/orchestrator.md\`
-- \`.memory-bank/roles/general.md\`
-- \`.memory-bank/roles/architect.md\`
-- \`.memory-bank/roles/explorer.md\`
-- \`.memory-bank/roles/implementer.md\`
-- \`.memory-bank/roles/reviewer.md\`
-
-## KISS / Complexity and Requirement Gate
-
-- Use the simplest implementation that satisfies current accepted requirements.
-- A discovered risk, edge case or possible failure is not automatically a new
-  requirement.
-- Do not expand requirements, specifications or implementation scope merely to
-  prevent a theoretically possible problem.
-
-Before promoting a problem into a requirement or design decision, perform a
-brief internal assessment:
-
-- verify that the scenario is realistic in the current deployment;
-- estimate its likelihood, consequence and recoverability;
-- check whether restart, retry, re-upload, manual rerun or maintenance is enough;
-- compare the expected problem cost with implementation, testing, operational
-  and maintenance cost of the remedy.
-
-Decision rule:
-
-- remedy cost materially exceeds expected problem cost:
-  accept or defer the risk and do not generate a requirement;
-- problem is covered by an accepted requirement:
-  implement the cheapest sufficient remedy;
-- serious problem is not covered by an accepted requirement:
-  do not expand the target; ask the operator;
-- small local safeguard with negligible cost and no new state/lifecycle:
-  implementation discretion is allowed.
-
-An accepted requirement authorizes the required outcome, not an unnecessarily
-complex mechanism.
-
-Agent-generated reviews, specifications, brainstorm results and best-practice
-recommendations cannot authorize their own complexity.
-
-Do not report speculative observations that were rejected before becoming real
-candidates. Always report evidenced defects and any issue affecting the
-requested verdict.
-
-## Communication
-
-- Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.
-
-## Preferred context routing
-- Start with \`.memory-bank/architecture/*\` and \`.memory-bank/guides/*\` for concept priming.
-- If present, prefer explicit normative docs such as \`.memory-bank/constitution.md\`, \`.memory-bank/spec-backbone.md\`, \`.memory-bank/spec-index.md\`, \`.memory-bank/invariants.md\`, \`.memory-bank/glossary.md\`, \`.memory-bank/contracts/boundary-map.md\`, \`.memory-bank/contracts/*\`, \`.memory-bank/states/*\`, \`.memory-bank/runbooks/*\`, and \`.memory-bank/testing/*\`.
-- Normative docs enrich the Memory Bank; they do not invalidate valid duo docs.
-- Before serious planning/design work, read \`.memory-bank/spec-backbone.md\`, \`.memory-bank/spec-index.md\`, and follow linked SDD specs.
-- Do not create a new spec before checking \`.memory-bank/spec-index.md\`,
-  relevant folder indexes, and plausible subject-based candidates.
-- New design specs use subject-based canonical paths without feature IDs; a
-  feature composes applicable spec links and does not own a default spec hub.
-- For any tier, if the task record or linked feature contains canonical SDD
-  spec links, read \`.memory-bank/spec-backbone.md\`, \`.memory-bank/spec-index.md\`, and those linked specs before
-  implementation or verification.
-- For \`T2\` / \`T3\` tasks, direct task-linked canonical specs are normative
-  inputs; feature links or the registry alone do not replace them.
-
-## Docs First
-After finishing a meaningful unit of work:
-1) Update \`.memory-bank/\` (WHY/WHERE + navigation)
-2) Then include code changes in the handoff; commit only when explicitly requested or workflow-owned
-
-## Runtime vs durable memory
-- Durable knowledge base: \`.memory-bank/\`
-- Operational artifacts: \`.tasks/\` (NOT part of Memory Bank)
-- Long-running plans/logs: \`.protocols/\`
-
-## Where skills live (don’t confuse)
-- Codex CLI reads project skills from \`.agents/skills/<name>/SKILL.md\` (not from \`.codex/\`).
-- Claude Code reads project skills from \`.claude/skills/<name>/SKILL.md\`.
-- \`.codex/\` is only for project configuration (e.g. \`.codex/config.toml\`).
-
-## Clean context (recommended)
-- Route each \`TASK-NNN-TN-FT-NNN-WN\` by \`task.tier\` and \`.memory-bank/workflows/tier-policy.md\`.
-- Product execution requires task-plan \`APPROVE\` for the current positive Global
-  Backbone \`Planning Revision\`. A mismatch keeps task statuses unchanged and
-  routes \`/feature-to-tasks --all\` -> \`/review-tasks-plan --all\`.
-- The caller selects a concrete task. \`/exe\` prepares/reconciles its tier
-  protocol and neutral current Execution Attempt before writing
-  \`ready -> in_progress\`; it never selects queue work.
-- Delegation follows \`.memory-bank/roles/orchestrator.md\`; each delegated agent follows its assigned role contract.
-- T0/T1 may use compact \`.protocols/TASK-NNN-TN-FT-NNN-WN/run.md\`; compact evidence can be enough.
-- Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and \`/verify\` \`VERDICT: PASS\`; per-task \`/red-verify\` is not required for T2 task closure.
-- Scheduler mode: T2 feature completion requires \`/red-verify --feature FT-<ID>\` with \`SEMANTIC_VERDICT: semantic-pass\` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the wave-boundary \`/mb-sync\` and strict doctor.
-- Scheduler mode: T3 requires full protocol state, applicable task/spec gates, \`/verify\` \`VERDICT: PASS\`, and per-task \`/red-verify\` \`SEMANTIC_VERDICT: semantic-pass\` before the scheduler marks \`done\`.
-- Scheduler mode: T3 also requires the exact marker line \`HUMAN_CHECKPOINT: done\`.
-- Manual mode: T0/T1 may close in \`/exe\` with compact evidence when the explicit manual top-level owner conditions are met; standalone \`/verify\` is optional for uncertainty, widened scope, or explicit request. T2 becomes closure-eligible after \`/verify PASS\` when full protocol plus applicable task/spec gates are satisfied; the explicit owner writes the lifecycle decision. T3 must run per-task \`/red-verify\` before final closure; full \`/mb-sync\` runs at the end of the current wave unless an earlier reconciled-state dependency or explicit owner request requires it.
-- If \`/exe\` or \`/verify\` discovers a required higher tier, stop scope growth and route the original task ID through \`/feature-to-tasks FT-<NNN>\` for controlled rebuild/split; rerun task-plan review and applicable doctor gates before executing the replacement task ID.
-- T2/T3 use the indexed task card as the complete task-scoped handoff; \`/mb-doctor\` checks structural completeness and \`/review-tasks-plan\` checks semantic applicability and sufficiency.
-- If running in **Claude Code**: execute each \`TASK-NNN-TN-FT-NNN-WN\` in a **fresh Claude session** using tier-appropriate \`.protocols/TASK-NNN-TN-FT-NNN-WN/\` state.
-- If running in **Codex**: you can run each \`TASK-NNN-TN-FT-NNN-WN\` in a fresh session via \`codex exec\` (see \`/exe\`).
-- Execution file scope: touched_files is advisory and non-exhaustive; executor
-  preflight confirms actual files, while non-empty write_boundary and
-  forbidden_scope remain hard boundaries.
-- Sequencing: canonical task execution is sequential. Parallel task execution is
-  experimental, requires explicit --experimental-parallel, pairwise-disjoint
-  hard runtime_context.write_boundary, isolated worktrees/sandboxes, and
-  the exclusions in .memory-bank/workflows/autonomy-policy.md; touched_files
-  alone never proves independence.
-
-Codex (fresh session):
-- \`codex exec --ephemeral --full-auto -m gpt-5.2-high 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /exe project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'\`
-
-Claude (fresh session):
-- \`claude -p --no-session-persistence --permission-mode acceptEdits --model opus 'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /exe project skill. Read AGENTS.md, the indexed task record, .memory-bank/workflows/tier-policy.md, and direct task-linked canonical specs. Assume structural readiness was checked by the feature/task-queue gate. Stop on semantic contradictions, unverifiable success, or scope/public-contract ambiguity. Use tier-appropriate .protocols/TASK-123-T2-FT-001-W1/ state. Implement. Record evidence. Report → .tasks/TASK-123-T2-FT-001-W1/…'\`
-
-## Two modes (manual vs scheduler)
-- **Manual**: run \`/brainstorm\` for raw ideas or \`/brief\` for clear concepts → \`/constitution\` if \`project_principles\` is not \`ratified|partial\` → \`/write-prd\` → \`/spec-init\` → \`/prd-to-features\` → \`/review-feat-plan\` for high-risk/large work → \`/spec-design\` → \`/foundation-to-tasks\` when foundation is required → \`/mb-doctor --strict\` at the foundation/task-queue boundary → execute/verify \`FT-000\` until the foundation gate is \`done\` → \`/feature-to-tasks FT-<NNN>\` → \`/review-tasks-plan FT-<NNN>\` → conditional \`/mb-doctor\` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: \`/exe TASK\`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: \`/exe TASK\` → \`/verify TASK\`, then sync at wave/feature boundary. T3 manual: \`/exe TASK\` → \`/verify TASK\` → \`/red-verify TASK\`, then explicit owner closure and wave-boundary \`/mb-sync\`. Run \`/red-verify --feature FT-<NNN>\` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full \`/mb-sync\` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. \`/mb-sync\` is not required for local T0/T1 closure when only \`task.status\`, \`task.verify\`, and \`.protocols/<TASK>/run.md\` changed. \`/feature-to-tasks\` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. \`/spec-design\` is mandatory after \`/prd-to-features\`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas \`not_applicable\`; it always records the explicit \`.memory-bank/foundation.md\` decision, and \`/foundation-to-tasks\` creates normal \`FT-000\` task records only when foundation is required. Use \`/feature-doctor FT-<NNN>\` only for explicit feature blockers and rerun \`/feature-to-tasks FT-<NNN>\` for feature-level canonical spec repair.
-- **Autonomous (batch)**: use \`/autonomous\` for full \`PRD → done\`; it runs \`/spec-auto --init\`, \`/review-feat-plan\`, mandatory \`/spec-design --all\`, \`/foundation-to-tasks\` when required, strict \`/mb-doctor\` at the foundation/task-queue boundary, and execute/verify \`FT-000\` until the foundation gate is \`done\` before \`/spec-auto --all\`, \`/feature-to-tasks --all\`, and \`/review-tasks-plan FT-<NNN>\` for each task-linked product feature. Use \`/autopilot\` only if product JSON task records and required SDD spec links already exist, every task-linked product feature has latest \`/review-tasks-plan FT-<NNN>\` \`APPROVE\` for the current positive Planning Revision, strict doctor passes, and Foundation is \`not_required\` or its named final gate is \`done\` with no unresolved FT-000 work; \`/autopilot\` never executes FT-000. See: \`.memory-bank/workflows/execute-loop.md\` and \`.memory-bank/workflows/autonomy-policy.md\`.
-
-Naming:
-- Folder: \`.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/\`
-- Files: \`TASK-<NNN>-T<N>-FT-<NNN>-W<N>-S-<STAGE>-final-report-<code|docs>-<NN>.md\`
-
-## Quality gates (before merge)
-- Run only applicable project-native lint, typecheck, build, and test commands
-  required by current task/spec/PRD evidence or repository configuration.
-- Run \`/mb-doctor\` when the workflow boundary requires it; strict mode remains
-  mandatory before autonomous/autopilot task selection.
-- Do not require a test level solely to fill a category.
-
-## Entry points
-Workflow commands are installed as project skills for Codex and Claude.
-Start with \`/cold-start\`.
-
-Core manual chain:
-\`/brainstorm for raw ideas or /brief for clear concepts -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd-to-features -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /feature-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> /exe TASK -> /verify TASK for T2/T3 or uncertainty -> /red-verify TASK for T3 -> /mb-sync at boundary\`
-
-Task execution commands:
-\`/feature-to-tasks\`, \`/review-tasks-plan\`, \`/exe\`, \`/verify\`, \`/red-verify\`, \`/mb-sync\`.
-
-Maintenance commands:
-\`/mb-doctor\`, \`/mb-garden\`, \`/map-codebase\`, \`/discuss\`, \`/add-tests\`.
-`, { ownership: 'framework-owned' });
+writeFile('AGENTS.md', agentsGuide(), { ownership: 'framework-owned' });
 
 writeFile(`${MB}/index.md`, `---
 description: Главная карта знаний проекта (table of contents) для агентов.

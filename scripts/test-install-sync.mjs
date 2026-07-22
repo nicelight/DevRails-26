@@ -23,6 +23,7 @@ const mbInitCommandSource = join(commandSourceDir, 'mb-init.md');
 const coldStartPackageSource = join(repoRoot, 'skills', 'cold-start', 'SKILL.md');
 const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
+const deployableAgentsSource = join(repoRoot, 'skills', '_shared', 'references', 'deployable', 'AGENTS.md');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
 const tierPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'tier-policy.md');
 const autonomyPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'autonomy-policy.md');
@@ -297,7 +298,12 @@ try {
     'Fresh skill registry is missing its managed inventory boundary or conditional guidance.',
   );
   const freshAgents = readTarget('AGENTS.md');
+  const expectedDeployableAgents = readFileSync(deployableAgentsSource, 'utf8');
   const normalizedFreshAgents = normalizeProse(freshAgents);
+  assert(
+    freshAgents === expectedDeployableAgents,
+    'Fresh bootstrap AGENTS.md differs from its canonical deployable source.',
+  );
   const freshMemoryBankIndex = readTarget('.memory-bank/index.md');
   const deployedOrchestratorRole = readTarget('.memory-bank/roles/orchestrator.md');
   assert(
@@ -328,7 +334,10 @@ try {
       )
       && freshAgents.includes('If ROLE: Explorer, read `.memory-bank/roles/explorer.md`.')
       && freshAgents.includes('If ROLE: Implementer, read `.memory-bank/roles/implementer.md`.')
-      && freshAgents.includes('If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.'),
+      && freshAgents.includes('If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.')
+      && freshAgents.includes(
+        'Delegated Explorer, Implementer, and Reviewer analyze the consequences of their\nwork and report potential or evident problems.',
+      ),
     'Fresh AGENTS.md lost Architect priming or the general KISS gate.',
   );
   assert(
@@ -397,7 +406,9 @@ try {
   assert(
     structureTemplate.includes(installedSkillsBeginMarker)
       && structureTemplate.includes(installedSkillsEndMarker)
-      && structureTemplate.includes('explicit empty state'),
+      && structureTemplate.includes('explicit empty state')
+      && structureTemplate.includes('deployable/AGENTS.md')
+      && !structureTemplate.includes('```markdown\n# Agent Operating Guide'),
     'Structure reference does not document the generated skill inventory boundary.',
   );
 
@@ -974,6 +985,12 @@ try {
 
   const initSource = readFileSync(join(repoRoot, 'skills', '_shared', 'scripts', 'init-mb.js'), 'utf8');
   assert(
+    initSource.includes("resolveReferenceFile(AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE)")
+      && initSource.includes("writeFile('AGENTS.md', agentsGuide(), { ownership: 'framework-owned' })")
+      && !initSource.includes("writeFile('AGENTS.md', `# Agent Operating Guide"),
+    'AGENTS.md deployment is not sourced exclusively from the canonical Markdown file.',
+  );
+  assert(
     initSource.includes("listReferenceFilenames('protocols')")
       && !/copyProtocolReference\(['"]/.test(initSource),
     'Protocol template deployment is not driven by generic category enumeration.',
@@ -1004,6 +1021,7 @@ try {
   writeTarget(architectRoleRel, '# stale architect role\n');
   writeTarget(lintRel, '# stale lint asset\n');
   writeTarget(doctorRel, '# stale doctor asset\n');
+  writeTarget('AGENTS.md', `${expectedDeployableAgents.trimEnd()}\n\n<!-- stale generated AGENTS.md -->\n`);
 
   const staleProtocolRel = protocolTemplateRel('compact-run-template.md');
   writeTarget(staleProtocolRel, `${expectedProtocolTemplates.get('compact-run-template.md')}\n<!-- stale protocol template -->\n`);
@@ -1039,6 +1057,7 @@ try {
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Full sync did not restore the Architect role.', syncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Full sync did not restore the canonical mb-lint asset.', syncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Full sync did not restore the canonical mb-doctor asset.', syncOutput);
+  assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Full sync did not restore the canonical deployable AGENTS.md.', syncOutput);
   assert(readTarget(runtimeSkillRel) === expectedRuntimeSkill, 'Full sync did not restore the canonical runtime command skill.', syncOutput);
   assert(
     readTarget(staleProtocolRel) === expectedProtocolTemplates.get('compact-run-template.md'),
@@ -1068,6 +1087,7 @@ try {
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Idempotent sync changed the Architect role.', secondSyncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Idempotent sync changed the canonical mb-lint asset.', secondSyncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Idempotent sync changed the canonical mb-doctor asset.', secondSyncOutput);
+  assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Idempotent sync changed the canonical deployable AGENTS.md.', secondSyncOutput);
   expectedProtocolTemplates.forEach((expected, filename) => {
     assert(
       readTarget(protocolTemplateRel(filename)) === expected,

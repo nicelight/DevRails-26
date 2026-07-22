@@ -166,6 +166,7 @@ skills/_shared/references/commands/*
 skills/_shared/references/workflows/*
 skills/_shared/references/protocols/*
 skills/_shared/references/roles/*
+skills/_shared/references/deployable/AGENTS.md
 skills/_shared/references/structure-template.md
 skills/_shared/scripts/init-mb.js
 ```

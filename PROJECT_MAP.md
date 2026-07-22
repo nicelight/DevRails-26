@@ -71,6 +71,8 @@ Canonical shared source:
   templates, deployed as framework-owned
   `.memory-bank/templates/protocols/*`; `.protocols/<TASK_ID>/*` remains
   task-owned state.
+- `skills/_shared/references/deployable/AGENTS.md`: canonical deployable agent
+  guide copied to the target repository root during bootstrap/sync.
 - `skills/_shared/references/structure-template.md`: Memory Bank structure reference.
 - `skills/_shared/scripts/init-mb.js`: Memory Bank bootstrap/sync generator; it
   derives the managed `.memory-bank/skills/index.md#Installed` block from
@@ -190,9 +192,11 @@ mandatory ADRs for local/simple work.
 - `skills/_shared/references/commands/review-tasks-plan.md`: owns the final
   planning verdict and integrates one architecture review per feature.
 - `skills/_shared/references/roles/orchestrator.md`: Architect delegation route.
+- `skills/_shared/references/deployable/AGENTS.md`: deployed role routing and
+  KISS text.
 - `skills/_shared/scripts/init-mb.js` and
-  `skills/_shared/references/structure-template.md`: deployed role, index, and
-  generated KISS text.
+  `skills/_shared/references/structure-template.md`: deployment and generated
+  Memory Bank role/index structure.
 
 Keep `architecture-review` read-only; its Reviewer verdict covers only the
 architecture review, while `/review-tasks-plan` owns the final planning verdict.
