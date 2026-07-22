@@ -405,6 +405,12 @@ function printWriteSummary() {
   if (!SYNC_MODE) return;
 
   const order = ['created', 'updated', 'unchanged', 'kept'];
+  const symbols = {
+    created: '+',
+    updated: '~',
+    unchanged: '=',
+    kept: '!',
+  };
   const grouped = new Map();
   WRITE_RESULTS.forEach(({ action, rel, ownership }) => {
     const key = `${action}\u0000${ownership}`;
@@ -412,16 +418,22 @@ function printWriteSummary() {
     grouped.get(key).push(rel);
   });
 
-  console.log('\n[Sync report]');
+  console.log('\n╭─ [Sync report]');
   order.forEach((action) => {
     [...grouped.entries()]
       .filter(([key]) => key.startsWith(`${action}\u0000`))
       .sort(([left], [right]) => left.localeCompare(right))
       .forEach(([key, paths]) => {
         const ownership = key.split('\u0000')[1];
-        console.log(`  ${action} ${ownership} (${paths.length}): ${paths.join(', ')}`);
+        console.log('│');
+        console.log(`│  ${action} ${ownership} (${paths.length})`);
+        paths.forEach((rel, index) => {
+          const connector = index === paths.length - 1 ? '╰─' : '├─';
+          console.log(`│  ${symbols[action]} ${connector} ${rel}`);
+        });
       });
   });
+  console.log('╰────────────────────────────────────────────────────────────');
 }
 
 function readUtf8(absPath) {

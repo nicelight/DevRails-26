@@ -88,6 +88,10 @@ const FILE_GRADIENT_STOPS = {
     [84, 117, 145],
     [180, 194, 207],
   ],
+  kept: [
+    [255, 193, 92],
+    [226, 234, 242],
+  ],
 };
 const FILE_FADE_LEVELS = [0.18, 0.42, 0.7, 1];
 const FILE_FADE_FRAME_MS = 9;
@@ -365,10 +369,11 @@ function canAnimateFileOutput() {
 }
 
 function fileGradientStops(line) {
-  const operation = line.trimStart()[0];
+  const operation = fileOperation(line);
   if (operation === '~') return FILE_GRADIENT_STOPS.updated;
   if (operation === '-') return FILE_GRADIENT_STOPS.removed;
   if (operation === '=') return FILE_GRADIENT_STOPS.unchanged;
+  if (operation === '!') return FILE_GRADIENT_STOPS.kept;
   return FILE_GRADIENT_STOPS.created;
 }
 
@@ -422,8 +427,40 @@ async function printAnimatedFileLines(lines) {
   }
 }
 
+function fileOperation(line) {
+  return line.match(/^(?:  |│  )([!+=~-]) /)?.[1] || null;
+}
+
 function isFileOperationLine(line) {
-  return /^  [+=~-] /.test(line);
+  return fileOperation(line) !== null;
+}
+
+function styleCapturedOutputLine(line) {
+  if (line === '╭─ [Sync report]') {
+    return `${uiRail('╭─')} ${colorizeUiGradient('SYNC REPORT')}`;
+  }
+  if (line === '│') return uiRail('│');
+  if (line.startsWith('╰─')) return uiRail(line);
+
+  const group = line.match(/^│  (created|updated|unchanged|kept) (.+)$/);
+  if (group) {
+    const color = {
+      created: UI_COLORS.primary,
+      updated: FILE_GRADIENT_STOPS.updated[0],
+      unchanged: UI_COLORS.muted,
+      kept: UI_COLORS.warning,
+    }[group[1]];
+    return `${uiRail('│')}  ${colorizeRgb(`${group[1]} ${group[2]}`, color, { bold: true })}`;
+  }
+
+  if (line === '[Done] Memory Bank skeleton initialized.') {
+    return `  ${uiTone('✓', 'success', true)} ${uiTone('Memory Bank skeleton initialized.', 'success', true)}`;
+  }
+  if (line.startsWith('Memory Bank initialized in: ')) {
+    return `  ${uiTone('›', 'primary', true)} ${uiTone(line.slice('Memory Bank initialized in: '.length), 'silver', true)}`;
+  }
+
+  return null;
 }
 
 async function printAnimatedCommandOutput(output) {
@@ -442,7 +479,7 @@ async function printAnimatedCommandOutput(output) {
       if (isFileOperationLine(lines[index])) {
         await printFileLine(lines[index]);
       } else {
-        process.stdout.write(`${lines[index]}\n`);
+        process.stdout.write(`${styleCapturedOutputLine(lines[index]) || lines[index]}\n`);
       }
     }
   } finally {
