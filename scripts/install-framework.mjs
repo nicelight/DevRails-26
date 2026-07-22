@@ -70,7 +70,37 @@ const SPLASH_GRADIENT_STOPS = [
   [0, 188, 255],
   [226, 234, 242],
 ];
+const FILE_GRADIENT_STOPS = {
+  created: [
+    [24, 86, 132],
+    [0, 188, 255],
+    [226, 234, 242],
+  ],
+  updated: [
+    [40, 200, 184],
+    [226, 234, 242],
+  ],
+  removed: [
+    [255, 132, 140],
+    [226, 234, 242],
+  ],
+  unchanged: [
+    [84, 117, 145],
+    [180, 194, 207],
+  ],
+};
+const FILE_FADE_LEVELS = [0.18, 0.42, 0.7, 1];
+const FILE_FADE_FRAME_MS = 9;
 const SPLASH_MUTED_COLOR = [84, 117, 145];
+const UI_COLORS = {
+  primary: [0, 188, 255],
+  silver: [226, 234, 242],
+  muted: [84, 117, 145],
+  success: [83, 211, 164],
+  warning: [255, 193, 92],
+  danger: [255, 132, 140],
+  keyBackground: [17, 55, 82],
+};
 const SPLASH_LOGO_LINE_PATTERN = /[█╗╔║╝╚═]/u;
 const SPLASH_ART = `·───○ init ───────╮        ╭────── task.json ──○────── verify ──·
     │             │        │                    │
@@ -256,7 +286,192 @@ function colorizeSplashArt(art) {
   }).join('\n');
 }
 
-function prepareRepository() {
+function colorizeRgb(text, color, { bold = false, background = null } = {}) {
+  if (!canUseColor()) return text;
+  const [red, green, blue] = color;
+  const foreground = `38;2;${red};${green};${blue}`;
+  const backgroundCode = background
+    ? `;48;2;${background[0]};${background[1]};${background[2]}`
+    : '';
+  return `\x1b[${bold ? '1;' : ''}${foreground}${backgroundCode}m${text}\x1b[0m`;
+}
+
+function colorizeUiGradient(text) {
+  if (!canUseColor()) return text;
+  const chars = Array.from(text);
+  const visibleLength = Math.max(1, chars.filter((char) => char !== ' ').length - 1);
+  let visibleIndex = 0;
+
+  return chars.map((char) => {
+    if (char === ' ') return char;
+    const [red, green, blue] = interpolateGradient(
+      [UI_COLORS.primary, UI_COLORS.silver],
+      visibleIndex / visibleLength,
+    );
+    visibleIndex += 1;
+    return `\x1b[1;38;2;${red};${green};${blue}m${char}`;
+  }).join('') + '\x1b[0m';
+}
+
+function uiRail(glyph) {
+  return colorizeRgb(glyph, UI_COLORS.muted);
+}
+
+function uiCardStart(title) {
+  console.log(`\n${uiRail('╭─')} ${colorizeUiGradient(title)}`);
+}
+
+function uiCardLine(content = '') {
+  console.log(`${uiRail('│')}  ${content}`);
+}
+
+function uiCardEnd() {
+  console.log(uiRail('╰────────────────────────────────────────────────────────────'));
+}
+
+function uiKeycap(key) {
+  if (!canUseColor()) return `[${key}]`;
+  return colorizeRgb(` ${key} `, UI_COLORS.silver, {
+    bold: true,
+    background: UI_COLORS.keyBackground,
+  });
+}
+
+function uiPrompt(label) {
+  return `\n${colorizeRgb('›', UI_COLORS.primary, { bold: true })} ${colorizeRgb(label, UI_COLORS.silver, { bold: true })} `;
+}
+
+function uiTone(text, tone = 'silver', bold = false) {
+  return colorizeRgb(text, UI_COLORS[tone] || UI_COLORS.silver, { bold });
+}
+
+function printUiNotice(message, tone = 'warning') {
+  const symbol = tone === 'danger' ? '×' : tone === 'success' ? '✓' : '◇';
+  console.log(`\n  ${uiTone(symbol, tone, true)} ${uiTone(message, tone)}`);
+}
+
+function printInstallStage(number, label, interactive) {
+  if (!interactive) {
+    console.log(`\n[${number}/3] ${label}`);
+    return;
+  }
+  console.log(`\n${uiKeycap(`${number}/3`)} ${colorizeUiGradient(label)}`);
+}
+
+function canAnimateFileOutput() {
+  return canUseColor()
+    && !process.env.CI
+    && process.env.DEVRAILS_NO_ANIMATION !== '1';
+}
+
+function fileGradientStops(line) {
+  const operation = line.trimStart()[0];
+  if (operation === '~') return FILE_GRADIENT_STOPS.updated;
+  if (operation === '-') return FILE_GRADIENT_STOPS.removed;
+  if (operation === '=') return FILE_GRADIENT_STOPS.unchanged;
+  return FILE_GRADIENT_STOPS.created;
+}
+
+function colorizeFileLine(line, fadeLevel) {
+  const chars = Array.from(line);
+  const visibleLength = Math.max(1, chars.filter((char) => char !== ' ').length - 1);
+  const gradientStops = fileGradientStops(line);
+  let visibleIndex = 0;
+
+  return chars.map((char) => {
+    if (char === ' ') return char;
+
+    const target = interpolateGradient(gradientStops, visibleIndex / visibleLength);
+    const dimmedTarget = target.map((channel) => Math.round(channel * 0.12));
+    const [red, green, blue] = interpolateColor(dimmedTarget, target, fadeLevel);
+    visibleIndex += 1;
+    return `\x1b[38;2;${red};${green};${blue}m${char}`;
+  }).join('') + '\x1b[0m';
+}
+
+function wait(milliseconds) {
+  return new Promise((resolveWait) => setTimeout(resolveWait, milliseconds));
+}
+
+async function printFileLine(line) {
+  if (!canAnimateFileOutput()) {
+    console.log(line);
+    return;
+  }
+
+  for (const fadeLevel of FILE_FADE_LEVELS) {
+    process.stdout.write(`\r\x1b[2K${colorizeFileLine(line, fadeLevel)}`);
+    await wait(FILE_FADE_FRAME_MS);
+  }
+  process.stdout.write('\n');
+}
+
+async function printAnimatedFileLines(lines) {
+  if (!canAnimateFileOutput()) {
+    lines.forEach((line) => console.log(line));
+    return;
+  }
+
+  process.stdout.write('\x1b[?25l');
+  try {
+    for (const line of lines) {
+      await printFileLine(line);
+    }
+  } finally {
+    process.stdout.write('\x1b[?25h');
+  }
+}
+
+function isFileOperationLine(line) {
+  return /^  [+=~-] /.test(line);
+}
+
+async function printAnimatedCommandOutput(output) {
+  if (!output) return;
+  if (!canAnimateFileOutput()) {
+    process.stdout.write(output);
+    return;
+  }
+
+  const lines = output.replace(/\r\n/g, '\n').split('\n');
+  const endsWithNewline = output.endsWith('\n');
+  process.stdout.write('\x1b[?25l');
+  try {
+    for (let index = 0; index < lines.length; index += 1) {
+      if (index === lines.length - 1 && endsWithNewline && lines[index] === '') break;
+      if (isFileOperationLine(lines[index])) {
+        await printFileLine(lines[index]);
+      } else {
+        process.stdout.write(`${lines[index]}\n`);
+      }
+    }
+  } finally {
+    process.stdout.write('\x1b[?25h');
+  }
+}
+
+async function runWithAnimatedFileOutput(command, commandArgs, options = {}) {
+  if (!canAnimateFileOutput()) {
+    run(command, commandArgs, options);
+    return;
+  }
+
+  const result = spawnInstallerCommand(command, commandArgs, {
+    encoding: 'utf8',
+    stdio: ['inherit', 'pipe', 'inherit'],
+    ...options,
+  });
+
+  if (result.error || result.status !== 0) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.error) console.error(result.error.message);
+    process.exit(result.status ?? 1);
+  }
+
+  await printAnimatedCommandOutput(result.stdout || '');
+}
+
+function prepareRepository({ quiet = false } = {}) {
   const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-skills-'));
   const preparedRepo = join(tempRoot, 'repo');
 
@@ -272,6 +487,7 @@ function prepareRepository() {
   run(process.execPath, ['scripts/vendor-shared.mjs'], {
     cwd: preparedRepo,
     env: { ...process.env, MEMOBANK_VENDOR_SHARED_ALLOW: '1' },
+    ...(quiet ? { stdio: ['inherit', 'ignore', 'inherit'] } : {}),
   });
 
   return { tempRoot, preparedRepo };
@@ -406,8 +622,7 @@ function writeRuntimeSkill(targetRepo, runtimeRoot, spec) {
 
   ensureRuntimeSkillDir(targetRepo, runtimeRoot, spec.name);
   writeFileSync(skillPath, content, 'utf8');
-  console.log(`  ${existed ? '~' : '+'} ${relSkill}`);
-  return true;
+  return `  ${existed ? '~' : '+'} ${relSkill}`;
 }
 
 function cleanupObsoleteDevRailsRuntimeSkills(
@@ -485,7 +700,7 @@ function renamedRuntimeSkillsForSelection(expectedNames) {
   return renamedNames;
 }
 
-function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode) {
+async function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode) {
   const specs = resolveCommandSpecs(preparedRepo);
   const selection = collectRequestedRuntimeSkills(addArgs);
 
@@ -557,10 +772,12 @@ function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode
     );
   }
 
-  selectedSpecs.forEach((spec) => {
-    writeRuntimeSkill(targetRepo, '.agents/skills', spec);
-    writeRuntimeSkill(targetRepo, '.claude/skills', spec);
-  });
+  for (const spec of selectedSpecs) {
+    await printAnimatedFileLines([
+      writeRuntimeSkill(targetRepo, '.agents/skills', spec),
+      writeRuntimeSkill(targetRepo, '.claude/skills', spec),
+    ]);
+  }
 }
 
 function snapshotFile(filePath) {
@@ -577,7 +794,7 @@ function restoreFile(filePath, snapshot) {
   rmSync(filePath, { force: true });
 }
 
-function bootstrapTarget(preparedRepo, targetRepo, syncMode, agentsPolicy = 'keep') {
+async function bootstrapTarget(preparedRepo, targetRepo, syncMode, agentsPolicy = 'keep') {
   const initScript = join(preparedRepo, 'skills', 'mb-init', 'scripts', 'shared-init-mb.js');
   if (!existsSync(initScript)) {
     console.error(`Missing bootstrap script in prepared repository: ${initScript}`);
@@ -585,7 +802,7 @@ function bootstrapTarget(preparedRepo, targetRepo, syncMode, agentsPolicy = 'kee
   }
 
   const initArgs = syncMode ? [initScript, '--sync'] : [initScript];
-  run(process.execPath, initArgs, {
+  await runWithAnimatedFileOutput(process.execPath, initArgs, {
     cwd: targetRepo,
     env: {
       ...process.env,
@@ -678,7 +895,11 @@ function ensureTargetDirectory(targetRepo, { assumeYes, interactive }) {
       process.exit(1);
     }
     mkdirSync(targetRepo, { recursive: true });
-    console.log(`Created target directory: ${targetRepo}`);
+    if (interactive) {
+      printUiNotice(`Создана папка проекта: ${targetRepo}`, 'success');
+    } else {
+      console.log(`Created target directory: ${targetRepo}`);
+    }
   }
 
   if (!statSync(targetRepo).isDirectory()) {
@@ -694,7 +915,7 @@ function ensureTargetDirectory(targetRepo, { assumeYes, interactive }) {
 
 async function askYesNo(rl, label, defaultYes = false) {
   const suffix = defaultYes ? '[Y/n]' : '[y/N]';
-  const answer = (await rl.question(`${label} ${suffix}: `)).trim().toLowerCase();
+  const answer = (await rl.question(uiPrompt(`${label} ${suffix}`))).trim().toLowerCase();
   if (!answer) return defaultYes;
   if (['y', 'yes', 'д', 'да'].includes(answer)) return true;
   if (['n', 'no', 'н', 'нет'].includes(answer)) return false;
@@ -702,15 +923,16 @@ async function askYesNo(rl, label, defaultYes = false) {
 }
 
 async function askAgentsPolicy(rl) {
-  console.log('\nAGENTS.md уже существует.');
-  console.log('  1. Заменить на AGENTS.md от DevRails 26 (рекомендуется)');
-  console.log('  2. Слить существующий AGENTS.md с AGENTS.md от DevRails 26');
+  uiCardStart('AGENTS.md уже существует');
+  uiCardLine(`${uiKeycap('1')}  ${uiTone('Заменить файлом DevRails 26', 'silver', true)}  ${uiTone('рекомендуется', 'success')}`);
+  uiCardLine(`${uiKeycap('2')}  Слить существующий файл с версией DevRails 26`);
+  uiCardEnd();
 
-  const answer = (await rl.question('Выбор [1]: ')).trim().toLowerCase();
+  const answer = (await rl.question(uiPrompt('Выбор [1]'))).trim().toLowerCase();
   if (!answer || answer === '1' || answer === 'replace' || answer === 'r') return 'replace';
   if (answer === '2' || answer === 'merge' || answer === 'm') return 'merge';
 
-  console.log('Не понял выбор. Использую рекомендуемую замену.');
+  printUiNotice('Не понял выбор. Использую рекомендуемую замену.');
   return 'replace';
 }
 
@@ -722,7 +944,22 @@ function gitSummaryRu(git) {
   return 'git-статус недоступен';
 }
 
-function printTargetInspection(targetRepo, inspection) {
+function printTargetInspection(targetRepo, inspection, themed = false) {
+  if (themed) {
+    const gitTone = inspection.git.clean === false
+      ? 'warning'
+      : inspection.git.isRepo ? 'success' : 'muted';
+    uiCardStart('Проверка проекта');
+    uiCardLine(`${uiTone('Путь', 'muted')}       ${uiTone(targetRepo, 'silver', true)}`);
+    uiCardLine(`${uiTone('Папка', 'muted')}      ${uiTone(inspection.exists ? 'существует' : 'будет создана', inspection.exists ? 'success' : 'primary')}`);
+    uiCardLine(`${uiTone('Git', 'muted')}         ${uiTone(gitSummaryRu(inspection.git), gitTone)}`);
+    uiCardLine(`${uiTone('Запись', 'muted')}      ${uiTone(inspection.writable ? 'доступна' : 'недоступна', inspection.writable ? 'success' : 'danger')}`);
+    uiCardLine(`${uiTone('Memory Bank', 'muted')} ${uiTone(inspection.memoryBankExists ? 'найден' : 'не найден', inspection.memoryBankExists ? 'warning' : 'muted')}`);
+    uiCardLine(`${uiTone('AGENTS.md', 'muted')}   ${uiTone(inspection.agentsExists ? 'найден' : 'не найден', inspection.agentsExists ? 'warning' : 'muted')}`);
+    uiCardEnd();
+    return;
+  }
+
   console.log('\nПроверка проекта');
   console.log(`  Путь: ${targetRepo}`);
   console.log(`  Папка: ${inspection.exists ? 'существует' : 'будет создана'}`);
@@ -755,23 +992,28 @@ function readDirectoryChoices(openDir) {
 }
 
 function printFolderPicker(openDir, choices) {
-  console.log('\nВыберите папку проекта');
-  console.log(`Открыта: ${openDir}`);
+  uiCardStart('Выберите папку проекта');
+  uiCardLine(uiTone('Текущая папка', 'muted'));
+  uiCardLine(uiTone(openDir, 'silver', true));
+  uiCardLine();
 
   if (choices.error) {
-    console.log('  Не удалось прочитать список папок.');
+    uiCardLine(uiTone('Не удалось прочитать список папок.', 'danger'));
   } else if (choices.dirs.length === 0) {
-    console.log('  Внутри нет папок.');
+    uiCardLine(uiTone('Внутри нет папок.', 'muted'));
   } else {
     choices.dirs.forEach((name, index) => {
-      console.log(`  ${index + 1}. ${name}`);
+      uiCardLine(`${uiKeycap(String(index + 1).padStart(2, '0'))}  ${uiTone(`${name}/`, 'silver')}`);
     });
     if (choices.hiddenCount > 0) {
-      console.log(`  ... еще ${choices.hiddenCount}`);
+      uiCardLine(uiTone(`… ещё ${choices.hiddenCount}`, 'muted'));
     }
   }
 
-  console.log('\nКоманды: номер = открыть, .. или u = вверх, s = выбрать открытую, p = ввести путь, n = новая папка, q = отмена');
+  uiCardLine();
+  uiCardLine(`${uiKeycap('№')} открыть   ${uiKeycap('U / ..')} вверх   ${uiKeycap('S')} выбрать`);
+  uiCardLine(`${uiKeycap('P')} путь      ${uiKeycap('N')} новая    ${uiKeycap('Q')} отмена`);
+  uiCardEnd();
 }
 
 function resolvePickerInput(openDir, input, choices) {
@@ -782,33 +1024,33 @@ function resolvePickerInput(openDir, input, choices) {
 
 function printInvalidPickerNumber(input, choices) {
   if (choices.dirs.length === 0) {
-    console.log('Список пуст. Используйте .., s, p, n или q.');
+    printUiNotice('Список пуст. Используйте U/.., S, P, N или Q.');
     return;
   }
 
-  console.log(`Нет пункта ${input}. В этой папке доступны пункты 1..${choices.dirs.length}.`);
+  printUiNotice(`Нет пункта ${input}. Доступны пункты 1..${choices.dirs.length}.`);
 }
 
 async function createFolderInPicker(rl, openDir) {
-  const name = (await rl.question('Имя новой папки: ')).trim();
+  const name = (await rl.question(uiPrompt('Имя новой папки'))).trim();
   if (!name) {
-    console.log('Имя не задано.');
+    printUiNotice('Имя не задано.');
     return openDir;
   }
 
   if (name === '.' || name === '..' || name.includes('/') || name.includes('\\')) {
-    console.log('Введите только имя папки без пути.');
+    printUiNotice('Введите только имя папки без пути.');
     return openDir;
   }
 
   const newDir = join(openDir, name);
   if (existsSync(newDir) && !statSync(newDir).isDirectory()) {
-    console.log('Такой путь уже существует, но это не папка.');
+    printUiNotice('Такой путь уже существует, но это не папка.');
     return openDir;
   }
 
   mkdirSync(newDir, { recursive: true });
-  console.log(`Создана папка: ${newDir}`);
+  printUiNotice(`Создана папка: ${newDir}`, 'success');
   return newDir;
 }
 
@@ -819,11 +1061,11 @@ async function pickTargetDirectory(rl) {
     const choices = readDirectoryChoices(openDir);
     printFolderPicker(openDir, choices);
 
-    const input = (await rl.question('\nВаш выбор: ')).trim();
+    const input = (await rl.question(uiPrompt('Ваш выбор'))).trim();
     const normalized = input.toLowerCase();
 
     if (normalized === 'q') {
-      console.log('Установка отменена.');
+      printUiNotice('Установка отменена.', 'danger');
       process.exit(1);
     }
 
@@ -835,9 +1077,9 @@ async function pickTargetDirectory(rl) {
     if (normalized === 's') return openDir;
 
     if (normalized === 'p') {
-      const manualPath = (await rl.question('Введите путь к проекту: ')).trim();
+      const manualPath = (await rl.question(uiPrompt('Путь к проекту'))).trim();
       if (!manualPath) {
-        console.log('Путь не задан.');
+        printUiNotice('Путь не задан.');
         continue;
       }
       return resolve(manualPath);
@@ -859,7 +1101,7 @@ async function pickTargetDirectory(rl) {
       continue;
     }
 
-    console.log('Не понял выбор. Введите номер или команду из списка.');
+    printUiNotice('Не понял выбор. Введите номер или клавишу из панели.');
   }
 }
 
@@ -870,8 +1112,8 @@ async function interactiveInstall() {
   }
 
   console.log(colorizeSplashArt(SPLASH_ART));
-  console.log(`Установщик ${PRODUCT_NAME}`);
-  console.log('Выберите папку проекта, подтвердите установку, затем дождитесь завершения.');
+  console.log(`\n${colorizeUiGradient(`SETUP  ·  ${PRODUCT_NAME}`)}`);
+  console.log(uiTone('Выберите проект, проверьте настройки и запустите установку.', 'muted'));
 
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
@@ -884,10 +1126,10 @@ async function interactiveInstall() {
       process.exit(1);
     }
 
-    printTargetInspection(targetRepo, inspection);
+    printTargetInspection(targetRepo, inspection, true);
 
     if (!inspection.writable) {
-      console.error('\nНет доступа для записи. Выберите другую папку и запустите установку снова.');
+      printUiNotice('Нет доступа для записи. Выберите другую папку и запустите установку снова.', 'danger');
       process.exit(1);
     }
 
@@ -901,15 +1143,16 @@ async function interactiveInstall() {
     }
 
     if (warnings.length > 0) {
-      console.log('\nПредупреждения');
-      warnings.forEach((warning) => console.log(`  - ${warning}`));
+      uiCardStart('Предупреждения');
+      warnings.forEach((warning) => uiCardLine(`${uiTone('◇', 'warning', true)} ${uiTone(warning, 'warning')}`));
+      uiCardEnd();
     }
 
     const agentsPolicy = inspection.agentsExists ? await askAgentsPolicy(rl) : 'replace';
 
-    const confirmed = await askYesNo(rl, '\nПродолжить установку?', false);
+    const confirmed = await askYesNo(rl, 'Продолжить установку?', false);
     if (!confirmed) {
-      console.log('Установка отменена.');
+      printUiNotice('Установка отменена.', 'danger');
       process.exit(1);
     }
 
@@ -937,29 +1180,42 @@ async function runInstallFlow({ targetRepo, addArgs, install, bootstrap, syncMod
   const sourceLockSnapshot = restoreSourceLock ? snapshotFile(sourceLockPath) : null;
 
   try {
-    console.log('\n[1/3] Подготовка установщика...');
-    ({ tempRoot, preparedRepo } = prepareRepository());
+    printInstallStage(1, 'Подготовка установщика...', interactive);
+    ({ tempRoot, preparedRepo } = prepareRepository({ quiet: interactive }));
+    if (interactive) printUiNotice('Пакет установки подготовлен.', 'success');
 
     if (install) {
-      console.log('\n[2/3] Установка команд...');
-      installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode);
+      printInstallStage(2, 'Установка команд...', interactive);
+      await installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, syncMode);
       if (sourceLockSnapshot) restoreFile(sourceLockPath, sourceLockSnapshot);
     } else {
-      console.log('\n[2/3] Установка команд пропущена.');
+      printInstallStage(2, 'Установка команд пропущена.', interactive);
     }
 
     if (bootstrap) {
-      console.log(`\n[3/3] ${syncMode ? 'Обновление Memory Bank...' : 'Создание Memory Bank...'}`);
-      bootstrapTarget(preparedRepo, targetRepo, syncMode, agentsPolicy);
+      printInstallStage(3, syncMode ? 'Обновление Memory Bank...' : 'Создание Memory Bank...', interactive);
+      await bootstrapTarget(preparedRepo, targetRepo, syncMode, agentsPolicy);
     } else {
-      console.log('\n[3/3] Создание Memory Bank пропущено.');
+      printInstallStage(3, 'Создание Memory Bank пропущено.', interactive);
     }
 
-    console.log('\nУстановка завершена.');
-    console.log(`  Путь проекта: ${targetRepo}`);
-    console.log(`  Команды: ${install ? 'установлены' : 'не менялись'}`);
-    console.log(`  Memory Bank: ${bootstrap ? (syncMode ? 'обновлен' : 'создан') : 'не менялся'}`);
-    if (bootstrap) console.log('  Следующий шаг: /cold-start');
+    if (interactive) {
+      uiCardStart('Установка завершена');
+      uiCardLine(`${uiTone('Путь', 'muted')}         ${uiTone(targetRepo, 'silver', true)}`);
+      uiCardLine(`${uiTone('Команды', 'muted')}      ${uiTone(install ? 'установлены' : 'не менялись', 'success')}`);
+      uiCardLine(`${uiTone('Memory Bank', 'muted')}  ${uiTone(bootstrap ? (syncMode ? 'обновлён' : 'создан') : 'не менялся', 'success')}`);
+      if (bootstrap) {
+        uiCardLine();
+        uiCardLine(`${uiTone('Следующий шаг', 'muted')}  ${uiKeycap('/cold-start')}`);
+      }
+      uiCardEnd();
+    } else {
+      console.log('\nУстановка завершена.');
+      console.log(`  Путь проекта: ${targetRepo}`);
+      console.log(`  Команды: ${install ? 'установлены' : 'не менялись'}`);
+      console.log(`  Memory Bank: ${bootstrap ? (syncMode ? 'обновлен' : 'создан') : 'не менялся'}`);
+      if (bootstrap) console.log('  Следующий шаг: /cold-start');
+    }
   } finally {
     if (tempRoot && preparedRepo) cleanupTemp(tempRoot, preparedRepo);
     if (interactive) {
