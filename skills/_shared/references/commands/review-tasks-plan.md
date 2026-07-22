@@ -143,6 +143,12 @@ Cover:
      Foundation final gate `done` and linked when required; complete T2/T3
      single-card handoff; hard runtime scope respected; no slice code root was
      mechanically treated as a task hard write boundary.
+   - when accepted module/slice boundaries apply, confirm each affected task
+     card and its direct links make the primary owner/code root, public boundary,
+     semantic/write owner, forbidden bypasses, eligible cross-slice orchestration
+     owner when relevant, applicable forbidden technical placements, and proof
+     path directly discoverable; do not require slices from an accepted
+     architecture that uses another primary change unit.
 
 Verdicts:
 - `APPROVE`: all coverage groups pass. Non-blocking notes are allowed.

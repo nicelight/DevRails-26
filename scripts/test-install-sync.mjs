@@ -375,6 +375,9 @@ try {
         && deployedArchitectureReview.includes('product/system purpose and actors')
         && deployedArchitectureReview.includes('relevant epic/subsystem boundaries and value')
         && deployedArchitectureReview.includes('target feature/module responsibilities and dependencies')
+        && deployedArchitectureReview.includes(
+          'their absence is valid when canonical evidence shows none applies to the\nreviewed feature',
+        )
         && deployedArchitectureReview.includes('verdict: APPROVE|REQUEST_CHANGES|OWNER_DECISION_NEEDED')
         && deployedArchitectureReview.includes('`/review-tasks-plan` owns its')
         && deployedArchitectureReview.includes('Create no separate report artifact.'),
@@ -821,11 +824,8 @@ try {
     );
     assert(
       normalizedArchitectureReview.includes(
-        'only when the accepted target defines modules or capability slices',
+        'ownership, source of truth, public boundaries, dependency direction, cross-component orchestration, and required proof paths are preserved',
       )
-        && normalizedArchitectureReview.includes(
-          'each affected task makes its primary owner and code root discoverable through the card and direct links',
-        )
         && normalizedArchitectureReview.includes(
           'a capability-sliced cross-slice outcome names one accepted capability slice as orchestration owner',
         )
@@ -835,9 +835,16 @@ try {
         && normalizedArchitectureReview.includes(
           'reject an orchestration slice invented in planning',
         )
-        && normalizedArchitectureReview.includes('do not require slices from another architecture')
-        && normalizedReviewTasksPlan.includes('integrate the architecture verdict and findings'),
-      `${runtimeRoot} architecture review flow does not conditionally review slice legibility.`,
+        && !normalizedArchitectureReview.includes(
+          'each affected task makes its primary owner and code root discoverable',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'each affected task card and its direct links make the primary owner/code root, public boundary, semantic/write owner, forbidden bypasses, eligible cross-slice orchestration owner when relevant, applicable forbidden technical placements, and proof path directly discoverable',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'do not require slices from an accepted architecture that uses another primary change unit',
+        ),
+      `${runtimeRoot} lost the separation between global architecture review and per-task boundary handoff review.`,
     );
     assert(
       normalizedSpecDesign.includes(

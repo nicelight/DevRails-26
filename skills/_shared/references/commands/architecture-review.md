@@ -12,8 +12,10 @@ compact Reviewer report to the calling reviewer.
 
 <input_contract>
 Require one `FT-<NNN>` plus its product, relevant epic, feature, implementation
-plan, indexed tasks, and direct architecture/spec links. Read additional
-canonical specs or code evidence only when needed to verify a finding.
+plan, and indexed tasks. Include applicable direct architecture/spec links;
+their absence is valid when canonical evidence shows none applies to the
+reviewed feature. Read additional canonical specs or code evidence only when
+needed to verify a finding.
 </input_contract>
 
 <hard_invariants>
@@ -41,9 +43,6 @@ Treat these as coverage criteria, not a mandatory order:
    - ownership, source of truth, public boundaries, dependency direction,
      cross-component orchestration, and required proof paths are preserved;
    - dependencies are explicit and no task must invent a material boundary.
-   - only when the accepted target defines modules or capability slices, each
-     affected task makes its primary owner and code root discoverable through
-     the card and direct links; do not require slices from another architecture;
    - a capability-sliced cross-slice outcome names one accepted capability slice
      as orchestration owner; reject an orchestration slice invented in planning;
    - applicable linked rules retain existing mechanical gates and required
