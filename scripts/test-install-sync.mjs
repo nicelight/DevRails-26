@@ -20,6 +20,7 @@ const installer = join(repoRoot, 'scripts', 'install-framework.mjs');
 const commandSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'commands');
 const coldStartCommandSource = join(commandSourceDir, 'cold-start.md');
 const mbInitCommandSource = join(commandSourceDir, 'mb-init.md');
+const creatorVibeCommandSource = join(commandSourceDir, 'creator-vibe.md');
 const coldStartPackageSource = join(repoRoot, 'skills', 'cold-start', 'SKILL.md');
 const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
@@ -280,6 +281,11 @@ try {
     'Fresh full bootstrap did not install the same runtime skill set into both surfaces.',
   );
   assert(
+    agentsSkillNames.includes('creator-vibe')
+      && claudeSkillNames.includes('creator-vibe'),
+    'Fresh full bootstrap did not install creator-vibe into both runtime surfaces.',
+  );
+  assert(
     JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(agentsSkillNames)
       && JSON.stringify(recoveredClaudeSkillNames) === JSON.stringify(claudeSkillNames),
     'Recovered partial cold-start target does not match a fresh full bootstrap runtime set.',
@@ -303,6 +309,18 @@ try {
   assert(
     freshAgents === expectedDeployableAgents,
     'Fresh bootstrap AGENTS.md differs from its canonical deployable source.',
+  );
+  assert(
+    freshAgents.includes(
+      'Treat `creator-vibe` as the persistent interpretive lens for every user message, before classifying the task or acting on its literal wording.',
+    )
+      && freshAgents.includes(
+        'When success materially depends on taste, voice, human experience, or unstated choices, load and follow the installed `creator-vibe` skill before narrower skills.',
+      )
+      && freshAgents.includes(
+        'Do not explain this interpretation back to the user unless asked. Let it show in the work.',
+      ),
+    'Fresh bootstrap AGENTS.md lost the persistent Creator Vibe Lens.',
   );
   assert(
     normalizedFreshAgents.includes(
@@ -364,6 +382,7 @@ try {
   ['.agents/skills', '.claude/skills'].forEach((runtimeRoot) => {
     const deployedColdStart = readTarget(`${runtimeRoot}/cold-start/SKILL.md`);
     const deployedMbInit = readTarget(`${runtimeRoot}/mb-init/SKILL.md`);
+    const deployedCreatorVibe = readTarget(`${runtimeRoot}/creator-vibe/SKILL.md`);
     const deployedArchitectureReview = readTarget(`${runtimeRoot}/architecture-review/SKILL.md`);
     const deployedKissArchitect = readTarget(`${runtimeRoot}/kiss-architect/SKILL.md`);
     const deployedReviewTasksPlan = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
@@ -372,6 +391,10 @@ try {
       deployedColdStart.includes(fullBootstrapRoute)
         && !deployedColdStart.includes(skeletonBootstrapRoute),
       `${runtimeRoot}/cold-start lost the full bootstrap recovery route during deployment.`,
+    );
+    assert(
+      deployedCreatorVibe.includes(readFileSync(creatorVibeCommandSource, 'utf8').trim()),
+      `${runtimeRoot}/creator-vibe differs from its canonical project-level source.`,
     );
     assert(
       deployedMbInit.includes(skeletonBootstrapRoute)

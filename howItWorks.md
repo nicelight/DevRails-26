@@ -104,7 +104,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 31 runtime-skills определены в:
+Текущие 32 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -1204,6 +1204,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/fill` | минимально достаточный context priming | строго read-only; возвращает gaps и рекомендуемые reads, не создаёт artifacts |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |
+| `/creator-vibe` | persistent interpretive lens for creative intent and human outcomes | creates no requirements, statuses, artifacts, gates, or scope authority |
 | `/brainstorm` | traceable ideation report | не создаёт requirements/PRD; затем `/brief` |
 | `/brief` | concise Product Brief и initial draft glossary | не создаёт features/tasks; затем `/constitution` или `/write-prd` |
 | `/constitution` | governing principles, DoD, autonomy, checkpoints | не заменяет PRD/specs; затем `/write-prd` |

@@ -744,6 +744,7 @@ _No runtime skills detected in `.agents/skills` or `.claude/skills`._
 ## Guidance for installed skills
 - Bootstrap skeleton / memory: mb-init
 - Scenario routing: cold-start
+- Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
 - Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
 - SDD design: /spec-init, mandatory adaptive /spec-design, foundation tasking inside /foundation-to-tasks, close the FT-000 foundation gate when required, initial and repair feature-level design/task reconciliation inside /feature-to-tasks, /spec-auto
 - Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads

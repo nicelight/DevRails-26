@@ -16,7 +16,7 @@
 
 ## 📦 Что появится в проекте
 
-- `.agents/skills/` и `.claude/skills/` — 31 команда DevRails для Codex и
+- `.agents/skills/` и `.claude/skills/` — 32 команды DevRails для Codex и
 Claude Code;
 - `.memory-bank/` — общая память проекта: требования, решения и задачи;
 - `.protocols/` — записи о ходе выполнения и проверки задач;
@@ -219,6 +219,8 @@ Bank, но сам файлы не создаёт;
 - `/context-manifest` — составляет список файлов для чтения в большом проекте;
 - `/find-skills` — ищет дополнительные skills сначала в проекте, затем во
 внешнем каталоге;
+- `/creator-vibe` — keeps human outcomes and creative intent ahead of
+overengineering;
 - `/brainstorm` — исследует сырую идею;
 - `/brief` — создаёт краткое описание продукта;
 - `/constitution` — записывает главные правила проекта;

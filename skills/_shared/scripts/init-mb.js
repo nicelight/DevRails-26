@@ -318,6 +318,7 @@ ${installedSkillsBlock()}
 ## Guidance for installed skills
 - Bootstrap skeleton: mb-init
 - Scenario routing: cold-start
+- Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
 - Discovery artifacts: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
 - Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial
 - PRD → MB: /write-prd, lightweight /spec-init, /prd-to-features, /spec-design, /foundation-to-tasks when required, close the FT-000 foundation gate, then /feature-to-tasks
