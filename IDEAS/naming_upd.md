@@ -1,728 +1,393 @@
-# IDEA: Agent-legible naming и структура исходного кода
+# IDEA: Устойчивая смысловая плотность полного пути
 
 Обновлено: 2026-07-24
 
 ## 1. Задача
 
-DevRails должен помогать runtime-агентам создавать и находить исходные файлы
-так, чтобы полный путь передавал максимум устойчивого и полезного контекста без
-необходимости сначала открывать файл.
-
-Сочетание:
+DevRails должен помогать runtime-агентам создавать исходные файлы так, чтобы
+полный путь передавал достаточно устойчивого контекста для предварительного
+понимания назначения файла без его открытия.
 
 ```text
-code root + relative path + basename + extension
+maximum durable meaning
+-----------------------
+minimum necessary path structure
 ```
 
-должно позволять определить:
+Оценивается вся конструкция:
 
-- владельца или ближайшую authority boundary;
+```text
+package/workspace/code root + directories + complete filename
+```
+
+`Complete filename` включает зарезервированные framework/tooling prefixes,
+suffixes и compound extensions.
+
+Она должна по возможности сообщать:
+
+- ближайшего владельца, authority либо reuse boundary;
 - business subject либо capability;
-- техническую роль файла;
+- устойчивую техническую роль файла;
 - применимую ecosystem/framework semantics.
 
-Вторичная цель — избегать случайной и дублирующей технической вложенности.
-Если framework и архитектурные boundaries не требуют иного, предпочтительна
-широкая и неглубокая структура с более информативными именами файлов:
+Минимальная вложенность не является самостоятельной целью. Дополнительный
+сегмент оправдан, если он добавляет устойчивый смысл или требуется
+архитектурой, framework либо tooling.
 
-```text
-shallow by default, semantic depth only
-```
-
-Это изменение относится к runtime workflow DevRails. Оно не предписывает
-конкретную структуру самому source repo DevRails и не разрешает массовое
-переименование brownfield-кода.
+Это runtime policy DevRails, а не требование к структуре самого source repo
+DevRails и не разрешение на массовое переименование brownfield-кода.
 
 ## 2. Исходная проблема
 
-В capability-sliced и modular-monolith проектах агенты часто воспроизводят
-однотипные технические имена:
-
-```text
-service.py
-models.py
-contracts.py
-repository.py
-runtime.py
-```
-
-В проанализированном Python/FastAPI backend из 94 application-файлов
-повторялись 9 `service.py`, 8 `contracts.py`, 8 `models.py`,
-7 `repository.py` и 3 `runtime.py`. При этом 22 файла превышали 500 строк.
-
-Само повторение basename не доказывает ошибку. Полный package path технически
-различает файлы. Проблема возникает, когда путь и имя вместе сообщают только
-технический слой, но не помогают агенту определить capability, владельца и
-реальную ответственность файла.
-
-Например:
+Агенты легко воспроизводят технически корректные, но малосодержательные пути:
 
 ```text
 safety_gate/service.py
-```
-
-может одновременно содержать classification и action-decision behavior.
-Агент видит слой `service`, но не видит, какая capability является целью
-изменения.
-
-Дополнительная проблема — техническая вложенность:
-
-```text
 plant_state/services/review/service.py
 access_admin/repositories/session/repository.py
 ```
 
-Она распределяет небольшой объём полезной информации между несколькими
-сегментами и заставляет агента читать больше дерева, чтобы понять один файл.
+В первом случае путь может не различать classification и action-decision
+responsibility. В остальных случаях один полезный контекст распределён между
+несколькими техническими сегментами.
+
+Само повторение `service.py`, `models.py`, `repository.py`, `index.ts` или
+другого filename не является ошибкой. Проблема существует только когда полный
+путь не помогает определить владельца и назначение файла либо содержит
+дублирующую вложенность без дополнительной семантики.
 
 ## 3. Принятое решение
 
-DevRails задаёт language-neutral contract смысловой читаемости полного пути,
-а конкретную грамматику выбирает отдельно для каждого code root и ecosystem.
-
-Распределение контекста:
+Полный путь рассматривается как единая agent context surface. Его части не
+имеют универсальных ролей:
 
 ```text
-code root  -> architectural unit
-directories -> owner, boundary, namespace, route или package
-basename   -> subject, capability и role
-extension  -> artifact type и ecosystem
+package/workspace/code root
+directories
+complete filename
 ```
 
-Общая эвристика для authored application-файла:
+Каждая часть сообщает тот owner, boundary, namespace, route, package, subject,
+capability, role или artifact type, который действительно закреплён
+architecture, language, framework либо tooling. Например, технический `src/`
+сам по себе может не быть architectural unit: соответствующий owner находится
+в package или workspace segment выше него.
+
+Каждый сегмент должен добавлять устойчивый смысл либо сохранять обязательную
+project/framework semantics. Контекст папки не повторяется в filename
+механически.
+
+Filesystem path, import/module path, package export, URL/route и build target
+являются разными executable identities. Агент не заставляет их совпадать, если
+такую связь явно не задаёт language, framework, tooling или принятая
+architecture.
+
+Например:
 
 ```text
-<context>/<subject>[_<capability>]_<role>.<ext>
-```
-
-Это не универсальный обязательный синтаксис. Naming profile конкретного code
-root может использовать `snake_case`, `kebab-case`, dot-role notation,
-framework-defined names или семантически достаточный package/module path.
-
-Context не повторяется в basename механически:
-
-```text
-plant_state/trust_service.py
+plant_state/review_service.py
 ```
 
 предпочтительнее:
 
 ```text
-plant_state/plant_state_trust_service.py
+plant_state/services/review/service.py
+plant_state/plant_state_review_service.py
 ```
 
-если basename не требуется делать автономным и package path уже однозначно
-передаёт context.
+если дополнительные сегменты не выражают самостоятельную boundary, namespace
+или framework semantics.
 
-Имена кодируют устойчивые понятия:
+При нескольких responsibilities внутри одного owner:
 
 ```text
-plant_state/review_service.py
 safety_gate/classification_service.py
 safety_gate/action_decision_service.py
-photo_intake/artifact_storage.py
 ```
 
-Имена не должны перечислять все текущие операции:
+информативнее, чем:
+
+```text
+safety_gate/service.py
+```
+
+При этом имя не перечисляет все текущие операции и incidental implementation
+details:
 
 ```text
 plant_state_human_review_confirmation_rejection_conflict_service.py
 ```
 
-Такое имя быстро устаревает и ухудшает читаемость.
+Такое имя нестабильно и не повышает полезную смысловую плотность.
 
-## 4. Правила структуры
+## 4. Границы эвристики
 
-### 4.1 Папки
+### 4.1 Семантическая и обязательная вложенность сохраняется
 
-Папка оправдана, когда выражает хотя бы одну устойчивую семантику:
+Папка оправдана, когда выражает:
 
 - ownership или authority boundary;
-- namespace и import boundary;
-- URL и route inheritance;
-- visibility;
+- namespace, import или visibility boundary;
+- URL, route или layout inheritance, когда framework связывает их с filesystem;
 - package/workspace boundary;
-- framework-required structure;
-- independently meaningful capability boundary.
+- independently meaningful capability;
+- framework/tooling-required structure.
 
-Папка не создаётся только для группировки файлов по техническому слою:
+DevRails не задаёт универсальный max depth и не выполняет flattening package,
+module, route или workspace trees.
 
-```text
-services/
-models/
-repositories/
-controllers/
-handlers/
-```
-
-если тот же контекст яснее выражается именами файлов внутри папки владельца.
-
-Предпочтительно:
-
-```text
-plant_state/
-  review_service.py
-  plant_state_repository.py
-  assessment_runtime.py
-  plant_state_http.py
-```
-
-Вместо:
-
-```text
-plant_state/
-  services/
-    review/
-      service.py
-  repositories/
-    repository.py
-```
-
-Техническая подпапка остаётся допустимой, когда она требуется framework,
-уже является принятой package boundary или снижает реальную сложность
-конкретного code root. DevRails не вводит числовой глобальный предел глубины.
-
-### 4.2 Имена
-
-Authored application-файл должен содержать business subject, capability или
-устойчивую роль, если эта информация не выражена однозначно semantic path.
-
-Generic basename разрешён, когда:
-
-- его требует framework или tooling;
-- package/module/route path придаёт ему однозначный смысл;
-- он явно принят naming profile code root.
-
-Framework-required, generated и vendored файлы не проверяются как обычные
-authored application-файлы.
-
-В production names не включаются:
-
-- feature, task и requirement IDs;
-- workflow stages;
-- временные состояния;
-- исторические маркеры `new`, `old`, `fixed`, `refactored`;
-- все операции, которые случайно находятся в файле сейчас;
-- incidental implementation details.
-
-Устойчивая implementation role допустима, когда она различает реальные
-adapters или источники хранения:
-
-```text
-postgres_task_repository.py
-filesystem_photo_storage.py
-timeline_jsonl_writer.py
-```
-
-## 5. Почему решение не универсализирует basename и глубину
-
-### 5.1 Не запрещаем повторяющиеся basenames глобально
-
-Повторяющиеся имена могут быть частью ecosystem contract:
-
-- Python: `__init__.py`, `conftest.py`; Django: `models.py`, `admin.py`,
-  `apps.py`;
-- Rust: `main.rs`, `lib.rs`, `mod.rs`, `build.rs`;
-- Node/TypeScript: `index.ts`, `package.json`, framework config files;
-- SvelteKit: `+page.svelte`, `+layout.svelte`, `+server.ts`,
-  `+page.server.ts`.
-
-В SvelteKit смысл `+page.svelte` задаётся route path. Переименование нарушило
-бы framework contract.
-
-Глобальная уникальность также бессмысленна для monorepo:
-
-```text
-backend/app/session_service.py
-frontend/src/session.service.ts
-firmware/src/session.rs
-```
-
-Это разные architectural units. Даже внутри одного code root повторяющиеся
-`entities.py` могут быть корректны, если package path однозначно задаёт
-владельца.
-
-Поэтому уникальность basename не является default invariant. Если конкретный
-проект хочет её проверять, область уникальности задаётся его naming profile.
-
-### 5.2 Не выполняем универсальный flattening
-
-Вложенность может быть исполняемой семантикой:
-
-- Rust directory tree влияет на module tree, namespace и visibility;
-- SvelteKit route tree определяет URL и layout inheritance;
-- Python packages определяют import namespaces;
-- Node package/workspace boundaries определяют exports и dependency graph.
-
-Flattening таких директорий может изменить public imports, routing,
-visibility или dependency ownership. Удаляется только случайная вложенность,
-которая не несёт принятой семантики.
-
-### 5.3 Не повторяем context в каждом имени
-
-Безусловный prefix создаёт шум:
-
-```text
-crate::plant_state::plant_state_trust_service
-```
-
-Naming profile определяет, должен ли basename быть автономным или context уже
-достаточно выражен path. В одном code root используется одна согласованная
-стратегия либо явно описанные path-qualified исключения.
-
-### 5.4 Не требуем максимально длинных имён
-
-Цель — максимум устойчивого полезного контекста, а не максимальная длина.
-Слишком подробное имя связывает файл с текущей реализацией и быстро устаревает.
-Предпочтительны устойчивые domain terms из принятого glossary.
-
-### 5.5 Не требуем физической co-location для любого transport
-
-FastAPI HTTP adapter обычно можно хранить рядом с capability:
-
-```text
-photo_intake/photo_intake_http.py
-```
-
-Но SvelteKit entrypoint обязан оставаться в route tree:
+Например, SvelteKit entrypoint сохраняет framework path:
 
 ```text
 src/routes/plants/[plantId]/+page.server.ts
 ```
 
-Business/application logic при этом принадлежит semantic owner:
+Business logic при этом может принадлежать semantic owner:
 
 ```text
-src/lib/features/plant-state/
+src/lib/features/plant-state/review-service.ts
 ```
 
-Framework entrypoint может физически находиться отдельно, но не становится
-владельцем бизнес-логики.
+### 4.2 Техническая вложенность не запрещается глобально
 
-### 5.6 Не создаём универсальную cross-language грамматику
+Папки `services/`, `models/`, `repositories/`, `controllers/` или `handlers/`
+не создаются только по привычке. Они остаются допустимыми, если являются
+принятой project convention, реальной package boundary или уменьшают
+конкретную сложность.
 
-Экосистемы имеют разные естественные styles:
+### 4.3 Generic и reserved filenames допустимы
+
+Generic или reserved filename допустим, когда его смысл однозначно задаётся
+полным путём, framework или принятой convention:
+
+- Python: `__init__.py`, `conftest.py`, Django `models.py`;
+- Rust: `main.rs`, `lib.rs`, `mod.rs`, `build.rs`;
+- Node/TypeScript: `index.ts`, `index.d.ts`, `package.json`;
+- SvelteKit: `+page.svelte`, `+page.server.ts`, `+layout.svelte`, `+server.ts`.
+
+Зарезервированный prefix, suffix или compound extension рассматривается как
+часть единого filename и не изменяется ради дополнительной описательности.
+Глобальная уникальность filename не является invariant.
+
+### 4.4 Экосистемы сохраняют естественную грамматику
+
+DevRails не вводит универсальный cross-language syntax:
 
 ```text
-Python/FastAPI:
-  plant_state/review_service.py
-
-Rust:
-  plant_state/trust_service.rs
-
-TypeScript/Nest:
-  plant-state/plant-state-review.service.ts
-
-Svelte:
-  PlantStateReviewDialog.svelte
-
-SvelteKit routes:
-  plants/[plantId]/+page.server.ts
+Python:     plant_state/review_service.py
+Rust:       plant_state/trust_service.rs
+TypeScript: plant-state/review-service.ts
+Svelte:     plant-state/PlantStateReviewDialog.svelte
 ```
 
-DevRails защищает смысл пути и consistency внутри code root, а не один
-синтаксис для всех языков.
+Повторение directory context в filename допустимо, когда filename одновременно
+является устойчивым exported/public symbol, component identity или
+tooling-required name и без повторения теряет нужный контекст вне своей папки.
 
-## 6. Naming profile
+Authored source file означает написанный проектом исходный код, а не generated
+или vendored output. Framework entrypoints, tests, migrations, configs и другие
+специализированные artifacts прежде всего следуют своим project/tooling
+conventions; общая эвристика применяется только там, где она им не
+противоречит.
 
-Каждый значимый code root использует собственный naming profile либо
-унаследованную однозначную ecosystem/framework convention.
+Configured generator output и применимый project scaffold считаются project
+convention, даже если их структура не является жёстким framework requirement.
+Пока файл или путь управляется generator/tooling contract, последующее ручное
+редактирование не отменяет этот contract автоматически.
 
-Минимальная концептуальная форма:
+## 5. KISS runtime policy
 
-```yaml
-root: backend/app
-ecosystem: python
-framework: fastapi
-path_semantics: package-ownership
-authored_style: snake_case
-context_prefix: optional
-authored_patterns:
-  - <subject>_<role>.py
-path_qualified_names:
-  - entities.py
-reserved_names:
-  - __init__.py
-generated_paths: []
-validator: null
-```
+Эта идея не создаёт naming subsystem.
 
-Это не новая обязательная YAML schema и не отдельный registry. Эквивалентная
-компактная таблица или prose живёт в существующем
-`.memory-bank/architecture/system-architecture.md` рядом с code roots и
-module boundaries.
+Не вводятся:
 
-Профиль фиксирует только то, что необходимо downstream-агенту:
+- обязательные naming profiles;
+- YAML schema или registry;
+- task fields или отдельные artifacts;
+- обязательный discovery checklist;
+- naming-specific lifecycle, status, gate или handoff;
+- universal naming/structure validator;
+- repository-wide naming review.
 
-- code root;
-- ecosystem/framework;
-- семантику директорий;
-- authored naming style/pattern;
-- политику context prefix;
-- допустимые path-qualified generic names;
-- framework-required/reserved names;
-- generated paths;
-- существующий project-native validator.
+Runtime-агент использует authority в таком порядке:
 
-Если существующая convention однозначна, агент её наследует. Если в greenfield
-проекте несколько вариантов materially меняют public paths, module boundaries
-или дальнейшую структуру, решение принадлежит оператору. В unattended flow
-агент использует только уже принятую authority; отсутствие material решения
-возвращает существующий blocker, а не agent-selected convention.
+1. language/framework/tooling contracts, configured generators и применимый
+   project scaffold;
+2. принятые architecture и project conventions;
+3. наблюдаемая локальная convention;
+4. общая эвристика смысловой плотности полного пути.
 
-## 7. Поведение runtime-агента
+Физический путь оптимизируется только внутри уже выбранных executable
+boundaries. Эвристика не выводит URL, import path, module path, package export
+или build target из похожести имён.
 
-Перед созданием или перемещением authored application-файла агент:
+Неочевидное naming/path решение записывается в существующий
+`.memory-bank/architecture/system-architecture.md` рядом с соответствующим
+code root или module boundary только когда оно materially влияет на public
+path, import/module identity, package export, namespace, ownership, build target
+или дальнейшую структуру. Формат свободный: компактная строка, таблица или
+prose.
 
-1. определяет owning code root и capability owner;
-2. читает принятые module/code-root boundaries и naming profile;
-3. учитывает framework-required path semantics;
-4. ищет существующие файлы по принятому domain subject;
-5. ищет определения символов, imports и references;
-6. использует glossary и только документированные aliases/синонимы;
-7. проверяет, не существует ли уже подходящий owner или файл;
-8. выбирает минимальную семантически достаточную вложенность;
-9. формирует устойчивое имя по profile;
-10. запускает существующий project-native naming/structure check, если он
-    определён и применим.
+Отсутствие отдельного naming rule не является blocker. Локальный выбор внутри
+принятых boundaries остаётся execution discretion. Только material ambiguity
+в ownership/reuse boundary, public path, namespace, package/module identity,
+build target или framework contract использует существующий route к
+`/spec-design` либо оператору.
 
-Агент не обязан выполнять эти действия в фиксированном порядке. Это
-обязательное coverage, а не reasoning script.
+## 6. Минимальная интеграция в DevRails
 
-При material ambiguity ownership, public path, namespace, framework contract
-или naming profile агент останавливает scope growth и использует существующий
-route к `/spec-design` либо оператору. Незначимый локальный выбор внутри
-принятого profile остаётся execution discretion.
+### 6.1 Deployable `AGENTS.md`
 
-## 8. Brownfield policy
+В `skills/_shared/references/deployable/AGENTS.md` добавляется короткая
+language-neutral policy:
 
-Принятие naming profile не разрешает массовое переименование существующего
-проекта.
-
-- `/map-codebase` фиксирует наблюдаемую as-is convention, но не превращает её
-  автоматически в target authority.
-- `/spec-design` принимает, сохраняет либо корректирует target convention.
-- Новые файлы следуют принятому profile.
-- Затрагиваемый файл переименовывается только когда это необходимо текущему
-  outcome и входит в task scope.
-- Массовая naming migration выполняется отдельной явно принятой
-  refactoring-задачей.
-
-Перед brownfield rename проверяются:
-
-- static и dynamic imports;
-- plugin registration;
-- serialized module paths;
-- package exports и aliases;
-- macros, `include!`, `#[path]` и generated references;
-- framework routing;
-- case-only rename compatibility на Linux/macOS/Windows.
-
-Opportunistic cleanup не должен расширять feature-задачу.
-
-## 9. Validator boundary
-
-Project-native validator может проверять:
-
-- форму имени;
-- согласованный naming style;
-- разрешённые и запрещённые patterns;
-- framework-required и path-qualified исключения;
-- generated paths;
-- mechanically defined depth rule;
-- optional uniqueness scope, если она принята проектом.
-
-Validator не доказывает:
-
-- semantic cohesion файла;
-- правильность capability decomposition;
-- корректность ownership;
-- необходимость разделения большого файла;
-- качество архитектуры.
-
-Эти вопросы остаются responsibility архитектурного решения, task planning и
-review. DevRails не получает универсальный cross-language naming validator в
-рамках этой задачи. Missing validator не становится новым глобальным gate.
-
-## 10. Интеграция в DevRails
-
-Новый lifecycle, status, task field, registry, protocol или обязательный
-artifact не создаётся.
-
-### 10.1 Глобальная runtime policy
-
-В `skills/_shared/references/deployable/AGENTS.md` добавляется короткий
-language-neutral раздел:
-
-- полный путь является agent context surface;
-- `shallow by default, semantic depth only`;
-- semantic/framework-required nesting сохраняется;
-- project-specific naming profile читается из принятой архитектуры;
-- mass brownfield rename не выводится из общей policy.
+- полный путь является единой context surface;
+- каждый сегмент добавляет устойчивый смысл либо обязательную semantics;
+- используется минимально необходимая вложенность;
+- directory context не повторяется в filename без причины;
+- полный filename сохраняет required prefixes, suffixes и compound extensions;
+- filesystem path не заставляет разные executable identities совпадать;
+- framework, tooling, generator и project conventions сохраняются;
+- общая policy не разрешает opportunistic brownfield rename.
 
 Полный текст не дублируется во всех runtime skills.
 
-### 10.2 `/map-codebase`
+### 6.2 `/spec-design`
 
-`skills/_shared/references/commands/map-codebase.md` получает bounded
-current-state discovery:
+`skills/_shared/references/commands/spec-design.md` получает одно bounded
+правило: при проектировании code roots и module boundaries фиксировать рядом
+только неочевидную или material naming/path convention. Для обычной
+ecosystem/project convention отдельная запись не требуется.
 
-- code roots и package/workspace boundaries;
-- observed directory semantics;
-- framework-required/reserved/generated paths;
-- observed naming styles и path-qualified generic names;
-- ownership signals и существующие validators.
+### 6.3 `/exe`
 
-Результат остаётся as-is evidence и не становится target decision.
+`skills/_shared/references/commands/exe.md` получает компактную instruction:
+перед созданием или перемещением authored source file определить применимую
+ownership, reuse или tooling boundary; проверить ближайший релевантный local
+pattern и управляющие этим путём manifests, configuration либо registration;
+сохранить framework, import/module, public-path, package-export и build-target
+compatibility; затем выбрать минимальный полный путь с достаточным устойчивым
+контекстом.
 
-### 10.3 `/spec-design`
+Это обычный task preflight, а не отдельная фаза. Агент не обязан выполнять
+фиксированный порядок поисков и не останавливается из-за несущественного
+локального naming choice.
 
-`skills/_shared/references/commands/spec-design.md`:
+Остальные runtime commands продолжают применять существующие ownership,
+architecture и task-scope rules без naming-specific coverage.
 
-- связывает naming profiles с уже принимаемыми code roots и capability slices;
-- записывает только значимые profiles в существующий
-  `system-architecture.md`;
-- сохраняет framework-required path semantics;
-- применяет `shallow by default, semantic depth only`;
-- не создаёт отдельный naming registry;
-- не требует profile для нерелевантных generated/vendor roots;
-- не задаёт per-file ownership.
+## 7. Brownfield policy
 
-Greenfield recommendation следует ecosystem convention. Brownfield target
-учитывает as-is evidence, но операторская/нормативная authority имеет
-приоритет.
+- Наблюдаемая convention является evidence, но не автоматически новым target.
+- Новый файл следует framework, принятой architecture и согласованной локальной
+  convention.
+- Затрагиваемый файл переименовывается только когда rename необходим текущему
+  outcome и входит в task scope.
+- Массовая naming migration требует отдельной явно принятой refactoring-задачи.
+- Opportunistic cleanup не расширяет feature-задачу.
 
-### 10.4 `/feature-to-tasks`
+Перед допустимым rename агент проверяет применимые imports, module declarations,
+references, exports, manifests/resolution, registration, routing, build targets
+и case-sensitive compatibility. Конкретный набор проверок определяется
+ecosystem и фактическим риском, а не универсальным чеклистом DevRails.
 
-`skills/_shared/references/commands/feature-to-tasks.md`:
+## 8. План имплементации
 
-- использует owning slice/code root и naming profile при планировании новых
-  путей;
-- не создаёт technical-layer folders как новые primary boundaries;
-- делает ожидаемый path legible в существующих `touched_files`,
-  constraints и linked architecture;
-- не превращает code root в hard `write_boundary`;
-- не создаёт task по числу файлов или слоёв.
+Изменить только canonical runtime sources:
 
-### 10.5 `/review-tasks-plan`
+```text
+skills/_shared/references/deployable/AGENTS.md
+skills/_shared/references/commands/spec-design.md
+skills/_shared/references/commands/exe.md
+```
 
-`skills/_shared/references/commands/review-tasks-plan.md` проверяет только
-планируемый change surface:
+Добавить в `scripts/test-install-sync.mjs` минимальные assertions, что policy
+доступна в deployed `AGENTS.md` и сгенерированных runtime skills для Codex и
+Claude.
 
-- новый путь соответствует принятому owner/code root;
-- path и basename совместно передают достаточный контекст;
-- framework-required placement сохранён;
-- technical-layer folder не подменил capability boundary;
-- naming ambiguity не оставлена executor-у.
+Installer, task schema, `mb-lint`, `mb-doctor`, generated directories и
+package-local `shared-*` не менять.
 
-Это не repository-wide naming audit.
-
-### 10.6 `/exe`
-
-`skills/_shared/references/commands/exe.md`:
-
-- выполняет discovery перед созданием нового файла;
-- следует принятому naming profile;
-- предпочитает минимальную семантическую вложенность;
-- не выполняет opportunistic mass rename;
-- сохраняет framework/package/public-path compatibility;
-- останавливается при material ambiguity, не разрешённой task-linked
-  authority.
-
-### 10.7 `/verify`
-
-`skills/_shared/references/commands/verify.md`:
-
-- проверяет только actual task change surface;
-- подтверждает accepted owner и path semantics;
-- запускает project-native validator, только если он существует и применим;
-- не требует универсальный naming check;
-- не использует имя как доказательство semantic cohesion.
-
-### 10.8 Документация и deployment
-
-При необходимости краткое пользовательское описание добавляется в
-`howItWorks.md`. `README.md` не расширяется подробной naming policy.
-
-Installer менять не требуется:
-
-- runtime command skills уже генерируются напрямую из
-  `skills/_shared/references/commands/*.md`;
-- deployable `AGENTS.md` уже разворачивается canonical bootstrap/sync path.
-
-Все изменения выполняются только в canonical `skills/_shared/`. Generated
-`.agents/`, `.claude/`, `.memory-bank/` и package-local `shared-*` не
-редактируются и не коммитятся.
-
-## 11. План имплементации
-
-### Этап 1. Зафиксировать единый contract
-
-1. Сформулировать компактную нормативную policy для deployable `AGENTS.md`.
-2. Проверить, что policy:
-   - language-neutral;
-   - не требует unique basenames;
-   - не задаёт универсальный max depth;
-   - сохраняет framework semantics;
-   - не разрешает mass rename;
-   - не создаёт новый workflow contract.
-3. Использовать одинаковые термины:
-   `code root`, `naming profile`, `path semantics`, `capability owner`,
-   `authored application file`, `framework-required`, `generated`.
-
-### Этап 2. Добавить discovery и design ownership
-
-1. Обновить `/map-codebase` для as-is naming/path evidence.
-2. Обновить `/spec-design` для принятия и записи target naming profiles.
-3. Проверить, что:
-   - current state и target authority не смешаны;
-   - operator decision требуется только для material unresolved branch;
-   - profile хранится в существующем architecture artifact;
-   - profile не становится registry/schema/task field.
-
-### Этап 3. Провести policy через planning
-
-1. Обновить `/feature-to-tasks`.
-2. Обновить `/review-tasks-plan`.
-3. Обеспечить, чтобы fresh executor мог по task card и direct links определить:
-   - owning code root;
-   - применимый naming profile;
-   - ожидаемый semantic path;
-   - framework-required exceptions;
-   - допустимый verification path.
-4. Не менять `touched_files`, `write_boundary`, task schema и review verdict
-   ownership.
-
-### Этап 4. Провести policy через execution и verification
-
-1. Обновить `/exe` discovery и file-creation правила.
-2. Обновить `/verify` task-scoped проверку.
-3. Сохранить:
-   - execution tactic discretion;
-   - tier routing;
-   - lifecycle/status ownership;
-   - blockers и resume routes;
-   - существующие closure gates.
-
-### Этап 5. Добавить regression coverage
-
-Обновить `scripts/test-install-sync.mjs` минимальными assertions, которые
-подтверждают:
-
-- runtime Codex и Claude skills содержат одинаковые обновлённые contracts;
-- deployed `AGENTS.md` содержит language-neutral policy;
-- runtime skills не ссылаются на source-only paths;
-- full sync идемпотентно обновляет managed assets;
-- новые instructions доступны в isolated target.
-
-Не добавлять semantic naming linter в framework regression suite.
-
-### Этап 6. Проверить source-only deployment chain
-
-Выполнить:
+Проверить:
 
 ```bash
 npm run check:syntax --silent
 npm run test:install-sync --silent
-npm run test:mb-doctor --silent
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
 ```
 
-Source-only count должен быть `0`.
+Source-only count должен остаться `0`. Установку проверить в изолированных
+install-only и bootstrap targets через `scripts/install-framework.mjs`.
 
-Проверить isolated targets:
-
-```bash
-tmp_target="$(mktemp -d)"
-
-node scripts/install-framework.mjs \
-  --skill '*' \
-  --target "$tmp_target/install-only" \
-  --yes
-
-node scripts/install-framework.mjs \
-  --bootstrap \
-  --target "$tmp_target/bootstrap" \
-  --yes
-```
-
-В `install-only` проверить generated `.agents/skills/*/SKILL.md` и
-`.claude/skills/*/SKILL.md`. В `bootstrap` дополнительно проверить deployed
-`AGENTS.md` и Memory Bank architecture routing.
-
-## 12. Планируемый change surface
-
-Обязательные canonical runtime sources:
-
-```text
-skills/_shared/references/deployable/AGENTS.md
-skills/_shared/references/commands/map-codebase.md
-skills/_shared/references/commands/spec-design.md
-skills/_shared/references/commands/feature-to-tasks.md
-skills/_shared/references/commands/review-tasks-plan.md
-skills/_shared/references/commands/exe.md
-skills/_shared/references/commands/verify.md
-```
-
-Regression:
-
-```text
-scripts/test-install-sync.mjs
-```
-
-Документация только при необходимости синхронизации публичного описания:
-
-```text
-howItWorks.md
-```
-
-Не планируются:
-
-```text
-scripts/install-framework.mjs
-scripts/vendor-shared.mjs
-task schema
-mb-lint / mb-doctor naming rules
-new workflow reference
-new naming registry
-generated .agents/.claude/.memory-bank files
-package-local shared-* files
-```
-
-## 13. Acceptance criteria
+## 9. Acceptance criteria
 
 Изменение готово, когда:
 
-- fresh runtime-агент понимает, что полный path является context surface;
-- агент может найти принятый naming profile значимого code root;
-- новые authored paths выражают owner, subject/capability и role совместно, а
-  не обязательно только basename;
-- технические layer-папки не создаются автоматически;
-- semantic и framework-required nesting сохраняется;
-- generic names разрешаются только по path/framework/profile semantics;
-- unique basename и universal max depth не стали глобальными invariants;
-- разные ecosystems могут использовать разные согласованные profiles;
-- brownfield naming не становится основанием для opportunistic mass rename;
-- project-native validator используется только когда существует;
-- semantic cohesion не объявляется механически доказанной;
+- fresh runtime-агент рассматривает полный путь как единую context surface;
+- новые authored paths используют минимально необходимую вложенность;
+- каждый необязательный сегмент добавляет устойчивый смысл;
+- directory context не дублируется в filename механически;
+- justified symbol/component/tooling identity может сохранять повторение;
+- reserved prefixes, suffixes и compound extensions не повреждаются;
+- filesystem path не заставляет URL, import/module path, package export и build
+  target совпадать;
+- framework, route, package, namespace и project conventions сохраняются;
+- configured generator и scaffold conventions сохраняются;
+- generic и повторяющиеся filenames не запрещены глобально;
+- brownfield policy не приводит к opportunistic rename;
+- отсутствие отдельного naming rule или validator не блокирует исполнение;
+- material path decisions используют существующую architecture authority;
 - task schema, statuses, verdicts, gates, ownership, blockers, stop conditions
   и resume routes не изменились;
-- Codex и Claude получают эквивалентное runtime behavior;
-- isolated install/bootstrap подтверждает доступность policy в target;
+- policy доступна runtime-агенту после isolated install/bootstrap;
 - source-only tree сохраняет `shared-*` count `0`.
 
-## 14. Non-goals
+## 10. Non-goals
 
-- глобальная уникальность basenames;
+- naming profile для каждого code root;
 - единая naming grammar для всех языков;
-- глобальный числовой limit глубины;
+- глобальная уникальность filenames;
+- глобальный числовой depth limit;
 - flattening framework/module/route/package trees;
-- обязательный context prefix в каждом basename;
-- максимально длинные имена;
+- максимально длинные или автономные filenames;
+- принудительное совпадение filesystem, URL, import/module, export и target
+  identities;
 - per-file ownership registry;
-- универсальный semantic naming validator;
-- автоматическая оценка cohesion по имени файла;
+- universal naming/structure validator;
+- repository-wide naming audit;
 - новый lifecycle, status, task field, protocol или gate;
 - массовая миграция существующего кода;
-- обязательная co-location framework entrypoint и business logic;
 - изменение installer architecture.
+
+## 11. Межстековые риски и опорные варианты
+
+Policy должна обходить следующие риски:
+
+- поломка import/module/public API при создании, перемещении или переименовании
+  файла;
+- ложное зеркалирование filesystem path в URL, package export, module path или
+  build target;
+- повреждение reserved filenames, compound extensions и tool discovery;
+- потеря route, layout, server/client, visibility, package или workspace
+  semantics ради меньшей вложенности;
+- игнорирование manifests, resolvers, generator ownership или registration,
+  расположенных вне соседней папки;
+- искусственное назначение единственного business owner shared или
+  cross-platform коду;
+- opportunistic brownfield migration и case-only rename с разным поведением на
+  case-sensitive и case-insensitive filesystems.
+
+Опорные варианты нужны как compatibility coverage, а не как naming profiles:
+
+| Стек | Сохраняемая semantics | Типичный риск |
+|---|---|---|
+| Python / FastAPI | package/import boundaries, `APIRouter` composition, `pyproject.toml`, tests и migrations conventions | принять filesystem layout за URL routing либо разрушить imports |
+| Node.js / TypeScript | ESM/CJS mode, `package.json` `exports`/`imports`, workspace и module resolution, compound filenames | принять внутренний файл за публичный import path либо повредить tool discovery |
+| Svelte / SvelteKit | filesystem routing в `src/routes`, `+` entrypoints, route groups, layout inheritance, `$lib` и server-only boundaries | flattening меняет URL/layout или переносит server-only code в client graph |
+| Rust / Cargo | crate/workspace boundaries, module tree, visibility, `lib.rs`/`main.rs`, `src/bin`, `tests`, `examples` и `benches` | путь перестаёт соответствовать module declaration или Cargo target |
+| Rust / Dioxus | Cargo semantics, `Routable` enum, component modules, Fullstack server/client targets и применимый `dx` scaffold | ошибочно вывести URL из filesystem либо смешать client/server build boundaries |
+| Generator-managed code | configured scaffold, regeneration path и tool-owned registration | ручная оптимизация пути расходится с повторной генерацией |
+
+Эта coverage matrix не требует отдельного runtime обхода по стеку. Агент
+применяет только фактически обнаруженные language, framework и tooling
+contracts текущего проекта.
