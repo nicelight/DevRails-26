@@ -53,6 +53,12 @@ Point-of-use preflight must confirm:
   required public boundaries, preserves source-of-truth and dependency
   direction, creates no unaccepted cross-module contract or forbidden
   command/write bypass, and honors linked orchestration-placement rules;
+- before creating, moving, or renaming a project-authored source file, resolve
+  its applicable ownership, reuse, or tooling boundary; inspect the nearest
+  relevant local pattern and governing manifests, configuration, resolution,
+  or registration; preserve framework placement, required or reserved filename
+  parts, import/module identity, public path, package export, route, and build
+  target; then choose the minimum complete path with sufficient durable context;
 - the tier-required existing protocol is coherent, or every missing protocol
   file can be initialized from its framework-owned template before task start.
 
@@ -102,6 +108,11 @@ replay it.
   stops work.
 - Preserve unrelated user changes and do not edit generated package-local
   `skills/*/{agents,references,scripts}/shared-*` files.
+- Do not opportunistically rename brownfield source. A move or rename must be
+  required by the selected outcome, remain inside semantic and hard scopes, and
+  preserve applicable imports, module declarations, references, exports,
+  manifests/resolution, registration, routing, build targets, and
+  case-sensitive compatibility.
 - Do not change tier in place; tier is embedded in task identity, file path,
   index, and dependencies.
 - Selecting or starting a task does not grant an unapproved production,

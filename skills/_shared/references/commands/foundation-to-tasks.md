@@ -164,6 +164,17 @@ When `Foundation Required: true`:
 7. Index every record exactly once and keep Foundation records before product
    records.
 
+When a Foundation plan or advisory expected change surface names a new, moved,
+or renamed project-authored source path, treat its code root, directories, and
+complete filename as one context surface. Apply the accepted owner/code root and
+naming/path convention, the nearest relevant local pattern when available, and
+governing framework/tooling/generator/scaffold semantics. Use only necessary
+semantic nesting, avoid mechanical directory/filename repetition, preserve
+required or reserved filename parts, and do not infer import/module, public
+path, package export, route, or build-target identities from name similarity.
+Leave an immaterial exact filename choice to `/exe`; do not turn it into a task
+blocker or hard `write_boundary`.
+
 Task-record rules:
 - use `feature: "FT-000"`, normally `reqs: ["REQ-000"]`, and `W0` only for
   executable-baseline work; later probe/integration waves may use `W1+`;
@@ -189,6 +200,10 @@ Before handoff, prove:
 - accepted composition/module/slice boundaries were applied without inventing
   layer-centric scaffolding, extra slices, or a hard write boundary copied from
   a code root;
+- advisory authored-source paths preserve accepted owner/code-root,
+  naming/path, framework/tooling/generator/scaffold, and executable-identity
+  semantics; any remaining exact filename choice is immaterial execution
+  discretion;
 - canonical-path uniqueness and spec-index purity;
 - every T2/T3 card satisfies the complete single-card handoff contract;
 - Gate Anchors name the final gate or `not_required` truthfully;

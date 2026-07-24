@@ -285,6 +285,15 @@ Choose the smallest evidence-backed shape. Do not create
 do not churn an existing useful split. Keep detailed API schemas, lifecycle
 machines, message envelopes, and feature behavior out of `architecture/*`.
 
+When designing code roots or module boundaries, record in the existing
+`.memory-bank/architecture/system-architecture.md` beside the affected root or
+boundary only a non-obvious or material naming/path convention that affects a
+public path, import/module identity, package export, namespace, ownership, build
+target, or later structure. Do not record routine ecosystem/project conventions
+or create a naming profile, registry, artifact, status, or gate. An unresolved
+material boundary uses the existing operator-decision route; ordinary local
+naming remains execution discretion.
+
 When the accepted target is a capability-sliced modular monolith, the existing
 architecture artifacts must make that target directly usable downstream:
 - `system-architecture.md` identifies the single deployable, composition root,

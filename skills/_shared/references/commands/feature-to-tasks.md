@@ -150,6 +150,18 @@ Constitution constraints, source/normative inputs, invariants, verification
 targets, and direct canonical links. A concise provisional outline may be kept
 in `plan.md` only when it improves resume safety; it is not another task model.
 
+When the expected advisory change surface names a new, moved, or renamed
+project-authored source path, treat its code root, directories, and complete
+filename as one context surface. Apply the accepted owner/code root and
+naming/path convention, the nearest relevant local pattern when available, and
+governing framework/tooling/generator/scaffold semantics. Use only necessary
+semantic nesting, avoid mechanical directory/filename repetition, preserve
+required or reserved filename parts, and do not infer import/module, public
+path, package export, route, or build-target identities from name similarity.
+Carry an evidence-backed expected path through existing plan fields and advisory
+`touched_files`; leave an immaterial exact filename choice to `/exe` instead of
+turning it into a blocker, new task field, or hard `write_boundary`.
+
 When the accepted architecture defines modules or capability slices, the plan
 also identifies the primary owning slice/module and code root for each planned
 outcome. A cross-slice outcome names one orchestration owner, the public
@@ -300,6 +312,10 @@ Before handoff:
   eligible cross-slice orchestration owner when relevant, forbidden technical
   placements for that orchestration, and proof path directly from the card and
   its linked specs;
+- when advisory change surfaces name project-authored source, confirm the
+  proposed paths preserve accepted owner/code-root, naming/path,
+  framework/tooling/generator/scaffold, and executable-identity semantics; any
+  remaining exact filename choice must be immaterial execution discretion;
 - confirm every accepted operator decision is durably applied and no material
   branch remains unresolved.
 

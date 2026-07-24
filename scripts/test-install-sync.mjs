@@ -304,6 +304,18 @@ try {
     freshAgents === expectedDeployableAgents,
     'Fresh bootstrap AGENTS.md differs from its canonical deployable source.',
   );
+  assert(
+    normalizedFreshAgents.includes(
+      'Treat `package/workspace/code root + directories + complete filename` as one context surface for project-authored source.',
+    )
+      && normalizedFreshAgents.includes(
+        'Filesystem paths, import/module paths, package exports, URLs/routes, and build targets are distinct executable identities',
+      )
+      && normalizedFreshAgents.includes(
+        'Do not opportunistically rename brownfield source.',
+      ),
+    'Fresh bootstrap AGENTS.md does not expose the source-path semantics policy.',
+  );
   const freshMemoryBankIndex = readTarget('.memory-bank/index.md');
   const deployedOrchestratorRole = readTarget('.memory-bank/roles/orchestrator.md');
   assert(
@@ -873,6 +885,27 @@ try {
       `${runtimeRoot} design skills do not keep architecture enforcement selective and runtime proof evidence-driven.`,
     );
     assert(
+      normalizedSpecDesign.includes(
+        'record in the existing `.memory-bank/architecture/system-architecture.md` beside the affected root or boundary only a non-obvious or material naming/path convention',
+      )
+        && normalizedSpecDesign.includes(
+          'ordinary local naming remains execution discretion.',
+        )
+        && normalizedFoundationToTasks.includes(
+          'When a Foundation plan or advisory expected change surface names a new, moved, or renamed project-authored source path',
+        )
+        && normalizedFoundationToTasks.includes(
+          'Leave an immaterial exact filename choice to `/exe`; do not turn it into a task blocker or hard `write_boundary`.',
+        )
+        && normalizedFeatureToTasks.includes(
+          'When the expected advisory change surface names a new, moved, or renamed project-authored source path',
+        )
+        && normalizedFeatureToTasks.includes(
+          'leave an immaterial exact filename choice to `/exe` instead of turning it into a blocker, new task field, or hard `write_boundary`.',
+        ),
+      `${runtimeRoot} design/task-planning skills do not preserve source-path semantics and execution discretion.`,
+    );
+    assert(
       normalizedFeatureToTasks.includes(
         'carry an applicable existing project-native architecture check through `gates` or `verification_targets`',
         )
@@ -899,6 +932,12 @@ try {
         )
         && normalizedExe.includes(
           'If work requires changing accepted write authority, public boundary, source of truth, orchestration owner, or dependency direction, route it to `/spec-design`.',
+        )
+        && normalizedExe.includes(
+          'before creating, moving, or renaming a project-authored source file, resolve its applicable ownership, reuse, or tooling boundary',
+        )
+        && normalizedExe.includes(
+          'Do not opportunistically rename brownfield source.',
         ),
       `${runtimeRoot}/exe does not enforce accepted boundaries at point of use.`,
     );

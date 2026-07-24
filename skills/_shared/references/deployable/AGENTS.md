@@ -88,6 +88,30 @@ Do not report speculative observations that were rejected before becoming real
 candidates. Always report evidenced defects and any issue affecting the
 requested verdict.
 
+## Source path semantics
+
+- Treat `package/workspace/code root + directories + complete filename` as one
+  context surface for project-authored source.
+- Preserve language/framework/tooling contracts, configured generators and
+  applicable project scaffolds, accepted architecture/project conventions, and
+  then observed local convention. Apply the general path heuristic only after
+  those authorities.
+- Within accepted executable boundaries, use the minimum necessary path
+  structure with enough durable context to identify the relevant owner,
+  boundary, subject/capability, or technical role. Each optional segment should
+  add durable meaning.
+- Do not repeat directory context mechanically in the filename. Repetition is
+  valid when required by an exported/public symbol, component identity, tooling,
+  or another evidenced convention.
+- Generic or reserved filenames are valid when the full path, framework, or
+  project convention makes their role clear. Preserve required prefixes,
+  suffixes, and compound extensions.
+- Filesystem paths, import/module paths, package exports, URLs/routes, and build
+  targets are distinct executable identities; do not force them to match unless
+  the applicable architecture or ecosystem contract does.
+- Do not opportunistically rename brownfield source. Rename only when required
+  by the current task outcome and inside its semantic and hard scope.
+
 ## Communication
 
 - Always answer this user in Russian, while preserving stable English technical terms and established expressions when they are conventional in software engineering, product, or workflow contexts.
