@@ -50,8 +50,9 @@ jobs:
           node /tmp/devrails-integration-build.mjs wave2
           python - <<'PY'
           from pathlib import Path
-          path = Path('skills/_shared/references/commands/autonomous.md')
-          text = path.read_text()
+
+          autonomous = Path('skills/_shared/references/commands/autonomous.md')
+          text = autonomous.read_text()
           replacements = [
               (
                   'and optional task\n`runtime.json`',
@@ -66,7 +67,29 @@ jobs:
               if old not in text:
                   raise SystemExit(f'autonomous normalization marker not found: {old!r}')
               text = text.replace(old, new, 1)
-          path.write_text(text)
+          autonomous.write_text(text)
+
+          wave2_test = Path('scripts/test-wave2-runtime.mjs')
+          test_text = wave2_test.read_text()
+          test_replacements = [
+              (
+                  "const redVerify = readRepo('skills/_shared/references/commands/red-verify.md');",
+                  "const redVerify = readRepo('skills/_shared/references/commands/red-verify.md');\n  const normalizedRedVerify = redVerify.replace(/\\s+/g, ' ');",
+              ),
+              (
+                  "redVerify.includes('Feature mode does not create `runtime.json`')",
+                  "normalizedRedVerify.includes('Feature mode does not create `runtime.json`: delegated-agent runtime is task-scoped.')",
+              ),
+              (
+                  "redVerify.includes('FT-<ID>-S-SECURITY-REVIEW-final-report-docs-01.md')",
+                  "redVerify.includes('S-SECURITY-REVIEW-final-report-docs-01.md')\n      && redVerify.includes('/app-security')",
+              ),
+          ]
+          for old, new in test_replacements:
+              if old not in test_text:
+                  raise SystemExit(f'wave2 smoke marker not found: {old!r}')
+              test_text = test_text.replace(old, new, 1)
+          wave2_test.write_text(test_text)
           PY
           git diff --check
           npm run check:syntax --silent
