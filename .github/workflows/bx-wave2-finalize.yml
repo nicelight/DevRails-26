@@ -1,0 +1,110 @@
+name: DevRails Wave 2 finalize
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bx-wave2-finalize
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.head_ref == 'bx-integration'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging commit
+        uses: actions/checkout@v4
+        with:
+          ref: bx-integration
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build, verify, and publish Wave 2
+        id: wave2
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          exec > >(tee /tmp/devrails-wave2-finalize.log) 2>&1
+          STAGING_SHA="$(git rev-parse HEAD)"
+          WAVE1_SHA="$(git rev-parse HEAD^)"
+          test "$WAVE1_SHA" = '85c8451432978b17f5eed1f278b1872908533254'
+          gh api "repos/${GITHUB_REPOSITORY}/git/blobs/9ae132700d7198a94a524804a6c664e673ff97d7" --jq .content \
+            | tr -d '\n' | base64 -d > /tmp/devrails-integration-build.mjs
+          node --check /tmp/devrails-integration-build.mjs
+          git fetch origin main
+          git reset --hard "$WAVE1_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          node /tmp/devrails-integration-build.mjs wave2
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('skills/_shared/references/commands/autonomous.md')
+          text = path.read_text()
+          replacements = [
+              (
+                  'and optional task\n`runtime.json`',
+                  'and optional task `runtime.json`',
+              ),
+              (
+                  'and any late final\nnotification before waiting again',
+                  'and any late final notification before waiting again',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f'autonomous normalization marker not found: {old!r}')
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+          PY
+          git diff --check
+          npm run check:syntax --silent
+          npm run test:agent-runtime --silent
+          npm run test:wave2-runtime --silent
+          npm run test:install-sync --silent
+          npm run test:mb-doctor --silent
+          test "$(find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l)" -eq 0
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat: add lazy execution lenses and systematic debug'
+          test "$(git rev-parse HEAD^)" = "$WAVE1_SHA"
+          test "$(git rev-list --count origin/main..HEAD)" -eq 2
+          test "$(git merge-base origin/main HEAD)" = "$(git rev-parse origin/main)"
+          test -f skills/_shared/references/protocols/runtime-template.md
+          test -f skills/_shared/references/commands/debug.md
+          test -f skills/_shared/references/commands/doubt.md
+          test -f skills/_shared/references/commands/ui-ux.md
+          test -f skills/_shared/references/commands/ddd.md
+          test -f skills/_shared/references/commands/app-security.md
+          test -f skills/_shared/references/commands/performance.md
+          test -f scripts/test-agent-runtime.mjs
+          test -f scripts/test-wave2-runtime.mjs
+          test ! -e .stage
+          test ! -e .github/workflows/bx-wave2-finalize.yml
+          git diff --name-only origin/main..HEAD | grep -Fx 'skills/_shared/references/commands/autonomous.md'
+          git diff --name-only origin/main..HEAD | grep -Fx 'skills/_shared/references/commands/red-verify.md'
+          git diff --name-only origin/main..HEAD | grep -Fx 'skills/_shared/references/protocols/runtime-template.md'
+          git diff --name-only origin/main..HEAD | grep -Fx 'skills/_shared/references/commands/debug.md'
+          git fetch origin bx-integration
+          test "$(git rev-parse origin/bx-integration)" = "$STAGING_SHA"
+          WAVE2_SHA="$(git rev-parse HEAD)"
+          git log --oneline --decorate -3
+          git push --force-with-lease=refs/heads/bx-integration:"$STAGING_SHA" origin "$WAVE2_SHA:refs/heads/bx-integration"
+
+      - name: Upload Wave 2 diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bx-wave2-finalize-diagnostics
+          path: /tmp/devrails-wave2-finalize.log
