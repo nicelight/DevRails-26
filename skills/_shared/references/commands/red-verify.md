@@ -37,6 +37,9 @@ surface, tests/runtime artifacts, tier-selected protocol, direct task-linked
 canonical SDD specs for T2/T3, and only the additional provenance-linked
 context needed to assess system impact.
 
+When specialized reviewer delegation is selected or task `runtime.json` exists,
+also read `.memory-bank/workflows/execute-loop.md`.
+
 For per-task T2/T3, feature links and `spec-index.md` alone do not replace
 direct task links. Missing direct applicable coverage is a blocker, not a basis
 for semantic-pass.
@@ -95,6 +98,49 @@ The following are examples, not a mandatory or exhaustive checklist/order:
 
 The verifier may pursue unexpected hypotheses when evidence justifies them.
 </agent_discretion>
+
+<specialized_reviewers>
+`/red-verify` may use the read-only Security Reviewer and Compliance Reviewer
+specializations in `.memory-bank/roles/reviewer.md` only for concrete applicable
+risk in the reviewed task/change.
+
+- Security Reviewer is selected for an actual authentication, authorization,
+  trust-boundary, untrusted-input, secret, privilege, sensitive-data, or linked
+  security-contract surface.
+- Compliance Reviewer is selected only when an explicit applicable project,
+  task/spec, policy, privacy, licensing, regulatory, or audit rule governs the
+  surface. Generic best practice is not compliance authority.
+- T0/T1 normally use neither mode; apparent security/compliance scope growth
+  first follows the existing tier-rebuild route.
+- If both are justified, run Security Reviewer then Compliance Reviewer
+  sequentially.
+
+For task mode, initialize or reconcile `.protocols/<TASK_ID>/runtime.json` from
+the JSON object in `.memory-bank/templates/protocols/runtime-template.md`. Use
+slots `security_reviewer` and `compliance_reviewer`, persist `agent_id` before
+waiting, set `waiting_for`, inspect late final notification before respawn,
+persist findings before `completed`, and close/finalize the agent under the
+runtime-neutral lifecycle in `execute-loop.md`. Persist task findings to:
+- `.tasks/<TASK_ID>/<TASK_ID>-S-SECURITY-REVIEW-final-report-docs-01.md`;
+- `.tasks/<TASK_ID>/<TASK_ID>-S-COMPLIANCE-REVIEW-final-report-docs-01.md`.
+
+Feature mode does not create `runtime.json`: delegated-agent runtime is
+task-scoped. When a feature-level Security or Compliance Reviewer is justified,
+run it sequentially in a fresh read-only context and persist findings under the
+existing feature evidence owner:
+- `.tasks/FT-<ID>/FT-<ID>-S-SECURITY-REVIEW-final-report-docs-01.md`;
+- `.tasks/FT-<ID>/FT-<ID>-S-COMPLIANCE-REVIEW-final-report-docs-01.md`.
+These reports support the existing feature red-verification report; they do not
+create a task record, task status, or second feature protocol.
+
+On resume, consume durable findings from `completed|closed` slots without
+rerunning the reviewer. Resume `running|waiting` through the same `agent_id`.
+Respawn only when no final report exists and review remains required and safe.
+
+Reviewer findings are supporting evidence, never `SEMANTIC_VERDICT`. This
+command independently validates each finding and owns the final hostile model
+and semantic verdict. Reviewers never edit files or lifecycle state.
+</specialized_reviewers>
 
 <required_outputs>
 Per-task mode writes:

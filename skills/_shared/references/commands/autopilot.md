@@ -73,6 +73,10 @@ Do not mutate task statuses to represent this invalidation.
 - Canonical execution is sequential. Select and finish one task's execute,
   verification, lifecycle decision, and evidence write before selecting the
   next.
+- Task-scoped Implementer and specialized Reviewer agents use the optional
+  `.protocols/<TASK_ID>/runtime.json` contract in `execute-loop.md`. Only one
+  slot may be `running|waiting`; agent runtime status never changes task status
+  or adds a scheduler stage.
 - Run each selected task in a fresh child execution context/session. Resume an
   interrupted task only from reconciled durable evidence, not from inherited
   conversational state.
@@ -126,9 +130,23 @@ in the task schema or use another stage vocabulary.
 
 At scheduler start, after interruption, and before every promotion/selection
 cycle, revalidate the input contract, then reread the run checkpoint and durable
-task evidence. Recovery order is checkpoint, `in_progress` tasks, then
+task evidence, including optional task `runtime.json`. Recovery order is
+checkpoint, delegated-agent runtime, `in_progress` tasks, then
 promotion/selection. Do not overwrite a checkpoint or start new work until
 durable evidence proves the earlier action complete or safely superseded.
+
+For the selected task, reconcile every non-null runtime slot before invoking a
+child stage. A durable final report for `completed|closed` means the delegated
+work is complete: consume it, finalize close when supported, and never spawn a
+replacement. For `running|waiting`, inspect the same opaque `agent_id` and late final notification before any respawn. Replace `failed` or stale/missing
+identity only when no final report exists, the owning stage is still required,
+and replay is safe.
+
+An interrupted `/exe` with a completed Implementer handoff advances to verify
+instead of relaunching implementation. An interrupted `/verify` or
+`/red-verify` may be reinvoked to consume already completed reviewer findings,
+but that command must not respawn the closed reviewer. Keep the existing
+checkpoint stage vocabulary unchanged.
 
 ### Checkpoint recovery
 

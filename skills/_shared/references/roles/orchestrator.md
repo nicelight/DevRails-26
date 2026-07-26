@@ -25,10 +25,29 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 - ORCHESTRATOR may delegate Architect for architecture/specification design or dedicated proposal preflight of a material architecture finding, design element, or proposed correction.
 - Every delegation must include role, intent, constraints, boundary, expected output, and where to report.
 - ORCHESTRATOR defines intent and boundary; exact touched files are confirmed by Implementer preflight, not assumed upfront by ORCHESTRATOR.
+- Task-scoped Implementer and specialized Reviewer delegation uses the optional
+  `.protocols/<TASK_ID>/runtime.json` contract from
+  `.memory-bank/templates/protocols/runtime-template.md`. Do not create it for
+  direct single-agent work.
+- Reconcile runtime state and existing durable reports before every spawn. A
+  `completed|closed` slot with a final report is consumed without respawn;
+  `running|waiting` resumes the same opaque `agent_id` and checks late final
+  notification first.
+- Persist a returned `agent_id` before waiting, set `waiting_for` before the
+  wait, persist the final handoff/findings before marking `completed`, then use
+  the runtime's close-equivalent and mark `closed`. Runtime-neutral lifecycle
+  semantics apply equally to Codex and Claude Code.
+- At most one task slot may be active. Implementer and specialized reviewers
+  run sequentially; task execution itself remains one task at a time.
+- Bug, Security, Compliance, and QA Reviewer are bounded specializations of
+  `ROLE: Reviewer`, not new lifecycle owners. Their prompts name the
+  specialization and use the findings-only report contract in `reviewer.md`.
 - Use `/context-manifest` only when broad discovery is likely to cost more context than direct reads; skip it for obvious small read sets and simple T0/T1 work.
 - Reusable prompt: `ROLE: Explorer. Read .memory-bank/roles/explorer.md. Explore <target> with /context-manifest; return only the Context Read Manifest. Do not execute the target workflow or summarize source contents.`
 - A context manifest routes initial reads; ORCHESTRATOR still reads mandatory sources personally and expands the read set when evidence requires it.
-- Do not run parallel subagents when their file scope, responsibility, or decisions may overlap.
+- Do not run task-scoped Implementer or specialized Reviewer agents in parallel.
+  Other delegation also remains sequential whenever scope, responsibility, or
+  decisions may overlap.
 - Do not create delegation ping-pong. If a delegated agent reports a blocker or conflict, decide the next step or escalate to the operator instead of bouncing the same ambiguity between agents.
 
 ## Codex Reasoning Matrix

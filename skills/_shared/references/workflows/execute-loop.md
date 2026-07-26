@@ -114,6 +114,50 @@ claude -p --no-session-persistence --permission-mode acceptEdits --model opus \
   'TASK_ID=TASK-123-T2-FT-001-W1. Use the installed /verify project skill, and /red-verify when task.tier is T3. Read AGENTS.md, the indexed JSON task record including runtime_context, .memory-bank/workflows/tier-policy.md, tier-selected execution handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked canonical specs. Respect task gates, verification targets, evidence requirements, scope, and stop conditions. Task/spec are source of truth. Route only by task.tier: T0/T1 compact run.md; T2 functional PASS makes closure eligible without per-task red-verify; T3 functional PASS routes to per-task red-verify and exact HUMAN_CHECKPOINT: done. Run mb-doctor --strict before progression.'
 ~~~
 
+## Task-scoped delegated-agent runtime
+
+Direct single-agent execution needs no extra state. When a task delegates an
+Implementer or a specialized Bug, Security, Compliance, or QA Reviewer, create
+or reuse `.protocols/<TASK_ID>/runtime.json` from
+`.memory-bank/templates/protocols/runtime-template.md`.
+
+This file is operational resume state only. It is not Memory Bank, a task
+registry/schema extension, scheduler state, or task lifecycle authority.
+
+Lifecycle is runtime-neutral:
+
+1. Reconcile the slot and existing durable task report before spawning.
+2. Spawn through the current runtime's native mechanism and immediately persist
+   its opaque `agent_id`, assigned role, and `status: running`.
+3. Before waiting, set the task and slot `waiting_for` fields and mark the slot
+   `waiting`.
+4. On final response or late notification, persist the complete handoff/findings
+   in the existing task protocol or `.tasks/<TASK_ID>/` before marking the slot
+   `completed` and clearing `waiting_for`.
+5. Explicitly close/terminate the agent when the runtime supports it, then mark
+   `closed`. A runtime without an explicit close operation treats `completed`
+   as terminal and never respawns that agent.
+
+Recovery always reads `runtime.json` plus durable reports first:
+
+- `closed|completed` with a final report: consume it; do not rerun the agent;
+- `running|waiting`: inspect the same `agent_id` and late final notification,
+  then resume/wait instead of spawning a duplicate; consume late final notification before respawn;
+- `failed` or stale/missing identity: replace only if the owning stage remains
+  required, no final report exists, and replay is safe;
+- final report present with stale `waiting_for`: the report wins; clear the wait,
+  finalize/close the recorded agent, and continue.
+
+At most one runtime slot may be `running|waiting`. Implementer, Bug Reviewer, QA
+Reviewer, Security Reviewer, and Compliance Reviewer are therefore invoked
+sequentially. Their runtime status never changes the indexed task status.
+
+Specialized reviewers follow `.memory-bank/roles/reviewer.md`, return findings
+only, and do not own functional or semantic verdicts. `/verify` may consume Bug
+and QA findings; `/red-verify` may consume Security and Compliance findings.
+Reviewer use is risk-selected under tier policy and is not mandatory for safe
+T0 work.
+
 ## Parallel vs sequential
 - Canonical execution is sequential: finish one task's execute/verify/closure
   decision before selecting the next task.

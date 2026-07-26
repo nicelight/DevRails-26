@@ -60,6 +60,10 @@ state, not a second task registry.
   `.memory-bank/workflows/execute-loop.md`, and
   `.memory-bank/workflows/mb-sync.md`.
 - Canonical queue execution is sequential.
+- Task-scoped Implementer and specialized Reviewer agents use the optional
+  `.protocols/<TASK_ID>/runtime.json` contract from `execute-loop.md`. Only
+  one slot may be `running|waiting`; runtime slot state never changes task
+  lifecycle or adds an autonomous stage.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
   isolation rules. Never infer independence from advisory `touched_files`.
 - Queue/task metadata comes only from indexed JSON task records. Preserve task
@@ -203,9 +207,16 @@ Missing/failing lint or doctor uses `HALT_QUALITY_GATES`.
 `/mb-sync` boundary; never invoke `/autopilot` or mutate a product task.
 
 Before new work, reconcile every FT-000 `in_progress` task from its
-authoritative record and current-attempt protocol/handoff/verdict. Resume the
-first incomplete required child action without replaying a possibly completed
-unsafe side effect; ambiguity or conflicting product-task ownership uses the
+authoritative record, current-attempt protocol/handoff/verdict, and optional task
+`runtime.json`. Reconcile each non-null slot before invoking a child: consume a
+durable final report from `completed|closed` without respawn; for
+`running|waiting`, inspect the same opaque `agent_id` and any late final
+notification before waiting again; replace a failed/stale identity only when no
+final report exists, the stage remains required, and replay is safe. A completed
+Implementer handoff advances to the first incomplete verification/closure stage
+instead of restarting `/exe`. Resume the first incomplete required child action
+without replaying a possibly completed unsafe side effect; ambiguity, missing
+completed-agent evidence, or conflicting product-task ownership uses the
 existing exact halt contract.
 
 With no unresolved FT-000 task and a current strict-doctor pass, execute the

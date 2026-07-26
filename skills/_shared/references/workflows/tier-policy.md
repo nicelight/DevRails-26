@@ -79,6 +79,37 @@ fallback, and reporting are fully defined in the installed `/exe` and
 `/verify` runtime commands. No receipt task field, registry, status, cache, or
 artifact family exists.
 
+## Specialized Reviewer Routing
+
+Bug, Security, Compliance, and QA Reviewer are optional read-only Reviewer
+specializations. They return findings to the owning command and never change
+task status, emit the command's verdict, create BUG/task records, or become a
+closure gate by themselves.
+
+Selection is evidence-driven, not a fixed checklist:
+
+- `/verify` may delegate Bug Reviewer for non-trivial correctness, branching,
+  state/error/retry, or regression risk that benefits from an independent defect
+  hunt.
+- `/verify` may delegate QA Reviewer when acceptance depends on observable
+  runtime, UI, API, integration, persistence, or recovery behavior and a bounded
+  independent exercise materially improves the proof.
+- `/red-verify` may delegate Security Reviewer when the actual task/change
+  touches authentication, authorization, trust boundaries, untrusted input,
+  secrets, privilege, sensitive data, or another concrete security contract.
+- `/red-verify` may delegate Compliance Reviewer only when an explicit
+  applicable Constitution, AGENTS, task/spec, policy, privacy, licensing,
+  regulatory, or audit rule governs the reviewed surface.
+
+Do not invoke a reviewer merely to fill a category. Safe T0 work has no mandatory specialized reviewer procedure. T1 uses one only for a concrete
+independent-review need; T2/T3 still select only applicable specializations.
+
+When more than one reviewer is justified, run them sequentially through the
+task-scoped runtime contract in `execute-loop.md`. Their reports are supporting
+evidence. `/verify` independently owns `VERDICT`; `/red-verify` independently
+owns `SEMANTIC_VERDICT`; the scheduler or explicit owner retains lifecycle
+authority.
+
 ## Task Start and Status Transition Modes
 
 The caller selects one concrete task. `/exe` never selects from the queue and is

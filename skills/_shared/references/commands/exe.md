@@ -19,6 +19,8 @@ chooses another task.
 Require and resolve:
 - `.memory-bank/tasks/index.json` and exactly one matching indexed task record;
 - `.memory-bank/workflows/tier-policy.md`;
+- `.memory-bank/workflows/execute-loop.md` only when task-scoped delegation is
+  used or `.protocols/<TASK_ID>/runtime.json` already exists;
 - the task's direct feature/REQ context needed to interpret its outcome;
 - direct task-linked canonical SDD specs and executable constraints;
 - behavior specs only when linked in `source_artifacts` and useful as
@@ -97,6 +99,12 @@ replay it.
   was durably written. Otherwise leave lifecycle unchanged for `/verify`, the
   scheduler, or explicit owner.
 - T2/T3 task closure is never owned by `/exe`.
+- Direct top-level `/exe` creates no delegated-agent runtime state. When the
+  caller launches `/exe` as a task-scoped Implementer agent, the caller owns the
+  `implementer` slot in `.protocols/<TASK_ID>/runtime.json`, persists its opaque
+  `agent_id` before waiting, and follows the spawn/wait/complete/close recovery
+  contract in `execute-loop.md`. `/exe` writes the durable implementation
+  handoff before returning its final response and never mutates reviewer slots.
 - `touched_files` is advisory and non-exhaustive. Confirm and record the actual
   change surface; extra files are allowed only for the same outcome/spec/tier
   and inside hard scopes.
@@ -176,6 +184,10 @@ Initialize only missing protocol files from these framework-owned shapes:
 - T2/T3 `verification.md` ->
   `.memory-bank/templates/protocols/verification-template.md`;
 - T2/T3 `handoff.md` -> `.memory-bank/templates/protocols/handoff-template.md`.
+- delegated-agent `runtime.json` -> JSON object in
+  `.memory-bank/templates/protocols/runtime-template.md`; initialize it only on
+  first actual task-scoped delegation. It is task-owned operational resume
+  state and never a task schema/lifecycle extension.
 
 Existing `.protocols/<TASK_ID>/` files are task-owned resume state: update them
 in place and never recopy or sync a template over them. Templates define the

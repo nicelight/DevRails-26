@@ -16,6 +16,8 @@ Expected `$ARGUMENTS`: one `TASK-NNN-TN-FT-NNN-WN`.
 Require:
 - exactly one matching indexed task record and
   `.memory-bank/workflows/tier-policy.md`;
+- `.memory-bank/workflows/execute-loop.md` when specialized reviewer delegation
+  is selected or `.protocols/<TASK_ID>/runtime.json` already exists;
 - task-linked feature/REQ material needed for this outcome;
 - direct task-linked applicable canonical SDD specs;
 - tier-selected execution protocol and implementation handoff/evidence:
@@ -94,6 +96,45 @@ path. Receipt reuse is an optional optimization, not a required verification
 phase. Coverage criteria do not prescribe a fixed checklist order or require
 irrelevant test categories.
 </agent_discretion>
+
+<specialized_reviewers>
+`/verify` may use the read-only Bug Reviewer and QA Reviewer specializations in
+`.memory-bank/roles/reviewer.md` only when their bounded independent view
+materially improves task-scoped functional proof.
+
+- Bug Reviewer targets concrete correctness/regression defects in the actual
+  change surface.
+- QA Reviewer targets observable acceptance, runtime/integration/UI/API,
+  persistence, failure, or recovery behavior.
+- Safe T0 work has no mandatory reviewer procedure. Do not invoke either mode
+  merely to fill a category or repeat evidence `/verify` can obtain directly.
+- If both are justified, run Bug Reviewer then QA Reviewer sequentially.
+
+Before each reviewer spawn, initialize or reconcile
+`.protocols/<TASK_ID>/runtime.json` from the JSON object in
+`.memory-bank/templates/protocols/runtime-template.md`. Use slots
+`bug_reviewer` and `qa`, persist `agent_id` before waiting, set `waiting_for`,
+consume late final notification before respawn, persist findings before
+`completed`, and close/finalize the agent under the runtime-neutral lifecycle in
+`execute-loop.md`.
+
+Persist the final findings before completing each slot:
+- Bug Reviewer ->
+  `.tasks/<TASK_ID>/<TASK_ID>-S-BUG-REVIEW-final-report-docs-01.md`;
+- QA Reviewer ->
+  `.tasks/<TASK_ID>/<TASK_ID>-S-QA-REVIEW-final-report-docs-01.md`.
+Use the existing file when resuming; do not create another report family.
+
+On resume, a `completed|closed` reviewer with a durable report is consumed and
+not rerun. A `running|waiting` reviewer resumes through the same `agent_id`.
+Respawn only when no final report exists and the review remains necessary and
+safe.
+
+Reviewer output is supporting evidence, never `VERDICT`. Independently inspect
+the findings and underlying evidence; a reviewer `NO_FINDINGS` cannot establish
+PASS, and a reported issue becomes FAIL or NEEDS-CLARIFICATION only under this
+command's own verdict rules. Reviewers do not edit files or task lifecycle.
+</specialized_reviewers>
 
 <required_outputs>
 Build the minimum complete verification basis from:

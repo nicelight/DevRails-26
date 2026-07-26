@@ -273,6 +273,18 @@ Do not add a second durable task-context artifact, nested duplicate context
 object, `.memory-bank/modules/`, `.memory-bank/graph/`,
 `.memory-bank/verification/`, or new task lifecycle statuses for this flow.
 
+### Delegated-agent runtime state
+
+Task-scoped delegation may add only `.protocols/<TASK_ID>/runtime.json`,
+initialized from `skills/_shared/references/protocols/runtime-template.md`. It
+stores opaque runtime agent ids, role, operational status, and `waiting_for`; it
+is not Memory Bank, task schema, task registry, scheduler state, or lifecycle.
+Bug, Security, Compliance, and QA are findings-only specializations of the
+existing read-only Reviewer role. Runtime integration touch points are
+`roles/{orchestrator,reviewer}.md`, `workflows/{execute-loop,tier-policy}.md`,
+`commands/{exe,verify,red-verify,autopilot,autonomous}.md`, and
+`scripts/test-agent-runtime.mjs`.
+
 Hard `runtime_context.write_boundary` entries use the literal project-relative
 POSIX path and segment-prefix semantics in
 `skills/_shared/references/workflows/tier-policy.md`. The same syntax is

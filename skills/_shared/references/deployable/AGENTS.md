@@ -49,6 +49,9 @@ Full role contracts live in:
 
 Delegated Explorer, Implementer, and Reviewer analyze the consequences of their
 work and report potential or evident problems.
+Bug, Security, Compliance, and QA Reviewer are findings-only specializations of
+the read-only Reviewer role. They never own task status, `/verify` verdicts, or
+`/red-verify` verdicts.
 
 ## Creator Vibe Lens
 
@@ -147,6 +150,10 @@ After finishing a meaningful unit of work:
 - Durable knowledge base: `.memory-bank/`
 - Operational artifacts: `.tasks/` (NOT part of Memory Bank)
 - Long-running plans/logs: `.protocols/`
+- Optional delegated-agent resume state:
+  `.protocols/<TASK_ID>/runtime.json`, created only when a task actually
+  delegates an Implementer or specialized Reviewer. Its agent statuses are not
+  task lifecycle statuses.
 
 ## Where skills live (don’t confuse)
 - Codex CLI reads project skills from `.agents/skills/<name>/SKILL.md` (not from `.codex/`).
@@ -162,6 +169,11 @@ After finishing a meaningful unit of work:
   protocol and neutral current Execution Attempt before writing
   `ready -> in_progress`; it never selects queue work.
 - Delegation follows `.memory-bank/roles/orchestrator.md`; each delegated agent follows its assigned role contract.
+- Task-scoped delegation follows `.memory-bank/workflows/execute-loop.md` and
+  `.memory-bank/templates/protocols/runtime-template.md`: persist opaque
+  `agent_id` before waiting, set `waiting_for`, consume late final notification
+  before respawn, persist final output before `completed`, then close/finalize
+  the agent. One slot is active at a time and completed agents are not rerun.
 - T0/T1 may use compact `.protocols/TASK-NNN-TN-FT-NNN-WN/run.md`; compact evidence can be enough.
 - Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
 - Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the wave-boundary `/mb-sync` and strict doctor.
