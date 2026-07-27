@@ -55,6 +55,7 @@ const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
   'mb-verify',
 ]);
 const VERIFY_OBSOLETE_RUNTIME_SKILLS = new Set(['mb-verify']);
+const RUNTIME_SKILL_ROOTS = ['.agents/skills', '.claude/skills'];
 const PREPARE_EXCLUDED_ROOTS = new Set([
   '.agents',
   '.claude',
@@ -132,6 +133,18 @@ const INTERNAL_FLAGS = new Set([
   '--sync',
   '--target',
 ]);
+
+class RuntimeSkillConflictError extends Error {
+  constructor(conflicts) {
+    super([
+      'Runtime skill installation aborted.',
+      'The following directories are not recognized as DevRails-generated and will not be overwritten:',
+      ...conflicts.map((relPath) => `  - ${relPath}`),
+      'Rename or remove the conflicting skills, then rerun the installer.',
+    ].join('\n'));
+    this.name = 'RuntimeSkillConflictError';
+  }
+}
 
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
@@ -592,6 +605,33 @@ function isLegacyGeneratedProxySkill(content, expectedName = null) {
   return expectedName === null || proxy[1] === expectedName;
 }
 
+function isReplaceableRuntimeSkillDir(skillDir, expectedName) {
+  const skillPath = join(skillDir, 'SKILL.md');
+  if (!existsSync(skillPath)) {
+    return statSync(skillDir).isDirectory() && readdirSync(skillDir).length === 0;
+  }
+
+  return isLegacyGeneratedProxySkill(readFileSync(skillPath, 'utf8'), expectedName);
+}
+
+function collectRuntimeSkillConflicts(targetRepo, specs) {
+  const conflicts = [];
+
+  RUNTIME_SKILL_ROOTS.forEach((runtimeRoot) => {
+    specs.forEach((spec) => {
+      const skillDir = join(targetRepo, runtimeRoot, spec.name);
+      if (
+        existsSync(skillDir)
+        && !isReplaceableRuntimeSkillDir(skillDir, spec.name)
+      ) {
+        conflicts.push(`${runtimeRoot}/${spec.name}`);
+      }
+    });
+  });
+
+  return conflicts;
+}
+
 function resolveCommandSpecs(preparedRepo) {
   const commandDir = join(preparedRepo, COMMAND_SPECS_REL);
   if (!existsSync(commandDir)) {
@@ -772,6 +812,11 @@ async function installRuntimeCommandSkills(preparedRepo, targetRepo, addArgs, sy
         console.log(`  ! Unknown runtime command skill: ${name}`);
       }
     });
+  }
+
+  const conflicts = collectRuntimeSkillConflicts(targetRepo, selectedSpecs);
+  if (conflicts.length > 0) {
+    throw new RuntimeSkillConflictError(conflicts);
   }
 
   const expectedNames = new Set(selectedSpecs.map(({ name }) => name));
@@ -1351,4 +1396,10 @@ async function main() {
   });
 }
 
-await main();
+try {
+  await main();
+} catch (error) {
+  if (!(error instanceof RuntimeSkillConflictError)) throw error;
+  console.error(error.message);
+  process.exitCode = 1;
+}

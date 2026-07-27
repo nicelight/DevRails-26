@@ -212,10 +212,19 @@ Installer:
 3. показывает warnings и запрашивает confirmation;
 4. при существующем `AGENTS.md` предлагает replace или merge policy;
 5. готовит временную vendored copy source repo;
-6. генерирует все runtime command skills в `.agents/skills/` и
+6. проверяет все выбранные runtime skill paths в `.agents/skills/` и
+   `.claude/skills/` до первой записи;
+7. генерирует все runtime command skills в `.agents/skills/` и
    `.claude/skills/`;
-7. создаёт fresh Memory Bank или выполняет sync существующей установки;
-8. удаляет temporary repo.
+8. создаёт fresh Memory Bank или выполняет sync существующей установки;
+9. удаляет temporary repo.
+
+Preflight разрешает замену только пустого directory, DevRails-generated skill
+directory или точного legacy generated proxy. Любой другой совпадающий
+directory, включая непустой directory без `SKILL.md`, является blocker:
+installer перечисляет все конфликты и останавливается до cleanup, записи
+runtime skills и bootstrap. Оператор переименовывает или удаляет конфликтующие
+skills и повторяет установку.
 
 ### Non-interactive bootstrap
 
