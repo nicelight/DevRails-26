@@ -1,9 +1,19 @@
 {
-  "name": "memobank-bmad-sdd",
-  "version": "0.0.0",
+  "name": "devrails-26",
+  "productName": "DevRails 26",
+  "version": "0.1.0",
   "private": true,
+  "description": "Agent development framework with durable memory and controlled workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicelight/DevRails-26.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nicelight/DevRails-26/issues"
+  },
   "bin": {
-    "memobank-install": "scripts/install-framework.mjs"
+    "devrails-install": "scripts/install-framework.mjs"
   },
   "scripts": {
     "vendor:shared:in-place": "node scripts/vendor-shared.mjs --in-place",

@@ -52,7 +52,7 @@ Root documentation:
 Packaging and install:
 
 - `package.json`: package bin and scripts.
-- `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, explicit `--skill ... --yes` installs selected runtime command skills without TUI, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
+- `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, every install route deploys the complete runtime command set into both target surfaces, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
 - `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned
   schema/protocol-template/validator/workflow sync, write-boundary grammar,
@@ -323,7 +323,7 @@ The source-only count command should print `0` in the source-only working tree.
 Install smoke without mutating the working repository:
 
 ```bash
-node scripts/install-framework.mjs --skill '*' --yes
+node scripts/install-framework.mjs --install-only --yes
 ```
 
 One-command bootstrap smoke:
@@ -337,7 +337,7 @@ test -f "$tmpdir/AGENTS.md"
 To inspect the generated temporary package tree during installer debugging:
 
 ```bash
-MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
+MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --install-only --yes
 ```
 
 ## Dirty Worktree Rule

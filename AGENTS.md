@@ -170,7 +170,7 @@ find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | w
 tmp_target="$(mktemp -d)"
 
 node scripts/install-framework.mjs \
-  --skill '*' \
+  --install-only \
   --target "$tmp_target/install-only" \
   --yes
 
@@ -183,5 +183,5 @@ node scripts/install-framework.mjs \
 Если нужно посмотреть временно развёрнутые package-local `shared-*` файлы, запускай:
 
 ```bash
-MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --skill '*' --yes
+MEMOBANK_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs --install-only --yes
 ```

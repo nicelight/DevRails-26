@@ -39,6 +39,10 @@ const installedSkillsBeginMarker = '<!-- BEGIN DEVRAILS INSTALLED SKILLS -->';
 const installedSkillsEndMarker = '<!-- END DEVRAILS INSTALLED SKILLS -->';
 const fullBootstrapRoute = 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes';
 const skeletonBootstrapRoute = 'node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes';
+const expectedRuntimeSkillNames = readdirSync(commandSourceDir)
+  .filter((name) => name.endsWith('.md') && name !== 'find-skill.md')
+  .map((name) => name.replace(/\.md$/, ''))
+  .sort();
 
 function fail(message, output = '') {
   const detail = output ? `\n\n${output}` : '';
@@ -231,10 +235,7 @@ try {
   writeFileSync(join(claudeCollisionDir, 'assets', 'keep.txt'), 'claude asset\n', 'utf8');
 
   const collisionResult = runInstallerFailure([
-    '--skill',
-    'cold-start',
-    '--skill',
-    'verify',
+    '--install-only',
     '--target',
     collisionTarget,
     '--yes',
@@ -273,7 +274,19 @@ try {
     mkdirSync(legacySkillDir, { recursive: true });
     writeFileSync(join(legacySkillDir, 'SKILL.md'), legacyProxy, 'utf8');
   });
-  runInstaller(['--skill', 'verify', '--target', legacyProxyTarget, '--yes']);
+  runInstaller([
+    '--install-only',
+    '--target',
+    legacyProxyTarget,
+    '--yes',
+  ]);
+  assert(
+    JSON.stringify(runtimeSkillNames(legacyProxyTarget, '.agents'))
+      === JSON.stringify(expectedRuntimeSkillNames)
+      && JSON.stringify(runtimeSkillNames(legacyProxyTarget, '.claude'))
+        === JSON.stringify(expectedRuntimeSkillNames),
+    'Legacy runtime proxy migration did not install the complete runtime command set.',
+  );
   ['.agents', '.claude'].forEach((runtimeRoot) => {
     const migratedSkill = readFileSync(
       join(legacyProxyTarget, runtimeRoot, 'skills', 'verify', 'SKILL.md'),
@@ -286,52 +299,54 @@ try {
     );
   });
 
-  const partialTarget = join(tempRoot, 'partial-cold-start-target');
-  runInstaller(['--skill', 'cold-start', '--target', partialTarget, '--yes']);
+  const installOnlyTarget = join(tempRoot, 'install-only-target');
+  runInstaller(['--install-only', '--target', installOnlyTarget, '--yes']);
+  const installOnlyAgentsSkillNames = runtimeSkillNames(installOnlyTarget, '.agents');
+  const installOnlyClaudeSkillNames = runtimeSkillNames(installOnlyTarget, '.claude');
   assert(
-    JSON.stringify(runtimeSkillNames(partialTarget, '.agents')) === JSON.stringify(['cold-start'])
-      && JSON.stringify(runtimeSkillNames(partialTarget, '.claude')) === JSON.stringify(['cold-start'])
-      && !existsSync(join(partialTarget, '.memory-bank')),
-    'Partial cold-start install unexpectedly created downstream runtime skills or Memory Bank.',
+    JSON.stringify(installOnlyAgentsSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
+      && JSON.stringify(installOnlyClaudeSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
+      && !existsSync(join(installOnlyTarget, '.memory-bank')),
+    'Install-only did not deploy the complete runtime command set without Memory Bank.',
   );
   ['.agents', '.claude'].forEach((runtimeRoot) => {
-    const partialColdStart = readFileSync(
-      join(partialTarget, runtimeRoot, 'skills', 'cold-start', 'SKILL.md'),
+    const installOnlyColdStart = readFileSync(
+      join(installOnlyTarget, runtimeRoot, 'skills', 'cold-start', 'SKILL.md'),
       'utf8',
     );
     assert(
-      partialColdStart.includes(fullBootstrapRoute)
-        && !partialColdStart.includes(skeletonBootstrapRoute),
-      `${runtimeRoot} partial cold-start does not route missing skeleton to full bootstrap.`,
+      installOnlyColdStart.includes(fullBootstrapRoute)
+        && !installOnlyColdStart.includes(skeletonBootstrapRoute),
+      `${runtimeRoot} install-only cold-start does not route missing skeleton to full bootstrap.`,
     );
   });
 
-  runInstaller(['--bootstrap', '--target', partialTarget, '--yes']);
-  const recoveredAgentsSkillNames = runtimeSkillNames(partialTarget, '.agents');
-  const recoveredClaudeSkillNames = runtimeSkillNames(partialTarget, '.claude');
+  runInstaller(['--bootstrap', '--target', installOnlyTarget, '--yes']);
+  const bootstrappedAgentsSkillNames = runtimeSkillNames(installOnlyTarget, '.agents');
+  const bootstrappedClaudeSkillNames = runtimeSkillNames(installOnlyTarget, '.claude');
   assert(
-    existsSync(join(partialTarget, '.memory-bank', 'tasks', 'index.json'))
-      && recoveredAgentsSkillNames.length > 1
-      && JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(recoveredClaudeSkillNames),
-    'Full bootstrap did not recover a partial cold-start target to commands plus skeleton.',
+    existsSync(join(installOnlyTarget, '.memory-bank', 'tasks', 'index.json'))
+      && JSON.stringify(bootstrappedAgentsSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
+      && JSON.stringify(bootstrappedClaudeSkillNames) === JSON.stringify(expectedRuntimeSkillNames),
+    'Full bootstrap did not preserve the complete runtime set while adding the skeleton.',
   );
   ['brief', 'write-prd', 'map-codebase'].forEach((name) => {
     assert(
-      existsSync(join(partialTarget, '.agents', 'skills', name, 'SKILL.md'))
-        && existsSync(join(partialTarget, '.claude', 'skills', name, 'SKILL.md')),
-      `Recovered cold-start target is missing downstream runtime skill: ${name}`,
+      existsSync(join(installOnlyTarget, '.agents', 'skills', name, 'SKILL.md'))
+        && existsSync(join(installOnlyTarget, '.claude', 'skills', name, 'SKILL.md')),
+      `Bootstrapped install-only target is missing runtime skill: ${name}`,
     );
   });
-  const recoveredSkillIndex = readFileSync(
-    join(partialTarget, '.memory-bank', 'skills', 'index.md'),
+  const bootstrappedSkillIndex = readFileSync(
+    join(installOnlyTarget, '.memory-bank', 'skills', 'index.md'),
     'utf8',
   );
-  const recoveredSkillRows = installedSkillRows(recoveredSkillIndex);
+  const bootstrappedSkillRows = installedSkillRows(bootstrappedSkillIndex);
   assert(
-    JSON.stringify(recoveredSkillRows.map(({ name }) => name))
-      === JSON.stringify(recoveredAgentsSkillNames)
-      && recoveredSkillRows.every(({ agents, claude }) => agents === 'yes' && claude === 'yes'),
-    'Recovered cold-start target skill registry does not match its runtime surfaces.',
+    JSON.stringify(bootstrappedSkillRows.map(({ name }) => name))
+      === JSON.stringify(bootstrappedAgentsSkillNames)
+      && bootstrappedSkillRows.every(({ agents, claude }) => agents === 'yes' && claude === 'yes'),
+    'Bootstrapped install-only target skill registry does not match its runtime surfaces.',
   );
 
   runInstaller(['--bootstrap', '--target', target, '--yes']);
@@ -378,9 +393,9 @@ try {
     'Fresh full bootstrap did not install technical-premortem into both runtime surfaces.',
   );
   assert(
-    JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(agentsSkillNames)
-      && JSON.stringify(recoveredClaudeSkillNames) === JSON.stringify(claudeSkillNames),
-    'Recovered partial cold-start target does not match a fresh full bootstrap runtime set.',
+    JSON.stringify(bootstrappedAgentsSkillNames) === JSON.stringify(agentsSkillNames)
+      && JSON.stringify(bootstrappedClaudeSkillNames) === JSON.stringify(claudeSkillNames),
+    'Bootstrapped install-only target does not match a fresh full bootstrap runtime set.',
   );
   assert(
     JSON.stringify(freshSkillRows.map(({ name }) => name)) === JSON.stringify(expectedSkillNames)

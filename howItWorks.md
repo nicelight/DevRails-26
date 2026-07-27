@@ -243,20 +243,17 @@ node scripts/install-framework.mjs --bootstrap --target /path/to/project --yes -
 Все runtime-skills в указанный target без Memory Bank bootstrap:
 
 ```bash
-node scripts/install-framework.mjs --install-only --target /path/to/project --skill '*' --yes
+node scripts/install-framework.mjs --install-only --target /path/to/project --yes
 ```
 
-Один выбранный runtime-skill:
-
-```bash
-node scripts/install-framework.mjs --install-only --target /path/to/project --skill verify --yes
-```
+Выборочная установка не поддерживается: любой install route разворачивает
+полный canonical runtime command set в `.agents/skills/` и `.claude/skills/`.
 
 Для inspection временно подготовленной package copy:
 
 ```bash
 DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs \
-  --install-only --target /path/to/inspection-target --skill '*' --yes
+  --install-only --target /path/to/inspection-target --yes
 ```
 
 После install-only, если `.memory-bank/` отсутствует, `/cold-start` не создаёт
@@ -1273,7 +1270,7 @@ npm run check:syntax --silent
 find skills -path 'skills/_shared' -prune -o -type f -name 'shared-*' -print | wc -l
 tmp_target="$(mktemp -d)"
 node scripts/install-framework.mjs \
-  --install-only --target "$tmp_target/install-only" --skill '*' --yes
+  --install-only --target "$tmp_target/install-only" --yes
 node scripts/install-framework.mjs \
   --bootstrap --target "$tmp_target/bootstrap" --yes
 ```
