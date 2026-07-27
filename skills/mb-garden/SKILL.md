@@ -1,6 +1,6 @@
 ---
 name: mb-garden
-description: Package deterministic Memory Bank lint, readiness, and optional CI assets for DevRails installation. Use for packaging or installing mb-garden assets; runtime maintenance behavior is defined by the canonical shared command.
+description: Package deterministic Memory Bank lint and readiness assets for DevRails installation. Use for packaging or installing mb-garden assets; runtime maintenance behavior is defined by the canonical shared command.
 ---
 
 # mb-garden package entrypoint
@@ -18,7 +18,6 @@ installed `/mb-garden` instructions. The installer generates target
 
 - `assets/mb-lint.mjs` — structural and mechanical Memory Bank lint.
 - `assets/mb-doctor.mjs` — deterministic readiness gate over `mb-lint`.
-- `assets/memory-bank-lint.yml` — optional CI workflow asset.
 
 `mb-lint` and `mb-doctor` keep their separate responsibilities. Asset packaging
 does not make this entrypoint the owner of readiness policy.

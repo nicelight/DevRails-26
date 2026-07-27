@@ -97,7 +97,7 @@ Tracked installable package entrypoints всего три:
   surface;
 - `skills/mb-init/SKILL.md` — external installer router для bootstrap или
   coherent framework sync;
-- `skills/mb-garden/SKILL.md` — packaged lint/doctor/CI assets.
+- `skills/mb-garden/SKILL.md` — packaged lint/doctor assets.
 
 Они нужны для source-only упаковки и не являются вторым набором runtime
 workflow contracts.
