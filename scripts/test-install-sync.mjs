@@ -21,6 +21,7 @@ const commandSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'comm
 const coldStartCommandSource = join(commandSourceDir, 'cold-start.md');
 const mbInitCommandSource = join(commandSourceDir, 'mb-init.md');
 const creatorVibeCommandSource = join(commandSourceDir, 'creator-vibe.md');
+const technicalPremortemCommandSource = join(commandSourceDir, 'technical-premortem.md');
 const coldStartPackageSource = join(repoRoot, 'skills', 'cold-start', 'SKILL.md');
 const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
@@ -286,6 +287,11 @@ try {
     'Fresh full bootstrap did not install creator-vibe into both runtime surfaces.',
   );
   assert(
+    agentsSkillNames.includes('technical-premortem')
+      && claudeSkillNames.includes('technical-premortem'),
+    'Fresh full bootstrap did not install technical-premortem into both runtime surfaces.',
+  );
+  assert(
     JSON.stringify(recoveredAgentsSkillNames) === JSON.stringify(agentsSkillNames)
       && JSON.stringify(recoveredClaudeSkillNames) === JSON.stringify(claudeSkillNames),
     'Recovered partial cold-start target does not match a fresh full bootstrap runtime set.',
@@ -383,6 +389,7 @@ try {
     const deployedColdStart = readTarget(`${runtimeRoot}/cold-start/SKILL.md`);
     const deployedMbInit = readTarget(`${runtimeRoot}/mb-init/SKILL.md`);
     const deployedCreatorVibe = readTarget(`${runtimeRoot}/creator-vibe/SKILL.md`);
+    const deployedTechnicalPremortem = readTarget(`${runtimeRoot}/technical-premortem/SKILL.md`);
     const deployedArchitectureReview = readTarget(`${runtimeRoot}/architecture-review/SKILL.md`);
     const deployedKissArchitect = readTarget(`${runtimeRoot}/kiss-architect/SKILL.md`);
     const deployedReviewTasksPlan = readTarget(`${runtimeRoot}/review-tasks-plan/SKILL.md`);
@@ -395,6 +402,15 @@ try {
     assert(
       deployedCreatorVibe.includes(readFileSync(creatorVibeCommandSource, 'utf8').trim()),
       `${runtimeRoot}/creator-vibe differs from its canonical project-level source.`,
+    );
+    assert(
+      deployedTechnicalPremortem.includes(
+        readFileSync(technicalPremortemCommandSource, 'utf8').trim(),
+      )
+        && deployedTechnicalPremortem.startsWith(
+          '---\nname: technical-premortem\ndescription: "Технический pre-mortem запланированного изменения.',
+        ),
+      `${runtimeRoot}/technical-premortem differs from its canonical source or lost its semantic trigger.`,
     );
     assert(
       deployedMbInit.includes(skeletonBootstrapRoute)
@@ -666,12 +682,33 @@ try {
 
   ['.agents/skills', '.claude/skills'].forEach((runtimeRoot) => {
     const doctorSkill = readTarget(`${runtimeRoot}/mb-doctor/SKILL.md`);
+    const redVerifySkill = readTarget(`${runtimeRoot}/red-verify/SKILL.md`);
     assert(
       doctorSkill.includes('Every non-empty indexed queue requires the current `.memory-bank/foundation.md`')
         && doctorSkill.includes('no other\n  `FT-000` record remains `planned|ready|in_progress|blocked`'),
       `${runtimeRoot}/mb-doctor does not expose the complete Foundation readiness contract.`,
     );
+    assert(
+      redVerifySkill.includes('Zero reportable findings is a normal result')
+        && redVerifySkill.includes('Generate and assess hostile hypotheses privately.')
+        && redVerifySkill.includes('Direct DB/filesystem mutation is only setup for a reportable defect')
+        && redVerifySkill.includes('`semantic-pass` requires no finding, risk list, or')
+        && !redVerifySkill.includes('- independently generated hostile model and probes;'),
+      `${runtimeRoot}/red-verify lost its KISS finding-admission or zero-finding contract.`,
+    );
   });
+
+  const deployedRedVerificationTemplate = readTarget(
+    protocolTemplateRel('red-verification-template.md'),
+  );
+  assert(
+    deployedRedVerificationTemplate.includes('## Evidence and adversarial coverage')
+      && deployedRedVerificationTemplate.includes('## Admitted findings')
+      && deployedRedVerificationTemplate.includes('## Operator questions')
+      && !deployedRedVerificationTemplate.includes('## Independently generated hostile model')
+      && !deployedRedVerificationTemplate.includes('## Counterproposal / escalation'),
+    'Deployed red-verification template still persists private brainstorming or lost its concise evidence shape.',
+  );
 
   const stableTemplatePaths = {
     exe: [
@@ -1092,6 +1129,10 @@ try {
   mkdirSync(dirname(targetPath(taskProtocolRel)), { recursive: true });
   const taskProtocolState = '# Task-owned resume state\n';
   writeTarget(taskProtocolRel, taskProtocolState);
+  const redTaskProtocolRel = '.protocols/TASK-998-T3-FT-999-W0/red-verification.md';
+  mkdirSync(dirname(targetPath(redTaskProtocolRel)), { recursive: true });
+  const redTaskProtocolState = '# Existing task-owned red-verification state\n';
+  writeTarget(redTaskProtocolRel, redTaskProtocolState);
 
   const projectTemplateRel = protocolTemplateRel('project-notes.md');
   const projectTemplateState = '# Project-owned protocol notes\n';
@@ -1127,6 +1168,11 @@ try {
     syncOutput,
   );
   assert(readTarget(taskProtocolRel) === taskProtocolState, 'Full sync overwrote task-owned protocol state.', syncOutput);
+  assert(
+    readTarget(redTaskProtocolRel) === redTaskProtocolState,
+    'Full sync overwrote task-owned red-verification resume state.',
+    syncOutput,
+  );
   assert(readTarget(projectTemplateRel) === projectTemplateState, 'Full sync pruned a non-canonical project template file.', syncOutput);
   preservedFiles.forEach((expected, rel) => {
     assert(readTarget(rel) === expected, `Full sync overwrote project/mixed file: ${rel}`, syncOutput);
@@ -1158,6 +1204,11 @@ try {
     );
   });
   assert(readTarget(taskProtocolRel) === taskProtocolState, 'Idempotent sync changed task-owned protocol state.', secondSyncOutput);
+  assert(
+    readTarget(redTaskProtocolRel) === redTaskProtocolState,
+    'Idempotent sync changed task-owned red-verification resume state.',
+    secondSyncOutput,
+  );
   assert(readTarget(projectTemplateRel) === projectTemplateState, 'Idempotent sync changed a project template file.', secondSyncOutput);
   preservedFiles.forEach((expected, rel) => {
     assert(readTarget(rel) === expected, `Idempotent sync changed project/mixed file: ${rel}`, secondSyncOutput);

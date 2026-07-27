@@ -550,9 +550,21 @@ function listMarkdownFiles(absDir) {
 function extractFrontmatterDescription(markdown) {
   const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return null;
-  const desc = match[1].match(/^description:\s*(.+)$/m);
-  if (!desc) return null;
-  return desc[1].trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+  const lines = match[1].split(/\r?\n/);
+  const descriptionIndex = lines.findIndex((line) => /^description:\s*/.test(line));
+  if (descriptionIndex === -1) return null;
+
+  const value = lines[descriptionIndex].replace(/^description:\s*/, '').trim();
+  if (/^[>|][-+]?$/.test(value)) {
+    const block = [];
+    for (let i = descriptionIndex + 1; i < lines.length; i += 1) {
+      if (lines[i].length > 0 && !/^\s/.test(lines[i])) break;
+      block.push(lines[i].trim());
+    }
+    return block.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim() || null;
+  }
+
+  return value.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
 }
 
 function yamlQuote(value) {

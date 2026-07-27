@@ -104,7 +104,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 32 runtime-skills определены в:
+Текущие 33 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -807,6 +807,18 @@ fresh Reviewer с `/architecture-review` на feature. Основной reviewer
 его architecture verdict в свой report и сохраняет ownership финального verdict; без
 subagent support выполняет тот же bounded review локально.
 
+### Technical pre-mortem
+
+`/technical-premortem` — самостоятельный skill для анализа запланированного
+технического изменения до реализации. Он восстанавливает blast radius,
+моделирует конкретные сценарии провала, классифицирует риски как Tiger,
+Paper Tiger или Elephant и формирует план отката, pre-flight checklist и
+вердикт `GO | GO с условиями | NO-GO`.
+
+Skill не встроен в обязательную workflow-цепочку и не меняет task lifecycle,
+statuses или ownership. Установленный агент выбирает его семантически по
+контексту задачи и `description`.
+
 ### Doctor modes
 
 ```bash
@@ -1227,6 +1239,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/review-tasks-plan` | fresh-context `APPROVE|REJECT` runnable planning review | не чинит specs/cards/status; затем doctor/execution или repair |
 | `/architecture-review` | bounded C4 L1-L3 и architecture verdict для одной feature | read-only; не возвращает итоговый planning verdict и не создаёт отдельный artifact |
 | `/kiss-architect` | Architect proposal preflight для architecture/spec design, findings и corrections | не меняет active role или workflow authority; canonical edits передаёт owning skill |
+| `/technical-premortem` | технический pre-mortem запланированного изменения | выбирается агентом семантически; не является обязательным workflow gate |
 
 ### Execution, verification, maintenance и automation
 

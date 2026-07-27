@@ -12,6 +12,7 @@ ordinary functional `/verify` may miss.
 
 `/verify` owns functional evidence. `/red-verify` owns semantic evidence and one
 exact `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
+Zero reportable findings is a normal result of sufficient adversarial coverage.
 </objective>
 
 <input_contract>
@@ -64,10 +65,14 @@ canonical identity, acceptance meaning, architecture/contract/state/data/
 storage/security/compatibility decision, task boundary, tier, dependency, or
 verification policy, the verifier does not pick a favorable reading.
 
-- Return `semantic-concern` unless evidence proves a direct semantic break,
-  in which case return `semantic-fail`.
+- Return `semantic-concern` when an unresolved operator-owned decision is
+  necessary to judge the accepted outcome or a proved realistic material risk.
+- Return `semantic-fail` only when evidence proves a material break of an
+  unambiguous accepted outcome.
 - State the exact operator question, competing interpretations, affected
   closure/dependents, and repair owner.
+- Do not manufacture an operator question from a speculative, unreachable, or
+  immaterial candidate.
 - Interactive flow asks the operator; recommendation/default/silence is not an
   accepted decision. The answer must be durably applied by
   `/feature-doctor`, `/feature-to-tasks`, or `/spec-design`, then functional and
@@ -76,6 +81,43 @@ verification policy, the verifier does not pick a favorable reading.
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and names the exact
   resume route.
 </operator_decisions>
+
+<finding_admission>
+Generate and assess hostile hypotheses privately. Do not write hypotheses,
+admission notes, rejected candidates, scorecards, or a target finding count to
+protocols, reports, task records, specs, or tests.
+
+Before a candidate affects the report or verdict, assess:
+- contract authority: identify the accepted task/product outcome or boundary;
+  task and direct task-linked accepted canonical specs remain source of truth,
+  while authorship alone neither creates nor cancels authority;
+- reachability: distinguish supported production/internal, migration,
+  concurrency, and accepted operational/recovery paths from coding misuse,
+  privileged storage mutation, and theoretical states;
+- materiality and realism: identify substantive product, authority, security,
+  data, or operational harm and account for likelihood and recoverability by
+  retry, restart, rebuild, restore, or maintenance;
+- evidence: require the probe to prove the claimed defect, not merely that an
+  invalid state can be manufactured;
+- remedy authority: cost may reject new hardening outside the accepted contract,
+  but never cancels a proved material break of an unambiguous accepted outcome.
+
+Publish only:
+- an evidenced material break of an accepted outcome;
+- an exact operator question required to judge a proved realistic material risk
+  or accepted outcome.
+
+Privately discard every other candidate. Do not publish LOW, nit, optional
+improvements, rejected alternatives, or possible future hardening.
+
+Direct DB/filesystem mutation is only setup for a reportable defect when the
+state is reachable through a supported application, migration, concurrency, or
+accepted operational/recovery path, or the accepted threat model requires
+protection from privileged storage tampering. Otherwise it proves no
+application defect. A catastrophic security/data-loss candidate requires a
+proved realistic escalation path and, when outside the accepted contract, an
+operator decision rather than automatic repair.
+</finding_admission>
 
 <agent_discretion>
 The verifier independently builds its own hostile model from the actual intent,
@@ -93,7 +135,17 @@ The following are examples, not a mandatory or exhaustive checklist/order:
   deploy/runtime, or production hazards;
 - passing tests that hide operational or maintenance cost.
 
-The verifier may pursue unexpected hypotheses when evidence justifies them.
+The verifier may pursue unexpected hypotheses when evidence justifies them, but
+screens contract relevance, reachability, and materiality before spending
+disproportionate probe effort. Bound the search by the accepted outcome, actual
+change surface, affected boundaries, and the heaviest realistic failure modes.
+Stop after sufficient coverage even when no candidate is admitted.
+
+Do not repeat a historical hostile matrix unless it still maps to the current
+accepted contract. A verifier-generated probe, review, test, or validator does
+not authorize a new requirement or permanent regression. `/red-verify` does not
+repeat ordinary `/verify` coverage, but any material supported-path break it
+proves remains reportable.
 </agent_discretion>
 
 <required_outputs>
@@ -112,17 +164,18 @@ Feature mode writes:
 - a durable `## Semantic Verification` section in the matching feature doc
   with one exact standalone marker and report link.
 
-The report remains concise but records:
-- independently generated hostile model and probes;
-- top substance/false-success risks and purpose fit;
-- anti-goal and semantic/hard-scope assessment;
-- hidden assumptions and questions that could change the verdict;
-- cross-boundary, architecture, state/data, operational, security when
-  relevant, and maintenance impact;
-- how the conclusion could still be wrong;
-- counterproposal or escalation route;
+The report remains concise and records only:
+- accepted intent plus sufficient inspected evidence and adversarial coverage
+  to support the verdict;
+- admitted material findings with their reachable path and impact, if any;
+- exact operator-owned questions required for `semantic-concern`, if any;
+- the existing owner action or escalation route;
 - exactly one standalone marker:
   `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
+
+Do not report private hypotheses, admission reasoning, rejected candidates, or
+optional improvements. `semantic-pass` requires no finding, risk list, or
+counterproposal.
 
 When blocked or failed, use the existing report's `## Failure / Blocker` shape
 with status, where, expected/observed, likely category, next action, and whether
@@ -130,17 +183,19 @@ replan is required.
 </required_outputs>
 
 <validation>
-- `semantic-pass`: no substantive concern survived credible adversarial probes;
+- `semantic-pass`: sufficient adversarial coverage produced no admitted
+  material finding or required operator decision;
   T3 task becomes closure-eligible only when functional PASS and the human
   checkpoint also satisfy tier policy; T2 feature becomes completion-eligible
   only when all feature tasks and required gates are satisfied and the feature
   doc contains the exact marker.
-- `semantic-concern`: hidden assumptions or serious risk prevent normal closure;
-  affected task/feature/dependents remain pending or blocked by the lifecycle
-  owner until an accepted decision/fix and subsequent semantic-pass.
-- `semantic-fail`: evidence proves the solution substantively wrong, harmful,
-  or too risky; recommend failure and BUG/follow-up handling to the active
-  lifecycle owner.
+- `semantic-concern`: a proved realistic material risk or accepted-outcome
+  ambiguity requires an operator-owned decision before normal closure; affected
+  task/feature/dependents remain pending or blocked by the lifecycle owner until
+  an accepted decision/fix and subsequent semantic-pass.
+- `semantic-fail`: evidence proves a material break of an unambiguous accepted
+  outcome; recommend failure and BUG/follow-up handling to the active lifecycle
+  owner.
 
 Before reporting, confirm the verdict is supported by inspected evidence, no
 unresolved branch was silently resolved, and the skill did not mutate
