@@ -198,6 +198,13 @@ storage/persistence belongs to Data Specification. Create a new subject-based
 spec only after existing identity and synonyms are checked. Do not expand a
 legacy `.memory-bank/tech-specs/FT-*.md` hub as the canonical T2/T3 answer.
 
+For an Alembic migration under an accepted linear topology, reuse the
+project-level database contract for dynamic head/branch/ancestry integrity.
+Keep feature testing limited to its revision, direct `down_revision`,
+upgrade/downgrade, schema transition, and data preservation. Plans, specs, and
+task cards must not make the mutable current head an exact-head requirement or
+require historical feature-test updates.
+
 Feature frontmatter remains:
 
 ```yaml

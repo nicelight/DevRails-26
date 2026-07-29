@@ -90,6 +90,8 @@ scenario review or create the file only to satisfy a template.
 - The bootstrap-owned registered testing policy is read-only here. Route
   concrete harness/evidence/redaction/operational verification concerns to
   applicable subject specs; do not invent a fallback testing-policy path.
+- Preserve its Alembic migration-test ownership boundary when applicable; do
+  not turn the mutable current head into a durable global or feature contract.
 - Feature docs remain composition roots for behavior and exact applicable spec
   links. Feature-level concern completion and `spec_design_status` normally
   belong to `/feature-to-tasks` or `/spec-auto`.
@@ -187,6 +189,8 @@ Planning revision rules:
   in a way that can affect feature/task planning; otherwise preserve it.
 - A newly observed current-state drift or baseline correction alone does not
   increment Planning Revision when the accepted target is unchanged.
+- Under an unchanged accepted linear Alembic topology, a new current head is
+  current-state evidence and does not increment Planning Revision by itself.
 - Repair a missing/invalid legacy value on the next successful run.
 - An increment after task generation makes all product task-plan reviews stale;
   preserve task statuses and use the all-feature handoff below.

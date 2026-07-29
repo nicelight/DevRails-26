@@ -130,6 +130,10 @@ Rules:
 - for evidenced runtime/state sensitivity, put any required initial-state,
   safe-rerun, observable-result, and cleanup/isolation proof in the owning
   canonical spec; do not add it to simple/stateless features;
+- for an accepted linear Alembic topology, keep head/branch/ancestry proof with
+  the project-level database contract and revision-local proof with the feature;
+  treat the current head ID as transient evidence, not a feature spec or
+  Planning Revision change by itself;
 - when feature design durably changes an active global `AD-*` or another global
   rule in a way that can change downstream planning, increment Global Backbone
   `Planning Revision` exactly once under `/spec-design` rules; otherwise preserve

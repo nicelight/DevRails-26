@@ -770,10 +770,25 @@ try {
   rmSync(targetPath(BOUNDARY_TASK_REL), { force: true });
 
   const specBackbone = readTarget('.memory-bank/spec-backbone.md');
+  const freshTestingStrategy = normalizeProse(
+    readTarget('.memory-bank/testing/strategy.md'),
+  );
   assert(
     specBackbone.includes('## Global Backbone Status')
       && specBackbone.includes('- Planning Revision: 0'),
     'Fresh bootstrap spec-backbone does not initialize Planning Revision at 0.',
+  );
+  assert(
+    freshTestingStrategy.includes(
+      'one project-level database contract owns dynamic checks for a single head, no branches, and intact ancestry',
+    )
+      && freshTestingStrategy.includes(
+        'A feature migration test owns only its revision, direct `down_revision`, upgrade/downgrade, schema transition, and data preservation.',
+      )
+      && freshTestingStrategy.includes(
+        'it does not require literal current-head consumers or historical feature-test updates',
+      ),
+    'Fresh bootstrap testing strategy lost the Alembic migration ownership boundary.',
   );
   assert(
     readTarget('AGENTS.md').includes('Product execution requires task-plan `APPROVE` for the current positive Global')
@@ -1045,6 +1060,53 @@ try {
         ),
       `${runtimeRoot} design skills do not keep architecture enforcement selective and runtime proof evidence-driven.`,
     );
+    assert(
+      normalizedSpecDesign.includes(
+        'do not turn the mutable current head into a durable global or feature contract',
+      )
+        && normalizedSpecDesign.includes(
+          'a new current head is current-state evidence and does not increment Planning Revision by itself',
+        )
+        && normalizedSpecAuto.includes(
+          'keep head/branch/ancestry proof with the project-level database contract and revision-local proof with the feature',
+        )
+        && normalizedFoundationToTasks.includes(
+          'reuse or create one project-level database contract owner that derives the single head and proves no branches plus intact ancestry',
+        )
+        && normalizedFeatureToTasks.includes(
+          'Keep feature testing limited to its revision, direct `down_revision`, upgrade/downgrade, schema transition, and data preservation.',
+        )
+        && normalizedFeatureToTasks.includes(
+          'must not make the mutable current head an exact-head requirement or require historical feature-test updates',
+        )
+        && normalizedExe.includes(
+          'preflight may resolve the current head transiently to set or verify the new revision\'s direct `down_revision`',
+        )
+        && normalizedExe.includes(
+          'run the existing project-level graph contract unchanged',
+        ),
+      `${runtimeRoot} lost the Alembic migration ownership or no-fan-out contract.`,
+    );
+    const generatedAlembicPlanningSurface = [
+      freshTestingStrategy,
+      normalizedSpecDesign,
+      normalizedSpecAuto,
+      normalizedFoundationToTasks,
+      normalizedFeatureToTasks,
+      normalizedExe,
+    ].join(' ');
+    [
+      'advance every exact-head consumer',
+      'advance all exact-head consumers',
+      'update every historical feature test',
+      'update all historical feature tests',
+      'feature migration tests must assert the current head',
+    ].forEach((forbiddenRequirement) => {
+      assert(
+        !generatedAlembicPlanningSurface.includes(forbiddenRequirement),
+        `${runtimeRoot} generated project contains fan-out exact-head requirement: ${forbiddenRequirement}`,
+      );
+    });
     assert(
       normalizedSpecDesign.includes(
         'record in the existing `.memory-bank/architecture/system-architecture.md` beside the affected root or boundary only a non-obvious or material naming/path convention',

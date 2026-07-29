@@ -1103,6 +1103,16 @@ status: active
 - Treat a failing applicable check as evidence to investigate or resolve within
   explicit scope.
 
+## Alembic migration ownership
+- For an accepted linear Alembic graph, one project-level database contract
+  owns dynamic checks for a single head, no branches, and intact ancestry.
+  A feature migration test owns only its revision, direct \`down_revision\`,
+  upgrade/downgrade, schema transition, and data preservation.
+- A new revision reruns the project-level contract; it does not require literal
+  current-head consumers or historical feature-test updates. Resolve current
+  head at execution preflight when needed and keep its ID out of durable testing
+  specs, feature plans, and task cards.
+
 ## Evidence and ownership
 - T2/T3 tasks require an executable verification path. T0/T1 may use compact
   evidence or a documented no-runnable-check route when no meaningful check exists.

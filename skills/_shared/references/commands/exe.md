@@ -59,6 +59,11 @@ Point-of-use preflight must confirm:
   or registration; preserve framework placement, required or reserved filename
   parts, import/module identity, public path, package export, route, and build
   target; then choose the minimum complete path with sufficient durable context;
+- for an Alembic migration under an accepted linear topology, preflight may
+  resolve the current head transiently to set or verify the new revision's
+  direct `down_revision`; do not propagate it as a repository-current-head
+  assertion or update historical feature tests, and run the existing
+  project-level graph contract unchanged;
 - the tier-required existing protocol is coherent, or every missing protocol
   file can be initialized from its framework-owned template before task start.
 

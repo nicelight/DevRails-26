@@ -145,6 +145,10 @@ When `Foundation Required: true`:
      schema/migration source;
    - proof harness/evidence -> `.memory-bank/testing/*`;
    - local bootstrap/runtime/troubleshooting -> `.memory-bank/runbooks/*`.
+   For an accepted linear Alembic topology, reuse or create one project-level
+   database contract owner that derives the single head and proves no branches
+   plus intact ancestry. Do not seed a literal current head ID into Foundation
+   specs, plans, or task cards.
    For an accepted capability-sliced target, preserve its composition root,
    required slice roots, public boundaries, ownership, dependency rules, and
    proof paths; do not design product behavior or additional slices here.
