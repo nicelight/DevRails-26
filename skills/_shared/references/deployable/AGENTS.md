@@ -170,10 +170,6 @@ After finishing a meaningful unit of work:
 - Manual mode: T0/T1 may close in `/exe` with compact evidence when the explicit manual top-level owner conditions are met; standalone `/verify` is optional for uncertainty, widened scope, or explicit request. T2 becomes closure-eligible after `/verify PASS` when full protocol plus applicable task/spec gates are satisfied; the explicit owner writes the lifecycle decision. T3 must run per-task `/red-verify` before final closure; full `/mb-sync` runs at the end of the current wave unless an earlier reconciled-state dependency or explicit owner request requires it.
 - If `/exe` or `/verify` discovers a required higher tier, stop scope growth and route the original task ID through `/feature-to-tasks FT-<NNN>` for controlled rebuild/split; rerun task-plan review and applicable doctor gates before executing the replacement task ID.
 - T2/T3 use the indexed task card as the complete task-scoped handoff; `/mb-doctor` checks structural completeness and `/review-tasks-plan` checks semantic applicability and sufficiency.
-- For delegated execution, assign each `TASK-NNN-TN-FT-NNN-WN` to a
-  dedicated task-scoped agent context using tier-appropriate
-  `.protocols/TASK-NNN-TN-FT-NNN-WN/` state. The orchestrating agent chooses
-  the delegation mechanism.
 - Execution file scope: touched_files is advisory and non-exhaustive; executor
   preflight confirms actual files, while non-empty write_boundary and
   forbidden_scope remain hard boundaries.
@@ -182,14 +178,6 @@ After finishing a meaningful unit of work:
   hard runtime_context.write_boundary, isolated worktrees/sandboxes, and
   the exclusions in .memory-bank/workflows/autonomy-policy.md; touched_files
   alone never proves independence.
-
-Delegated task context:
-- Provide `TASK_ID`, the installed `/exe` project skill, the indexed task
-  record, `.memory-bank/workflows/tier-policy.md`, direct task-linked canonical
-  specs, and tier-appropriate `.protocols/<TASK_ID>/` state.
-- Assume structural readiness was checked by the feature/task-queue gate. Stop
-  on semantic contradictions, unverifiable success, or scope/public-contract
-  ambiguity. Implement, record evidence, and report to `.tasks/<TASK_ID>/`.
 
 ## Two modes (manual vs scheduler)
 - **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd-to-features` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/feature-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/exe TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/exe TASK` → `/verify TASK` → `/red-verify TASK`, then explicit owner closure and wave-boundary `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full `/mb-sync` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/feature-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd-to-features`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/feature-doctor FT-<NNN>` only for explicit feature blockers and rerun `/feature-to-tasks FT-<NNN>` for feature-level canonical spec repair.

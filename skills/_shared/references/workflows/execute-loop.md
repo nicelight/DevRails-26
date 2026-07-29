@@ -96,37 +96,6 @@ Revision, and the Foundation gate is already
 `/autopilot` must run the strict doctor before task selection and
 after the wave-boundary `/mb-sync` before promotion.
 
-Delegated task execution uses a dedicated task-scoped agent context. The
-orchestrating agent chooses the delegation mechanism.
-
-Execution handoff:
-- Assign `TASK_ID` and the installed `/exe` project skill.
-- Read `AGENTS.md`, the indexed task record,
-  `.memory-bank/workflows/tier-policy.md`, and direct task-linked canonical
-  specs. Do not load broad planning/global docs by default for T0/T1.
-- Assume structural readiness was checked by the applicable boundary gate.
-  Treat `touched_files` as advisory and non-exhaustive; confirm the actual
-  write set during preflight, respect hard allowed/forbidden scope, and stop on
-  material outcome/tier/design expansion.
-- Use tier-appropriate `.protocols/<TASK_ID>/` state. Implement only
-  semantically scoped changes. Record evidence and actual changed files. For
-  manual T0/T1, close only if explicit top-level owner fast-lane conditions are
-  met; otherwise hand off. Report to `.tasks/<TASK_ID>/`.
-
-Verification handoff:
-- Assign `TASK_ID` and the installed `/verify` project skill; also use
-  `/red-verify` when `task.tier` is T3.
-- Read `AGENTS.md`, the indexed JSON task record including `runtime_context`,
-  `.memory-bank/workflows/tier-policy.md`, tier-selected execution
-  handoff/evidence, task-scoped acceptance/REQ basis, and direct task-linked
-  canonical specs.
-- Respect task gates, verification targets, evidence requirements, scope, and
-  stop conditions. Task/spec are source of truth. Route only by `task.tier`:
-  T0/T1 compact `run.md`; T2 functional `PASS` makes closure eligible without
-  per-task `/red-verify`; T3 functional `PASS` routes to per-task `/red-verify`
-  and exact `HUMAN_CHECKPOINT: done`. Run `/mb-doctor --strict` before
-  progression.
-
 ## Parallel vs sequential
 - Canonical execution is sequential: finish one task's execute/verify/closure
   decision before selecting the next task.

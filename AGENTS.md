@@ -44,7 +44,7 @@ Leaf skill должен описывать собственный outcome и imm
 - Не превращай примеры, предпочтения и best practices в обязательные шаги.
 - Сокращение текста не должно менять statuses, ownership, stop conditions и resume routes.
 
-## Strict relevance and scope
+## Strict relevance and scope / No scope creep
 
 - Отвечай только на поставленный вопрос и рассматривай только затронутые аспекты.
 - Не добавляй смежные улучшения, use cases, будущие риски, альтернативные архитектуры или best practices без запроса.
