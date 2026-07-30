@@ -947,6 +947,12 @@ try {
         && normalizedSpecDesign.includes(
           'Add shared code, event bus, mediator, DI/plugin registry, or similar cross-slice machinery only for a current evidenced requirement.',
         )
+        && normalizedSpecDesign.includes(
+          "Where the accepted target leaves domain-modeling style open, prefer the affected area's local style.",
+        )
+        && normalizedSpecDesign.includes(
+          'A material translation boundary needs concrete semantic, ownership, compatibility, or representation-isolation pressure and follows the existing operator-decision route.',
+        )
         && !normalizedSpecDesign.includes(
           'It is not a default, a separate mandatory question',
         ),
@@ -1154,6 +1160,12 @@ try {
           'Current implementation drift that the task can handle inside its accepted target and semantic boundary is evidence, not a new design choice.',
         )
         && normalizedExe.includes(
+          "within an open domain-modeling choice, prefer the affected area's local style",
+        )
+        && normalizedExe.includes(
+          'material boundary or ownership changes use the existing operator-decision routes',
+        )
+        && normalizedExe.includes(
           'If work requires changing accepted write authority, public boundary, source of truth, orchestration owner, or dependency direction, route it to `/spec-design`.',
         )
         && normalizedExe.includes(
@@ -1181,6 +1193,15 @@ try {
           'Do not introduce this proof process without task-scoped normative evidence.',
         ),
       `${runtimeRoot}/verify does not require the allowed task-scoped architectural path or preserve verdict semantics.`,
+    );
+    assert(
+      normalizedVerify.includes(
+        'Before relying on a test, probe, receipt, or artifact in the verdict, confirm that its observation materially supports the specific task/spec claim or observable outcome it is cited to prove, rather than merely executing code or checking an implementation detail.',
+      )
+        && normalizedVerify.includes(
+          'Treat this as ordinary claim-to-evidence mapping, not a separate review phase or checklist.',
+        ),
+      `${runtimeRoot}/verify lost its evidence-adequacy or no-extra-review contract.`,
     );
     assert(
       normalizedAutonomous.includes(

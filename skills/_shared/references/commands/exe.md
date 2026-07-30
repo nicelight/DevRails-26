@@ -53,6 +53,9 @@ Point-of-use preflight must confirm:
   required public boundaries, preserves source-of-truth and dependency
   direction, creates no unaccepted cross-module contract or forbidden
   command/write bypass, and honors linked orchestration-placement rules;
+- within an open domain-modeling choice, prefer the affected area's local style;
+  material boundary or ownership changes use the existing operator-decision
+  routes;
 - before creating, moving, or renaming a project-authored source file, resolve
   its applicable ownership, reuse, or tooling boundary; inspect the nearest
   relevant local pattern and governing manifests, configuration, resolution,

@@ -335,6 +335,11 @@ event bus, mediator, DI/plugin registry, or similar cross-slice machinery only
 for a current evidenced requirement. A code root is a discovery location and
 is not a task hard write boundary.
 
+Where the accepted target leaves domain-modeling style open, prefer the
+affected area's local style. A material translation boundary needs concrete
+semantic, ownership, compatibility, or representation-isolation pressure and
+follows the existing operator-decision route.
+
 For shared-boundary, contract, state/data, runtime, security, or strict pressure,
 maintain `.memory-bank/architecture/system-architecture.md#Architecture Spine`
 with stable compact rules:

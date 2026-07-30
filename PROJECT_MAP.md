@@ -146,6 +146,10 @@ Architecture Spine is a compact design-pressure guardrail inside
 stable `AD-*` executable rules and does not introduce a separate architecture
 workflow.
 
+Domain-modeling guidance stays inline: accepted target wins; otherwise local
+style is preferred, while material translation boundaries use existing decision
+routing. It adds no DDD artifact, status, or lifecycle.
+
 Global planning freshness uses one integer
 `.memory-bank/spec-backbone.md#Global Backbone Status` `Planning Revision`.
 Material global-contract changes invalidate all previous product task-plan

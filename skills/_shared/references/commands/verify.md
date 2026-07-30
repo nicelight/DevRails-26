@@ -103,6 +103,15 @@ Build the minimum complete verification basis from:
 - gates/evidence requirements;
 - execution handoff, actual changes, local results, and artifacts.
 
+Before relying on a test, probe, receipt, or artifact in the verdict, confirm
+that its observation materially supports the specific task/spec claim or
+observable outcome it is cited to prove, rather than merely executing code or
+checking an implementation detail. Inadequate evidence is not an implementation
+failure: obtain the smallest credible replacement check/probe when safe, or use
+the existing `NEEDS-CLARIFICATION` semantics when required proof cannot be
+obtained. Treat this as ordinary claim-to-evidence mapping, not a separate
+review phase or checklist.
+
 For each applicable linked architecture rule, confirm that accepted owners
 change state and retain cross-module orchestration, required public boundaries
 are used, no unaccepted cross-module contract, forbidden command/write path, or
