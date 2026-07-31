@@ -35,10 +35,10 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 
 | Task tier / situation                    | Codex reasoning                                                   |
 | ---------------------------------------- | ----------------------------------------------------------------- |
-| `T0`, `T1`, `T2`                         | `medium`                                                          |
-| `T3` 								       | `high`                                                            |
-| Failed verification / complex debugging  | `high`                                                            |
-| Red-verification / semantic review       | `high`; use `xhigh` only for unusually complex or high-risk cases |
+| `T0`, `T1`                               | `medium`                                                          |
+|  `T2`, `T3` 								             w| `high`                                                            |
+| Failed verification / complex debugging  | `xhigh`                                                           |
+| Red-verification / semantic review       | `xhigh`                                                           |
 
 
 ## Decision Flow
