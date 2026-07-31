@@ -1,11 +1,11 @@
 ---
-description: Implement one indexed JSON task within its semantic and hard runtime boundaries, then produce tier-routed evidence and handoff.
+description: Execute one indexed JSON task within its semantic and hard runtime boundaries, then produce tier-routed evidence and handoff.
 status: active
 ---
 # /exe - Execute one TASK
 
 <objective>
-Implement one selected `TASK-NNN-TN-FT-NNN-WN` and leave reproducible
+Execute one selected `TASK-NNN-TN-FT-NNN-WN` and leave reproducible
 protocol/evidence for verification and the lifecycle owner. `/exe` is not a
 scheduler.
 </objective>
@@ -46,6 +46,8 @@ Point-of-use preflight must confirm:
 - for a product task, reviewed and current Planning Revision are equal;
 - T2/T3 direct canonical coverage is applicable and concrete enough to avoid
   guessing shape, rules, errors, and verification;
+- every current accepted `planned|ready` T2/T3 task satisfies the prospective
+  proof-path contract in tier policy;
 - actual work fits the semantic outcome/AC/REQ/spec boundary, tier, deliberate
   hard allowed/forbidden scopes, and stop conditions;
 - when linked rules define architecture boundaries, the tactic keeps state
@@ -72,7 +74,8 @@ Point-of-use preflight must confirm:
 
 Stop before implementation if the task is missing/malformed, already
 `blocked|failed|done`, has unmet dependencies, lacks required T2/T3 context, is
-objectively contradictory, is unverifiable, or is materially under-tiered.
+objectively contradictory, is unverifiable, lacks the required T2/T3
+prospective proof path, or is materially under-tiered.
 
 If product planning revision evidence is missing, invalid, or mismatched, every
 previous product task-plan approval is stale. Leave all task statuses unchanged
@@ -83,8 +86,8 @@ For a selected `planned` task, write `planned -> ready` only when this preflight
 proves it runnable; otherwise leave it `planned` and stop. A selected `ready`
 task may start. A selected `in_progress` task is resume-only: reconcile its
 current Execution Attempt, protocol, handoff, verdicts, and observable work
-before acting. If the implementation handoff is already complete, do not replay
-implementation; return the existing next handoff. If a possibly completed
+before acting. If the `/exe` handoff is already complete, do not replay
+execution; return the existing next handoff. If a possibly completed
 unsafe or non-idempotent side effect cannot be reconciled, stop rather than
 replay it.
 </input_contract>
@@ -125,6 +128,8 @@ replay it.
   index, and dependencies.
 - Selecting or starting a task does not grant an unapproved production,
   destructive, privileged, secret-reading, or other external side effect.
+- T2/T3 production implementation follows the tier-policy Claim-Linked
+  RED/GREEN contract; it grants no broader permission or lifecycle authority.
 </hard_invariants>
 
 <operator_decisions>
@@ -157,8 +162,9 @@ authoritative task/spec boundary.
 <agent_discretion>
 Within the selected outcome, applicable specs, tier, and hard scopes, the agent
 chooses exploration order, tools, implementation tactic, local decomposition,
-actual file set, and the cheapest sufficient project-native checks. No fixed
-code-reading order or test-category checklist is required.
+actual file set, claim-equivalent test/probe shape, and the cheapest sufficient
+project-native checks. No fixed code-reading order or test-category checklist
+is required.
 </agent_discretion>
 
 <required_outputs>
@@ -169,7 +175,7 @@ Protocol by tier:
   context, preflight-confirmed change surface, changes, checks, evidence,
   `VERDICT: PASS|FAIL|BLOCKED`, closure owner/decision, and handoff notes.
 - T2/T3: `.protocols/<TASK_ID>/{context,plan,progress,verification,handoff}.md`
-  where `/exe` fills implementation context/progress and leaves final
+  where `/exe` fills execution context/progress and leaves final
   verification to `/verify`.
 - T3 handoff records whether the later exact
   `HUMAN_CHECKPOINT: done` marker is present or still required; it does not
@@ -191,27 +197,55 @@ initial shape only; this command and tier policy own lifecycle/status rules.
 If a required template is absent before file creation, stop and request
 framework bootstrap/sync instead of inventing a shape.
 
-Before any implementation or external side-effect write:
+Before the first prospective T2/T3 probe, implementation, or external side
+effect:
 1. complete preflight and, when applicable, durably write the selected task's
    `planned -> ready` transition;
 2. initialize or reconcile the tier protocol;
 3. in `run.md` for T0/T1 or `context.md` for T2/T3, create or reuse one neutral
    `## Execution Attempt` block with `attempt` and `started`;
-4. durably write `ready -> in_progress` immediately before the first
-   implementation write. Protocol/evidence bookkeeping may precede this
-   transition; implementation may not.
+4. durably write `ready -> in_progress`. Protocol/evidence bookkeeping may
+   precede this transition; the prospective probe, implementation, and external
+   side effects may not.
 
 Re-entry with `ready` plus a prepared attempt reuses that attempt. Re-entry with
 `in_progress` plus an unfinished coherent attempt resumes it. A completed
-implementation handoff routes forward without replay. After an eligible
-same-task retry decision, create a new attempt and mark older same-claim receipt
-blocks `superseded` or `supporting-only`. Do not add owner, invocation-basis, or
-mode metadata to the attempt. A legacy `in_progress` protocol without the block
-may add it only when durable work/handoff evidence unambiguously identifies the
+`/exe` handoff routes forward without replay. After an eligible same-task retry
+decision, create a new attempt and mark older same-claim receipt blocks
+`superseded` or `supporting-only`. Do not add owner, invocation-basis, or mode
+metadata to the attempt. A legacy `in_progress` protocol without the block may
+add it only when durable work/handoff evidence unambiguously identifies the
 unfinished attempt and replay is safe; otherwise stop.
 
-Implementation evidence must record:
-- actual changed files and any advisory `touched_files` deviation rationale;
+For a current T2/T3 task governed by a prospective path, apply the tier-policy
+Claim-Linked RED/GREEN contract:
+- resolve the planned claim mapping and choose the smallest credible
+  claim-scoped probe;
+- on the initial attempt, a mapped claim receives honest claim-specific RED
+  before its first production change. Setup, syntax, unrelated, or artificial
+  failure does not qualify. Pre-implementation GREEN preserves the evidence and
+  avoids production changes for that claim; complete any remaining accepted
+  task outcome instead of routing early merely because no claim remains RED;
+- on retry, retain the original durable RED when one exists, bind the new
+  attempt to the failed gate evidence and correction, and obtain fresh
+  claim-equivalent GREEN for corrected applicable claims. Every required
+  verification gate remains due after handoff; the original probe need not
+  become RED again;
+- an accepted not-applicable path uses its planned alternative proof; T3 uses
+  only its authorized isolated/disposable evidence surface;
+- after changing production behavior, require claim-equivalent GREEN. Probe
+  changes remain equally strong and are explained.
+
+Record the claim mapping, attempt, applicability/reason, RED source and result,
+retry correction basis when applicable, GREEN result, probe changes, and
+artifact paths in `progress.md`; link them from `handoff.md`. These labels are
+execution evidence, not `VERDICT` or `SEMANTIC_VERDICT` markers. GREEN may
+separately qualify as a reuse candidate; RED never replaces final gate evidence
+or gets backfilled for historical `done|failed` tasks.
+
+Execution evidence must record:
+- actual changed files, including none, and any advisory `touched_files`
+  deviation rationale;
 - hard allowed-write compliance and whether forbidden scope was touched;
 - task/spec outcome compliance;
 - exact commands, results, concise output/evidence paths, and unavailable-gate
@@ -262,7 +296,7 @@ do not describe it as independently proven. Do not persist unredacted secrets
 or standalone `VERDICT:` / `SEMANTIC_VERDICT:` lines as raw command output that
 could be mistaken for workflow closure evidence.
 
-The implementation handoff must point to the exact current-attempt receipt
+The `/exe` handoff must point to the exact current-attempt receipt
 location and mark older same-claim receipts from previous execution/retry
 attempts `superseded` or supporting-only. Evidence produced directly by
 `/add-tests` is supporting-only; after all relevant changes, only a final gate
@@ -271,13 +305,16 @@ run owned and recorded by `/exe` may become a reuse candidate.
 
 <validation>
 Before handoff, confirm:
-- no implementation write occurred before durable `in_progress`, and the
-  current task status agrees with its tier protocol and Execution Attempt;
-- implementation achieves only the selected outcome and respects all
+- no prospective T2/T3 probe, implementation write, or external side effect
+  occurred before durable `in_progress`, and the current task status agrees
+  with its tier protocol and Execution Attempt;
+- the completed task outcome respects all
   authoritative specs, constraints, invariants, anti-goals, and hard scopes;
 - actual files and local evidence are reproducible and recorded;
 - every proposed reuse candidate satisfies the bounded-input rules, is linked
   from the current handoff, and does not claim independent provenance;
+- every applicable T2/T3 path satisfies the tier-policy RED/GREEN contract and
+  its current handoff links the evidence;
 - no unresolved material branch was silently decided;
 - tier did not need escalation.
 
@@ -288,13 +325,15 @@ changes/evidence, and split recommendation; then routes the original task ID to
 </validation>
 
 <handoff_contract>
-- Scheduler mode -> return implementation evidence to the scheduler for
+- Scheduler mode -> return `/exe` evidence to the scheduler for
   tier-routed `/verify`; do not mutate final lifecycle.
 - Manual T0/T1 with valid explicit-owner fast lane -> compact closure may be
   recorded under tier policy; otherwise `/verify` or explicit owner closes.
 - T2/T3 -> `/verify <TASK_ID>`; T3 then routes to per-task `/red-verify` after
   functional PASS.
 - Blocker/tier/design expansion -> the named planning/design repair owner.
+- A difficult failure without an evidence-backed cause may recommend a separate
+  fresh `/debug <TASK_ID>`; `/exe` never invokes `/debug`.
 
 Do not run `/verify`, `/red-verify`, full `/mb-sync`, or dependent promotion
 inside this command.

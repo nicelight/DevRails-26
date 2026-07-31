@@ -193,6 +193,15 @@ Task-record rules:
   least one existing direct task-linked canonical SDD path, advisory expected
   change surface and/or justified hard write scope, and a real gate command
   and/or non-empty verification target.
+- every newly created or reconciled `planned|ready` T2/T3 record uses existing
+  `evidence_required` and direct links to map `REQ-000` or an exact canonical
+  spec claim to a prospective pre-implementation probe, its claim-specific RED,
+  and the corresponding GREEN. When meaningful RED is inapplicable, record one
+  concrete accepted reason instead; tier, convenience, or a missing harness is
+  insufficient. One probe may cover several claims only with explicit mapping;
+- T3 mappings cover every independently harm-driving functional claim using
+  only already authorized isolated/disposable state with safe rerun and
+  cleanup; they never expand permissions.
 </required_outputs>
 
 <validation>
@@ -210,11 +219,17 @@ Before handoff, prove:
   discretion;
 - canonical-path uniqueness and spec-index purity;
 - every T2/T3 card satisfies the complete single-card handoff contract;
+- every newly created or reconciled `planned|ready` T2/T3 card has a credible
+  claim-linked RED/GREEN path or concrete accepted not-applicable reason, with
+  complete safe T3 risk-driving coverage;
 - Gate Anchors name the final gate or `not_required` truthfully;
 - no affected material operator decision remains unresolved.
 
 Report queue action, specs reused/extended/created, task IDs, final gate ID or
 `not_required`, and blockers/questions.
+
+Do not fabricate or backfill RED/GREEN evidence for historical
+`in_progress|done|failed` Foundation records.
 </validation>
 
 <handoff_contract>

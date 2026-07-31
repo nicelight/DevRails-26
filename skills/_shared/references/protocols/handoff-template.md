@@ -18,6 +18,8 @@ status: active
 ## How to run / verify
 - gates:
   - ...
+- claim-linked RED/GREEN evidence:
+  - <claim locator plus progress/artifact paths, accepted not-applicable reason, or none>
 - current-attempt reuse candidate locators:
   - <attempt plus protocol/artifact path and heading, or none>
 - superseded/supporting-only receipt locators:

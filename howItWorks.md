@@ -36,20 +36,7 @@ product intent
 достаточный для текущего риска и contract. Это не разрешает пропускать
 correctness, security, compatibility или обязательные verification gates.
 
-## 2. Что изменилось в contracts skills
 
-Core Product/Design, tasking, execution и scheduler skills теперь отделяют
-обязательный workflow contract от внутренней тактики агента. Типовая структура
-такого skill включает:
-
-- `<objective>` — какой outcome принадлежит skill;
-- `<input_contract>` — authoritative inputs и preconditions;
-- `<hard_invariants>` — что нельзя нарушать;
-- `<operator_decisions>` — какие развилки агент не решает сам;
-- `<agent_discretion>` — где агент свободен выбирать тактику;
-- `<required_outputs>` — durable artifacts и verdicts;
-- `<validation>` — условия правдивого завершения;
-- `<handoff_contract>` — единственный допустимый следующий owner/step.
 
 ### Свобода тактики
 
@@ -85,6 +72,58 @@ task boundary, tier, dependencies, verification policy или human checkpoint.
 существующий `HALT_CLARIFICATION_REQUIRED` или `HALT_BLOCKING_QUESTIONS` с
 точным interactive resume skill.
 
+## 2. Описание всех команд в проекте 
+
+### 🧭 Старт и контекст
+
+- `/cold-start` — выбирает ближайший правильный путь;
+- `/mb-init` — сообщает внешнюю команду установки или восстановления Memory
+Bank, но сам файлы не создаёт;
+- `/fill` — читает минимально необходимый контекст, ничего не меняя;
+- `/context-manifest` — составляет список файлов для чтения в большом проекте;
+- `/find-skills` — ищет дополнительные skills сначала в проекте, затем во
+внешнем каталоге;
+- `/creator-vibe` — keeps human outcomes and creative intent ahead of
+overengineering;
+- `/brainstorm` — исследует сырую идею;
+- `/brief` — создаёт краткое описание продукта;
+- `/constitution` — записывает главные правила проекта;
+- `/write-prd` — создаёт уточнённый PRD;
+- `/discuss` — закрывает конкретные вопросы и противоречия;
+- `/map-codebase` — описывает текущее состояние существующего кода;
+- `/feature-doctor` — уточняет одну проблемную функцию продукта.
+
+### 🏛️ Проектирование и задачи
+
+- `/spec-init` — подготавливает термины и контекст для разделения PRD;
+- `/prd-to-features` — создаёт требования и функции продукта;
+- `/review-feat-plan` — проверяет структуру продукта;
+- `/spec-design` — создаёт общие технические решения;
+- `/spec-auto` — выполняет проектирование в автоматическом режиме только из
+уже принятых решений;
+- `/foundation-to-tasks` — создаёт минимальные базовые задачи `FT-000`, когда
+они нужны;
+- `/feature-to-tasks` — создаёт техническое описание и задачи функции;
+- `/review-tasks-plan` — проверяет готовность задач к выполнению;
+- `/architecture-review` — проверяет архитектурные границы и зависимости;
+- `/kiss-architect` — применяет правила Architect к текущему решению.
+- `/technical-premortem` — по смыслу задачи проводит технический pre-mortem
+запланированного изменения до реализации.
+
+### ✅ Реализация, проверки и обслуживание
+
+- `/exe` — выполняет одну выбранную задачу;
+- `/add-tests` — добавляет достаточные тесты внутри выполняемой задачи;
+- `/debug` — ищет причину одного наблюдаемого сбоя, но ничего не исправляет;
+- `/verify` — независимо проверяет результат задачи и подтверждающие его данные;
+- `/red-verify` — ищет скрытые смысловые и рискованные ошибки;
+- `/mb-sync` — согласует уже принятые изменения между файлами Memory Bank;
+- `/mb-garden` — исправляет однозначные механические ошибки в ссылках и
+индексах;
+- `/mb-doctor` — проверяет готовность проекта или очереди задач;
+- `/autopilot` — выполняет готовую очередь продуктовых задач;
+- `/autonomous` — управляет полным автоматическим процессом.
+
 ## 3. Package skills и runtime-skills
 
 В source repo существуют два разных слоя.
@@ -104,7 +143,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 33 runtime-skills определены в:
+Текущие 34 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -561,6 +600,13 @@ Feature остаётся composition root для behavior, acceptance criteria �
 applicable spec links. Legacy `.memory-bank/tech-specs/FT-*.md` можно читать как
 brownfield evidence, но нельзя расширять как default T2/T3 hub.
 
+Критерии готовности функции получают постоянные идентификаторы
+`FT-<NNN>-AC-<NNN>`. Идентификатор сохраняется, пока не изменилось само
+ожидаемое поведение. Каждый критерий связан с требованием `REQ-*`, а задача
+ссылается на точный раздел вида `features/FT-*.md#FT-*-AC-*` через существующее
+поле `source_artifacts`. Отдельный реестр или новое поле задачи для этого не
+нужны.
+
 ### Architecture Spine
 
 Shared/strict executable decisions получают стабильные `AD-*` anchors внутри
@@ -904,6 +950,62 @@ Canonical shapes разворачиваются в
 `in_progress`. Он выбирает narrowest credible test level, не создаёт synthetic
 testing task и не меняет `.memory-bank/testing/`.
 
+### RED → GREEN для задач T2/T3
+
+Новая или перепланированная задача `T2/T3` заранее связывает конкретное
+требование с проверкой. Для этого используются уже существующие поля
+`verification_targets` и `evidence_required`, поэтому новый этап или новое поле
+задачи не появляются.
+
+В плане записываются ожидаемые результаты:
+
+- `RED` — до изменения кода проверка показывает, что нужного поведения ещё нет;
+- `GREEN` — после изменения та же проверка подтверждает это поведение.
+
+Одна проверка может подтверждать несколько требований, только если в плане явно
+перечислены все связи. Если получить осмысленный `RED` невозможно, план
+фиксирует конкретную причину и другой способ проверки. Уровень риска, удобство
+или отсутствие готового тестового стенда сами по себе такой причиной не
+считаются. `/review-tasks-plan` проверяет, что этот путь описан честно.
+
+Для критерия готовности функции его точный ID повторяется в
+`verification_targets` и `evidence_required`. `/mb-doctor` проверяет цепочку
+`REQ -> AC -> task -> proof`, а `/verify` оценивает, действительно ли
+приведённые данные подтверждают нужное поведение.
+
+Перед изменением кода `/exe` переводит задачу в `in_progress` и получает
+настоящий `RED`. Ошибка импорта, синтаксиса, настройки или намеренно сломанный
+тест не считается `RED`. После реализации тот же проверяемый результат должен
+дать `GREEN`.
+
+При повторной попытке исходный `RED` сохраняется, если он был. Новая попытка
+ссылается на проваленную проверку и сделанное исправление, получает свежий
+`GREEN` и повторяет все обязательные проверки.
+
+Если проверка проходит ещё до изменения кода, это предварительный `GREEN`.
+Агент сохраняет его и не меняет рабочий код только ради искусственного `RED`.
+При этом `/exe` всё равно завершает оставшуюся часть задачи и передаёт её в
+`/verify`. Результаты хранятся в обычных `progress.md`, каталоге
+`.tasks/<TASK_ID>/` и `handoff.md`.
+
+Для `T3` проверки выполняются только в уже разрешённой изолированной или
+одноразовой среде, которую можно безопасно очистить и запустить повторно. Это
+правило не даёт разрешения писать в рабочую систему, выполнять необратимые
+действия или ослаблять защиту.
+
+`/verify` независимо подтверждает итог задачи. `RED`, `GREEN`,
+предварительный `GREEN` и принятая замена неприменимого `RED` являются только
+дополнительными данными. Они не заменяют собственную проверку `/verify` и сами
+по себе не определяют результат. Если надёжных данных недостаточно, `/verify`
+выполняет минимальную безопасную проверку или возвращает
+`NEEDS-CLARIFICATION`. Если принятое требование действительно нарушено, он
+возвращает `FAIL`.
+
+Для старых задач со статусом `in_progress`, `done` или `failed` придумывать
+`RED` задним числом не нужно. Для планировщика весь путь по-прежнему остаётся
+одним этапом выполнения, а `/red-verify` сохраняет свою отдельную смысловую
+проверку.
+
 ### Receipt-aware reuse между `/exe` и `/verify`
 
 `/exe` может предложить результат хорошо известного local deterministic
@@ -986,6 +1088,26 @@ surface. Pre-existing current drift может остаться evidence, но �
 Manual и scheduler closure authority не смешиваются; Execution Attempt сам по
 себе mode не хранит.
 
+### Диагностика `/debug`
+
+Если причина сложного сбоя неясна, `/exe` или `/verify` может предложить
+отдельный запуск `/debug <TASK_ID>` в новом контексте. `/debug` изучает текущую
+попытку, требования, результаты проверок и затронутый код, но не меняет код,
+тесты, спецификации, задачу, протокол или её статус.
+
+Команда создаёт только диагностический отчёт:
+
+```text
+.tasks/<TASK_ID>/<TASK_ID>-S-DEBUG-final-report-docs-01.md
+```
+
+В отчёте указаны наблюдаемый сбой, подтверждённая причина или пробел в данных,
+минимальное предлагаемое исправление и проверка от повторения ошибки. Маркер
+`DIAGNOSIS: CONFIRMED|INCONCLUSIVE` сообщает только качество диагноза и не
+заменяет результат `/verify` или `/red-verify`. Любые диагностические проверки
+подчиняются тем же ограничениям безопасности. Исправление выполняет следующий
+`/exe`, а итог по-прежнему подтверждает `/verify`.
+
 ### Scheduler mode
 
 `/autopilot` владеет только product queue после закрытия Foundation gate:
@@ -1013,7 +1135,7 @@ Product scheduler checkpoint живёт в
 `.protocols/AUTONOMOUS-RUN/status.md` и содержит current task, current stage,
 last durable child verdict/handoff и next action. Допустимые scheduler stages
 ровно такие:
-`selection|execute|verify|red-verify|closure|wave-boundary`. Checkpoint не
+`selection|execute|verify|red-verify|diagnose|closure|wave-boundary`. Checkpoint не
 является task state: при resume scheduler сверяет его с indexed task record,
 current-attempt protocol, handoff и verdict evidence. Он активируется только
 при product handoff в `/autopilot`; Foundation resume использует outer run plan,
@@ -1038,16 +1160,38 @@ durable changes full sync не требует.
 
 ### Failure handling
 
-Scheduler может безопасно retry ту же task только в пределах budget и
-неизменных identity, outcome, scope, tier, dependencies, specs и hard
-boundaries. Unsafe/non-idempotent side effect нельзя повторять.
+Планировщик может повторить задачу, только если исправление остаётся в её
+принятых границах и не повторяет опасное или необратимое действие.
 
-Если retry невозможен или budget исчерпан:
+`max_retries_per_task: 2` означает три выполнения: первое и два повторных.
+Попытка считается неудачной только после `VERDICT: FAIL` или обязательного
+`SEMANTIC_VERDICT: semantic-fail`. Если оба результата относятся к одной
+попытке, она всё равно считается один раз. Незавершённый `/exe`, возобновление
+работы, `/debug`, `NEEDS-CLARIFICATION` и `semantic-concern` число попыток не
+увеличивают.
 
-- task получает `failed` и functional/semantic evidence;
-- создаётся bug note или normal schema-backed follow-up через planning owner;
-- direct dependents `failed|blocked` task блокируются до следующего promotion;
-- clarification/semantic concern становится `blocked`, а не automatic failure.
+Если данных недостаточно, чтобы выбрать безопасное исправление или честно
+поставить статус `failed` либо `blocked`, `/autopilot` запускает `/debug`.
+Диагностический отчёт для текущей попытки можно использовать повторно; он не
+добавляет ещё одну попытку.
+
+Пока не исчерпаны три выполнения, подтверждённое локальное исправление может
+использовать оставшийся повтор. Проблема вне границ или полномочий задачи
+переводит её в `blocked` и указывает, кто и как должен продолжить работу.
+Подтверждённый локальный сбой без безопасного исправления переводит задачу в
+`failed`. Если данных пока недостаточно, задача остаётся `in_progress`, а
+процесс останавливается для уточнения.
+
+После третьего неудачного выполнения четвёртого не будет. Внешняя проблема
+остаётся `blocked`; локальный или неясный сбой получает `failed`. Перед
+возобновлением `/autopilot` сверяет число попыток, последний результат и
+диагностический отчёт. Если это нельзя сделать надёжно или повтор проверки
+опасен, процесс останавливается и указывает причину и способ продолжения.
+
+После `failed` создаётся запись об ошибке или обычная новая задача через
+существующий этап планирования. Зависимые от `failed` или `blocked` задачи тоже
+блокируются. Запрос уточнения сам по себе не превращается в автоматический
+`failed`.
 
 ## 14. Tier policy
 
@@ -1105,9 +1249,11 @@ refresh JSON state
   -> select one ready task by wave/index order
   -> strict doctor precondition
   -> checkpoint execute: next action = /exe TASK
-  -> /exe: protocol + attempt -> ready -> in_progress -> implementation
+  -> /exe: начать попытку -> выполнить проверку -> внести изменения
   -> /verify
   -> per-task /red-verify for T3
+  -> если причина сбоя неясна: optional /debug
+     -> повтор или статус failed|blocked; четвёртой попытки нет
   -> scheduler lifecycle/evidence write
   -> T2 feature semantic gate when its last task closes
   -> next task in wave
@@ -1117,17 +1263,23 @@ refresh JSON state
   -> next promotion pass
 ```
 
-Checkpoint recovery выполняется даже без `in_progress`: unfinished feature
-`red-verify` или `wave-boundary` сначала продолжает первую не завершённую
-durable action и только затем допускает selection. Task recovery никогда не
-replay-ит уже доказанно завершённый child stage. Нет
-implementation handoff — resume идёт в `/exe`; есть handoff без functional
-verdict — в `/verify`; T3 functional PASS без semantic-pass — в per-task
-`/red-verify`; завершённые tier gates — в scheduler closure. Пока хотя бы одна
-`in_progress` task не получила доказуемое продолжение или durable decision,
-promotion и выбор другой ready task запрещены. Ambiguous attempt/stage или
-опасность повторного non-idempotent side effect приводит к existing halt с
-evidence, owner и exact resume route, а не к автоматическому replay/adoption.
+При возобновлении `/autopilot` сначала заканчивает уже начатый шаг и только
+потом выбирает новую задачу. Завершённые шаги повторно не запускаются:
+
+- нет результата `/exe` — продолжить через `/exe`;
+- `/exe` передал готовый результат на проверку — продолжить через `/verify`;
+- `/exe` сообщил блокировку или необходимость исправить план — выполнить
+  указанную им команду;
+- задача `T3` прошла `/verify`, но ещё не прошла смысловую проверку — продолжить
+  через `/red-verify`;
+- этап `diagnose` использует подходящий отчёт `/debug`, после чего выбирается
+  повтор или итоговый статус;
+- все обязательные проверки пройдены — закрыть задачу.
+
+Пока для задачи `in_progress` нет подтверждённого продолжения или решения,
+выбирать следующую задачу нельзя. Если состояние попытки неясно или повтор
+может снова выполнить опасное действие, процесс останавливается и указывает,
+кто и как должен продолжить работу.
 
 Status/evidence-only closure не вызывает повторный `/review-tasks-plan`.
 Re-review нужен, если изменились task cards, specs, dependencies, tier, scope
@@ -1251,9 +1403,10 @@ Canonical execution sequential. `--experimental-parallel` требует:
 
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
-| `/exe` | implementation одной indexed task и tier-routed evidence | не закрывает scheduler task и не запускает child verification |
+| `/exe` | выполняет одну выбранную задачу и записывает результаты проверок | не закрывает задачу за планировщик и сам не запускает следующую команду |
 | `/add-tests` | cheapest sufficient tests внутри current `in_progress` task | не создаёт testing lifecycle или `.memory-bank/testing/` policy |
-| `/verify` | task-scoped functional `PASS|FAIL|NEEDS-CLARIFICATION` | не исправляет implementation/spec и не создаёт follow-up task |
+| `/debug` | ищет причину одного наблюдаемого сбоя и пишет отчёт | не исправляет код, не выносит итог проверки и не меняет статус задачи |
+| `/verify` | независимо проверяет результат одной задачи | не исправляет код или спецификации и не создаёт следующую задачу |
 | `/red-verify` | independent hostile model и semantic verdict | не заменяет functional PASS и не меняет scheduler lifecycle |
 | `/mb-sync` | reconciliation already-decided durable state | не принимает closure/promotion/design decisions |
 | `/mb-garden` | mechanical links/indexes/routers maintenance и final lint | semantic/destructive decisions блокирует; broader reconcile передаёт `/mb-sync` |

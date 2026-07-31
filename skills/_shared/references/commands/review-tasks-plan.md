@@ -143,12 +143,32 @@ Cover:
      Foundation final gate `done` and linked when required; complete T2/T3
      single-card handoff; hard runtime scope respected; no slice code root was
      mechanically treated as a task hard write boundary.
+   - every accepted product AC has one stable feature-matching
+     `FT-<NNN>-AC-<NNN>` heading, an existing governing REQ, and at least one
+     exact task `source_artifacts` locator. Task-linked ACs must exist in that
+     task's feature and agree with its governing `reqs`.
+   - for each `planned|ready` T2/T3 task, confirm
+     that existing `evidence_required` and direct links map a stable accepted
+     claim to a realistic pre-implementation probe, a RED caused by absence of
+     that claim rather than syntax/setup/artificial damage, and GREEN for the
+     same claim; or confirm one concrete accepted reason why meaningful RED is
+     inapplicable. T3 paths must cover every independently harm-driving
+     functional claim in already authorized isolated/disposable state with safe
+     rerun and cleanup. One probe may cover several claims only with explicit
+     complete mapping.
+     For an AC-linked path, the exact AC ID must also identify its
+     `verification_targets` probe and RED/GREEN observations, or its concrete
+     `RED_NOT_APPLICABLE` reason and alternative proof.
    - when accepted module/slice boundaries apply, confirm each affected task
      card and its direct links make the primary owner/code root, public boundary,
      semantic/write owner, forbidden bypasses, eligible cross-slice orchestration
      owner when relevant, applicable forbidden technical placements, and proof
      path directly discoverable; do not require slices from an accepted
      architecture that uses another primary change unit.
+
+Do not reject historical `in_progress|done|failed` records solely because they
+predate this prospective RED/GREEN planning contract, and never request
+fabricated backfill.
 
 Verdicts:
 - `APPROVE`: all coverage groups pass. Non-blocking notes are allowed.

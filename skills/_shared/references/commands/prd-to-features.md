@@ -47,6 +47,9 @@ links:
   backbone exists and feature concerns are actually satisfied.
 - Do not add clarification metadata to every feature; it is only for an
   explicit feature-level decomposition blocker.
+- Product feature acceptance criteria use stable
+  `FT-<NNN>-AC-<NNN>` IDs. Preserve an ID while its accepted behavior is the
+  same; never renumber or reuse an existing ID.
 </hard_invariants>
 
 <operator_decisions>
@@ -82,7 +85,10 @@ default; promote it to document `status: active` only after its open questions
 are closed. This document status is not the task lifecycle.
 
 Each feature records:
-- use cases, acceptance criteria, and edge/failure behavior;
+- use cases, edge/failure behavior, and `## Acceptance Criteria` with one
+  `### FT-<NNN>-AC-<NNN>` block per accepted criterion. Each block names at
+  least one governing `REQ-*` on an exact `- REQ: REQ-<NNN>[, ...]` line, the
+  observable criterion, and its verification method;
 - optional evidence-backed source artifacts, normative inputs,
   constraints/invariants, and verification targets;
 - optional `## Behavior specs` routing only; do not create behavior JSON;
@@ -130,6 +136,8 @@ Verify:
 - every derived claim is supported by the clarified PRD or authoritative
   linked evidence;
 - every requirement has a stable `REQ-*` ID;
+- every product feature AC has a unique stable ID matching its feature and at
+  least one existing governing `REQ-*`;
 - each epic/feature traces to requirements or an explicit accepted delta;
 - each feature boundary was checked proportionally to evidence, and no concrete
   independently acceptable product outcome remains hidden inside another

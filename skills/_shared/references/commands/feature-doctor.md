@@ -39,6 +39,9 @@ ambiguity or design-impact assessment.
   `clarification_questions` count.
 - Preserve feature design statuses `complete|not_required|blocked`; do not add a
   `stale` status.
+- Preserve stable `FT-<NNN>-AC-<NNN>` IDs when accepted behavior is unchanged.
+  New or split criteria use the next unused feature-local ID; retired IDs are
+  not reused.
 - `/feature-doctor` may detect design impact but must not repair linked SDD
   specs, create tasks/plans, or change tier.
 - A recommendation/default is not accepted without an explicit operator answer.
@@ -68,6 +71,8 @@ After every accepted answer:
 - append a dated `## Clarifications` entry in the feature;
 - apply it to the relevant behavior, actor, data, NFR, edge-case, terminology,
   dependency, or verification section;
+- keep every affected acceptance block linked to at least one existing
+  governing `REQ-*` through its exact `- REQ: REQ-<NNN>[, ...]` line;
 - remove contradictory wording;
 - update the clarification protocol with the question/answer, changed sections,
   remaining ambiguity, `Design impact:
@@ -99,7 +104,9 @@ target feature and avoid design repair inside this command.
 
 If no ambiguity exists, clarification metadata may remain absent. Never retain
 `spec_design_status: complete|not_required` when accepted answers make linked
-design incomplete, contradictory, or unverifiable.
+design incomplete, contradictory, or unverifiable. Before handoff, confirm AC
+IDs remain unique, feature-matching, REQ-linked, and stable for unchanged
+behavior.
 </validation>
 
 <handoff_contract>

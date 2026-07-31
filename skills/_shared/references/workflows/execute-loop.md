@@ -19,6 +19,10 @@ status: active
   creates the implementation plan plus complete JSON task records with direct
   relevant spec links. Discovery, concern-lens order, and slicing tactics are
   agent-selected inside the command contract.
+- Newly created or reconciled `planned|ready` T2/T3 cards use existing
+  `evidence_required` and direct links to plan claim-linked RED/GREEN, or one
+  concrete accepted not-applicable reason; `/review-tasks-plan` evaluates this
+  prospective path without adding a workflow stage.
 - Rerun `/feature-to-tasks FT-<NNN>` to reconcile subject-based canonical specs, task cards,
   and plans.
 - After the current feature task set is decomposed, run
@@ -45,8 +49,11 @@ complex T2/foundation/dependency/stale-doc/risky-link conditions apply;
 use `/mb-doctor --strict` before autonomous handoff
 12) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
    - T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner
-   - T2 manual: `/exe TASK -> /verify TASK`; sync at wave/feature boundary unless broader state must be reconciled earlier
-   - T3 manual: `/exe TASK -> /verify TASK -> /red-verify TASK`, then the
+   - T2 manual: `/exe TASK` records RED -> implementation -> GREEN, pre-GREEN,
+     or accepted alternative proof, then one handoff to `/verify TASK`; sync at
+     wave/feature boundary unless broader state must be reconciled earlier
+   - T3 manual: `/exe TASK` records the same evidence variants through safe
+     isolated/disposable probes, then `/verify TASK -> /red-verify TASK`; the
      explicit owner records closure/status/evidence immediately and runs
      `/mb-sync` at the end of the current wave
    - after all tasks for a T2 feature are implemented, run `/red-verify --feature FT-<ID>` before treating the feature as complete

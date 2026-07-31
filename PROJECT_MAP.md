@@ -233,6 +233,31 @@ Fresh bootstrap must not create `.memory-bank/tech-specs/`. Lint/doctor may
 still recognize that legacy path as brownfield migration evidence; semantic
 hub-only rejection belongs to `/review-tasks-plan`.
 
+## Stable Acceptance Trace Hotspots
+
+Product feature acceptance uses stable `FT-<NNN>-AC-<NNN>` headings linked to
+governing `REQ-*`. Tasks address ACs through exact feature anchors in existing
+`source_artifacts`; T2/T3 prospective proof repeats the same ID in existing
+`verification_targets` and `evidence_required`.
+
+Primary source files:
+
+- `skills/_shared/references/commands/prd-to-features.md`
+- `skills/_shared/references/commands/feature-doctor.md`
+- `skills/_shared/references/commands/review-feat-plan.md`
+- `skills/_shared/references/commands/feature-to-tasks.md`
+- `skills/_shared/references/commands/review-tasks-plan.md`
+- `skills/_shared/references/commands/mb-doctor.md`
+- `skills/_shared/references/workflows/tier-policy.md`
+- `skills/_shared/references/protocols/verification-template.md`
+- `skills/mb-garden/assets/mb-doctor.mjs`
+- `scripts/test-mb-doctor.mjs`
+- `scripts/test-install-sync.mjs`
+
+Do not add an AC registry, lifecycle, task field, or schema extension. Historical
+terminal tasks without the prospective proof contract do not require fabricated
+RED/GREEN backfill.
+
 ## Task Runtime Context / Single-Card Handoff Hotspots
 
 The indexed `.memory-bank/tasks/TASK-*.task.json` record is the only durable

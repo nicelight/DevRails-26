@@ -20,6 +20,7 @@ const FOUNDATION_GATE = 'TASK-001-T0-FT-000-W0';
 const FOUNDATION_EXTRA = 'TASK-002-T0-FT-000-W0';
 const PRODUCT_FIRST = 'TASK-101-T0-FT-001-W1';
 const PRODUCT_SECOND = 'TASK-102-T0-FT-001-W1';
+const PRODUCT_T2 = 'TASK-201-T2-FT-001-W1';
 
 function fail(message, report = null) {
   const detail = report ? `\n\n${JSON.stringify(report, null, 2)}` : '';
@@ -45,18 +46,60 @@ function task(id, {
   wave,
   status = 'ready',
   dependsOn = [],
+  reqs,
+  sourceArtifacts,
+  verificationTargets,
+  evidenceRequired,
+  verify,
 } = {}) {
-  const idMatch = id.match(/-FT-([0-9]{3,})-W([0-9]+)$/);
-  const taskFeature = feature ?? `FT-${idMatch?.[1]}`;
-  const taskWave = wave ?? `W${idMatch?.[2]}`;
+  const idMatch = id.match(/-T([0-3])-FT-([0-9]{3,})-W([0-9]+)$/);
+  const tier = `T${idMatch?.[1]}`;
+  const taskFeature = feature ?? `FT-${idMatch?.[2]}`;
+  const taskWave = wave ?? `W${idMatch?.[3]}`;
+  const featureNumber = taskFeature.match(/^FT-([0-9]{3,})$/)?.[1];
+  const acId = featureNumber && taskFeature !== 'FT-000'
+    ? `${taskFeature}-AC-001`
+    : null;
+  const defaultSourceArtifacts = acId
+    ? [
+      `.memory-bank/features/${taskFeature}-fixture.md#${acId}`,
+      '.memory-bank/contracts/fixture.md',
+    ]
+    : [];
+  const defaultVerificationTargets = acId && (tier === 'T2' || tier === 'T3')
+    ? [`${acId}: node --test test/fixture.test.mjs`]
+    : [];
+  const defaultEvidenceRequired = acId && (tier === 'T2' || tier === 'T3')
+    ? [
+      `${acId} RED: accepted fixture behavior is absent`,
+      `${acId} GREEN: accepted fixture behavior is observed`,
+    ]
+    : [];
   return {
     id,
-    tier: 'T0',
+    title: 'Fixture task',
+    tier,
     feature: taskFeature,
     wave: taskWave,
     status,
     depends_on: dependsOn,
-    verify: status === 'failed' ? ['VERDICT: FAIL\nEvidence: fixture failure'] : [],
+    reqs: reqs ?? (featureNumber ? [`REQ-${featureNumber}`] : []),
+    touched_files: ['src/fixture.mjs'],
+    gates: [],
+    verify: verify ?? (
+      status === 'done'
+        ? ['VERDICT: PASS\nEvidence: fixture success']
+        : status === 'failed' ? ['VERDICT: FAIL\nEvidence: fixture failure'] : []
+    ),
+    docs: [],
+    evidence_required: evidenceRequired ?? defaultEvidenceRequired,
+    purpose: 'Exercise the doctor fixture.',
+    success_outcome: 'The fixture behavior is observable.',
+    source_artifacts: sourceArtifacts ?? defaultSourceArtifacts,
+    normative_inputs: [],
+    constraints: [],
+    invariants: [],
+    verification_targets: verificationTargets ?? defaultVerificationTargets,
   };
 }
 
@@ -69,6 +112,22 @@ function foundationMarkdown(required, gateTask) {
 - Foundation Pseudo-Feature: FT-000
 - Foundation Gate Task: ${gateTask}
 `;
+}
+
+function featureMarkdown(criteria, { semanticPass = false } = {}) {
+  return `---
+description: Fixture feature.
+---
+# FT-001
+
+## Acceptance Criteria
+
+${criteria.map(({ id, req = 'REQ-001' }) => `### ${id} — Fixture outcome
+- REQ: ${req}
+- Criterion: the fixture outcome is observable
+- Verification: run the fixture probe
+`).join('\n')}
+${semanticPass ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}`;
 }
 
 function createFixture(name, { foundation, tasks = [], directories = [], files = [] }) {
@@ -86,6 +145,7 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
 - Not applicable areas:
   - fixture: not_applicable - Foundation validator isolation fixture
 `);
+  writeFixture(root, '.memory-bank/contracts/fixture.md', '# Fixture contract\n');
 
   if (foundation !== undefined) {
     writeFixture(root, '.memory-bank/foundation.md', foundation);
@@ -102,12 +162,33 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
     writeJsonFixture(root, `.memory-bank/tasks/${record.id}.task.json`, record);
     if (/^FT-[0-9]{3,}$/.test(record.feature)) featureIds.add(record.feature);
 
-    if (record.status === 'done') {
+    if (record.status === 'done' && (record.tier === 'T0' || record.tier === 'T1')) {
       writeFixture(
         root,
         `.protocols/${record.id}/run.md`,
         '# Compact run\n\n- Evidence: fixture result\n\nVERDICT: PASS\n',
       );
+    }
+    if (record.status === 'done' && (record.tier === 'T2' || record.tier === 'T3')) {
+      const acId = record.source_artifacts
+        .join('\n')
+        .match(/FT-[0-9]{3,}-AC-[0-9]{3,}/)?.[0];
+      writeFixture(root, `.protocols/${record.id}/context.md`, '# Context\n');
+      writeFixture(root, `.protocols/${record.id}/plan.md`, '# Plan\n');
+      writeFixture(root, `.protocols/${record.id}/progress.md`, `# Progress
+
+## Claim-linked RED / GREEN (T2/T3)
+- accepted claim locator(s): ${acId ?? 'legacy'}
+- RED observation and evidence: fixture RED artifact
+- GREEN observation and evidence: fixture GREEN artifact
+`);
+      writeFixture(root, `.protocols/${record.id}/verification.md`, `# Verification
+
+- ${acId ?? 'legacy'}: verifier-owned fixture evidence
+
+VERDICT: PASS
+`);
+      writeFixture(root, `.protocols/${record.id}/handoff.md`, '# Handoff\n');
     }
     if (record.status === 'failed') {
       writeFixture(root, `.memory-bank/bugs/${record.id}.md`, `# Fixture failure\n\n${record.id}\n`);
@@ -116,12 +197,37 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
 
   featureIds.forEach((featureId) => {
     const slug = featureId === 'FT-000' ? 'foundation' : 'fixture';
+    const featureNumber = featureId.match(/^FT-([0-9]{3,})$/)?.[1];
+    const hasCompletedT2 = tasks.some((record) => (
+      record.feature === featureId
+      && record.tier === 'T2'
+      && record.status === 'done'
+    ));
     writeFixture(root, `.memory-bank/features/${featureId}-${slug}.md`, `---
 description: Fixture feature.
 ---
 # ${featureId}
+${featureId === 'FT-000' ? '' : `
+## Acceptance Criteria
+
+### ${featureId}-AC-001 — Fixture outcome
+- REQ: REQ-${featureNumber}
+- Criterion: the fixture outcome is observable
+- Verification: run the fixture probe
+`}
+${hasCompletedT2 ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}
 `);
   });
+
+  const requirementIds = new Set(['REQ-000']);
+  tasks.forEach((record) => {
+    (record.reqs ?? []).forEach((reqId) => requirementIds.add(reqId));
+  });
+  writeFixture(
+    root,
+    '.memory-bank/requirements.md',
+    `# Requirements\n\n${[...requirementIds].sort().map((reqId) => `- ${reqId}: fixture requirement`).join('\n')}\n`,
+  );
 
   directories.forEach((rel) => {
     mkdirSync(join(root, rel), { recursive: true });
@@ -162,6 +268,10 @@ function findFinding(report, code, severity = undefined) {
 
 function expectFinding(report, code, severity) {
   assert(Boolean(findFinding(report, code, severity)), `Expected ${severity} ${code}`, report);
+}
+
+function expectNoFinding(report, code) {
+  assert(!findFinding(report, code), `Did not expect ${code}`, report);
 }
 
 function expectPass(report, label) {
@@ -290,7 +400,202 @@ try {
     compactRunPresent,
   );
 
-  console.log('mb-doctor Foundation readiness regression passed');
+  const validAcceptanceTrace = runCase('valid-acceptance-trace', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2)],
+  }, ['--strict']);
+  expectPass(validAcceptanceTrace, 'valid acceptance trace');
+  expectNoFinding(validAcceptanceTrace, 'TASK_ACCEPTANCE_PROOF_MISSING');
+
+  const invalidAcceptanceReq = runCase('invalid-acceptance-req', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2)],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([{ id: 'FT-001-AC-001', req: 'REQ-999' }]),
+    }],
+  }, ['--strict']);
+  expectFinding(invalidAcceptanceReq, 'FEATURE_ACCEPTANCE_INVALID', 'error');
+
+  const duplicateAcceptance = runCase('duplicate-acceptance', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2)],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([
+        { id: 'FT-001-AC-001' },
+        { id: 'FT-001-AC-001' },
+      ]),
+    }],
+  }, ['--strict']);
+  expectFinding(duplicateAcceptance, 'FEATURE_ACCEPTANCE_DUPLICATE', 'error');
+
+  const uncoveredAcceptance = runCase('uncovered-acceptance', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2)],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([
+        { id: 'FT-001-AC-001' },
+        { id: 'FT-001-AC-002' },
+      ]),
+    }],
+  }, ['--strict']);
+  expectFinding(uncoveredAcceptance, 'FEATURE_ACCEPTANCE_UNCOVERED', 'error');
+
+  const danglingAcceptance = runCase('dangling-acceptance-link', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      sourceArtifacts: [
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-999',
+        '.memory-bank/contracts/fixture.md',
+      ],
+      verificationTargets: ['FT-001-AC-999: node --test test/fixture.test.mjs'],
+      evidenceRequired: [
+        'FT-001-AC-999 RED: accepted fixture behavior is absent',
+        'FT-001-AC-999 GREEN: accepted fixture behavior is observed',
+      ],
+    })],
+  }, ['--strict']);
+  expectFinding(danglingAcceptance, 'TASK_ACCEPTANCE_LINK_INVALID', 'error');
+
+  const suffixedAcceptance = runCase('suffixed-acceptance-link', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      sourceArtifacts: [
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-001-typo',
+        '.memory-bank/contracts/fixture.md',
+      ],
+    })],
+  }, ['--strict']);
+  expectFinding(suffixedAcceptance, 'TASK_ACCEPTANCE_LINK_INVALID', 'error');
+
+  const mismatchedAcceptanceReq = runCase('mismatched-acceptance-req', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { reqs: ['REQ-002'] })],
+    files: [{
+      rel: '.memory-bank/requirements.md',
+      content: '# Requirements\n\n- REQ-001: accepted feature behavior\n- REQ-002: unrelated task requirement\n',
+    }],
+  }, ['--strict']);
+  expectFinding(mismatchedAcceptanceReq, 'TASK_ACCEPTANCE_LINK_INVALID', 'error');
+
+  const missingAcceptanceProof = runCase('missing-acceptance-proof', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { evidenceRequired: [] })],
+  }, ['--strict']);
+  expectFinding(missingAcceptanceProof, 'TASK_ACCEPTANCE_PROOF_MISSING', 'error');
+  const missingAcceptanceProofDefault = runCase('missing-acceptance-proof-default', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { evidenceRequired: [] })],
+  });
+  expectPass(missingAcceptanceProofDefault, 'missing acceptance proof default mode');
+  expectFinding(missingAcceptanceProofDefault, 'TASK_ACCEPTANCE_PROOF_MISSING', 'warning');
+
+  const validNotApplicableProof = runCase('valid-not-applicable-proof', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      evidenceRequired: [
+        'FT-001-AC-001 RED_NOT_APPLICABLE: absence cannot be observed without falsifying the accepted static artifact; alternative proof: inspect the generated manifest',
+      ],
+    })],
+  }, ['--strict']);
+  expectPass(validNotApplicableProof, 'valid not-applicable acceptance proof');
+  expectNoFinding(validNotApplicableProof, 'TASK_ACCEPTANCE_PROOF_MISSING');
+
+  const missingAcceptanceEvidence = runCase('missing-acceptance-evidence', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { status: 'done' })],
+    files: [{
+      rel: `.protocols/${PRODUCT_T2}/progress.md`,
+      content: `# Progress
+
+## Claim-linked RED / GREEN (T2/T3)
+- accepted claim locator(s): FT-001-AC-001
+- RED observation and evidence:
+- GREEN observation and evidence:
+`,
+    }],
+  }, ['--strict']);
+  expectFinding(missingAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', 'error');
+
+  const misboundAcceptanceEvidence = runCase('misbound-acceptance-evidence', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      status: 'done',
+      sourceArtifacts: [
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-001',
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-002',
+        '.memory-bank/contracts/fixture.md',
+      ],
+      verificationTargets: [
+        'FT-001-AC-001: node --test test/fixture.test.mjs',
+        'FT-001-AC-002: node --test test/fixture.test.mjs',
+      ],
+      evidenceRequired: [
+        'FT-001-AC-001 RED: accepted fixture behavior A is absent',
+        'FT-001-AC-001 GREEN: accepted fixture behavior A is observed',
+        'FT-001-AC-002 RED: accepted fixture behavior B is absent',
+        'FT-001-AC-002 GREEN: accepted fixture behavior B is observed',
+      ],
+    })],
+    files: [
+      {
+        rel: '.memory-bank/features/FT-001-fixture.md',
+        content: featureMarkdown([
+          { id: 'FT-001-AC-001' },
+          { id: 'FT-001-AC-002' },
+        ], { semanticPass: true }),
+      },
+      {
+        rel: `.protocols/${PRODUCT_T2}/progress.md`,
+        content: `# Progress
+
+## Claim-linked RED / GREEN (T2/T3)
+- accepted claim locator(s): FT-001-AC-002
+- RED observation and evidence: fixture RED artifact for FT-001-AC-002
+- GREEN observation and evidence: fixture GREEN artifact for FT-001-AC-002
+
+## Open issues / risks
+- FT-001-AC-001 has no retained execution evidence.
+`,
+      },
+      {
+        rel: `.protocols/${PRODUCT_T2}/verification.md`,
+        content: `# Verification
+
+- FT-001-AC-001: verifier-owned fixture evidence
+- FT-001-AC-002: verifier-owned fixture evidence
+
+VERDICT: PASS
+`,
+      },
+    ],
+  }, ['--strict']);
+  const misboundFinding = findFinding(
+    misboundAcceptanceEvidence,
+    'TASK_ACCEPTANCE_EVIDENCE_MISSING',
+    'error',
+  );
+  assert(
+    misboundFinding?.details?.acceptance?.includes('FT-001-AC-001')
+      && !misboundFinding.details.acceptance.includes('FT-001-AC-002'),
+    'Evidence for one AC was incorrectly accepted as terminal evidence for another AC.',
+    misboundAcceptanceEvidence,
+  );
+
+  const historicalDoneWithoutProof = runCase('historical-done-without-proof', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      status: 'done',
+      verificationTargets: ['FT-001-AC-001: legacy verifier flow'],
+      evidenceRequired: [],
+    })],
+  }, ['--strict']);
+  expectPass(historicalDoneWithoutProof, 'historical done task without prospective proof');
+  expectNoFinding(historicalDoneWithoutProof, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
+
+  console.log('mb-doctor readiness and acceptance-trace regression passed');
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }

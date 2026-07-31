@@ -1,8 +1,8 @@
 ---
-description: Independently verify one implemented task against its task-scoped normative basis and reproducible evidence.
+description: Independently verify one task outcome against its task-scoped normative basis and reproducible evidence.
 status: active
 ---
-# /verify - Verify one implemented TASK
+# /verify - Verify one TASK outcome
 
 <objective>
 Prove or disprove one task's independently verifiable outcome. Record functional
@@ -18,14 +18,14 @@ Require:
   `.memory-bank/workflows/tier-policy.md`;
 - task-linked feature/REQ material needed for this outcome;
 - direct task-linked applicable canonical SDD specs;
-- tier-selected execution protocol and implementation handoff/evidence:
+- tier-selected execution protocol and `/exe` handoff/evidence:
   - T0/T1 -> `.protocols/<TASK_ID>/run.md` plus `.tasks/<TASK_ID>/` when present;
   - T2/T3 -> `context.md`, `plan.md`, `progress.md`, `handoff.md`, existing
     `verification.md`, and substantive `.tasks/<TASK_ID>/` artifacts.
 
 Normal scheduler input is `in_progress`. Manual re-verification of another state
-requires tier-appropriate implementation evidence or an explicit request. Never
-verify a merely `planned|ready` task as implemented or silently reinterpret
+requires tier-appropriate execution evidence or an explicit request. Never
+verify a merely `planned|ready` task as executed or silently reinterpret
 `blocked|failed|done`.
 
 Point-of-use preflight confirms index/file/ID and ID-segment consistency, valid
@@ -34,10 +34,11 @@ and tier-selected execution evidence. This is not another full schema/review
 gate. Missing required input returns `NEEDS-CLARIFICATION`; do not reconstruct
 it from protocol prose.
 
-An execute receipt is optional evidence, not required implementation input.
+An execute receipt is optional evidence, not required `/exe` input.
 Its absence or ineligibility routes to a rerun or replacement probe, not by
-itself to `NEEDS-CLARIFICATION`. Missing tier-required protocol, implementation,
-or normative evidence remains a required-input blocker under the rule above.
+itself to `NEEDS-CLARIFICATION`. Missing tier-required protocol, `/exe`
+handoff/evidence, or normative evidence remains a required-input blocker under
+the rule above.
 </input_contract>
 
 <hard_invariants>
@@ -51,6 +52,9 @@ or normative evidence remains a required-input blocker under the rule above.
   canonical coverage is a planning/design blocker, not an implementation FAIL.
 - Evidence requirements and verification targets state what must be proved;
   they are not proof. `/exe` local PASS is input, not automatic PASS.
+- Executor claim-path evidence linked by the current attempt is supporting, not
+  an independent observation or replacement for this command's functional
+  proof. Never demand fabricated RED from historical `done|failed` tasks.
 - An execute receipt is self-attested supporting evidence. It does not prove
   that its declared snapshot preceded the command or that the reported result
   occurred, and it is never an independent observation by `/verify`.
@@ -61,6 +65,10 @@ or normative evidence remains a required-input blocker under the rule above.
   actual change surface; do not run a repository-wide architecture audit.
 - Do not edit implementation, specs, AC, dependencies, tier/wave, task scope,
   BUG records, or follow-up tasks.
+- `/verify` never invokes `/debug`. It may recommend a separate fresh
+  `/debug <TASK_ID>` for an observed failure whose root cause or minimum
+  correction is not evidence-backed; the functional verdict still follows this
+  command's evidence-adequacy rules.
 - Scheduler mode: never close/fail/block/promote tasks or dependents.
 </hard_invariants>
 
@@ -77,7 +85,7 @@ do not choose one.
   task is revalidated/re-executed before verification resumes.
 - Route task scope/tier/feature-level spec repair to
   `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-design`, product
-  ambiguity to `/feature-doctor FT-<NNN>`, and missing implementation evidence
+  ambiguity to `/feature-doctor FT-<NNN>`, and missing `/exe` evidence
   to `/exe <TASK_ID>`.
 - Unattended flow returns the blocker and exact route to the scheduler for
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS`.
@@ -101,7 +109,8 @@ Build the minimum complete verification basis from:
 - task purpose/outcome, anti-goals, constraints, invariants, runtime hard scope;
 - mapped feature AC and concrete REQ behavior;
 - gates/evidence requirements;
-- execution handoff, actual changes, local results, and artifacts.
+- `/exe` handoff, current behavior, actual changes including none, local
+  results, and artifacts.
 
 Before relying on a test, probe, receipt, or artifact in the verdict, confirm
 that its observation materially supports the specific task/spec claim or
@@ -111,6 +120,35 @@ failure: obtain the smallest credible replacement check/probe when safe, or use
 the existing `NEEDS-CLARIFICATION` semantics when required proof cannot be
 obtained. Treat this as ordinary claim-to-evidence mapping, not a separate
 review phase or checklist.
+
+For T2/T3 governed by a prospective path, inspect the task's claim mapping and
+current execution evidence before assigning the verdict:
+- an initial applicable path links a stable accepted claim to real
+  pre-implementation RED caused by absence or incorrectness of that claim and
+  claim-equivalent GREEN after implementation;
+- a retry retains the original RED when one exists, links its failed gate
+  evidence and correction, and provides fresh claim-equivalent GREEN for
+  corrected applicable claims plus every required gate;
+- a not-applicable path must retain the concrete reason accepted by planning
+  and its alternative proof;
+- a pre-implementation GREEN claim records that the planned probe passed before
+  its production behavior changed; no artificial RED or speculative production
+  change may follow;
+- T3 evidence must stay inside authorized isolated/disposable state and cover
+  every independently harm-driving mapped claim.
+
+These variants do not change verdict semantics. Independently prove the current
+task outcome. Missing, artificial, unsafe, or contradictory required execution
+evidence uses `VERDICT: NEEDS-CLARIFICATION` when it prevents a credible
+verdict; an observed violation of the normative basis uses `FAIL`. Fresh
+verifier-owned outcome evidence remains required; executor GREEN alone cannot
+satisfy PASS.
+
+Here `unsafe` means that required proof cannot be obtained safely and the
+forbidden probe has not been executed. Evidence that a production/destructive
+probe was already executed without required permission or outside a hard
+allowed/forbidden boundary is an observed normative violation: use
+`VERDICT: FAIL`, never `PASS`, and the existing policy route.
 
 For each applicable linked architecture rule, confirm that accepted owners
 change state and retain cross-module orchestration, required public boundaries
@@ -133,7 +171,7 @@ because it exists.
 
 When the verifier elects to reuse a specific current-attempt candidate, assess
 that candidate before any probe or evidence write that may change its relevant
-inputs. Use the implementation-handoff locator, or the current `run.md` receipt
+inputs. Use the `/exe` handoff locator, or the current `run.md` receipt
 block for T0/T1, and ignore receipts marked `superseded` or supporting-only by
 a later attempt. For each candidate actually considered for reuse:
 
@@ -195,6 +233,8 @@ task-owned resume state: update it in place and never recopy the framework
 template over it. Command and tier policy rules outrank template placeholders.
 
 Separate the verification evidence into:
+- `executor claim path`: mapped claims, RED/GREEN, pre-GREEN, or accepted
+  not-applicable reason, and exact execution evidence locators;
 - `reused execute evidence`: accepted candidates, supported claims, state and
   freshness basis, and exact receipt locations;
 - `repeated checks`: reruns or replacement checks and the concise reason for
@@ -209,7 +249,7 @@ evidence.
 Use exactly one verdict:
 - `VERDICT: PASS`: every required task-scoped check passed with credible
   evidence;
-- `VERDICT: FAIL`: observed implementation violates the task-scoped normative
+- `VERDICT: FAIL`: the observed task outcome violates the task-scoped normative
   basis or a required functional check;
 - `VERDICT: NEEDS-CLARIFICATION`: input, evidence, scope/tier, canonical
   coverage, or reproducibility is missing, stale, contradictory, or unsafe.
@@ -222,10 +262,12 @@ task record is malformed, keep evidence in protocol/artifacts and route repair.
 Before reporting, confirm every required claim is reproducible from recorded
 commands/flows/artifacts; no feature-wide requirement was misassigned; actual
 scope did not require a higher tier; and no material branch was silently
-resolved. Also confirm that no T2 required claim and no T3 independently
-harm-driving claim relies only on self-attested execute evidence, and that every
-reused candidate is current-attempt, state-matched, bounded-input, and
-auditably reported.
+resolved. Also confirm that every planning-required T2/T3 execution path is
+honest, safe, and claim-linked through RED/GREEN, pre-GREEN, or its accepted
+not-applicable reason; no T2 required claim and no T3 independently
+harm-driving claim relies only on self-attested execute evidence, and every
+reused candidate is current-attempt, state-matched, bounded-input, and auditably
+reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
 tier and trigger, and routes controlled rebuild/split through
@@ -242,6 +284,9 @@ tier and trigger, and routes controlled rebuild/split through
   `/red-verify --feature FT-<ID>`.
 - T3 PASS -> per-task `/red-verify <TASK_ID>`; it is not closure-eligible yet.
 - FAIL or NEEDS-CLARIFICATION -> the named lifecycle/planning/evidence owner.
+- A difficult observed FAIL may additionally recommend separate
+  `/debug <TASK_ID>`; this command does not invoke it, and the debug report
+  cannot replace verifier-owned functional proof.
 
 Do not run `/red-verify`, `/mb-sync`, planning repair, or scheduler transitions
 inside this command.

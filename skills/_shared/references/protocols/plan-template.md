@@ -52,6 +52,15 @@ linked specs/PRD, or repository configuration.
 - [ ] `<check name>`: `<cmd>` — proves `<task outcome or concrete risk>`
 - No meaningful runnable check: `<not applicable | rationale>`
 
+## Claim-linked RED / GREEN (T2/T3)
+- applicability: applicable | not applicable
+- accepted claim locator(s): <AC / REQ / exact canonical spec anchor>
+- planned test/probe and environment:
+- observable RED:
+- corresponding GREEN:
+- accepted not-applicable reason and alternative proof:
+- T3 isolation, safe rerun, cleanup, and permission boundary:
+
 ## Fan-out plan (if needed)
 - Delegated agent A: scope ...
 - Delegated agent B: scope ...

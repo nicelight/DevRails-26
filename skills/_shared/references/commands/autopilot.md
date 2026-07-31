@@ -82,6 +82,8 @@ Do not mutate task statuses to represent this invalidation.
   is sequential.
 - Scheduler writes each final task decision/status/evidence to the authoritative
   `.task.json` before `/mb-sync`.
+- `/debug` is supporting evidence; `/autopilot` owns its invocation, retry
+  decision, and lifecycle disposition.
 - Full `/mb-sync` runs once at the wave boundary. Early sync requires a real
   current-wave RTM/index/spec/contract/changelog dependency or explicit owner
   request and does not replace the boundary sync.
@@ -118,7 +120,7 @@ state. Maintain the durable run checkpoint required by
 `.memory-bank/workflows/autonomy-policy.md`.
 
 Scheduler-specific `current stage` values are exactly:
-`selection|execute|verify|red-verify|closure|wave-boundary`. They are
+`selection|execute|verify|red-verify|diagnose|closure|wave-boundary`. They are
 orchestration checkpoint values, not task lifecycle states. Do not persist them
 in the task schema or use another stage vocabulary.
 
@@ -147,17 +149,21 @@ still names scheduler work, even when no task is `in_progress`:
    those rules. If the task is already final, first prove the lifecycle/evidence
    write and derive the next required scheduler action from durable queue/feature
    state; do not assume selection.
-3. A `red-verify` checkpoint whose exact next action is
+3. A `diagnose` checkpoint reconciles the current Execution Attempt, durable
+   unsuccessful-attempt count, failure evidence, next action, and expected
+   `/debug` report, then resumes `### Diagnostic recovery`. Reuse only a report
+   bound to the current attempt and change surface.
+4. A `red-verify` checkpoint whose exact next action is
    `/red-verify --feature FT-<ID>` reconciles the feature document and current
    verdict. Resume that child only if semantic-pass is absent and replay is
    safe; after its durable verdict, checkpoint the derived next action.
-4. A `wave-boundary` checkpoint resumes the first incomplete boundary action in
+5. A `wave-boundary` checkpoint resumes the first incomplete boundary action in
    canonical order: required feature/T3 gates, `/mb-sync`, lint, strict doctor,
    then any planning-surface-triggered task-plan reviews. Use `last durable child
    verdict/handoff` plus the referenced artifacts to skip completed actions;
    do not replace the checkpoint with `selection` until every required boundary
    action passes.
-5. If checkpoint stage, selected task, prior side effect, or completion
+6. If checkpoint stage, selected task, prior side effect, or completion
    cannot be reconciled safely, invoke no child and promote/select no task.
    Record the recovery decision, evidence, owner, and exact resume route, then
    use the existing halt matching the cause.
@@ -169,7 +175,7 @@ unresolved, do not write `planned -> ready` and do not select a different
 `ready` task. For each task:
 
 1. Reconcile the authoritative `.task.json`, checkpoint, task protocol, neutral
-   current-attempt metadata when present, implementation handoff, functional
+   current-attempt metadata when present, `/exe` handoff, functional
    verdict, semantic verdict, and human checkpoint. The task record and durable
    evidence win over a stale checkpoint. Determine the first incomplete durable
    stage; do not replay a stage merely because the scheduler restarted.
@@ -179,11 +185,13 @@ unresolved, do not write `planned -> ready` and do not select a different
    action` from that artifact before continuing.
 3. Only after the current attempt, stage, and any required replay are proved safe,
    continue from the first incomplete stage:
-   - no current implementation handoff and no evidence of a possibly completed
+   - no current `/exe` handoff and no evidence of a possibly completed
      unsafe/non-idempotent execution -> checkpoint `execute`, then
      `/exe <TASK_ID>`; otherwise use the recovery halt in step 4;
-   - current implementation handoff but no functional verdict -> checkpoint
-     `verify`, then `/verify <TASK_ID>`;
+   - current forward `/exe` handoff routing to `/verify` but no functional
+     verdict -> checkpoint `verify`, then `/verify <TASK_ID>`;
+   - an `/exe` handoff naming a blocker or repair owner -> apply its named route
+     under tier policy;
    - T3 functional `PASS` but no task semantic-pass -> checkpoint `red-verify`,
      then `/red-verify <TASK_ID>`;
    - every tier-required gate already passes -> checkpoint `closure`, then the
@@ -198,6 +206,23 @@ unresolved, do not write `planned -> ready` and do not select a different
    then use the existing policy, quality, clarification, or blocking halt that
    matches the cause. In particular, never replay a possibly completed unsafe
    or non-idempotent side effect to manufacture missing evidence.
+
+### Diagnostic recovery
+
+Apply `## Scheduler Failure Handling` in
+`.memory-bank/workflows/tier-policy.md`. When failure evidence supports neither
+a safe task-local correction nor disposition, checkpoint `current task`,
+`current stage: diagnose`, last durable evidence, exact next action, and the
+expected
+`.tasks/<TASK_ID>/<TASK_ID>-S-DEBUG-final-report-docs-01.md`, then invoke
+`/debug <TASK_ID>` in a fresh child context.
+
+On resume, prove the unsuccessful-attempt count and reuse only a matching
+current-attempt report; never replay an ambiguously completed mutating probe.
+Then apply the policy-owned retry, disposition, or evidence-owner halt.
+`/debug` does not add retry capacity. If count or child completion cannot be
+proved, preserve `in_progress`, record the evidence gap and owner/resume route,
+and use the matching existing halt.
 
 Continue to the next stranded `in_progress` task only after the current task has
 a durable scheduler decision and no terminal halt was recorded. The recovery
@@ -217,8 +242,9 @@ selection loop:
 4. require current strict-doctor PASS, then checkpoint the selected task at
    `execute` with exact `next action: /exe <TASK_ID>` and invoke `/exe`; `/exe`
    prepares/reconciles the tier protocol and writes `ready -> in_progress`;
-5. after `/exe` writes its durable handoff, update the checkpoint and run
-   `verify`, required T3 `red-verify`, and scheduler-owned `closure` in order;
+5. after `/exe` writes its durable handoff, follow its recorded route; only a
+   forward handoff runs `verify`, required T3 `red-verify`, and scheduler-owned
+   `closure` in order;
 6. write the final closure/failure/blocking decision and evidence, then update
    the checkpoint from the authoritative lifecycle/evidence write:
    - T0/T1 `done` after tier-valid compact/functional PASS;

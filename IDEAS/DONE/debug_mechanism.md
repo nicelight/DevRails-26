@@ -1,7 +1,6 @@
-# `/debug` и диагностическая эскалация `/autopilot`
+# `/debug` и diagnostic recovery `/autopilot`
 
-**Статус:** согласованный план реализации; runtime-контракт появится только
-после изменения canonical source и проверки установки.
+**Статус:** реализованный runtime-контракт.
 
 ## Цель
 
@@ -30,18 +29,14 @@ contract не меняются.
 
 ### `/autopilot`
 
-`/autopilot` как scheduler запускает `/debug` в свежем child-контексте:
+`/autopilot` запускает `/debug` в свежем child-контексте, когда durable failure
+evidence не подтверждает ни безопасную task-local коррекцию, ни
+`failed|blocked` disposition. Trigger зависит от evidence, не tier, числа
+файлов или checklist.
 
-- до исчерпания retry budget — когда durable failure evidence не даёт
-  evidence-backed минимальной task-local коррекции и новый диагностический
-  контекст полезнее слепого retry;
-- обязательно после третьей неудачной Execution Attempt и до окончательного
-  решения `failed|blocked`.
-
-Ранний debug не определяется tier, числом файлов или обязательным checklist.
-Если он подтверждает однозначную безопасную коррекцию внутри текущей задачи и
-retry budget ещё доступен, `/autopilot` может выполнить обычный retry. При
-неоднозначности он использует существующий owner/halt route и не угадывает.
+Подтверждённая безопасная коррекция может использовать оставшийся retry.
+Иначе scheduler применяет существующий disposition немедленно; `/debug` не
+расширяет retry budget.
 
 ## Что считается тремя неудачными попытками
 
@@ -153,103 +148,28 @@ cause и первым нарушенным invariant. Marker является su
 правило evidence adequacy сохраняется; отчёт не заменяет verifier-owned
 functional proof.
 
-## Обязательная эскалация после третьей попытки
+## Diagnostic hook `/autopilot`
 
-До окончательного scheduler decision задача остаётся `in_progress`, а
-checkpoint получает `current stage: diagnose`.
-
-`/autopilot` последовательно запускает два свежих child-контекста с указанными
-ниже write boundaries:
-
-1. `/debug <TASK_ID>`;
-2. `ROLE: Architect` с установленным `/kiss-architect`.
-
-Последовательность обязательна: Architect получает debug report как недоверенное
-supporting evidence и независимо проверяет его. Параллельное выполнение не
-нужно и усложняет recovery.
-
-### Architect reassessment
-
-Architect получает:
-
-- task card и direct specs;
-- три Execution Attempt и их verdict/evidence;
-- фактическую change surface;
-- актуальный task-plan approval и необходимый feature plan;
-- непосредственно затронутые architecture boundaries;
-- текущий debug report.
-
-Его задача — определить, существует ли хотя бы одна evidence-backed коррекция,
-полностью разрешённая текущими task identity, outcome, tier, dependencies,
-direct specs, architecture rules и write boundary, либо установить первый
-upstream mismatch, из-за которого корректное исправление внутри задачи
-невозможно.
-
-Architect не повторяет полную диагностику и не может:
-
-- изменять implementation, tests, specs, task или scheduler state;
-- менять lifecycle, counters, tier или dependencies;
-- принимать product/spec/architecture decisions;
-- разрешать дополнительный retry;
-- создавать BUG или follow-up.
-
-`/architecture-review` не используется: он принадлежит planning review и имеет
-другой ownership.
-
-Architect возвращает только:
-
-- attempt IDs и evidence paths;
-- первый нарушенный или конфликтующий boundary;
-- минимальную preflighted task-local коррекцию, если она существует;
-- точного upstream owner и resume route;
-- оставшийся evidence/authority gap;
-- один точный marker:
-
-```text
-ARCHITECTURE_ASSESSMENT: TASK_LOCAL|UPSTREAM_MISMATCH|INCONCLUSIVE
-```
-
-Значения:
-
-- `TASK_LOCAL` — хотя бы одна evidence-backed коррекция укладывается в принятые
-  контракты текущей задачи;
-- `UPSTREAM_MISMATCH` — evidence доказывает первый конкретный task/spec/
-  architecture mismatch, запрещающий корректное task-local исправление;
-- `INCONCLUSIVE` — evidence недостаточно или authoritative inputs конфликтуют.
-
-Marker является supporting classification, а не verdict, status или planning
-approval.
-
-`/autopilot` сохраняет возвращённый read-only assessment по пути:
-
-```text
-.tasks/<TASK_ID>/<TASK_ID>-S-ARCH-REASSESSMENT-final-report-docs-01.md
-```
+Перед `/debug` задача остаётся `in_progress`, а checkpoint получает
+`current stage: diagnose`, failure evidence, exact next action и expected report
+path. Отчёт является supporting evidence для scheduler-owned retry или
+disposition; отдельная Architect escalation не нужна.
 
 ## Scheduler disposition
 
-`/autopilot` интегрирует оба отчёта и единолично принимает lifecycle/routing
-decision.
+`/autopilot` принимает lifecycle/routing decision по verifier evidence и
+текущему debug report, если он потребовался:
 
-До исчерпания retry budget подтверждённая однозначная безопасная task-local
-коррекция может привести к обычному retry. В остальных случаях применяется
-существующий halt/owner route.
+- безопасная task-local коррекция при доступном budget -> обычный retry;
+- доказанный task-local failure без безопасного retry -> `failed`;
+- доказанный upstream/authority gap -> `blocked` с точным owner/resume route;
+- недоказанный mapping до исчерпания budget -> existing quality/clarification
+  halt с evidence owner и resume route, не blind retry;
+- inconclusive evidence при исчерпанном budget -> обычно `failed`, либо
+  `blocked` только при доказанном authority gap.
 
-После третьей неудачной попытки:
-
-- `TASK_LOCAL` -> `failed` по существующему failure-budget contract; создать
-  или связать обычный BUG/follow-up handoff с diagnostic и architecture
-  evidence; дополнительного retry нет;
-- `UPSTREAM_MISMATCH` -> `blocked` либо существующий clarification/blocking halt
-  с точным owner:
-  - task slicing, tier или direct task spec -> `/feature-to-tasks FT-<NNN>`;
-  - product ambiguity -> `/feature-doctor FT-<NNN>`;
-  - shared/global architecture, write authority, source of truth, public
-    boundary или dependency direction -> `/spec-design`;
-- `INCONCLUSIVE` или конфликт двух отчётов -> не угадывать коррекцию; применить
-  существующий failure/clarification route по evidence. При исчерпанном retry
-  budget обычный исход — `failed`, кроме реального authority gap, требующего
-  `blocked`/halt.
+Наличие свободного retry само по себе не сохраняет task `in_progress`. После
+третьей неудачной попытки четвёртая невозможна.
 
 Новый terminal state вроде `HALT_DEBUG_REQUIRED` не вводится.
 
@@ -271,21 +191,10 @@ selection|execute|verify|red-verify|diagnose|closure|wave-boundary
 - exact next action;
 - expected report path.
 
-При resume scheduler опирается на durable reports, а не chat context:
-
-- полный current-attempt debug report не создаётся повторно;
-- при готовом debug report и отсутствующем Architect report запускается только
-  Architect;
-- при наличии обоих отчётов выполняется только scheduler disposition;
-- read-only Architect assessment можно безопасно повторить, если он не был
-  durably сохранён;
-- неоднозначно завершённый mutating probe не повторяется; `/debug` обязан
-  использовать isolated/replay-safe probe либо остановиться.
-
-Если обязательный child/delegation после третьей попытки недоступен,
-`/autopilot` не заменяет его анализом в собственном контексте. Он фиксирует
-отсутствующий отчёт и использует существующий quality/blocking halt с точным
-owner/resume route.
+При resume scheduler переиспользует matching current-attempt debug report, а не
+chat context. Неоднозначно завершённый mutating probe не повторяется. Если
+unsuccessful-attempt count или child completion недоказуемы, сохраняется
+`in_progress` и existing halt с evidence gap, owner и resume route.
 
 ## KISS-границы
 
@@ -294,6 +203,7 @@ owner/resume route.
 - task status, field, schema или registry;
 - отдельный debug lifecycle, protocol family или scheduler;
 - новый role;
+- обязательную Architect reassessment;
 - четвёртый retry;
 - новый terminal state;
 - обязательный `/debug` после каждого failure;
@@ -326,14 +236,14 @@ Installer менять не нужно: runtime-команды генериру�
 ## Проверка реализации
 
 - `/debug` одинаково развёрнут в `.agents` и `.claude` из canonical source;
-- сохранены exact markers и report paths;
+- сохранены debug marker и report path;
 - `/debug` не получил implementation, verdict или lifecycle authority;
 - probes не расширяют permissions;
 - `diagnose` входит только в scheduler checkpoint vocabulary;
 - ранний trigger зависит от evidence, а не tier/file count/checklist;
 - три попытки и исключения считаются однозначно;
-- после третьей попытки `/debug` и Architect запускаются последовательно;
-- resume пропускает завершённый child и не повторяет unsafe probe;
+- ранний `FAIL` без безопасного retry получает `failed|blocked` disposition;
+- resume переиспользует matching report и не повторяет unsafe probe;
 - четвёртая Execution Attempt невозможна;
 - `max_retries_per_task` остаётся `2`;
 - task statuses, schema и terminal vocabulary не меняются;

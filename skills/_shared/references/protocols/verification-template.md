@@ -16,11 +16,12 @@ status: active
 - Verification targets / constraints / invariants: ...
 - Task-scoped AC / REQ basis: ...
 - Required task/spec checks: ...
+- Executor RED/GREEN path: <claim mapping plus evidence locators, accepted not-applicable reason, or legacy not required>
 
 ## Task-scoped checklist
 > Include only outcomes and AC/REQ behavior mapped to this task.
 
-- [ ] AC-01 / REQ-XXX: ...
+- [ ] FT-001-AC-001 / REQ-001: ...
   - Method: (test / manual / log inspection / api call)
   - Commands:
     - `...`
@@ -52,6 +53,9 @@ status: active
 - verifier-owned probe:
 - claim mapping:
 - evidence:
+
+Executor GREEN is supporting evidence only. Record fresh verifier-owned proof
+for the same mapped claims.
 
 ## Verdict
 Replace the placeholder with one exact standalone marker:

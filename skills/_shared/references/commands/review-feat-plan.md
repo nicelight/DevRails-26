@@ -64,6 +64,9 @@ coverage criteria, not a required reasoning script:
 - stable `REQ-*` IDs and no unsupported scope;
 - PRD -> REQ -> EP -> FT traceability, including Product Brief/analysis when
   present;
+- stable unique `FT-<NNN>-AC-<NNN>` IDs under each feature's
+  `## Acceptance Criteria`, matching the owning feature and linked to existing
+  governing `REQ-*`;
 - coherent feature value, sizing, boundaries, acceptance, and failure behavior;
 - where evidence shows multiple acceptance outcomes, lifecycle/release units,
   or actor/authority/boundary paths, one bounded falsification probe asks

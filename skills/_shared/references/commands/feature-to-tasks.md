@@ -261,6 +261,11 @@ Create/reconcile
 record exactly once. The loaded schema and tier policy are authoritative.
 
 Additionally require:
+- map every task-relevant feature AC through an exact
+  `.memory-bank/features/FT-<NNN>-<slug>.md#FT-<NNN>-AC-<NNN>` locator in
+  `source_artifacts`, and cover every accepted feature AC with at least one
+  indexed task. A grounded locator may be added to a historical task without
+  inventing RED/GREEN evidence or changing its lifecycle;
 - every T1/T2/T3 task has concrete governing `REQ-*` links;
 - every task has a cohesive, independently observable outcome and grounded
   dependency graph;
@@ -294,6 +299,23 @@ Additionally require:
   it also carries advisory
   expected change surface and/or a deliberate hard write scope, and at least
   one real gate command and/or non-empty verification target;
+- every newly created or reconciled `planned|ready` T2/T3 task uses existing
+  `evidence_required` plus direct task links to make one prospective
+  claim-linked RED/GREEN path legible. For each applicable path, map a stable
+  accepted AC/REQ/canonical-spec claim to the intended pre-implementation
+  test/probe, the observable claim-specific RED, and the corresponding GREEN.
+  One probe may cover several claims only when the mapping is explicit;
+- an AC-linked path repeats its exact `FT-<NNN>-AC-<NNN>` ID in a concrete
+  `verification_targets` probe and in `evidence_required` entries labelled
+  `<AC-ID> RED: ...` and `<AC-ID> GREEN: ...`. A not-applicable path uses
+  `<AC-ID> RED_NOT_APPLICABLE: <reason>; alternative proof: <proof>`;
+- when meaningful RED is not applicable, record one concrete task-specific
+  accepted reason in `evidence_required`. The reason must explain why absence
+  of the accepted behavior cannot or should not be observed without falsifying
+  the task; tier, convenience, or a missing test harness is insufficient;
+- for T3, cover every independently harm-driving functional claim and keep each
+  planned RED probe inside already authorized isolated/disposable state with
+  safe rerun and cleanup. The proof path never grants broader permissions;
 - mutable persistence names the real runtime storage path and a read/write or
   repository-integration proof; otherwise the applicable spec records why it
   is not relevant.
@@ -307,13 +329,18 @@ Before handoff:
   dependencies, existing/acyclic dependencies, and legal initial statuses;
 - verify the positive Planning Revision remained unchanged during feature/task
   reconciliation;
-- map every feature AC/REQ to at least one task and every task back to feature
-  scope without orphan, duplicate, or unrelated outcomes;
+- map every stable feature AC locator and governing REQ to at least one task
+  and every task back to feature scope without orphan, duplicate, or unrelated
+  outcomes;
 - reread changed specs/tasks and reconcile any shared detail changed later in
   the run;
 - confirm canonical identity is unique, linked concrete blocks are sufficient,
   feature design state is truthful, and each T2/T3 card is independently
   executable without guessing;
+- confirm each newly created or reconciled `planned|ready` T2/T3 card has a
+  credible claim-linked RED/GREEN path or a concrete accepted not-applicable
+  reason, and that T3 coverage includes every independently harm-driving claim
+  without unsafe or permission-expanding probes;
 - when accepted module/slice boundaries apply, confirm a fresh executor can
   locate the primary owner/code root, public boundary, forbidden bypasses,
   eligible cross-slice orchestration owner when relevant, forbidden technical
@@ -325,6 +352,10 @@ Before handoff:
   remaining exact filename choice must be immaterial execution discretion;
 - confirm every accepted operator decision is durably applied and no material
   branch remains unresolved.
+
+Do not fabricate or backfill RED/GREEN evidence for historical
+`in_progress|done|failed` records. Preserve their identity, lifecycle, and
+accumulated evidence under the reconciliation rules above.
 
 Final report:
 - feature ID and queue action `created|reconciled|rebuild_required`;

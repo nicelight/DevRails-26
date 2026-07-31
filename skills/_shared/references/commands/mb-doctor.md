@@ -83,6 +83,10 @@ the wave boundary.
   both index files mention `constitution.md`. Any missing file or missing
   router mention is a `CONSTITUTION_STRUCTURE_INVALID` error.
 - Feature docs under `.memory-bank/features/FT-*.md` may have optional clarification metadata: `clarification_status`, `last_clarified`, and `clarification_questions`. Absent optional clarification fields are allowed; missing feature frontmatter or invalid present metadata is not.
+- A task-linked current product feature uses unique
+  `FT-<NNN>-AC-<NNN>` headings under `## Acceptance Criteria`; each ID matches
+  its feature and names an existing governing `REQ-*`. Historical terminal-only
+  features without stable AC headings do not require backfill.
 - Explicit `clarification_status: pending|blocked` is not allowed for autonomous/autopilot readiness or task-linked features.
 - Indexed task records do not exist for features that are pending, missing, or otherwise not clarified.
 - `.memory-bank/tasks/index.json` is valid JSON and has a valid task list.
@@ -145,6 +149,16 @@ the wave boundary.
   spec path, non-empty `touched_files` and/or `runtime_context.write_boundary`,
   and at least one verification path through a real gate command and/or
   non-empty `verification_target`.
+- Every stable feature AC is covered by at least one exact task
+  `source_artifacts` locator. Linked T1/T2/T3 task REQs agree with the AC's
+  governing REQs.
+- A `planned|ready` T2/T3 AC-linked path repeats the AC ID in a concrete
+  `verification_target` and `evidence_required` RED/GREEN observations, or in a
+  concrete `RED_NOT_APPLICABLE` reason plus alternative proof.
+- A done T2/T3 task governed by that prospective path retains the same AC ID
+  and filled RED/GREEN or not-applicable evidence in `progress.md`, plus the AC
+  ID and `VERDICT: PASS` in `verification.md`. Historical terminal tasks without
+  the prospective contract remain exempt.
 - Schema/index/ID/REQ/dependency existence and cycle checks remain covered by
   `mb-lint` and the normal doctor checks. `TASK_HANDOFF_INCOMPLETE` reports only
   missing structural/presence evidence.
@@ -203,6 +217,12 @@ Errors block autonomous/autopilot progression:
 - `TASK_REQUIREMENT_LINK_MISSING` in `--strict`
 - `TASK_REQUIREMENT_NOT_FOUND` in `--strict`
 - `TASK_FEATURE_FILE_MISSING` in `--strict`
+- `FEATURE_ACCEPTANCE_INVALID` in `--strict`
+- `FEATURE_ACCEPTANCE_DUPLICATE` in `--strict`
+- `FEATURE_ACCEPTANCE_UNCOVERED` in `--strict`
+- `TASK_ACCEPTANCE_LINK_INVALID` in `--strict`
+- `TASK_ACCEPTANCE_PROOF_MISSING` in `--strict`
+- `TASK_ACCEPTANCE_EVIDENCE_MISSING` in `--strict`
 - `TASK_SDD_SPEC_LINK_MISSING` in `--strict`
 - `TASK_SDD_SPEC_GUIDE_ONLY` in `--strict`
 - `TASK_HANDOFF_INCOMPLETE` in `--strict`
@@ -239,6 +259,12 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_REQUIREMENT_LINK_MISSING`
 - `TASK_REQUIREMENT_NOT_FOUND`
 - `TASK_FEATURE_FILE_MISSING`
+- `FEATURE_ACCEPTANCE_INVALID`
+- `FEATURE_ACCEPTANCE_DUPLICATE`
+- `FEATURE_ACCEPTANCE_UNCOVERED`
+- `TASK_ACCEPTANCE_LINK_INVALID`
+- `TASK_ACCEPTANCE_PROOF_MISSING`
+- `TASK_ACCEPTANCE_EVIDENCE_MISSING`
 - `TASK_SDD_SPEC_LINK_MISSING`
 - `TASK_SDD_SPEC_GUIDE_ONLY`
 - `TASK_ARCH_SPINE_LINK_ABSENT`
@@ -275,3 +301,4 @@ Implementations may include extra metadata such as `version`, `tool`, `strict`, 
 - No migration from old task models.
 - No fallback to `.memory-bank/tasks/backlog.md`.
 - No replacement for `/review-feat-plan`, `/review-tasks-plan`, `/verify`, or `/red-verify`.
+- No semantic judgment of AC quality, probe credibility, or RED/GREEN honesty.
