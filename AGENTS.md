@@ -82,6 +82,10 @@ exact-output требования и strict scope. Не придумывай req
 
 # Правила рефакторинга framework
 
+Перед изменением `skills/mb-garden/assets/mb-doctor.mjs` или модулей в
+`skills/mb-garden/assets/mb-doctor/` прочитай
+`skills/mb-garden/assets/mb-doctor/AGENTS.md`.
+
 При рефакторинге skills, workflows, protocols или installer обязательно проверь:
 
 - доступен ли runtime-агенту каждый required reference/template в target;
