@@ -44,6 +44,13 @@ const CONSTITUTION_TEMPLATE_FILE = 'constitution-template.md';
 const RUNTIME_SCRIPT_ASSETS = [
   { asset: 'mb-lint.mjs', target: 'scripts/mb-lint.mjs' },
   { asset: 'mb-doctor.mjs', target: 'scripts/mb-doctor.mjs' },
+  { asset: 'mb-doctor/cli-reporting.mjs', target: 'scripts/mb-doctor/cli-reporting.mjs' },
+  { asset: 'mb-doctor/readers.mjs', target: 'scripts/mb-doctor/readers.mjs' },
+  { asset: 'mb-doctor/preflight.mjs', target: 'scripts/mb-doctor/preflight.mjs' },
+  { asset: 'mb-doctor/foundation-backbone.mjs', target: 'scripts/mb-doctor/foundation-backbone.mjs' },
+  { asset: 'mb-doctor/task-readiness.mjs', target: 'scripts/mb-doctor/task-readiness.mjs' },
+  { asset: 'mb-doctor/acceptance-trace.mjs', target: 'scripts/mb-doctor/acceptance-trace.mjs' },
+  { asset: 'mb-doctor/terminal-compat.mjs', target: 'scripts/mb-doctor/terminal-compat.mjs' },
 ];
 
 const ARGS = new Set(process.argv.slice(2));
@@ -524,6 +531,7 @@ function copyRuntimeScript(asset, target) {
     process.exit(1);
   }
 
+  ensureDir(path.dirname(target));
   writeFile(target, readUtf8(absPath), {
     overwrite: SYNC_MODE,
     ownership: 'framework-owned',
@@ -1118,8 +1126,10 @@ status: active
   evidence or a documented no-runnable-check route when no meaningful check exists.
 - Store commands, results, logs, screenshots, and verdicts in the task-selected
   \`.protocols/<TASK_ID>/\` and \`.tasks/<TASK_ID>/\` paths, not in this policy.
-- Keep product quality requirements in requirements/features, concrete
-  verification contracts in subject specs, and executable gates in task records.
+- Keep product quality targets in requirements/features and simple verification
+  methods in feature AC/task records. Use a subject spec only for a non-trivial
+  reproducible measurement method or expert rubric; it never supplies a missing
+  product target. Keep executable gates in task records.
 `);
 }
 

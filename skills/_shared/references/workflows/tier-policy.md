@@ -79,6 +79,19 @@ fallback, and reporting are fully defined in the installed `/exe` and
 `/verify` runtime commands. No receipt task field, registry, status, cache, or
 artifact family exists.
 
+## Task-Scoped Acceptance Evidence
+
+Compact changes protocol depth, not task-scoped acceptance obligations. When a
+task at any tier carries `verification_targets` or `evidence_required`, its
+closure evidence must satisfy them. A newly created or reconciled
+`planned|ready` task that proves a material NFR has non-empty values in both,
+linked to its governing REQ and exact feature AC; evidence records the observed
+value or qualitative result, decisive conditions, pass/fail comparison, and
+artifact. Human/expert review is an evidence method, not a T3 human checkpoint.
+
+This rule does not make those fields non-empty for every T0/T1 task, change tier
+assignment, or add a gate, status, lifecycle, or protocol family.
+
 ## Claim-Linked RED / GREEN For T2/T3
 
 Each accepted `planned|ready` T2/T3 card maps its stable AC/REQ/canonical-spec

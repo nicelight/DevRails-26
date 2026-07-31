@@ -50,6 +50,18 @@ order:
 - acceptance criteria, verification, and completion signals;
 - unresolved markers such as `NEEDS CLARIFICATION`, `TBD`, `TODO`, or `???`.
 
+Treat a non-functional quality as material when its failure would itself block
+product/feature acceptance or realize a significant accepted risk. Its product
+basis must identify the observable quality, an accepted numeric target or
+qualitative success criterion, conditions that can change pass/fail, and a
+verification-method class. A human/expert review is valid when it names the
+observable qualitative criterion and reviewer type; detailed rubric/evidence
+design belongs downstream only when non-trivial.
+
+Never invent or silently interpret a material target or pass/fail parameter.
+If authoritative sources and accepted operator decisions do not settle one,
+keep the existing clarification blocker and resume through `/write-prd`.
+
 Ask the operator whenever a real ambiguity or branch could affect product
 behavior, scope, architecture, data, decomposition, testing, operations,
 security/compliance, or acceptance. Adapt the interview to the evidence: ask

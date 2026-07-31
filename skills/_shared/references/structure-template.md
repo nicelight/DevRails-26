@@ -722,8 +722,10 @@ status: active
 - T2/T3 require an executable verification path; T0/T1 may use compact evidence
   or a documented no-runnable-check route when meaningful checks do not exist.
 - Store execution evidence in `.protocols/<TASK_ID>/` and `.tasks/<TASK_ID>/`.
-- Keep project requirements in requirements/features, concrete verification
-  contracts in subject specs, and executable gates in task records.
+- Keep product quality targets in requirements/features and simple verification
+  methods in feature AC/task records. Use a subject spec only for a non-trivial
+  reproducible measurement method or expert rubric; it never supplies a missing
+  product target. Keep executable gates in task records.
 ```
 
 ---

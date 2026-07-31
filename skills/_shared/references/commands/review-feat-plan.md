@@ -67,6 +67,11 @@ coverage criteria, not a required reasoning script:
 - stable unique `FT-<NNN>-AC-<NNN>` IDs under each feature's
   `## Acceptance Criteria`, matching the owning feature and linked to existing
   governing `REQ-*`;
+- acceptance closure for material outcomes: each material edge/failure maps to
+  a feature AC or a sourced authoritative out-of-scope disposition with
+  `/write-prd` change route; each material NFR has an accepted observable
+  target/qualitative criterion, decisive conditions, and verification method
+  across its governing REQ and feature AC;
 - coherent feature value, sizing, boundaries, acceptance, and failure behavior;
 - where evidence shows multiple acceptance outcomes, lifecycle/release units,
   or actor/authority/boundary paths, one bounded falsification probe asks
@@ -85,6 +90,10 @@ Return `APPROVE` only when product decomposition is traceable, coherent, and
 free of blocking governance/clarification gaps. Return `REJECT` for a blocking
 product, RTM, feature-boundary, clarification, or Constitution issue. Cite the
 artifacts checked and distinguish evidence gaps from actual defects.
+
+For acceptance-closure rejection, name the uncovered outcome and route
+PRD-owned acceptance to `/write-prd`, missing decomposition to
+`/prd-to-features`, or feature-local clarification to `/feature-doctor FT-<NNN>`.
 
 Boundary pressure alone is not a defect. For this boundary falsification probe,
 reject only when inspected evidence proves a hidden independent product outcome

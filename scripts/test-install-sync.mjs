@@ -28,12 +28,21 @@ const mbInitPackageSource = join(repoRoot, 'skills', 'mb-init', 'SKILL.md');
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
 const deployableAgentsSource = join(repoRoot, 'skills', '_shared', 'references', 'deployable', 'AGENTS.md');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
+const executeLoopSource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'execute-loop.md');
 const tierPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'tier-policy.md');
 const autonomyPolicySource = join(repoRoot, 'skills', '_shared', 'references', 'workflows', 'autonomy-policy.md');
 const architectRoleSource = join(repoRoot, 'skills', '_shared', 'references', 'roles', 'architect.md');
 const retiredArchitectPrompt = join(repoRoot, 'skills', '_shared', 'agents', 'review-architect.md');
 const lintSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs');
 const doctorSource = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs');
+const doctorModuleSourceDir = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor');
+const doctorModules = readdirSync(doctorModuleSourceDir)
+  .filter((name) => name.endsWith('.mjs'))
+  .sort()
+  .map((name) => ({
+    source: join(doctorModuleSourceDir, name),
+    target: `scripts/mb-doctor/${name}`,
+  }));
 const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-install-sync-'));
 const target = join(tempRoot, 'target');
 const installedSkillsBeginMarker = '<!-- BEGIN DEVRAILS INSTALLED SKILLS -->';
@@ -137,6 +146,16 @@ function runTargetLint() {
     status: result.status,
     output: `${result.stdout || ''}${result.stderr || ''}`,
   };
+}
+
+function runTargetDoctor(flags = ['--json']) {
+  const result = spawnSync(process.execPath, [targetPath('scripts/mb-doctor.mjs'), ...flags], {
+    cwd: target,
+    encoding: 'utf8',
+  });
+  const output = `${result.stdout || ''}${result.stderr || ''}`;
+  if (result.error) fail(result.error.message, output);
+  return { status: result.status, stdout: result.stdout, stderr: result.stderr, output };
 }
 
 const BOUNDARY_CASES = [
@@ -354,6 +373,7 @@ try {
 
   const schemaRel = '.memory-bank/schemas/task.schema.json';
   const tierPolicyRel = '.memory-bank/workflows/tier-policy.md';
+  const executeLoopRel = '.memory-bank/workflows/execute-loop.md';
   const autonomyPolicyRel = '.memory-bank/workflows/autonomy-policy.md';
   const architectRoleRel = '.memory-bank/roles/architect.md';
   const explorerRoleRel = '.memory-bank/roles/explorer.md';
@@ -364,6 +384,7 @@ try {
   const runtimeSkillRel = '.agents/skills/cold-start/SKILL.md';
   const expectedSchema = readTarget(schemaRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
+  const expectedExecuteLoop = readFileSync(executeLoopSource, 'utf8');
   const expectedAutonomyPolicy = readFileSync(autonomyPolicySource, 'utf8');
   const expectedArchitectRole = readTarget(architectRoleRel);
   const expectedExplorerRole = readTarget(explorerRoleRel);
@@ -371,6 +392,9 @@ try {
   const expectedReviewerRole = readTarget(reviewerRoleRel);
   const expectedLint = readFileSync(lintSource, 'utf8');
   const expectedDoctor = readFileSync(doctorSource, 'utf8');
+  const expectedDoctorModules = new Map(
+    doctorModules.map(({ source, target: rel }) => [rel, readFileSync(source, 'utf8')]),
+  );
   const expectedRuntimeSkill = readTarget(runtimeSkillRel);
   const skillIndexRel = '.memory-bank/skills/index.md';
   const freshSkillIndex = readTarget(skillIndexRel);
@@ -571,6 +595,7 @@ try {
       && structureTemplate.includes(installedSkillsEndMarker)
       && structureTemplate.includes('explicit empty state')
       && structureTemplate.includes('deployable/AGENTS.md')
+      && structureTemplate.includes('Use a subject spec only for a non-trivial\n  reproducible measurement method or expert rubric')
       && !structureTemplate.includes('```markdown\n# Agent Operating Guide'),
     'Structure reference does not document the generated skill inventory boundary.',
   );
@@ -671,6 +696,10 @@ try {
     'Fresh bootstrap did not deploy the canonical tier policy.',
   );
   assert(
+    readTarget(executeLoopRel) === expectedExecuteLoop,
+    'Fresh bootstrap did not deploy the canonical execute-loop policy.',
+  );
+  assert(
     readTarget(autonomyPolicyRel) === expectedAutonomyPolicy,
     'Fresh bootstrap did not deploy the canonical autonomy policy.',
   );
@@ -694,6 +723,27 @@ try {
   assert(
     readTarget(doctorRel) === expectedDoctor,
     'Fresh bootstrap did not deploy the canonical mb-doctor asset.',
+  );
+  expectedDoctorModules.forEach((expected, rel) => {
+    assert(
+      readTarget(rel) === expected,
+      `Fresh bootstrap did not deploy the canonical mb-doctor module: ${rel}`,
+    );
+  });
+  const freshDoctorRun = runTargetDoctor();
+  let freshDoctorReport;
+  try {
+    freshDoctorReport = JSON.parse(freshDoctorRun.stdout);
+  } catch {
+    fail('Fresh deployed mb-doctor did not emit valid JSON.', freshDoctorRun.output);
+  }
+  assert(
+    freshDoctorRun.status === 0
+      && freshDoctorRun.stderr === ''
+      && freshDoctorReport.status === 'pass'
+      && freshDoctorReport.findings.some(({ code }) => code === 'TASK_INDEX_EMPTY'),
+    'Fresh deployed mb-doctor did not execute successfully with its packaged modules.',
+    freshDoctorRun.output,
   );
 
   const parsedSchema = JSON.parse(expectedSchema);
@@ -763,6 +813,18 @@ try {
         'No task field, status, scheduler stage, verdict, protocol family, queue, registry, or lifecycle is added.',
       ),
     'Deployed tier policy lost the in-stage RED/GREEN, independent verification, or no-new-lifecycle contract.',
+  );
+  assert(
+    normalizedTierPolicy.includes(
+      'Compact changes protocol depth, not task-scoped acceptance obligations.',
+    )
+      && normalizedTierPolicy.includes(
+        'A newly created or reconciled `planned|ready` task that proves a material NFR has non-empty values in both',
+      )
+      && normalizedTierPolicy.includes(
+        'Human/expert review is an evidence method, not a T3 human checkpoint.',
+      ),
+    'Deployed tier policy lost all-tier material-NFR evidence or compact-depth semantics.',
   );
   assert(
     !Object.prototype.hasOwnProperty.call(parsedSchema.properties, 'owning_slice'),
@@ -865,8 +927,14 @@ try {
       )
       && freshTestingStrategy.includes(
         'it does not require literal current-head consumers or historical feature-test updates',
+      )
+      && freshTestingStrategy.includes(
+        'Keep product quality targets in requirements/features and simple verification methods in feature AC/task records.',
+      )
+      && freshTestingStrategy.includes(
+        'Use a subject spec only for a non-trivial reproducible measurement method or expert rubric; it never supplies a missing product target.',
       ),
-    'Fresh bootstrap testing strategy lost the Alembic migration ownership boundary.',
+    'Fresh bootstrap testing strategy lost migration ownership or the material-quality measurement boundary.',
   );
   assert(
     readTarget('AGENTS.md').includes('Product execution requires task-plan `APPROVE` for the current positive Global')
@@ -938,6 +1006,7 @@ try {
     const debugSkill = readTarget(`${runtimeRoot}/debug/SKILL.md`);
     const exeSkill = readTarget(`${runtimeRoot}/exe/SKILL.md`);
     const autopilotSkill = readTarget(`${runtimeRoot}/autopilot/SKILL.md`);
+    const writePrdSkill = readTarget(`${runtimeRoot}/write-prd/SKILL.md`);
     const prdToFeaturesSkill = readTarget(`${runtimeRoot}/prd-to-features/SKILL.md`);
     const featureDoctorSkill = readTarget(`${runtimeRoot}/feature-doctor/SKILL.md`);
     const reviewFeatPlanSkill = readTarget(`${runtimeRoot}/review-feat-plan/SKILL.md`);
@@ -954,6 +1023,7 @@ try {
     const normalizedDebug = normalizeProse(debugSkill);
     const normalizedExe = normalizeProse(exeSkill);
     const normalizedAutopilot = normalizeProse(autopilotSkill);
+    const normalizedWritePrd = normalizeProse(writePrdSkill);
     const normalizedPrdToFeatures = normalizeProse(prdToFeaturesSkill);
     const normalizedFeatureDoctor = normalizeProse(featureDoctorSkill);
     const normalizedReviewFeatPlan = normalizeProse(reviewFeatPlanSkill);
@@ -1085,6 +1155,30 @@ try {
           'every accepted product AC has one stable feature-matching `FT-<NNN>-AC-<NNN>` heading',
         ),
       `${runtimeRoot} stable acceptance identity or task trace was not deployed end to end.`,
+    );
+    assert(
+      normalizedWritePrd.includes(
+        'Never invent or silently interpret a material target or pass/fail parameter.',
+      )
+        && normalizedPrdToFeatures.includes(
+          'acceptance closure for every material product outcome',
+        )
+        && normalizedFeatureToTasks.includes(
+          'Before task emission or reconciliation, run one bounded acceptance-closure scan',
+        )
+        && normalizedFeatureToTasks.includes(
+          'every newly created or reconciled `planned|ready` task at any tier that proves a material NFR',
+        )
+        && normalizedReviewTasksPlan.includes(
+          'every newly created or reconciled `planned|ready` task at any tier that proves a material NFR',
+        )
+        && normalizedReviewTasksPlan.includes(
+          '.memory-bank/workflows/execute-loop.md#principle-no-task-explosion',
+        )
+        && normalizedExe.includes(
+          'Compact changes protocol depth, not acceptance-evidence obligations',
+        ),
+      `${runtimeRoot} lost an owning Acceptance Closure contract.`,
     );
     assert(
       normalizedExe.includes(
@@ -1558,6 +1652,8 @@ try {
   writeTarget(architectRoleRel, '# stale architect role\n');
   writeTarget(lintRel, '# stale lint asset\n');
   writeTarget(doctorRel, '# stale doctor asset\n');
+  const staleDoctorModuleRel = 'scripts/mb-doctor/readers.mjs';
+  writeTarget(staleDoctorModuleRel, '# stale doctor module\n');
   writeTarget('AGENTS.md', `${expectedDeployableAgents.trimEnd()}\n\n<!-- stale generated AGENTS.md -->\n`);
 
   const staleProtocolRel = protocolTemplateRel('compact-run-template.md');
@@ -1598,6 +1694,9 @@ try {
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Full sync did not restore the Architect role.', syncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Full sync did not restore the canonical mb-lint asset.', syncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Full sync did not restore the canonical mb-doctor asset.', syncOutput);
+  expectedDoctorModules.forEach((expected, rel) => {
+    assert(readTarget(rel) === expected, `Full sync did not restore the canonical mb-doctor module: ${rel}`, syncOutput);
+  });
   assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Full sync did not restore the canonical deployable AGENTS.md.', syncOutput);
   assert(readTarget(runtimeSkillRel) === expectedRuntimeSkill, 'Full sync did not restore the canonical runtime command skill.', syncOutput);
   assert(
@@ -1623,6 +1722,7 @@ try {
   assert(syncOutput.includes(architectRoleRel), 'Full sync report did not name the Architect role.', syncOutput);
   assert(syncOutput.includes(lintRel), 'Full sync report did not name the mb-lint asset.', syncOutput);
   assert(syncOutput.includes(doctorRel), 'Full sync report did not name the mb-doctor asset.', syncOutput);
+  assert(syncOutput.includes(staleDoctorModuleRel), 'Full sync report did not name the stale mb-doctor module.', syncOutput);
   assert(syncOutput.includes(staleProtocolRel), 'Full sync report did not name the protocol template.', syncOutput);
   assert(syncOutput.includes('kept project/mixed'), 'Full sync did not report preserved project/mixed files.', syncOutput);
 
@@ -1633,6 +1733,9 @@ try {
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Idempotent sync changed the Architect role.', secondSyncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Idempotent sync changed the canonical mb-lint asset.', secondSyncOutput);
   assert(readTarget(doctorRel) === expectedDoctor, 'Idempotent sync changed the canonical mb-doctor asset.', secondSyncOutput);
+  expectedDoctorModules.forEach((expected, rel) => {
+    assert(readTarget(rel) === expected, `Idempotent sync changed the canonical mb-doctor module: ${rel}`, secondSyncOutput);
+  });
   assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Idempotent sync changed the canonical deployable AGENTS.md.', secondSyncOutput);
   expectedProtocolTemplates.forEach((expected, filename) => {
     assert(

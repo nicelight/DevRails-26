@@ -607,6 +607,36 @@ brownfield evidence, но нельзя расширять как default T2/T3 h
 поле `source_artifacts`. Отдельный реестр или новое поле задачи для этого не
 нужны.
 
+### Acceptance Closure для существенных outcomes
+
+Если наблюдаемый edge/failure outcome или нефункциональное качество способны
+сами по себе сорвать приёмку либо реализовать существенный принятый риск,
+DevRails замыкает цепочку:
+
+```text
+material outcome -> accepted REQ/AC или authoritative exclusion
+                 -> exact task mapping -> planned proof -> evidence
+```
+
+Material edge/failure в feature ссылается на покрывающий AC. Реально
+out-of-scope outcome вместо этого хранит authoritative disposition, source и
+`/write-prd` change route. Для material NFR `requirements.md` хранит
+наблюдаемое качество, принятый target или качественный критерий и общие условия,
+меняющие pass/fail; feature AC применяет их к конкретному outcome и называет
+verification method. Недостающий target агент не придумывает: это blocker
+`/write-prd`.
+
+Простой probe/review остаётся в AC и task record. Subject spec появляется
+только для нетривиальной воспроизводимой методики — dataset/state,
+статистического окна, environment/warm-up, isolation/cleanup, общей процедуры
+или formal expert rubric — и не становится владельцем product target. Task,
+доказывающая material NFR, при любом tier получает exact AC/REQ mapping,
+`verification_targets` и `evidence_required`. Human/expert review является
+evidence method, а не `T3 HUMAN_CHECKPOINT`.
+
+Это условный semantic invariant существующих reviews. Он не добавляет `NFR-*`,
+registry, schema field, lifecycle, gate или heuristic `/mb-doctor` parser.
+
 ### Architecture Spine
 
 Shared/strict executable decisions получают стабильные `AD-*` anchors внутри
@@ -925,6 +955,10 @@ T0/T1 могут использовать compact:
 ```text
 .protocols/<TASK_ID>/run.md
 ```
+
+Compact сокращает protocol depth, но не отменяет task-scoped acceptance
+evidence: заполненные `verification_targets` и `evidence_required` должны быть
+доказаны до closure.
 
 T2/T3 требуют full protocol:
 

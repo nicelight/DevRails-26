@@ -18,7 +18,7 @@
   "scripts": {
     "vendor:shared:in-place": "node scripts/vendor-shared.mjs --in-place",
     "install:framework": "node scripts/install-framework.mjs",
-    "check:syntax": "node --check scripts/vendor-shared.mjs && node --check scripts/install-framework.mjs && node --check scripts/test-install-sync.mjs && node --check scripts/test-mb-doctor.mjs && node --check skills/_shared/scripts/init-mb.js && node --check skills/mb-garden/assets/mb-lint.mjs && node --check skills/mb-garden/assets/mb-doctor.mjs",
+    "check:syntax": "node --check scripts/vendor-shared.mjs && node --check scripts/install-framework.mjs && node --check scripts/test-install-sync.mjs && node --check scripts/test-mb-doctor.mjs && node --check skills/_shared/scripts/init-mb.js && node --check skills/mb-garden/assets/mb-lint.mjs && node --check skills/mb-garden/assets/mb-doctor.mjs && node --check skills/mb-garden/assets/mb-doctor/cli-reporting.mjs && node --check skills/mb-garden/assets/mb-doctor/readers.mjs && node --check skills/mb-garden/assets/mb-doctor/preflight.mjs && node --check skills/mb-garden/assets/mb-doctor/foundation-backbone.mjs && node --check skills/mb-garden/assets/mb-doctor/task-readiness.mjs && node --check skills/mb-garden/assets/mb-doctor/acceptance-trace.mjs && node --check skills/mb-garden/assets/mb-doctor/terminal-compat.mjs",
     "test:install-sync": "node scripts/test-install-sync.mjs",
     "test:mb-doctor": "node scripts/test-mb-doctor.mjs"
   }

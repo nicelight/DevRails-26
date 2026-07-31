@@ -3,6 +3,8 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -14,6 +16,7 @@ import { spawnSync } from 'node:child_process';
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, '..');
 const doctor = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs');
+const doctorModuleDir = join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor');
 const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-mb-doctor-'));
 
 const FOUNDATION_GATE = 'TASK-001-T0-FT-000-W0';
@@ -21,6 +24,7 @@ const FOUNDATION_EXTRA = 'TASK-002-T0-FT-000-W0';
 const PRODUCT_FIRST = 'TASK-101-T0-FT-001-W1';
 const PRODUCT_SECOND = 'TASK-102-T0-FT-001-W1';
 const PRODUCT_T2 = 'TASK-201-T2-FT-001-W1';
+const PRODUCT_T3 = 'TASK-301-T3-FT-001-W1';
 
 function fail(message, report = null) {
   const detail = report ? `\n\n${JSON.stringify(report, null, 2)}` : '';
@@ -51,6 +55,7 @@ function task(id, {
   verificationTargets,
   evidenceRequired,
   verify,
+  runtimeContext,
 } = {}) {
   const idMatch = id.match(/-T([0-3])-FT-([0-9]{3,})-W([0-9]+)$/);
   const tier = `T${idMatch?.[1]}`;
@@ -100,6 +105,7 @@ function task(id, {
     constraints: [],
     invariants: [],
     verification_targets: verificationTargets ?? defaultVerificationTargets,
+    runtime_context: runtimeContext,
   };
 }
 
@@ -241,12 +247,7 @@ ${hasCompletedT2 ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}
 
 function runCase(name, fixture, flags = []) {
   const root = createFixture(name, fixture);
-  const result = spawnSync(process.execPath, [doctor, ...flags, '--json'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-
-  if (result.error) fail(`${name}: ${result.error.message}`);
+  const result = runDoctor(root, [...flags, '--json']);
 
   let report;
   try {
@@ -258,6 +259,16 @@ function runCase(name, fixture, flags = []) {
   const expectedExit = report.status === 'pass' ? 0 : 1;
   assert(result.status === expectedExit, `${name}: exit status does not match report status`, report);
   return report;
+}
+
+function runDoctor(root, flags = []) {
+  const result = spawnSync(process.execPath, [doctor, ...flags], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+
+  if (result.error) fail(result.error.message);
+  return result;
 }
 
 function findFinding(report, code, severity = undefined) {
@@ -278,10 +289,162 @@ function expectPass(report, label) {
   assert(report.status === 'pass', `${label}: expected PASS`, report);
 }
 
+function assertModuleArchitecture() {
+  const expectedModules = [
+    'acceptance-trace.mjs',
+    'cli-reporting.mjs',
+    'foundation-backbone.mjs',
+    'preflight.mjs',
+    'readers.mjs',
+    'task-readiness.mjs',
+    'terminal-compat.mjs',
+  ];
+  const actualModules = readdirSync(doctorModuleDir)
+    .filter((name) => name.endsWith('.mjs'))
+    .sort();
+  assert(
+    JSON.stringify(actualModules) === JSON.stringify(expectedModules),
+    'Canonical mb-doctor module inventory changed without updating its architecture contract.',
+  );
+
+  const entrySource = readFileSync(doctor, 'utf8');
+  const moduleSources = new Map(
+    expectedModules.map((name) => [name, readFileSync(join(doctorModuleDir, name), 'utf8')]),
+  );
+  expectedModules.forEach((name) => {
+    assert(
+      entrySource.includes(`from './mb-doctor/${name}'`),
+      `Canonical entrypoint does not import ${name}.`,
+    );
+  });
+
+  moduleSources.forEach((source, name) => {
+    assert(
+      source.includes('Owns ') && source.includes('Does not '),
+      `${name} has no concise ownership boundary header.`,
+    );
+    if (name !== 'readers.mjs') {
+      assert(
+        !source.includes("node:fs") && !source.includes("node:path"),
+        `${name} bypasses the filesystem reader boundary.`,
+      );
+    }
+    if (name !== 'cli-reporting.mjs') {
+      assert(
+        !/\bconsole\./.test(source) && !/\bprocess\.exit\b/.test(source),
+        `${name} bypasses the CLI/reporting boundary.`,
+      );
+    }
+
+    const localImports = [...source.matchAll(/from '([^']+)'/g)]
+      .map((match) => match[1])
+      .filter((specifier) => specifier.startsWith('.'));
+    assert(
+      localImports.every((specifier) => specifier === './readers.mjs'),
+      `${name} introduced a reverse or cyclic domain-module dependency.`,
+    );
+  });
+
+  const orderedEntryCalls = [
+    'runPreflight(context);',
+    'foundation.checkConstitutionStructure();',
+    'foundation.checkBackboneReadiness();',
+    'taskReadiness.checkFeatureClarificationReadiness();',
+    'taskReadiness.checkTaskReadiness();',
+    'reporter.finish();',
+  ];
+  let previousOffset = -1;
+  const callOffsets = orderedEntryCalls.map((call) => {
+    previousOffset = entrySource.indexOf(call, previousOffset + 1);
+    return previousOffset;
+  });
+  assert(
+    callOffsets.every((offset) => offset >= 0),
+    'Canonical entrypoint check/report order changed.',
+  );
+
+  const localGuide = readFileSync(join(doctorModuleDir, 'AGENTS.md'), 'utf8');
+  expectedModules.forEach((name) => {
+    assert(localGuide.includes(`\`${name}\``), `Local ownership guide does not route ${name}.`);
+  });
+
+  const initSource = readFileSync(join(repoRoot, 'skills', '_shared', 'scripts', 'init-mb.js'), 'utf8');
+  expectedModules.forEach((name) => {
+    assert(
+      initSource.includes(`{ asset: 'mb-doctor/${name}', target: 'scripts/mb-doctor/${name}' }`),
+      `Runtime asset manifest does not deploy ${name}.`,
+    );
+  });
+}
+
 try {
+  assertModuleArchitecture();
+
+  const cliRoot = createFixture('cli-contract', {});
+  const help = runDoctor(cliRoot, ['--help', '--unknown']);
+  assert(help.status === 0, 'Help must win over invalid arguments.');
+  assert(help.stderr === '', 'Help unexpectedly wrote to stderr.');
+  assert(
+    help.stdout === `mb-doctor
+
+Usage:
+  node scripts/mb-doctor.mjs [--strict] [--json]
+
+Flags:
+  --strict  Require an executable autonomous/autopilot task queue.
+  --json    Emit stable machine-readable JSON findings.
+
+`,
+    'Help output changed.',
+  );
+
+  const invalidText = runDoctor(cliRoot, ['--unknown']);
+  assert(invalidText.status === 1, 'Invalid text-mode arguments must fail.');
+  assert(invalidText.stderr === '', 'Invalid text-mode arguments unexpectedly wrote to stderr.');
+  assert(
+    invalidText.stdout === `mb-doctor FAIL (1 errors, 0 warnings, 0 info)
+[ERROR] CLI_INVALID_ARGUMENT: Unknown flag: --unknown
+`,
+    'Text report contract changed.',
+  );
+
+  const invalidJson = runDoctor(cliRoot, ['--strict', '--unknown', '--json']);
+  assert(invalidJson.status === 1, 'Invalid JSON-mode arguments must fail.');
+  assert(invalidJson.stderr === '', 'Invalid JSON-mode arguments unexpectedly wrote to stderr.');
+  const invalidReport = JSON.parse(invalidJson.stdout);
+  assert(
+    JSON.stringify(invalidReport) === JSON.stringify({
+      version: 1,
+      tool: 'mb-doctor',
+      strict: true,
+      status: 'fail',
+      summary: { errors: 1, warnings: 0, infos: 0 },
+      counts: { error: 1, warning: 0, info: 0 },
+      findings: [{
+        severity: 'error',
+        code: 'CLI_INVALID_ARGUMENT',
+        message: 'Unknown flag: --unknown',
+        suggested_fix: 'Use only --strict and/or --json.',
+      }],
+    }),
+    'JSON report shape, payload, or key order changed.',
+    invalidReport,
+  );
+  assert(invalidJson.stdout.endsWith('\n\n'), 'JSON output newline contract changed.');
+
   const emptyDefault = runCase('empty-default', {});
   expectPass(emptyDefault, 'empty default');
   expectFinding(emptyDefault, 'TASK_INDEX_EMPTY', 'info');
+  assert(
+    JSON.stringify(emptyDefault.findings.map(({ severity, code }) => ({ severity, code })))
+      === JSON.stringify([
+        { severity: 'info', code: 'MB_LINT_PASSED' },
+        { severity: 'info', code: 'TASK_INDEX_EMPTY' },
+        { severity: 'info', code: 'TASK_QUEUE_SUMMARY' },
+      ]),
+    'Default finding order changed.',
+    emptyDefault,
+  );
 
   const emptyStrict = runCase('empty-strict', {}, ['--strict']);
   expectFinding(emptyStrict, 'TASK_INDEX_EMPTY', 'error');
@@ -595,7 +758,118 @@ VERDICT: PASS
   expectPass(historicalDoneWithoutProof, 'historical done task without prospective proof');
   expectNoFinding(historicalDoneWithoutProof, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
 
-  console.log('mb-doctor readiness and acceptance-trace regression passed');
+  const currentT3ClosureGap = runCase('current-t3-closure-gap', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, { status: 'done' })],
+  }, ['--strict']);
+  expectFinding(currentT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING', 'error');
+  expectFinding(currentT3ClosureGap, 'TASK_T3_CHECKPOINT_MISSING', 'error');
+  expectNoFinding(currentT3ClosureGap, 'TASK_LEGACY_TERMINAL_COMPATIBILITY');
+
+  const legacyT3ClosureGap = runCase('legacy-t3-closure-gap', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, {
+      status: 'done',
+      runtimeContext: { allowed_write_scope: ['src/fixture.mjs'] },
+    })],
+  }, ['--strict']);
+  expectPass(legacyT3ClosureGap, 'legacy T3 terminal closure gaps');
+  expectNoFinding(legacyT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING');
+  expectNoFinding(legacyT3ClosureGap, 'TASK_T3_CHECKPOINT_MISSING');
+  const legacySummary = findFinding(
+    legacyT3ClosureGap,
+    'TASK_LEGACY_TERMINAL_COMPATIBILITY',
+    'info',
+  );
+  assert(
+    legacySummary?.details?.records_with_preserved_gaps === 1
+      && legacySummary.details.gap_types?.TASK_RED_VERIFY_EVIDENCE_MISSING === 1
+      && legacySummary.details.gap_types?.TASK_T3_CHECKPOINT_MISSING === 1,
+    'Legacy terminal compatibility summary does not retain exact gap counts.',
+    legacyT3ClosureGap,
+  );
+
+  const activeLegacyAlias = runCase('active-legacy-alias', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, {
+      status: 'in_progress',
+      runtimeContext: { allowed_write_scope: ['src/fixture.mjs'] },
+    })],
+  }, ['--strict']);
+  expectFinding(activeLegacyAlias, 'TASK_FULL_PROTOCOL_MISSING', 'error');
+  expectNoFinding(activeLegacyAlias, 'TASK_LEGACY_TERMINAL_COMPATIBILITY');
+
+  const ownerAcceptedClosure = {
+    stage: 'owner_lifecycle_closure',
+    mode: 'manual_explicit_owner',
+    decision: 'done',
+    gate_summary: {
+      red_verification: 'OWNER-ACCEPTED semantic-fail as residual risk; no semantic-pass claim',
+    },
+    accepted_evidence: ['.protocols/TASK-301-T3-FT-001-W1/administrative-closure.md'],
+    accepted_residual_risk: ['Fixture risk accepted by the explicit owner.'],
+  };
+  const ownerAcceptedSemanticFail = runCase('owner-accepted-semantic-fail', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, {
+      status: 'done',
+      verify: ['VERDICT: PASS\nEvidence: fixture success', ownerAcceptedClosure],
+    })],
+    files: [
+      {
+        rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
+        content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
+      },
+      {
+        rel: `.protocols/${PRODUCT_T3}/handoff.md`,
+        content: '# Handoff\n\nHUMAN_CHECKPOINT: done\n',
+      },
+      {
+        rel: `.protocols/${PRODUCT_T3}/administrative-closure.md`,
+        content: '# Administrative closure\n\nExplicit owner risk acceptance.\n',
+      },
+    ],
+  }, ['--strict']);
+  expectPass(ownerAcceptedSemanticFail, 'owner-accepted semantic findings');
+  expectNoFinding(ownerAcceptedSemanticFail, 'TASK_RED_VERIFY_VERDICT_MISSING');
+
+  const ownerAcceptedWithoutCheckpoint = runCase('owner-accepted-without-checkpoint', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, {
+      status: 'done',
+      verify: ['VERDICT: PASS\nEvidence: fixture success', ownerAcceptedClosure],
+    })],
+    files: [{
+      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
+      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
+    }],
+  }, ['--strict']);
+  expectNoFinding(ownerAcceptedWithoutCheckpoint, 'TASK_RED_VERIFY_VERDICT_MISSING');
+  expectFinding(ownerAcceptedWithoutCheckpoint, 'TASK_T3_CHECKPOINT_MISSING', 'error');
+
+  const incompleteOwnerAcceptance = runCase('incomplete-owner-acceptance', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, {
+      status: 'done',
+      verify: [
+        'VERDICT: PASS\nEvidence: fixture success',
+        { ...ownerAcceptedClosure, accepted_residual_risk: [] },
+      ],
+    })],
+    files: [
+      {
+        rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
+        content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
+      },
+      {
+        rel: `.protocols/${PRODUCT_T3}/handoff.md`,
+        content: '# Handoff\n\nHUMAN_CHECKPOINT: done\n',
+      },
+    ],
+  }, ['--strict']);
+  expectFinding(incompleteOwnerAcceptance, 'TASK_RED_VERIFY_VERDICT_MISSING', 'error');
+
+  console.log('mb-doctor readiness, brownfield, and acceptance-trace regression passed');
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }

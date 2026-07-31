@@ -30,6 +30,8 @@ must be reviewed when they constrain product tasks.
 Read current:
 - Constitution, requirements/RTM, spec backbone/index, task schema, tier policy,
   task index, and Foundation decision when present;
+- the acceptance-closure definition in
+  `.memory-bank/workflows/execute-loop.md#principle-no-task-explosion`;
 - target feature, implementation plan, all indexed target task records, and
   their dependency records;
 - direct canonical-spec routes and relevant doctor findings. Read full
@@ -116,9 +118,10 @@ Cover:
    - schema validation; unique/resolving index entries; ID/tier/feature/wave
      consistency; product `W1+`; concrete governing REQ links.
 2. Coverage and slicing
-   - complete feature AC/REQ coverage; no orphan/duplicate/unrelated outcomes;
-     cohesive independently verifiable slicing; coherent plans, waves,
-     dependencies, change surface, gates, and verification targets;
+   - complete feature AC/REQ and material-outcome closure; no
+     orphan/duplicate/unrelated outcomes; cohesive independently verifiable
+     slicing; coherent plans, waves, dependencies, change surface, gates, and
+     verification targets;
    - follow one plausible evidence-backed path only far enough to detect a
      missing independent prerequisite/outcome, rollout/rollback unit, blocking
      dependency, materially different risk route, or plan-level decision that
@@ -147,6 +150,12 @@ Cover:
      `FT-<NNN>-AC-<NNN>` heading, an existing governing REQ, and at least one
      exact task `source_artifacts` locator. Task-linked ACs must exist in that
      task's feature and agree with its governing `reqs`.
+   - every newly created or reconciled `planned|ready` task at any tier that
+     proves a material NFR has its governing REQ, exact AC locator, non-empty
+     `verification_targets`, and `evidence_required` covering result,
+     conditions, pass/fail comparison, and artifact. Shared probes map every
+     covered AC; expert review names its rubric and reviewer role without
+     becoming a T3 checkpoint.
    - for each `planned|ready` T2/T3 task, confirm
      that existing `evidence_required` and direct links map a stable accepted
      claim to a realistic pre-implementation probe, a RED caused by absence of
@@ -168,12 +177,18 @@ Cover:
 
 Do not reject historical `in_progress|done|failed` records solely because they
 predate this prospective RED/GREEN planning contract, and never request
-fabricated backfill.
+fabricated backfill. Apply the material-NFR proof rule prospectively under the
+same boundary.
 
 Verdicts:
 - `APPROVE`: all coverage groups pass. Non-blocking notes are allowed.
 - `REJECT`: at least one blocking gap exists. Name the failed coverage group,
   exact evidence, question when applicable, and repair owner.
+
+For acceptance closure, name the uncovered outcome and route PRD-owned
+acceptance to `/write-prd`, decomposition to `/prd-to-features`, feature-local
+clarification to `/feature-doctor FT-<NNN>`, shared design to `/spec-design`, or
+task proof to `/feature-to-tasks FT-<NNN>`.
 
 For `/autopilot` or autonomous scheduler readiness, every task-linked product
 feature needs a latest independent `APPROVE`; this is necessary but does not

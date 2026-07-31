@@ -58,11 +58,11 @@ Packaging and install:
   schema/protocol-template/validator/workflow sync, write-boundary grammar,
   selected-task start ownership, runtime skill collision preflight,
   filesystem-derived runtime skill inventory, task/project state preservation,
-  stable runtime paths, idempotent reporting, and bootstrap-only repair
-  semantics.
-- `scripts/test-mb-doctor.mjs`: isolated Foundation readiness fixture matrix for
-  default/strict severity, gate state, FT-000/product boundaries, and dependency
-  semantics.
+  stable runtime paths, deployed `mb-doctor` module execution, idempotent
+  reporting, and bootstrap-only repair semantics.
+- `scripts/test-mb-doctor.mjs`: isolated CLI/report characterization,
+  architecture-boundary assertions, and Foundation/task/acceptance/brownfield
+  fixture matrix.
 
 Canonical shared source:
 
@@ -92,7 +92,13 @@ Skill-specific non-shared assets:
   `.memory-bank/templates/protocols` from the `>3` Markdown files router
   warning because runtime commands address those framework-owned shapes
   directly.
-- `skills/mb-garden/assets/mb-doctor.mjs`: current packaged location for the deterministic workflow/autonomous readiness check over `mb-lint`.
+- `skills/mb-garden/assets/mb-doctor.mjs`: canonical CLI entrypoint for the
+  deterministic workflow/autonomous readiness check over `mb-lint`; it is
+  deployed unchanged as `scripts/mb-doctor.mjs`.
+- `skills/mb-garden/assets/mb-doctor/*.mjs`: canonical internal doctor modules,
+  deployed beside the entrypoint under `scripts/mb-doctor/`.
+- `skills/mb-garden/assets/mb-doctor/AGENTS.md`: source-only ownership and
+  change-routing contract for future doctor work.
 - `skills/mb-garden/assets/memory-bank-lint.yml`: related lint config asset.
 
 ## JSON Task Registry Work Hotspots
@@ -111,7 +117,9 @@ For updates that change the JSON-only task registry or indexed task record model
 - `skills/_shared/references/commands/verify.md`
 - `skills/_shared/references/commands/mb-sync.md`
 - `skills/mb-garden/assets/mb-lint.mjs` (packaged deterministic lint asset)
-- `skills/mb-garden/assets/mb-doctor.mjs` (current packaged deterministic readiness asset)
+- `skills/mb-garden/assets/mb-doctor.mjs` and
+  `skills/mb-garden/assets/mb-doctor/*.mjs` (packaged deterministic readiness
+  entrypoint and modules)
 - `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
 ## Foundation Dev Path Hotspots
@@ -132,7 +140,8 @@ Primary source files:
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/mb-doctor.md`
 - `skills/_shared/scripts/init-mb.js`
-- `skills/mb-garden/assets/mb-doctor.mjs`
+- `skills/mb-garden/assets/mb-doctor.mjs` and
+  `skills/mb-garden/assets/mb-doctor/*.mjs`
 - `scripts/test-mb-doctor.mjs`
 - `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md`
 
@@ -182,7 +191,8 @@ Primary source files for this behavior:
 - `skills/_shared/references/structure-template.md` and
   `skills/_shared/scripts/init-mb.js` for generated skeleton templates
 - `skills/mb-garden/assets/mb-lint.mjs` and
-  `skills/mb-garden/assets/mb-doctor.mjs` for minimal deterministic checks
+  `skills/mb-garden/assets/mb-doctor.mjs` and its `mb-doctor/*.mjs` modules for
+  minimal deterministic checks
 
 Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
 mandatory ADRs for local/simple work.
@@ -233,30 +243,47 @@ Fresh bootstrap must not create `.memory-bank/tech-specs/`. Lint/doctor may
 still recognize that legacy path as brownfield migration evidence; semantic
 hub-only rejection belongs to `/review-tasks-plan`.
 
-## Stable Acceptance Trace Hotspots
+## Stable Acceptance Closure Hotspots
 
 Product feature acceptance uses stable `FT-<NNN>-AC-<NNN>` headings linked to
 governing `REQ-*`. Tasks address ACs through exact feature anchors in existing
 `source_artifacts`; T2/T3 prospective proof repeats the same ID in existing
 `verification_targets` and `evidence_required`.
 
+For a material product outcome—an edge/failure outcome or non-functional
+quality whose failure can itself block acceptance or realize a significant
+accepted risk—the semantic chain closes through accepted REQ/AC or a sourced
+authoritative out-of-scope disposition, exact task mapping, planned proof, and
+verified evidence. Product targets remain `/write-prd` owned. Tasks proving a
+material NFR carry `verification_targets` and `evidence_required` at every
+tier; compact T0/T1 changes protocol depth only. Subject specs are reserved for
+non-trivial reproducible measurement detail.
+
 Primary source files:
 
+- `skills/_shared/references/commands/write-prd.md`
 - `skills/_shared/references/commands/prd-to-features.md`
 - `skills/_shared/references/commands/feature-doctor.md`
 - `skills/_shared/references/commands/review-feat-plan.md`
+- `skills/_shared/references/commands/spec-auto.md`
 - `skills/_shared/references/commands/feature-to-tasks.md`
 - `skills/_shared/references/commands/review-tasks-plan.md`
+- `skills/_shared/references/commands/exe.md`
 - `skills/_shared/references/commands/mb-doctor.md`
+- `skills/_shared/references/workflows/execute-loop.md`
 - `skills/_shared/references/workflows/tier-policy.md`
+- `skills/_shared/scripts/init-mb.js`
+- `skills/_shared/references/structure-template.md`
 - `skills/_shared/references/protocols/verification-template.md`
-- `skills/mb-garden/assets/mb-doctor.mjs`
+- `skills/mb-garden/assets/mb-doctor.mjs` and
+  `skills/mb-garden/assets/mb-doctor/*.mjs`
 - `scripts/test-mb-doctor.mjs`
 - `scripts/test-install-sync.mjs`
 
 Do not add an AC registry, lifecycle, task field, or schema extension. Historical
 terminal tasks without the prospective proof contract do not require fabricated
-RED/GREEN backfill.
+evidence backfill. Materiality and proof sufficiency remain fresh semantic
+review judgments; do not add a heuristic doctor parser.
 
 ## Task Runtime Context / Single-Card Handoff Hotspots
 
@@ -361,6 +388,8 @@ One-command bootstrap smoke:
 tmpdir="$(mktemp -d)"; node scripts/install-framework.mjs --bootstrap --target "$tmpdir" --yes
 test -f "$tmpdir/.memory-bank/tasks/index.json"
 test -f "$tmpdir/AGENTS.md"
+test -f "$tmpdir/scripts/mb-doctor/readers.mjs"
+(cd "$tmpdir" && node scripts/mb-doctor.mjs --json)
 ```
 
 To inspect the generated temporary package tree during installer debugging:

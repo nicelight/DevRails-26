@@ -44,6 +44,12 @@ ambiguity or design-impact assessment.
   not reused.
 - `/feature-doctor` may detect design impact but must not repair linked SDD
   specs, create tasks/plans, or change tier.
+- Preserve acceptance closure: a material edge/failure outcome retains a
+  covering AC or an authoritative out-of-scope disposition with source and
+  `/write-prd` change route; a material NFR retains its governing REQ, accepted
+  target/qualitative criterion, decisive conditions, and verification method.
+- Do not create or change a REQ-level product target locally. Route that change
+  through `/write-prd`.
 - A recommendation/default is not accepted without an explicit operator answer.
 </hard_invariants>
 
@@ -110,6 +116,8 @@ behavior.
 </validation>
 
 <handoff_contract>
+- missing or changed REQ-level product target, accepted scope, or pass/fail
+  decision -> `/write-prd`;
 - feature wording changed without design invalidation -> `/feature-to-tasks
   FT-<NNN>` after the global backbone and any required Foundation Gate are
   ready;

@@ -107,9 +107,9 @@ or canonical spec identity belongs to the operator.
   Constitution, or Foundation artifact; record it in
   `.protocols/FT-<NNN>/decision-log.md` when useful for handoff, remove
   contradictory wording, and revalidate before task writes.
-- Shared/global decisions and competing canonical paths route to
-  `/spec-design`; feature product ambiguity routes to
-  `/feature-doctor FT-<NNN>` or its owning feature source.
+- Route shared/global decisions to `/spec-design`, PRD-owned acceptance to
+  `/write-prd`, missing REQ/AC decomposition to `/prd-to-features`, and
+  feature-local ambiguity to `/feature-doctor FT-<NNN>`.
 - Unattended flow records the question and affected scope, writes no affected
   tasks, returns `HALT_CLARIFICATION_REQUIRED` for product clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract decisions, and names the exact
@@ -198,6 +198,10 @@ storage/persistence belongs to Data Specification. Create a new subject-based
 spec only after existing identity and synonyms are checked. Do not expand a
 legacy `.memory-bank/tech-specs/FT-*.md` hub as the canonical T2/T3 answer.
 
+Keep a simple material-quality probe/review in the AC and task record. Use a
+subject spec only for non-trivial reproducible measurement or an expert rubric;
+it defines method/evidence, never a missing product target.
+
 For an Alembic migration under an accepted linear topology, reuse the
 project-level database contract for dynamic head/branch/ancestry integrity.
 Keep feature testing limited to its revision, direct `down_revision`,
@@ -235,6 +239,13 @@ relevant examples as described by the hard invariant above.
 
 ## JSON task records
 
+Before task emission or reconciliation, run one bounded acceptance-closure scan:
+material edge/failure outcomes have an AC or sourced authoritative exclusion,
+material NFRs have an accepted REQ/AC result and verification method, and every
+AC maps to a task. Reconcile an obvious missing locator; use `rebuild_required`
+for identity, tier, dependency, AC, accepted target/condition, or material-scope
+changes, and the owning blocker route for unresolved authority.
+
 Before initially emitting JSON task records, form provisional candidates and
 run one bounded execution-path sanity check per candidate. Inspect only one
 plausible evidence-backed path from the first necessary change through the main
@@ -267,6 +278,13 @@ Additionally require:
   indexed task. A grounded locator may be added to a historical task without
   inventing RED/GREEN evidence or changing its lifecycle;
 - every T1/T2/T3 task has concrete governing `REQ-*` links;
+- every newly created or reconciled `planned|ready` task at any tier that proves
+  a material NFR has its governing `REQ-*`, exact AC locator, non-empty
+  `verification_targets`, and non-empty `evidence_required` for the observed
+  result, decisive conditions, pass/fail comparison, and artifact. Shared probes
+  map every covered AC explicitly;
+- human/expert review names its criterion/rubric, reviewer role, and artifact;
+  it is evidence, not a T3 checkpoint;
 - every task has a cohesive, independently observable outcome and grounded
   dependency graph;
 - every required Foundation final-gate dependency is direct or transitive;
@@ -369,8 +387,10 @@ Final report:
 - Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
 - Successful `--all` -> one fresh-context `/review-tasks-plan FT-<NNN>` per
   task-linked product feature.
-- Blocked product decision -> `/feature-doctor FT-<NNN>` or owning feature
-  repair; blocked shared/global decision -> `/spec-design`.
+- Blocked PRD-owned target/scope/pass-fail decision -> `/write-prd`;
+  feature-local product clarification -> `/feature-doctor
+  FT-<NNN>`; missing REQ/AC decomposition -> `/prd-to-features`; blocked
+  shared/global decision -> `/spec-design`.
 
 Conditional `/mb-doctor` and execution happen only after the task-plan review;
 they are not performed by this command.

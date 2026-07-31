@@ -31,10 +31,11 @@ Backbone `Planning Revision` and the latest feature-specific
 Foundation gate and does not use product task-plan review.
 
 Use task `purpose`, `success_outcome`, `anti_goals`, `source_artifacts`,
-`normative_inputs`, `constraints`, `invariants`, `verification_targets`, and
-`runtime_context` when present. For T0/T1, do not load broad global planning
-docs by default. For T2/T3, direct task-linked applicable canonical specs are
-mandatory; feature links and `spec-index.md` alone are not execution context.
+`normative_inputs`, `constraints`, `invariants`, `verification_targets`,
+`evidence_required`, and `runtime_context` when present. For T0/T1, do not load
+broad global planning docs by default. For T2/T3, direct task-linked applicable
+canonical specs are mandatory; feature links and `spec-index.md` alone are not
+execution context.
 
 Point-of-use preflight must confirm:
 - index/file/ID resolution and matching ID tier/feature/wave segments;
@@ -105,8 +106,10 @@ replay it.
 - Manual mode: T0/T1 fast-lane closure is allowed only when the current agent is
   the explicit manual top-level closure owner, scope stayed task-local, no
   T2/T3 trigger appeared, hard scopes were respected, and compact PASS evidence
-  was durably written. Otherwise leave lifecycle unchanged for `/verify`, the
-  scheduler, or explicit owner.
+  was durably written. Compact changes protocol depth, not acceptance-evidence
+  obligations: every task-scoped `verification_targets` and
+  `evidence_required` entry must be satisfied. Otherwise leave lifecycle
+  unchanged for `/verify`, the scheduler, or explicit owner.
 - T2/T3 task closure is never owned by `/exe`.
 - `touched_files` is advisory and non-exhaustive. Confirm and record the actual
   change surface; extra files are allowed only for the same outcome/spec/tier
@@ -253,6 +256,11 @@ Execution evidence must record:
 - linked boundary/spec rules followed, including write owner and public
   boundary when applicable, and any drift discovered;
 - next verification targets and recommended owner.
+
+For a material NFR, record the observed value or qualitative result, decisive
+conditions, comparison with the accepted target/criterion, and required
+artifact. Human/expert review records the planned rubric/criterion and qualified
+reviewer result as evidence; it does not satisfy or create a T3 human checkpoint.
 
 Run task gates, applicable linked-spec verification targets, and the cheapest
 credible project-native lint/typecheck/test/integration checks for touched

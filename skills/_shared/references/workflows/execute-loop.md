@@ -8,6 +8,12 @@ status: active
 - `/prd-to-features` creates L1–L3 only (product/requirements/epics/features) and does not
   write testing documentation.
 - `/write-prd` = PRD-level ambiguity closure. `/feature-doctor` = optional feature-level ambiguity pass.
+- Acceptance closure applies when an observable edge/failure outcome or
+  non-functional quality can itself block acceptance or realize a significant
+  accepted risk: it closes through an accepted REQ/feature AC or a sourced
+  authoritative out-of-scope disposition, then exact task mapping, planned
+  proof, and verified evidence. Missing product targets/scope decisions remain
+  `/write-prd` blockers; agents do not invent them.
 - `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd-to-features`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
 - `/spec-design` is mandatory after `/prd-to-features`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.
 - Global Backbone `Planning Revision` starts at `0`, becomes positive on the
@@ -19,6 +25,10 @@ status: active
   creates the implementation plan plus complete JSON task records with direct
   relevant spec links. Discovery, concern-lens order, and slicing tactics are
   agent-selected inside the command contract.
+- Simple material-quality methods stay in REQ/AC/task records; a subject spec
+  owns only non-trivial reproducible measurement detail. Tasks proving a
+  material NFR carry concrete `verification_targets` and `evidence_required`
+  at every tier; compact T0/T1 protocol does not waive that evidence.
 - Newly created or reconciled `planned|ready` T2/T3 cards use existing
   `evidence_required` and direct links to plan claim-linked RED/GREEN, or one
   concrete accepted not-applicable reason; `/review-tasks-plan` evaluates this

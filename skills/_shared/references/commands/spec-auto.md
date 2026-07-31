@@ -121,6 +121,11 @@ Rules:
   `.memory-bank/domains/*`, `.memory-bank/states/*`,
   `.memory-bank/testing/*`, `.memory-bank/runbooks/*`, or
   `.memory-bank/guides/*`;
+- keep a simple material-quality verification method in its REQ/AC and task
+  plan. Create or extend a subject spec only when reproducible measurement
+  needs a non-trivial dataset/state, statistical window, environment/warm-up,
+  isolation/cleanup, shared procedure, or formal expert rubric. That spec owns
+  method/evidence detail and never supplies a missing product target;
 - legacy `.memory-bank/tech-specs/FT-*.md` is evidence, not a target hub;
 - split specs only for a distinct boundary, change cadence, consumers, or
   meaningful reuse;

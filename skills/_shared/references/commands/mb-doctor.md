@@ -128,6 +128,21 @@ the wave boundary.
   Until it does, `FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default
   mode and an error in `--strict`.
 - In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and the exact standalone marker line `HUMAN_CHECKPOINT: done`.
+- A terminal `done|failed` task that still carries deprecated
+  `runtime_context.allowed_write_scope` is a legacy terminal record. Missing
+  historical `TASK_DONE_EVIDENCE_MISSING`, `TASK_RED_VERIFY_EVIDENCE_MISSING`,
+  `TASK_RED_VERIFY_VERDICT_MISSING`, or `TASK_T3_CHECKPOINT_MISSING` evidence is
+  preserved without backfill and reported only through aggregate
+  `TASK_LEGACY_TERMINAL_COMPATIBILITY` info. All other findings retain their
+  normal severity; non-terminal and current `write_boundary` records receive no
+  compatibility exemption.
+- A `done` T3 record with a non-pass red-verify verdict satisfies the mechanical
+  closure-verdict check only when `task.verify` already contains an explicit
+  `owner_lifecycle_closure` / `manual_explicit_owner` / `decision: done` record,
+  `gate_summary.red_verification` starts with `OWNER-ACCEPTED`, and both
+  `accepted_evidence` and `accepted_residual_risk` are non-empty. This preserves
+  a durable owner decision; `/mb-doctor` does not infer, create, or recommend
+  it, and `HUMAN_CHECKPOINT: done` remains required.
 - `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
 - In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
 - For `complete`, every `## Backbone Area Matrix` row in `.memory-bank/spec-backbone.md` has status `authoritative` or `not_applicable`; missing, `blocked`, `needed_before_tasks`, `unknown`, `planned`, `candidate`, or any other status is not product autonomous-ready.
@@ -276,7 +291,9 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_BLOCKED_BY_UPSTREAM`
 - `TASK_QUEUE_NO_EXECUTABLE_READY`
 
-Info findings may include `MB_LINT_PASSED`, fresh-skeleton state such as `TASK_INDEX_EMPTY` in default mode, and `TASK_QUEUE_SUMMARY`.
+Info findings may include `MB_LINT_PASSED`, fresh-skeleton state such as
+`TASK_INDEX_EMPTY` in default mode, `TASK_LEGACY_TERMINAL_COMPATIBILITY`, and
+`TASK_QUEUE_SUMMARY`.
 
 ## JSON Output
 JSON mode preserves this stable top-level shape:
