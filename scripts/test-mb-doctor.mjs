@@ -570,6 +570,46 @@ Flags:
   expectPass(validAcceptanceTrace, 'valid acceptance trace');
   expectNoFinding(validAcceptanceTrace, 'TASK_ACCEPTANCE_PROOF_MISSING');
 
+  const hierarchicalAcceptanceTrace = runCase('hierarchical-acceptance-trace', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { reqs: ['REQ-ING-001'] })],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([{ id: 'FT-001-AC-001', req: 'REQ-ING-001' }]),
+    }],
+  }, ['--strict']);
+  expectPass(hierarchicalAcceptanceTrace, 'hierarchical acceptance trace');
+
+  const multipleAcceptanceReqs = runCase('multiple-acceptance-reqs', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { reqs: ['REQ-CAP-002'] })],
+    files: [
+      {
+        rel: '.memory-bank/features/FT-001-fixture.md',
+        content: featureMarkdown([{
+          id: 'FT-001-AC-001',
+          req: 'REQ-ING-001, REQ-CAP-002',
+        }]),
+      },
+      {
+        rel: '.memory-bank/requirements.md',
+        content: '# Requirements\n\n- REQ-ING-001: ingestion behavior\n- REQ-CAP-002: capacity behavior\n',
+      },
+    ],
+  }, ['--strict']);
+  expectPass(multipleAcceptanceReqs, 'multiple governing requirements in one AC');
+
+  const invalidHierarchicalReq = runCase('invalid-hierarchical-req', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { reqs: ['REQ-ING-01'] })],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([{ id: 'FT-001-AC-001', req: 'REQ-ING-01' }]),
+    }],
+  }, ['--strict']);
+  expectFinding(invalidHierarchicalReq, 'TASK_REQUIREMENT_LINK_MISSING', 'error');
+  expectFinding(invalidHierarchicalReq, 'FEATURE_ACCEPTANCE_INVALID', 'error');
+
   const invalidAcceptanceReq = runCase('invalid-acceptance-req', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2)],

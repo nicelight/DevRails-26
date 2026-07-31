@@ -16,7 +16,7 @@ const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
-const REQ_ID_RE = /^REQ-[0-9]{3,}$/;
+const REQ_ID_RE = /^REQ-(?:[A-Z]+-)?[0-9]{3,}$/;
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
@@ -250,7 +250,7 @@ export function createTaskReadinessChecks(context) {
       addFinding(severity, 'TASK_REQUIREMENT_LINK_MISSING', `${rel}: ${task.tier} task has no concrete REQ-* requirement link.`, {
         path: rel,
         task_id: id,
-        suggested_fix: 'Add at least one real REQ-<NNN> to task.reqs; placeholder REQ-XXX does not count.',
+        suggested_fix: 'Add at least one real REQ-<NNN> or REQ-<DOMAIN>-<NNN> to task.reqs; placeholder REQ-XXX does not count.',
       });
     }
   

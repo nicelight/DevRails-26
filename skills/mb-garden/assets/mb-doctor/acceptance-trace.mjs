@@ -13,7 +13,12 @@ import {
 
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
-const REQ_ID_RE = /^REQ-[0-9]{3,}$/;
+const REQ_ID_SOURCE = 'REQ-(?:[A-Z]+-)?[0-9]{3,}';
+const REQ_ID_RE = new RegExp(`^${REQ_ID_SOURCE}$`);
+const REQ_ID_LOCATOR_RE = new RegExp(
+  `(?:^|[^A-Za-z0-9-])(${REQ_ID_SOURCE})(?![A-Za-z0-9-])`,
+  'g',
+);
 const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const FEATURE_AC_ID_RE = /^FT-[0-9]{3,}-AC-[0-9]{3,}$/;
 const FEATURE_AC_ID_SOURCE = 'FT-[0-9]{3,}-AC-[0-9]{3,}';
@@ -377,7 +382,9 @@ export function createAcceptanceTraceChecks(context) {
       const blockEnd = headings[index + 1]?.index ?? section.lines.length;
       const block = section.lines.slice(heading.index + 1, blockEnd).join('\n');
       const reqLine = block.match(/^-\s*REQ:\s*(.+)$/im)?.[1] ?? '';
-      const reqs = [...new Set(reqLine.match(/REQ-[0-9]{3,}/g) ?? [])];
+      const reqs = [...new Set(
+        [...reqLine.matchAll(REQ_ID_LOCATOR_RE)].map((match) => match[1]),
+      )];
       const valid = featureIdFromAcceptanceId(heading.id) === featureId && reqs.length > 0;
       if (featureIdFromAcceptanceId(heading.id) !== featureId) {
         issues.push({ type: 'acceptance_feature_mismatch', ac: heading.id, feature: featureId });
