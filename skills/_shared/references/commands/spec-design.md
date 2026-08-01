@@ -168,7 +168,8 @@ as explicitly current state, and revalidate before handoff.
 
 ## 1. Global status and mode
 
-Update `.memory-bank/spec-backbone.md` with this parseable contract:
+Ensure `.memory-bank/spec-backbone.md` contains this parseable contract for the
+current durable backbone state:
 
 ```markdown
 ## Global Backbone Status
@@ -180,6 +181,10 @@ Update `.memory-bank/spec-backbone.md` with this parseable contract:
   - event_message_contracts: not_applicable - no event/message boundary in this feature set.
 - Notes:
 ```
+
+Edit the file only when durable backbone state has changed or the existing
+contract needs repair. Do not append per-run reconciliation/history or mirror
+the final chat handoff; preserve durable routing sections owned by the backbone.
 
 Planning revision rules:
 - `0` is pre-design; the first successful backbone sets `1`, and
@@ -488,10 +493,10 @@ present and consistent:
 </validation>
 
 <handoff_contract>
-Report backbone status/mode, artifact strategy, specs changed, matrix summary,
-`not_applicable` rationale, affected features, Foundation decision, durable
-operator decisions, Planning Revision before/after, blockers, and the immediate
-next command:
+In the final chat response, report backbone status/mode, artifact strategy,
+specs changed, matrix summary, `not_applicable` rationale, affected features,
+Foundation decision, durable operator decisions, Planning Revision before/after,
+blockers, and the immediate next command:
 - ready backbone + revision increased after indexed task generation -> rerun
   `/foundation-to-tasks` first when Foundation is required, then
   `/feature-to-tasks --all`, `/review-tasks-plan --all`, and the applicable
