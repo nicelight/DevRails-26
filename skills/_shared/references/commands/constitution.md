@@ -64,10 +64,15 @@ Constitution addresses the applicable criteria:
   backward compatibility, performance, accessibility/UX consistency, low
   maintenance, or an operator-defined rule.
 
-Ask one question or a small group of tightly related questions in the format
-best suited to the choice. Explain the impact and optionally recommend an
-option. Do not impose a pass count, a fixed questionnaire UI, or an artificial
-word limit on substantive answers.
+In interactive mode, ask exactly one most relevant unresolved governance
+question at a time. Offer exactly two mutually exclusive answer options plus
+`свой вариант`. Put the best-fit option first and end its text with the exact
+phrase `Рекомендую этот вариант`. Briefly explain the impact of each option.
+
+After every accepted answer, apply it to the current Constitution context,
+reassess the remaining unresolved governance branches, and select the next most
+relevant question. Do not reveal a queued questionnaire. Do not impose a pass
+count or an artificial word limit on a custom answer.
 
 Recommendations and suggested answers become authoritative only after explicit
 operator acceptance. In unattended use, apply only decisions already fixed by

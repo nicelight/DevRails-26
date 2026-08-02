@@ -764,11 +764,6 @@ try {
   });
   const lintOutput = `${lintResult.stdout || ''}${lintResult.stderr || ''}`;
   assert(lintResult.status === 0, 'Fresh bootstrap mb-lint failed.', lintOutput);
-  assert(
-    !lintOutput.includes('.memory-bank/templates/protocols: has'),
-    'Framework-owned protocol templates incorrectly require an index router.',
-    lintOutput,
-  );
   const staleSchema = JSON.parse(expectedSchema);
   staleSchema.title = 'STALE TARGET TASK SCHEMA';
   writeTarget(schemaRel, `${JSON.stringify(staleSchema, null, 2)}\n`);

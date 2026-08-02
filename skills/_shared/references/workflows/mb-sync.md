@@ -148,9 +148,6 @@ status: active
 
 ### 9) Index
 - [ ] `.memory-bank/index.md` содержит аннотированные ссылки на все новые/изменённые документы.
-- [ ] Router-индексы в project documentation folders с >3 документами
-      присутствуют; exact framework-owned `.memory-bank/templates/protocols/`
-      leaf исключён.
 
 ## Формат changelog
 

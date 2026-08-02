@@ -88,10 +88,7 @@ Installable skill entrypoints:
 Skill-specific non-shared assets:
 
 - `skills/mb-garden/assets/mb-lint.mjs`: packaged deterministic Memory Bank
-  structural/mechanical hygiene linter; it exempts only
-  `.memory-bank/templates/protocols` from the `>3` Markdown files router
-  warning because runtime commands address those framework-owned shapes
-  directly.
+  structural/mechanical hygiene linter.
 - `skills/mb-garden/assets/mb-doctor.mjs`: canonical CLI entrypoint for the
   deterministic workflow/autonomous readiness check over `mb-lint`; it is
   deployed unchanged as `scripts/mb-doctor.mjs`.
