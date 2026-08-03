@@ -224,6 +224,11 @@ existing run state and durable evidence without resetting counters, attempts,
 or blockers. Initialize `/autopilot`'s checkpoint only at this handoff; do not
 add Product/Design/Foundation values to its stage vocabulary.
 
+`/autopilot` runs the default `/tech-debt wave <N>` report after each successful
+product wave boundary. `/autonomous` preserves that report handoff and does not
+launch a second report for the same boundary. The report remains advisory and
+does not alter the outer run state or terminal result.
+
 Any `/autopilot` `HALT_*` stops `/autonomous` with the same state, reason,
 evidence, owner, and exact resume route. Do not replace it with a generic halt.
 Product-queue `SUCCESS` proceeds to the final end-to-end validation below.

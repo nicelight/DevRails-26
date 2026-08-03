@@ -121,6 +121,7 @@ overengineering;
 - `/mb-garden` — исправляет однозначные механические ошибки в ссылках и
 индексах;
 - `/mb-doctor` — проверяет готовность проекта или очереди задач;
+- `/tech-debt` — создаёт advisory-отчёт о техническом долге;
 - `/autopilot` — выполняет готовую очередь продуктовых задач;
 - `/autonomous` — управляет полным автоматическим процессом.
 
@@ -143,7 +144,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 34 runtime-skills определены в:
+Текущие 35 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -1296,6 +1297,7 @@ refresh JSON state
   -> wave-boundary /mb-sync
   -> lint + strict doctor
   -> conditional task-plan re-review if planning surface changed
+  -> default `/tech-debt wave <N>` report
   -> next promotion pass
 ```
 
@@ -1447,6 +1449,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/mb-sync` | reconciliation already-decided durable state | не принимает closure/promotion/design decisions |
 | `/mb-garden` | mechanical links/indexes/routers maintenance и final lint | semantic/destructive decisions блокирует; broader reconcile передаёт `/mb-sync` |
 | `/mb-doctor` | deterministic readiness report | не заменяет semantic review или verification |
+| `/tech-debt` | advisory report по подтверждённому техническому долгу в заданной change surface | ничего не исправляет и не меняет workflow state; `/autopilot` запускает его после успешной wave boundary |
 | `/autopilot` | reviewed product queue scheduler и terminal state после Foundation gate | не создаёт PRD/features/initial queue и не выполняет FT-000 |
 | `/autonomous` | full Product/Design-to-terminal-state orchestration и bounded FT-000 scheduler | не принимает unresolved operator decisions и не копирует product scheduler |
 

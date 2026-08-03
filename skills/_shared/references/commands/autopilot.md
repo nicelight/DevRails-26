@@ -87,6 +87,9 @@ Do not mutate task statuses to represent this invalidation.
 - Full `/mb-sync` runs once at the wave boundary. Early sync requires a real
   current-wave RTM/index/spec/contract/changelog dependency or explicit owner
   request and does not replace the boundary sync.
+- After a successful wave-boundary gate, run `/tech-debt wave <N>` by default.
+  Its report is advisory: it never changes task state, queue state, gates,
+  blockers, terminal state, or resume routing.
 - Do not add a schema, lifecycle, scheduler, registry, or persisted mode field.
 </hard_invariants>
 
@@ -159,10 +162,15 @@ still names scheduler work, even when no task is `in_progress`:
    safe; after its durable verdict, checkpoint the derived next action.
 5. A `wave-boundary` checkpoint resumes the first incomplete boundary action in
    canonical order: required feature/T3 gates, `/mb-sync`, lint, strict doctor,
-   then any planning-surface-triggered task-plan reviews. Use `last durable child
-   verdict/handoff` plus the referenced artifacts to skip completed actions;
-   do not replace the checkpoint with `selection` until every required boundary
-   action passes.
+   planning-surface-triggered task-plan reviews, `/tech-debt wave <N>`, then
+   selection. Use `last durable child verdict/handoff` plus the referenced
+   artifacts to skip completed actions; do not replace the checkpoint with
+   `selection` until every required gate passes and the advisory report action
+   is durably reconciled.
+   If `next action` names `/tech-debt`, reconcile its existing report path or
+   inspect the current-scope report evidence before invoking it again. If the
+   prior side effect is ambiguous, record an unavailable advisory handoff and
+   never create a second report merely because the scheduler resumed.
 6. If checkpoint stage, selected task, prior side effect, or completion
    cannot be reconciled safely, invoke no child and promote/select no task.
    Record the recovery decision, evidence, owner, and exact resume route, then
@@ -272,8 +280,15 @@ At each wave boundary:
    status/evidence closure does not trigger it;
    if Global Backbone Planning Revision changed, stop the boundary and use the
    all-feature stale-planning route from the input contract instead;
-6. only after all triggered gates pass, run the next recovery-first cycle and
-   then the next promotion/dependent-
+6. only after all triggered gates pass, checkpoint the existing
+   `wave-boundary` stage with exact next action `/tech-debt wave <N>` and run
+   `/tech-debt wave <N>` by default. Record its report path in the existing
+   durable child handoff before continuing. If report creation is unavailable,
+   record the existing advisory handoff and continue; a report finding or an
+   unavailable advisory report does not become a queue halt or lifecycle
+   decision.
+7. only after the report action is durably reconciled, run the next
+   recovery-first cycle and then the next promotion/dependent-
    blocking pass.
 
 Tier policy owns retry eligibility, `failed|blocked` mapping, failed-task

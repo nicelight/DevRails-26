@@ -380,6 +380,11 @@ try {
     'Fresh full bootstrap did not install technical-premortem into both runtime surfaces.',
   );
   assert(
+    agentsSkillNames.includes('tech-debt')
+      && claudeSkillNames.includes('tech-debt'),
+    'Fresh full bootstrap did not install tech-debt into both runtime surfaces.',
+  );
+  assert(
     JSON.stringify(bootstrappedAgentsSkillNames) === JSON.stringify(agentsSkillNames)
       && JSON.stringify(bootstrappedClaudeSkillNames) === JSON.stringify(claudeSkillNames),
     'Bootstrapped install-only target does not match a fresh full bootstrap runtime set.',
@@ -422,6 +427,23 @@ try {
     readTarget('.agents/skills/debug/SKILL.md')
       === readTarget('.claude/skills/debug/SKILL.md'),
     'Debug deployment differs between runtime surfaces.',
+  );
+  const techDebtAgentsSkill = readTarget('.agents/skills/tech-debt/SKILL.md');
+  const techDebtClaudeSkill = readTarget('.claude/skills/tech-debt/SKILL.md');
+  assert(
+    techDebtAgentsSkill === techDebtClaudeSkill
+      && techDebtAgentsSkill.includes('PAPERCUTS/TECHDEBTS/')
+      && techDebtAgentsSkill.includes('exactly one new Markdown report')
+      && !techDebtAgentsSkill.includes('skills/_shared/'),
+    'Deployed tech-debt skill is not identical, complete, or source-only safe.',
+  );
+  const autopilotSkill = readTarget('.agents/skills/autopilot/SKILL.md');
+  const autonomousSkill = readTarget('.agents/skills/autonomous/SKILL.md');
+  assert(
+    autopilotSkill.includes('/tech-debt wave <N>')
+      && autopilotSkill.includes('by default')
+      && autonomousSkill.includes('/tech-debt wave <N>'),
+    'Autopilot/autonomous runtime skills do not contain the tech-debt handoff contract.',
   );
 
   const structureTemplate = readFileSync(structureTemplateSource, 'utf8');

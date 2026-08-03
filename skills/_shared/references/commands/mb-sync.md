@@ -100,9 +100,13 @@ doctor requirement.
 <handoff_contract>
 - Successful scheduler wave sync -> return to `/autonomous` or `/autopilot`,
   which alone runs lint then strict doctor before its separate promotion/
-  dependent-blocking pass.
+  dependent-blocking pass. `/autopilot` then runs its default `/tech-debt wave
+  <N>` report after the successful wave-boundary gates; `/mb-sync` does not
+  launch it.
 - Successful manual sync -> return to the named explicit top-level caller/
   owner, which runs applicable post-sync lint/doctor before its next handoff.
+  When this sync closes a feature or wave, include one advisory
+  `/tech-debt <scope>` recommendation in that operator-visible handoff.
 - Missing owner decision or semantic contradiction -> stop and name the owning
   task/planning/design/closure repair route.
 </handoff_contract>

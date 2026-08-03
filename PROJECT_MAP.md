@@ -68,6 +68,9 @@ Canonical shared source:
 
 - `skills/_shared/agents/*.md`: shared delegated-agent prompts.
 - `skills/_shared/references/commands/*.md`: canonical command specs copied into generated runtime skills by the installer.
+- `skills/_shared/references/commands/tech-debt.md`: advisory technical-debt
+  report contract; `/autopilot` runs it by default after a successful product
+  wave boundary, while manual boundary handoffs only recommend it.
 - `skills/_shared/references/protocols/*`: canonical protocol and handoff
   templates, deployed as framework-owned
   `.memory-bank/templates/protocols/*`; `.protocols/<TASK_ID>/*` remains

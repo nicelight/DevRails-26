@@ -5,9 +5,10 @@
 DevRails получает public runtime skill `/tech-debt` для отдельной проверки
 технического долга в заданной change surface.
 
-Skill можно запустить явно в любой момент. После успешного завершения очередной
-wave или product feature DevRails предлагает его как необязательный следующий
-шаг:
+Skill можно запустить явно в любой момент. В manual flow после успешного
+завершения очередной wave или product feature DevRails предлагает его как
+необязательный следующий шаг. `/autopilot` после успешной wave boundary
+запускает `/tech-debt wave <N>` по умолчанию.
 
 > Необязательный следующий шаг: `/tech-debt <wave, feature или change scope>` —
 > собрать отчёт о техническом долге в завершённой поверхности.
@@ -78,8 +79,10 @@ DevRails planning flow только после отдельного явного
 
 ## Recommendation contract
 
-Успешный operator-visible handoff, который завершает wave или product feature,
-содержит одну краткую рекомендацию `/tech-debt` с доступным scope.
+Успешный manual operator-visible handoff, который завершает wave или product
+feature, содержит одну краткую рекомендацию `/tech-debt` с доступным scope.
+Успешная wave boundary в `/autopilot` по умолчанию запускает
+`/tech-debt wave <N>` после обязательных boundary gates.
 
 Рекомендация:
 
@@ -90,6 +93,10 @@ DevRails planning flow только после отдельного явного
   state;
 - может повториться после следующей успешно завершённой wave или feature.
 
+Автоматический запуск из `/autopilot` не является gate и не меняет task/queue
+state, terminal state или resume route. `/autonomous` не запускает второй отчёт
+для той же wave boundary.
+
 ## Acceptance evidence
 
 - `/tech-debt` установлен в public runtime surfaces Codex и Claude;
@@ -98,7 +105,8 @@ DevRails planning flow только после отдельного явного
 - каждый finding связан с проверяемым evidence и location;
 - отсутствие material debt отражается report без findings, а не выдуманными
   findings;
-- successful wave/feature handoff предлагает skill, но не запускает его;
+- manual successful wave/feature handoff предлагает skill, а успешная
+  `/autopilot` wave boundary запускает его по умолчанию;
 - запуск и результат не меняют существующие statuses, gates, blockers,
   terminal states и resume routes;
 - установленный skill не содержит source-only paths.
