@@ -715,6 +715,8 @@ console.log('\n[1/5] Creating directories...');
   'scripts',
   '.tasks',
   '.protocols',
+  'PAPERCUTS',
+  'PAPERCUTS/TECHDEBTS',
 ].forEach(ensureDir);
 
 console.log('\n[2/5] Writing core files...');

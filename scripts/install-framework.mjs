@@ -66,6 +66,7 @@ const PREPARE_EXCLUDED_ROOTS = new Set([
   '.memory-bank',
   '.protocols',
   '.tasks',
+  'PAPERCUTS',
   'node_modules',
   '.git',
 ]);

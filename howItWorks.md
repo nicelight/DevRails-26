@@ -383,6 +383,8 @@ Fresh bootstrap создаёт skeleton, но не roadmap. Основные art
   changelog.md
 .protocols/
 .tasks/
+PAPERCUTS/
+  TECHDEBTS/
 .agents/skills/<command>/SKILL.md
 .claude/skills/<command>/SKILL.md
 scripts/mb-lint.mjs

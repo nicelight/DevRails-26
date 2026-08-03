@@ -290,7 +290,8 @@ try {
   assert(
     JSON.stringify(installOnlyAgentsSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
       && JSON.stringify(installOnlyClaudeSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
-      && !existsSync(join(installOnlyTarget, '.memory-bank')),
+      && !existsSync(join(installOnlyTarget, '.memory-bank'))
+      && !existsSync(join(installOnlyTarget, 'PAPERCUTS')),
     'Install-only did not deploy the complete runtime command set without Memory Bank.',
   );
   ['.agents', '.claude'].forEach((runtimeRoot) => {
@@ -400,6 +401,12 @@ try {
     freshAgents === expectedDeployableAgents,
     'Fresh bootstrap AGENTS.md differs from its canonical deployable source.',
   );
+  assert(
+    existsSync(targetPath('PAPERCUTS'))
+      && existsSync(targetPath('PAPERCUTS/TECHDEBTS'))
+      && JSON.stringify(readdirSync(targetPath('PAPERCUTS')).sort()) === JSON.stringify(['TECHDEBTS']),
+    'Fresh bootstrap did not create empty PAPERCUTS/TECHDEBTS directories.',
+  );
   const freshMemoryBankIndex = readTarget('.memory-bank/index.md');
   assert(
     [architectRoleRel, explorerRoleRel, implementerRoleRel, reviewerRoleRel]
@@ -433,7 +440,8 @@ try {
   assert(
     installedSkillRows(emptySkillIndex).length === 0
       && runtimeSkillNames(emptyTarget, '.agents').length === 0
-      && runtimeSkillNames(emptyTarget, '.claude').length === 0,
+      && runtimeSkillNames(emptyTarget, '.claude').length === 0
+      && existsSync(join(emptyTarget, 'PAPERCUTS', 'TECHDEBTS')),
     'Bootstrap-only fresh target invented an installed runtime skill.',
   );
   const modifiedLegacyIndex = replaceInstalledBody(
@@ -791,6 +799,11 @@ try {
   const projectTemplateState = '# Project-owned protocol notes\n';
   writeTarget(projectTemplateRel, projectTemplateState);
 
+  const papercutRel = 'PAPERCUTS/test-model __ 08-03-2026 12.34.md';
+  const papercutState = '# Test session papercuts\n';
+  writeTarget(papercutRel, papercutState);
+  rmSync(targetPath('PAPERCUTS/TECHDEBTS'), { recursive: true, force: true });
+
   const preservedFiles = new Map();
   [
     '.memory-bank/mbb/index.md',
@@ -830,6 +843,12 @@ try {
     syncOutput,
   );
   assert(readTarget(projectTemplateRel) === projectTemplateState, 'Full sync pruned a non-canonical project template file.', syncOutput);
+  assert(
+    readTarget(papercutRel) === papercutState
+      && existsSync(targetPath('PAPERCUTS/TECHDEBTS')),
+    'Full sync did not preserve papercuts or restore PAPERCUTS/TECHDEBTS.',
+    syncOutput,
+  );
   preservedFiles.forEach((expected, rel) => {
     assert(readTarget(rel) === expected, `Full sync overwrote project/mixed file: ${rel}`, syncOutput);
   });
@@ -870,6 +889,7 @@ try {
     secondSyncOutput,
   );
   assert(readTarget(projectTemplateRel) === projectTemplateState, 'Idempotent sync changed a project template file.', secondSyncOutput);
+  assert(readTarget(papercutRel) === papercutState, 'Idempotent sync changed a papercut session file.', secondSyncOutput);
   preservedFiles.forEach((expected, rel) => {
     assert(readTarget(rel) === expected, `Idempotent sync changed project/mixed file: ${rel}`, secondSyncOutput);
   });
