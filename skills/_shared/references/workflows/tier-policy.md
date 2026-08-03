@@ -72,7 +72,7 @@ ownership:
   complete mapping; no required claim may rely only on a receipt;
 - T3 never permits reuse-only PASS. `/verify` obtains new functional evidence
   for every independently harm-driving claim, then normal per-task
-  `/red-verify` and human-checkpoint rules still apply.
+  `/red-verify` rules still apply.
 
 Receipt eligibility, current-attempt selection, state/freshness comparison,
 fallback, and reporting are fully defined in the installed `/exe` and
@@ -87,7 +87,7 @@ closure evidence must satisfy them. A newly created or reconciled
 `planned|ready` task that proves a material NFR has non-empty values in both,
 linked to its governing REQ and exact feature AC; evidence records the observed
 value or qualitative result, decisive conditions, pass/fail comparison, and
-artifact. Human/expert review is an evidence method, not a T3 human checkpoint.
+artifact. Human/expert review is an evidence method.
 
 This rule does not make those fields non-empty for every T0/T1 task, change tier
 assignment, or add a gate, status, lifecycle, or protocol family.
@@ -172,7 +172,6 @@ Scheduler mode:
 - T2 feature completion requires feature-level `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all tasks for that feature are implemented, recorded in the feature doc. In scheduler mode, run it when the last feature task closes and before the wave-boundary `/mb-sync` plus strict doctor.
 - `FT-000` is the Foundation Dev Path pseudo-feature and does not participate in product feature-completion semantics.
 - T3 scheduler task closure requires full protocol, applicable task/spec gates, `VERDICT: PASS`, and per-task `SEMANTIC_VERDICT: semantic-pass` before scheduler marks `done`.
-- T3 scheduler closure also requires the exact marker `HUMAN_CHECKPOINT: done`.
 
 Manual mode:
 - Expected T0/T1 simple flow: `/exe TASK`, compact local evidence, and optional closure by the explicit manual top-level owner.
@@ -253,7 +252,6 @@ Tier summary:
 - T0/T1: compact allowed.
 - T2 tasks: full protocol + applicable task/spec gates + verify PASS before scheduler marks done; T2 feature completion then requires feature-level red-verify.
 - T3 tasks: verify + per-task red-verify before scheduler marks done.
-- T3: human checkpoint before scheduler marks done.
 - Manual mode: T0/T1 may close in `/exe` with compact evidence when the explicit manual top-level owner conditions are met, or through `/verify PASS` when independent verification is requested; T2 tasks do not require per-task /red-verify for closure; T2 feature completion requires feature-level /red-verify semantic-pass recorded in the feature doc; T3 tasks require per-task /red-verify semantic-pass before closure.
 
 ## Single-card execution context
@@ -322,9 +320,7 @@ Use for auth, permissions, secrets, security-sensitive behavior, deploy/runtime 
   independently harm-driving functional claim requires new verifier-owned
   evidence and reuse-only PASS is forbidden
 - Scheduler mode: `/verify` `VERDICT: PASS` plus per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before scheduler marks the task done
-- T3: human checkpoint before scheduler marks done
-- Required scheduler marker line is the exact standalone line `HUMAN_CHECKPOINT: done`
-- Manual mode: T3 requires explicit closure ownership, `/red-verify` semantic-pass, and the human checkpoint before closure
+- Manual mode: T3 requires explicit closure ownership and `/red-verify` semantic-pass before closure
 - MB-SYNC: required at the end of the current wave; early sync uses the same
   exceptional dependency/owner rule as T2
 

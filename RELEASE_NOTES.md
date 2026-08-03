@@ -1,4 +1,4 @@
-# DevRails 26 v0.1.0
+# DevRails 26 v0.1.1
 
 Первый публичный beta-релиз DevRails — framework агентной разработки для Codex
 и Claude Code.
@@ -17,7 +17,7 @@
 Из release checkout DevRails:
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/nicelight/DevRails-26.git
+git clone --branch v0.1.1 --depth 1 https://github.com/nicelight/DevRails-26.git
 cd DevRails-26
 node scripts/install-framework.mjs
 ```

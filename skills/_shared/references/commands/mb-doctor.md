@@ -65,8 +65,8 @@ requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task
 `/red-verify` is not required. T2 feature completion separately requires
 feature-level `/red-verify --feature FT-<ID>` with
 `SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure
-requires `VERDICT: PASS`, per-task `SEMANTIC_VERDICT: semantic-pass`, and exact
-`HUMAN_CHECKPOINT: done`. In manual mode, T0/T1 may close in `/exe` with compact
+requires `VERDICT: PASS` and per-task `SEMANTIC_VERDICT: semantic-pass`. In
+manual mode, T0/T1 may close in `/exe` with compact
 evidence when explicit top-level owner fast-lane conditions are met, or through
 `/verify PASS` when independent verification is requested; T2 may close when
 full protocol plus applicable task/spec gates are satisfied, only with explicit
@@ -127,11 +127,11 @@ the wave boundary.
   `SEMANTIC_VERDICT: semantic-pass` line from `/red-verify --feature FT-<ID>`.
   Until it does, `FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default
   mode and an error in `--strict`.
-- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`, and the exact standalone marker line `HUMAN_CHECKPOINT: done`.
+- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, and closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`.
 - A terminal `done|failed` task that still carries deprecated
   `runtime_context.allowed_write_scope` is a legacy terminal record. Missing
   historical `TASK_DONE_EVIDENCE_MISSING`, `TASK_RED_VERIFY_EVIDENCE_MISSING`,
-  `TASK_RED_VERIFY_VERDICT_MISSING`, or `TASK_T3_CHECKPOINT_MISSING` evidence is
+  or `TASK_RED_VERIFY_VERDICT_MISSING` evidence is
   preserved without backfill and reported only through aggregate
   `TASK_LEGACY_TERMINAL_COMPATIBILITY` info. All other findings retain their
   normal severity; non-terminal and current `write_boundary` records receive no
@@ -142,7 +142,7 @@ the wave boundary.
   `gate_summary.red_verification` starts with `OWNER-ACCEPTED`, and both
   `accepted_evidence` and `accepted_residual_risk` are non-empty. This preserves
   a durable owner decision; `/mb-doctor` does not infer, create, or recommend
-  it, and `HUMAN_CHECKPOINT: done` remains required.
+  it.
 - `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
 - In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
 - For `complete`, every `## Backbone Area Matrix` row in `.memory-bank/spec-backbone.md` has status `authoritative` or `not_applicable`; missing, `blocked`, `needed_before_tasks`, `unknown`, `planned`, `candidate`, or any other status is not product autonomous-ready.
@@ -225,7 +225,6 @@ Errors block autonomous/autopilot progression:
 - `TASK_RED_VERIFY_EVIDENCE_MISSING` in `--strict`
 - `TASK_RED_VERIFY_VERDICT_MISSING` in `--strict`
 - `FEATURE_RED_VERIFY_VERDICT_MISSING` in `--strict`
-- `TASK_T3_CHECKPOINT_MISSING` in `--strict`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING` in `--strict`
 - `TASK_FAILED_DEPENDENTS_NOT_BLOCKED`
 - `TASK_FEATURE_LINK_MISSING` in `--strict`
@@ -268,7 +267,6 @@ Warnings identify non-blocking quality risks in default mode:
 - `TASK_RED_VERIFY_EVIDENCE_MISSING`
 - `TASK_RED_VERIFY_VERDICT_MISSING`
 - `FEATURE_RED_VERIFY_VERDICT_MISSING`
-- `TASK_T3_CHECKPOINT_MISSING`
 - `FAILED_BUG_OR_FOLLOWUP_MISSING`
 - `TASK_FEATURE_LINK_MISSING`
 - `TASK_REQUIREMENT_LINK_MISSING`

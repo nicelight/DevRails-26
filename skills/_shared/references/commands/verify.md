@@ -77,7 +77,7 @@ the rule above.
 <operator_decisions>
 If a credible verdict depends on an unresolved product behavior,
 architecture/contract/state/data/storage/security/compatibility interpretation,
-task boundary, tier, dependency, verification strategy, or human checkpoint,
+task boundary, tier, dependency, or verification strategy,
 do not choose one.
 
 - Record `VERDICT: NEEDS-CLARIFICATION`, the exact question, affected proof,

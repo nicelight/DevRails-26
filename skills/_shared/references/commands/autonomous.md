@@ -80,8 +80,8 @@ state, not a second task registry.
 - `/mb-sync` reconciles already-written state once per wave unless an explicit
   current-wave durable-state dependency requires an early sync; it never
   chooses closure or promotion.
-- Required reviews, lint, doctor, T2 feature semantic gate, T3 task semantic
-  gate, and exact T3 human checkpoint are not bypassed.
+- Required reviews, lint, doctor, T2 feature semantic gate, and T3 task semantic
+  gate are not bypassed.
 - Preserve failure budgets and all existing terminal states; do not add a
   scheduler, status, lifecycle, or assumption registry.
 </hard_invariants>
@@ -108,7 +108,7 @@ must halt through the existing route below.
 
 When any child skill or scheduler step finds an unresolved product/design/
 contract/state/data/storage/security/compatibility/task-boundary/tier/
-dependency/verification/Foundation/human-checkpoint branch:
+dependency/verification/Foundation branch:
 - record the exact question, affected scope/tasks, current evidence, and owner
   in the existing run status/decision log and owning blocker artifact;
 - do not treat recommendation, framework preference, reversible default,

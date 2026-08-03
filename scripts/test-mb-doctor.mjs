@@ -803,8 +803,17 @@ VERDICT: PASS
     tasks: [task(PRODUCT_T3, { status: 'done' })],
   }, ['--strict']);
   expectFinding(currentT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING', 'error');
-  expectFinding(currentT3ClosureGap, 'TASK_T3_CHECKPOINT_MISSING', 'error');
   expectNoFinding(currentT3ClosureGap, 'TASK_LEGACY_TERMINAL_COMPATIBILITY');
+
+  const currentT3Closure = runCase('current-t3-closure', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T3, { status: 'done' })],
+    files: [{
+      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
+      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-pass\n',
+    }],
+  }, ['--strict']);
+  expectPass(currentT3Closure, 'current T3 closure');
 
   const legacyT3ClosureGap = runCase('legacy-t3-closure-gap', {
     foundation: foundationMarkdown(false, 'not_required'),
@@ -815,7 +824,6 @@ VERDICT: PASS
   }, ['--strict']);
   expectPass(legacyT3ClosureGap, 'legacy T3 terminal closure gaps');
   expectNoFinding(legacyT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING');
-  expectNoFinding(legacyT3ClosureGap, 'TASK_T3_CHECKPOINT_MISSING');
   const legacySummary = findFinding(
     legacyT3ClosureGap,
     'TASK_LEGACY_TERMINAL_COMPATIBILITY',
@@ -823,8 +831,7 @@ VERDICT: PASS
   );
   assert(
     legacySummary?.details?.records_with_preserved_gaps === 1
-      && legacySummary.details.gap_types?.TASK_RED_VERIFY_EVIDENCE_MISSING === 1
-      && legacySummary.details.gap_types?.TASK_T3_CHECKPOINT_MISSING === 1,
+      && legacySummary.details.gap_types?.TASK_RED_VERIFY_EVIDENCE_MISSING === 1,
     'Legacy terminal compatibility summary does not retain exact gap counts.',
     legacyT3ClosureGap,
   );
@@ -861,10 +868,6 @@ VERDICT: PASS
         content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
       },
       {
-        rel: `.protocols/${PRODUCT_T3}/handoff.md`,
-        content: '# Handoff\n\nHUMAN_CHECKPOINT: done\n',
-      },
-      {
         rel: `.protocols/${PRODUCT_T3}/administrative-closure.md`,
         content: '# Administrative closure\n\nExplicit owner risk acceptance.\n',
       },
@@ -873,7 +876,7 @@ VERDICT: PASS
   expectPass(ownerAcceptedSemanticFail, 'owner-accepted semantic findings');
   expectNoFinding(ownerAcceptedSemanticFail, 'TASK_RED_VERIFY_VERDICT_MISSING');
 
-  const ownerAcceptedWithoutCheckpoint = runCase('owner-accepted-without-checkpoint', {
+  const ownerAcceptedClosureWithoutExtraGate = runCase('owner-accepted-closure-without-extra-gate', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T3, {
       status: 'done',
@@ -884,8 +887,8 @@ VERDICT: PASS
       content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
     }],
   }, ['--strict']);
-  expectNoFinding(ownerAcceptedWithoutCheckpoint, 'TASK_RED_VERIFY_VERDICT_MISSING');
-  expectFinding(ownerAcceptedWithoutCheckpoint, 'TASK_T3_CHECKPOINT_MISSING', 'error');
+  expectPass(ownerAcceptedClosureWithoutExtraGate, 'owner-accepted closure without extra gate');
+  expectNoFinding(ownerAcceptedClosureWithoutExtraGate, 'TASK_RED_VERIFY_VERDICT_MISSING');
 
   const incompleteOwnerAcceptance = runCase('incomplete-owner-acceptance', {
     foundation: foundationMarkdown(false, 'not_required'),
@@ -896,16 +899,10 @@ VERDICT: PASS
         { ...ownerAcceptedClosure, accepted_residual_risk: [] },
       ],
     })],
-    files: [
-      {
-        rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
-        content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
-      },
-      {
-        rel: `.protocols/${PRODUCT_T3}/handoff.md`,
-        content: '# Handoff\n\nHUMAN_CHECKPOINT: done\n',
-      },
-    ],
+    files: [{
+      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
+      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
+    }],
   }, ['--strict']);
   expectFinding(incompleteOwnerAcceptance, 'TASK_RED_VERIFY_VERDICT_MISSING', 'error');
 

@@ -1,7 +1,7 @@
 {
   "name": "devrails-26",
   "productName": "DevRails 26",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Agent development framework with durable memory and controlled workflows.",
   "license": "MIT",

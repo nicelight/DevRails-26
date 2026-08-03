@@ -13,7 +13,6 @@ const LEGACY_TERMINAL_GAP_CODES = new Set([
   'TASK_DONE_EVIDENCE_MISSING',
   'TASK_RED_VERIFY_EVIDENCE_MISSING',
   'TASK_RED_VERIFY_VERDICT_MISSING',
-  'TASK_T3_CHECKPOINT_MISSING',
 ]);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
@@ -22,7 +21,6 @@ const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifa
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 const FAIL_EVIDENCE_RE = /\bverdict\s*:?\s*fail(?:ed)?\b|\bfail(?:ed)?\b|\berror\b/i;
 const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
-const T3_HUMAN_CHECKPOINT_MARKER = 'HUMAN_CHECKPOINT: done';
 const PATH_MARKER_RE =
   /(?:^|[\s"`'])(?:\.{1,2}\/|\/|[A-Za-z]:\\)[^\s"`']+|\b[A-Za-z0-9_.-]+\/[A-Za-z0-9_.\/-]+\b|\b[\w.-]+\.(?:md|txt|log|json|xml|html|htm|png|jpg|jpeg|webm|mp4)\b/i;
 
@@ -104,14 +102,6 @@ export function createTerminalCompatibilityChecks(context) {
         );
       }
   
-      const text = protocolAndArtifactText(id);
-      if (!hasExactMarker(text, T3_HUMAN_CHECKPOINT_MARKER)) {
-        addTerminalClosureFinding(record, severity, 'TASK_T3_CHECKPOINT_MISSING', `${rel}: T3 done task has no exact ${T3_HUMAN_CHECKPOINT_MARKER} marker.`, {
-          path: rel,
-          task_id: id,
-          suggested_fix: `Record ${T3_HUMAN_CHECKPOINT_MARKER} as a standalone line in .protocols/${id}/handoff.md or another task protocol/artifact.`,
-        });
-      }
     }
   }
   
@@ -353,27 +343,6 @@ export function createTerminalCompatibilityChecks(context) {
         && entry.accepted_residual_risk.length > 0)
       : undefined;
     return Boolean(closure);
-  }
-  
-  function protocolAndArtifactText(id) {
-    const files = [
-      ...listFiles(absolute('.protocols', id)).filter((file) => file.endsWith('.md')),
-      ...listFiles(absolute('.tasks', id)).filter((file) => /\.(md|txt|log|json)$/i.test(file)),
-    ];
-  
-    return files
-      .map((file) => {
-        try {
-          return readText(file);
-        } catch {
-          return '';
-        }
-      })
-      .join('\n');
-  }
-  
-  function hasExactMarker(text, marker) {
-    return text.replace(/\r\n/g, '\n').split('\n').some((line) => line.trim() === marker);
   }
   
   function isRedVerificationFile(file) {

@@ -101,7 +101,7 @@ new execution mode.
 Any unresolved material branch that can change product behavior, UX/acceptance,
 architecture, component/API/event/data/agent-tool contracts, storage/state,
 security/privacy/compliance, compatibility, task boundaries, tier,
-dependencies, verification strategy, human checkpoint, Foundation dependency,
+dependencies, verification strategy, Foundation dependency,
 or canonical spec identity belongs to the operator.
 
 - Interactive/manual flow asks an adaptive focused question, states what it

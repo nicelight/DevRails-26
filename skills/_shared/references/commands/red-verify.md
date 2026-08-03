@@ -52,8 +52,7 @@ for semantic-pass.
   and a recommended owner action.
 - Manual lifecycle or BUG/follow-up mutation is allowed only under explicit
   standalone ownership and canonical tier policy.
-- T3 semantic-pass does not replace functional PASS or the exact standalone
-  `HUMAN_CHECKPOINT: done` required before closure.
+- T3 semantic-pass does not replace functional PASS.
 - T2 feature semantic-pass must be recorded in the matching feature document;
   per-task evidence is not a substitute.
 - Do not invent a separate failure artifact, status, task schema, or lifecycle.

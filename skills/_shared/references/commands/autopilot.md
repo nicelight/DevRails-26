@@ -97,7 +97,7 @@ Do not mutate task statuses to represent this invalidation.
 The scheduler may apply only decisions already fixed in authoritative artifacts.
 If a child or queue transition exposes a new material product/design/contract/
 state/data/storage/security/compatibility/task-boundary/tier/dependency/
-verification/Foundation/human-checkpoint branch:
+verification/Foundation branch:
 - do not choose a recommendation/default or infer consent;
 - record the exact question, affected tasks/state, evidence, and interactive
   repair owner in the existing run status/decision log;
@@ -183,8 +183,8 @@ unresolved, do not write `planned -> ready` and do not select a different
 `ready` task. For each task:
 
 1. Reconcile the authoritative `.task.json`, checkpoint, task protocol, neutral
-   current-attempt metadata when present, `/exe` handoff, functional
-   verdict, semantic verdict, and human checkpoint. The task record and durable
+   current-attempt metadata when present, `/exe` handoff, functional verdict,
+   and semantic verdict. The task record and durable
    evidence win over a stale checkpoint. Determine the first incomplete durable
    stage; do not replay a stage merely because the scheduler restarted.
 2. Before invoking a child stage, write the task/stage, last durable evidence,
@@ -257,8 +257,7 @@ selection loop:
    the checkpoint from the authoritative lifecycle/evidence write:
    - T0/T1 `done` after tier-valid compact/functional PASS;
    - T2 `done` after full protocol, applicable gates, and functional PASS;
-   - T3 `done` only after functional PASS, task semantic-pass, and exact
-     `HUMAN_CHECKPOINT: done`;
+   - T3 `done` only after functional PASS and task semantic-pass;
    - concern remains non-done pending the recorded owner decision/fix;
    - failures and blockers follow the referenced tier-policy contract;
 7. when this closes the last task of a non-FT-000 feature containing T2 work,
@@ -271,7 +270,7 @@ selection loop:
 
 At each wave boundary:
 1. checkpoint `current task: none` and `current stage: wave-boundary`;
-2. resolve required T2 feature semantic gates and T3 checkpoints;
+2. resolve required T2 feature and T3 task semantic gates;
 3. run `/mb-sync` once for authoritative already-written state, updating the
    checkpoint only after its durable handoff;
 4. run lint then the strict doctor;
@@ -319,7 +318,7 @@ Do not claim success unless:
   remains;
 - every task-linked product feature has latest final `APPROVE`;
 - every such `APPROVE` records the current positive Planning Revision;
-- all required functional, T2 feature semantic, T3 task semantic/human gates
+- all required functional, T2 feature semantic, and T3 task semantic gates
   pass, and Foundation remains `not_required` or its named gate task remains
   `done`;
 - latest lint plus strict doctor pass;

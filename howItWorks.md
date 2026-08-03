@@ -60,7 +60,7 @@ operations используются как coverage criteria, а не как о�
 Material branch остаётся у оператора, если она может изменить product behavior,
 scope/acceptance, architecture, public/component/API/event/data contract,
 state/storage ownership, security/compliance, compatibility, Foundation path,
-task boundary, tier, dependencies, verification policy или human checkpoint.
+task boundary, tier, dependencies или verification policy.
 
 В interactive flow skill задаёт адаптивный вопрос и может рекомендовать
 вариант. Recommendation, framework default, reversible choice и молчание не
@@ -662,7 +662,7 @@ verification method. Недостающий target агент не придум�
 или formal expert rubric — и не становится владельцем product target. Task,
 доказывающая material NFR, при любом tier получает exact AC/REQ mapping,
 `verification_targets` и `evidence_required`. Human/expert review является
-evidence method, а не `T3 HUMAN_CHECKPOINT`.
+evidence method.
 
 Это условный semantic invariant существующих reviews. Он не добавляет `NFR-*`,
 registry, schema field, lifecycle, gate или heuristic `/mb-doctor` parser.
@@ -1102,7 +1102,7 @@ supporting-only. `/add-tests` сам reusable receipt не создаёт: по�
   verification target и применимого spec claim; ни один required claim не
   закрывается только receipt;
 - T3 требует новое functional evidence для каждого independently harm-driving
-  claim, после чего остаются обычные per-task `/red-verify` и human checkpoint.
+  claim, после чего остаётся обычный per-task `/red-verify`.
 
 Verification report отдельно показывает `reused execute evidence`, `repeated
 checks` и `new targeted probes`. Оптимизируется повтор команд, а не ownership
@@ -1146,8 +1146,7 @@ surface. Pre-existing current drift может остаться evidence, но �
 - T2 product feature completion отдельно требует
   `/red-verify --feature FT-<ID>` и exact
   `SEMANTIC_VERDICT: semantic-pass` в feature doc.
-- T3 closure требует `/verify PASS`, per-task semantic-pass, exact standalone
-  `HUMAN_CHECKPOINT: done` и explicit owner.
+- T3 closure требует `/verify PASS`, per-task semantic-pass и explicit owner.
 
 Manual и scheduler closure authority не смешиваются; Execution Attempt сам по
 себе mode не хранит.
@@ -1264,7 +1263,7 @@ durable changes full sync не требует.
 | `T0` | typo, formatting, links, safe docs-only | compact | `/exe` fast lane или optional `/verify` у explicit owner | ordered `/verify`; compact evidence may be enough |
 | `T1` | local function/component/test, low blast radius | compact | local check + explicit-owner closure; `/verify` optional | ordered `/verify`; compact functional evidence may be enough |
 | `T2` | API, contracts, events, state/data/domain, migration, cross-module | full | `/verify PASS` + applicable gates + explicit owner | scheduler task done after functional PASS; feature complete only after feature semantic-pass |
-| `T3` | auth, security, secrets, production/deploy, irreversible/data-loss, payments, compliance | full | functional PASS + task semantic-pass + human checkpoint + explicit owner | те же gates до scheduler `done` |
+| `T3` | auth, security, secrets, production/deploy, irreversible/data-loss, payments, compliance | full | functional PASS + task semantic-pass + explicit owner | functional PASS + task semantic-pass |
 
 Если evidenced scope однозначно триггерит несколько tiers, применяется самый
 высокий triggered tier. Если сам scope или требуемый tier неоднозначен, это

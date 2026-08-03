@@ -105,8 +105,8 @@ status: active
   branch must halt through the existing route below.
 - An unresolved material product, UX/acceptance, architecture, API/event/data/
   state/storage/security/compatibility, Foundation, task-boundary, tier,
-  dependency, verification, or human-checkpoint branch is not an allowed
-  assumption. Record the exact question and halt with
+  dependency, or verification branch is not an allowed assumption. Record the
+  exact question and halt with
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` plus the owning
   interactive resume skill.
 - A recommendation, framework preference, reversible/conservative default,
@@ -145,7 +145,6 @@ status: active
     lifecycle decision, and T2 feature completion still requires feature-level
     semantic-pass recorded in the feature doc
   - Manual mode T3: `/verify` PASS is not final closure; per-task `/red-verify` semantic-pass is required before `done`, with full `/mb-sync` deferred to the wave boundary
-  - T3: exact marker line `HUMAN_CHECKPOINT: done` is required
 - mandatory `/mb-sync` once at the end of each wave, after task status,
   closure decisions, and evidence are written immediately; early sync is only
   for a real RTM/index/spec/contract/changelog dependency inside the current

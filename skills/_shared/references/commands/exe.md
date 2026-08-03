@@ -194,9 +194,6 @@ Protocol by tier:
 - T2/T3: `.protocols/<TASK_ID>/{context,plan,progress,verification,handoff}.md`
   where `/exe` fills execution context/progress and leaves final
   verification to `/verify`.
-- T3 handoff records whether the later exact
-  `HUMAN_CHECKPOINT: done` marker is present or still required; it does not
-  silently satisfy the checkpoint.
 
 Initialize only missing protocol files from these framework-owned shapes:
 - T0/T1 `run.md` ->
@@ -274,7 +271,7 @@ Execution evidence must record:
 For a material NFR, record the observed value or qualitative result, decisive
 conditions, comparison with the accepted target/criterion, and required
 artifact. Human/expert review records the planned rubric/criterion and qualified
-reviewer result as evidence; it does not satisfy or create a T3 human checkpoint.
+reviewer result as evidence.
 
 Run task gates, applicable linked-spec verification targets, and the cheapest
 credible project-native lint/typecheck/test/integration checks for touched
