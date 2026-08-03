@@ -136,6 +136,9 @@ Cover:
    - integrate the architecture verdict and findings; reject a blocking accepted-boundary,
      ownership, dependency, invariant, or proof-path finding, and resolve any
      gap that can change the verdict.
+   - confirm registered endpoints, exact contracts, consumer impact, and
+     compatibility/rollout basis support the plan. Reject copied topology or an
+     interaction execution would have to legalize.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
      context and owner; `ready` is valid iff every dependency is `done` and no

@@ -53,6 +53,8 @@ argument. Exclude reserved `FT-000` from product feature targets.
 - Keep spec-index a registry, use subject-based canonical paths, and do not
   create feature-owned design hubs, a coverage-map artifact, task records, or a
   new status/terminal state.
+- Keep module identity/topology only in `boundary-map.md`; do not copy feature
+  subgraphs.
 - Preserve feature status vocabulary
   `spec_design_status: complete|not_required|blocked`.
 - `--init` preserves Global Backbone `Planning Revision`. Feature design changes
@@ -96,6 +98,9 @@ Produce the same boundary contract as `/spec-init`:
   design questions, and `/prd-to-features` handoff;
 - `.memory-bank/spec-index.md` as a pure registry;
 - only evidence-backed minimal framing artifacts when they are useful.
+
+Keep boundary hints in `spec-backbone.md#Decomposition Inputs`; `--init` writes
+no accepted graph entries.
 
 Do not set post-PRD Global Backbone Status or make architecture/Foundation
 decisions in `--init`.
@@ -145,6 +150,10 @@ Rules:
   it;
 - carry relevant Architecture Spine, ADR, boundary, contract, and verification
   links into feature `spec_design_links`;
+- reconcile each feature so task-relevant units are registered and every
+  required inter-module interaction has an exact contract heading or blocks;
+- leaf modules/edges inside accepted architecture preserve Planning Revision;
+  global architecture or dependency-policy changes route to `/spec-design`;
 - when the accepted target defines capability slices, preserve the applicable
   owning slice/code root, semantic and write ownership, public boundary,
   allowed/forbidden dependencies, cross-slice orchestration owner, and proof
@@ -193,6 +202,8 @@ For feature design, verify:
 - an accepted capability-sliced target remains legible through the feature's
   direct architecture/boundary links without changing global ownership or
   treating a product feature as a slice;
+- graph endpoints and exact contract links resolve; unreconciled observed
+  relationships remain blockers;
 - blockers use existing statuses/terminal states and name the interactive
   resume route.
 

@@ -21,6 +21,8 @@ Require and resolve:
 - `.memory-bank/workflows/tier-policy.md`;
 - the task's direct feature/REQ context needed to interpret its outcome;
 - direct task-linked canonical SDD specs and executable constraints;
+- current `boundary-map.md` module, dependency-graph, and contract blocks when
+  the task changes or crosses a registered module boundary;
 - behavior specs only when linked in `source_artifacts` and useful as
   non-authoritative examples.
 
@@ -56,6 +58,9 @@ Point-of-use preflight must confirm:
   required public boundaries, preserves source-of-truth and dependency
   direction, creates no unaccepted cross-module contract or forbidden
   command/write bypass, and honors linked orchestration-placement rules;
+- for a task that changes a provider, current graph traversal covers every
+  affected consumer until a compatible contract stops propagation; uncovered
+  consumers make the feature tasking surface stale;
 - within an open domain-modeling choice, prefer the affected area's local style;
   material boundary or ownership changes use the existing operator-decision
   routes;
@@ -82,6 +87,12 @@ If product planning revision evidence is missing, invalid, or mismatched, every
 previous product task-plan approval is stale. Leave all task statuses unchanged
 and route `/feature-to-tasks --all`, then `/review-tasks-plan --all`, the
 applicable doctor gate, and retry the selected task.
+
+If the current revision has local graph drift affecting this task, preserve all
+statuses and route `/feature-to-tasks FT-<NNN>`, then
+`/review-tasks-plan FT-<NNN>` and the applicable doctor gate; other feature
+approvals remain valid. An absent required edge stops execution. Route global
+architecture repair to `/spec-design`.
 
 For a selected `planned` task, write `planned -> ready` only when this preflight
 proves it runnable; otherwise leave it `planned` and stop. A selected `ready`
@@ -120,6 +131,9 @@ replay it.
   do not turn task execution into a broad repository architecture audit. A
   tactic that needs or introduces a departure from an applicable linked rule
   stops work.
+- Treat the canonical dependency graph as closed-world: an absent edge grants
+  no implementation authority, and task execution never creates, removes, or
+  redirects a semantic edge.
 - Preserve unrelated user changes and do not edit generated package-local
   `skills/*/{agents,references,scripts}/shared-*` files.
 - Do not opportunistically rename brownfield source. A move or rename must be
@@ -253,8 +267,8 @@ Execution evidence must record:
 - task/spec outcome compliance;
 - exact commands, results, concise output/evidence paths, and unavailable-gate
   blockers;
-- linked boundary/spec rules followed, including write owner and public
-  boundary when applicable, and any drift discovered;
+- linked boundary/spec rules followed, including write owner, public boundary,
+  accepted graph/contract path when applicable, and any drift discovered;
 - next verification targets and recommended owner.
 
 For a material NFR, record the observed value or qualitative result, decisive

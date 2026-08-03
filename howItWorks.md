@@ -330,7 +330,10 @@ checkout path является честным blocker; после успешно
 Whole-file framework ownership задаётся только явными generator call sites:
 task schema, copied canonical workflows/roles/protocol templates, runtime
 scripts и другие canonical copied assets. Inline skeleton docs, project state
-и mixed routers после создания сохраняются; version-critical framework contract нельзя
+и mixed routers после создания сохраняются. Исключение — canonical
+`contracts/boundary-map.md`: framework sync сохраняет предыдущую версию как
+`boundary-map-old.md` и разворачивает новый пустой template со `status: draft`;
+semantic migration остаётся ручной. Version-critical framework contract нельзя
 размещать только в seed-once файле. Installer sync не является runtime
 `/mb-sync` и не меняет task lifecycle, gates или handoffs.
 
@@ -563,6 +566,30 @@ feature не превращается автоматически в slice, а о
 появляются только при текущей доказанной необходимости. Новый slice registry и
 per-file ownership не создаются. Общая БД не означает shared business
 ownership: каждый mutable invariant/transition сохраняет одного write owner.
+
+### Canonical dependency graph
+
+`.memory-bank/contracts/boundary-map.md` — единственный подробный inventory
+принятых modules/change units и разрешённых зависимостей между ними. Узел имеет
+уникальное функциональное имя, parent architecture-unit link, меняемый `Code
+Root` и responsibility. Ребро `Consumer -> Provider` существует только через
+точную ссылку на inline или subject-contract heading; отсутствующее ребро не
+даёт execution-агенту права изобрести взаимодействие.
+
+`system-architecture.md` хранит более крупные deployable/capability/runtime
+units и ссылается на graph inventory. `/spec-design` владеет глобальной
+архитектурой, а `/feature-to-tasks` конкретизирует leaf modules/edges внутри
+принятой формы, прослеживает reverse impact по consumers и сохраняет в plan/task
+только релевантные graph/contract links. Архитектурный graph не превращается
+механически в task DAG: `depends_on` и waves выражают реальный порядок
+implementation, compatibility и rollout.
+
+Новый leaf module, edge или consumer неизменного contract не меняет Planning
+Revision. Если новый consumer делает ещё не выполненную incompatible provider
+task локально устаревшей, `/exe` возвращает только её feature в
+`/feature-to-tasks -> /review-tasks-plan`; approvals других features остаются
+действующими. Глобальное изменение через `/spec-design` по-прежнему увеличивает
+Planning Revision и запускает all-feature reconciliation.
 
 `AD-* Verification` называет project-native mechanical check только для
 повторяемого, high-blast/security-sensitive или дешёво однозначного нарушения.
@@ -1324,6 +1351,11 @@ Re-review нужен, если изменились task cards, specs, dependenc
 или plan assumptions. Изменение Global Backbone Planning Revision инвалидирует
 reviews всей product queue и требует `/feature-to-tasks --all`, затем
 `/review-tasks-plan --all`.
+
+Локальная конкретизация dependency graph Planning Revision не меняет. Если
+point-of-use preflight обнаружил нового релевантного consumer или изменённый
+contract, несовместимый с ещё не выполненной provider task, повторное
+планирование и review ограничиваются затронутой feature.
 
 ### `/autonomous`
 

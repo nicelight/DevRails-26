@@ -74,6 +74,7 @@ As applicable, reconcile:
 - epic/feature lifecycle separately from document status;
 - truthful existing spec-backbone, spec-index, feature design links/status, and
   changed canonical specs without inventing design;
+- accepted `boundary-map.md` links after path/heading changes;
 - behavior-spec links as optional examples only;
 - Memory Bank/root/subfolder routers;
 - `.memory-bank/changelog.md` for the current wave/change.

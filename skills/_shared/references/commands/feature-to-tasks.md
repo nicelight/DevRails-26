@@ -32,6 +32,8 @@ Before any durable plan or task write, require:
   integer `Planning Revision`;
 - `.memory-bank/spec-index.md` plus existing feature links and plausible
   subject-based canonical specs;
+- `.memory-bank/contracts/boundary-map.md` as the canonical accepted
+  module/change-unit inventory and dependency topology;
 - a valid Foundation decision. When Foundation is required, the concrete
   indexed `FT-000` final gate must be `done` and its ID retained as a direct or
   transitive dependency of every product task;
@@ -78,6 +80,8 @@ new execution mode.
   may cross slices and a slice may support several features. A task normally
   has one primary owning slice/module, but a cohesive cross-slice outcome is
   valid when one orchestration owner and every crossed boundary are explicit.
+- `boundary-map.md` alone owns module identity and topology; plans and tasks
+  link relevant graph/contract blocks without copying the subgraph.
 - `touched_files` is advisory and non-exhaustive. A non-empty
   `runtime_context.write_boundary` is a deliberate hard boundary and not a
   copy of `touched_files`; `forbidden_scope` and stop conditions remain hard.
@@ -149,6 +153,15 @@ dependencies, expected advisory change surface, tests/gates/UAT, applicable
 Constitution constraints, source/normative inputs, invariants, verification
 targets, and direct canonical links. A concise provisional outline may be kept
 in `plan.md` only when it improves resume safety; it is not another task model.
+
+Reconcile the feature with the canonical graph before handoff. Every
+task-relevant change unit and inter-module interaction must resolve to a
+registered node and an accepted edge with an exact contract heading, or block.
+For changed providers, cover relevant consumers until a compatible boundary
+stops propagation. Leaf modules/edges inside accepted architecture preserve
+Planning Revision; global architecture or ownership changes route to
+`/spec-design`. The plan records only affected module/contract links and the
+implementation reason for task order, dependencies, and waves.
 
 When the expected advisory change surface names a new, moved, or renamed
 project-authored source path, treat its code root, directories, and complete
@@ -292,10 +305,10 @@ Additionally require:
   `invariants`, `verification_targets`, purpose/outcome, and runtime context
   contain only task-relevant evidence;
 - for a task governed by accepted module/slice boundaries, put the directly
-  relevant architecture and boundary paths in existing `source_artifacts`
-  and/or `normative_inputs`, the expected code surface in advisory
-  `touched_files`, and applicable ownership/bypass rules in existing
-  constraints, invariants, anti-goals, or runtime context;
+  relevant architecture, graph-section, and exact contract-heading paths in
+  existing `source_artifacts` and/or `normative_inputs`, the expected code
+  surface in advisory `touched_files`, and applicable ownership/bypass rules in
+  existing constraints, invariants, anti-goals, or runtime context;
 - express the primary owning slice/module and any cross-slice orchestration
   through those existing fields and linked specs; do not add an `owning_slice`
   field, mechanically copy a slice code root into `write_boundary`, or forbid
@@ -347,6 +360,8 @@ Before handoff:
   dependencies, existing/acyclic dependencies, and legal initial statuses;
 - verify the positive Planning Revision remained unchanged during feature/task
   reconciliation;
+- verify task-relevant modules, edges, exact contract headings, and affected
+  consumers are complete and consistent with the accepted architecture;
 - map every stable feature AC locator and governing REQ to at least one task
   and every task back to feature scope without orphan, duplicate, or unrelated
   outcomes;

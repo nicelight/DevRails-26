@@ -40,11 +40,9 @@ status: active
 - testing
 - index
 
-`/map-codebase` владеет только as-is mapping. При наличии evidence он может
-фиксировать наблюдаемые current change units/code roots, write paths/writers,
-ownership signals, exposed call/API boundaries, runtime entrypoints и
-существующие proof paths. Эти observations не устанавливают target authority и
-не являются architecture decisions.
+`/map-codebase` фиксирует change units/code roots, imports/calls,
+events/background work, writers/state paths, runtime entrypoints и proof paths
+только как as-is evidence, не target authority или accepted graph rows.
 
 > **PRD-less rule (non-negotiable)**: если **нет `prd.md`**, запрещено генерировать roadmap сущности:
 > - `.memory-bank/epics/*`
@@ -67,8 +65,8 @@ ownership signals, exposed call/API boundaries, runtime entrypoints и
 - если current отличается от accepted target, зафиксируй оба состояния и уже
   известный reconciliation route в существующем owning artifact. Само отличие
   является delta, а не authority conflict; неизвестную material route оставь
-  unresolved для её downstream owner. Не вводи обязательный новый heading или
-  artifact для этого разделения.
+  unresolved для её downstream owner. Не создавай второй dependency graph или
+  обязательный artifact для этого разделения.
 
 5) Заверши immediate handoff:
 - если authoritative PRD/delta уже передан вызывающим workflow, сохрани его как

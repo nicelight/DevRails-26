@@ -18,6 +18,8 @@ Require:
   `.memory-bank/workflows/tier-policy.md`;
 - task-linked feature/REQ material needed for this outcome;
 - direct task-linked applicable canonical SDD specs;
+- current accepted graph row and exact contract heading for every task-scoped
+  inter-module interaction;
 - tier-selected execution protocol and `/exe` handoff/evidence:
   - T0/T1 -> `.protocols/<TASK_ID>/run.md` plus `.tasks/<TASK_ID>/` when present;
   - T2/T3 -> `context.md`, `plan.md`, `progress.md`, `handoff.md`, existing
@@ -152,12 +154,12 @@ allowed/forbidden boundary is an observed normative violation: use
 
 For each applicable linked architecture rule, confirm that accepted owners
 change state and retain cross-module orchestration, required public boundaries
-are used, no unaccepted cross-module contract, forbidden command/write path, or
-second source of truth appeared, dependency direction is preserved, and no
-technical location gained business responsibility forbidden by that rule. An
-observed violation uses `VERDICT: FAIL`; missing, conflicting, or ambiguous
-canonical coverage uses `VERDICT: NEEDS-CLARIFICATION`. Unrelated pre-existing
-drift is evidence unless it invalidates the task outcome or proof.
+and registered `Consumer -> Provider` contracts are used, dependency direction
+is preserved, and no forbidden write/bypass, second source of truth, or
+misplaced business responsibility appeared. An observed violation is `FAIL`;
+missing, stale, conflicting, or unregistered canonical coverage is
+`NEEDS-CLARIFICATION`. Unrelated pre-existing drift is evidence unless it
+invalidates the task outcome or proof.
 
 When a linked runtime/state rule requires reproducibility, verify its known
 initial state, safe rerun, observable result, and cleanup/isolation conditions.

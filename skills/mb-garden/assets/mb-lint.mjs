@@ -22,6 +22,7 @@ const REQUIRED = [
   '.memory-bank/constitution.md',
   '.memory-bank/mbb/index.md',
   '.memory-bank/changelog.md',
+  '.memory-bank/contracts/boundary-map.md',
   '.memory-bank/workflows/mb-sync.md',
   '.memory-bank/testing/index.md',
   '.memory-bank/schemas/task.schema.json',
@@ -44,6 +45,14 @@ const LEGACY_TASK_ID_RE = /^TASK-[0-9]{3}-FT-[0-9]{3}-W-[0-9]+$/;
 const TASK_FILE_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+\.task\.json$/;
 const FEATURE_ID_RE = /^FT-[0-9]{3,}$/;
 const ARCHITECTURE_SPINE_REL = '.memory-bank/architecture/system-architecture.md';
+const BOUNDARY_MAP_REL = '.memory-bank/contracts/boundary-map.md';
+const BOUNDARY_MODULE_HEADERS = [
+  'Module / Change Unit',
+  'Parent Architecture Unit',
+  'Code Root',
+  'Responsibility',
+];
+const BOUNDARY_EDGE_HEADERS = ['Consumer', 'Provider', 'Contract'];
 const ARCHITECTURE_DECISION_ANCHOR_RE = /^AD-[0-9]{3,}$/;
 const RETIRED_ARCHITECTURE_DECISION_RE = /\b(retired|replaced|superseded|deprecated)\b/i;
 const ARCHITECTURE_REF_PATH_RE =
@@ -470,10 +479,213 @@ function checkLinks(filePath, text) {
   for (const link of extractLinks(text)) {
     if (/^(https?:|mailto:|#)/.test(link)) continue;
     if (link.startsWith('/')) continue;
-    const target = path.normalize(path.join(dir, link));
+    const pathPart = link.split('#', 1)[0];
+    const target = pathPart.startsWith('.memory-bank/')
+      ? path.join(ROOT, pathPart)
+      : path.normalize(path.join(dir, pathPart));
     if (!target.startsWith(ROOT)) continue;
     if (!fs.existsSync(target)) {
       errors.push(`${rel}: broken link -> ${link}`);
+    }
+  }
+}
+
+function splitMarkdownTableRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null;
+
+  const cells = [];
+  let current = '';
+  let escaped = false;
+  for (const char of trimmed.slice(1, -1)) {
+    if (escaped) {
+      current += char;
+      escaped = false;
+    } else if (char === '\\') {
+      current += char;
+      escaped = true;
+    } else if (char === '|') {
+      cells.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function markdownSection(text, title) {
+  const normalized = text.replace(/\r\n/g, '\n');
+  const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const matches = [...normalized.matchAll(new RegExp(`^##\\s+${escapedTitle}\\s*$`, 'gm'))];
+  if (matches.length !== 1) {
+    errors.push(`${BOUNDARY_MAP_REL}: expected exactly one '## ${title}' section`);
+    return null;
+  }
+
+  const start = matches[0].index + matches[0][0].length;
+  const next = normalized.slice(start).search(/^#{1,2}\s+/m);
+  return {
+    body: normalized.slice(start, next === -1 ? normalized.length : start + next),
+    startLine: normalized.slice(0, start).split('\n').length,
+  };
+}
+
+function markdownTable(text, title, expectedHeaders) {
+  const section = markdownSection(text, title);
+  if (!section) return [];
+
+  const lines = section.body.split('\n');
+  const headerIndex = lines.findIndex((line) => line.trim().startsWith('|'));
+  if (headerIndex === -1) {
+    errors.push(`${BOUNDARY_MAP_REL}: '## ${title}' must contain a Markdown table`);
+    return [];
+  }
+
+  const headers = splitMarkdownTableRow(lines[headerIndex]);
+  const separator = splitMarkdownTableRow(lines[headerIndex + 1] ?? '');
+  if (!headers || JSON.stringify(headers) !== JSON.stringify(expectedHeaders)) {
+    errors.push(`${BOUNDARY_MAP_REL}: '## ${title}' table headers must be '${expectedHeaders.join(' | ')}'`);
+    return [];
+  }
+  if (
+    !separator
+    || separator.length !== expectedHeaders.length
+    || separator.some((cell) => !/^:?-{3,}:?$/.test(cell))
+  ) {
+    errors.push(`${BOUNDARY_MAP_REL}: '## ${title}' has a malformed table separator`);
+    return [];
+  }
+
+  const rows = [];
+  for (let index = headerIndex + 2; index < lines.length; index += 1) {
+    if (!lines[index].trim()) continue;
+    if (!lines[index].trim().startsWith('|')) break;
+    const cells = splitMarkdownTableRow(lines[index]);
+    const line = section.startLine + index;
+    if (!cells || cells.length !== expectedHeaders.length) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: malformed '${title}' row; expected ${expectedHeaders.length} cells`);
+      continue;
+    }
+    rows.push({ cells, line });
+  }
+  return rows;
+}
+
+function placeholderCell(value) {
+  const normalized = String(value ?? '').trim();
+  return !normalized
+    || /^(?:TBD|TODO|N\/A|none|null|-|—)$/i.test(normalized)
+    || /^<[^>]+>$/.test(normalized);
+}
+
+function exactHeadingLink(value) {
+  const match = String(value ?? '').trim().match(/^\[[^\]]+\]\(([^)]+)\)$/);
+  if (!match) return null;
+
+  let target = match[1].trim();
+  if (target.startsWith('<') && target.endsWith('>')) target = target.slice(1, -1);
+  const hash = target.lastIndexOf('#');
+  if (hash === -1 || hash === target.length - 1) return null;
+  return { path: target.slice(0, hash), fragment: target.slice(hash + 1), target };
+}
+
+function markdownHeadingAnchors(text) {
+  const anchors = new Set();
+  const counts = new Map();
+  for (const match of text.replace(/\r\n/g, '\n').matchAll(/^#{1,6}\s+(.+?)\s*#*$/gm)) {
+    const base = match[1]
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/[`*_~]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+      .replace(/\s+/g, '-');
+    if (!base) continue;
+    const count = counts.get(base) ?? 0;
+    counts.set(base, count + 1);
+    anchors.add(count === 0 ? base : `${base}-${count}`);
+  }
+  return anchors;
+}
+
+function resolveExactHeadingLink(fromPath, link, label, line) {
+  if (!link || /^(?:https?:|mailto:)/.test(link.path) || link.path.startsWith('/')) {
+    errors.push(`${BOUNDARY_MAP_REL}:${line}: ${label} must be an exact local Markdown heading link`);
+    return null;
+  }
+
+  const targetPath = link.path === ''
+    ? fromPath
+    : link.path.startsWith('.memory-bank/')
+      ? path.join(ROOT, link.path)
+      : path.resolve(path.dirname(fromPath), link.path);
+  if (!targetPath.startsWith(ROOT) || path.extname(targetPath).toLowerCase() !== '.md' || !hasFile(targetPath)) {
+    errors.push(`${BOUNDARY_MAP_REL}:${line}: ${label} path does not resolve to a Markdown file (${link.target})`);
+    return null;
+  }
+
+  let fragment;
+  try {
+    fragment = decodeURIComponent(link.fragment).toLowerCase();
+  } catch {
+    errors.push(`${BOUNDARY_MAP_REL}:${line}: ${label} has an invalid encoded heading (${link.target})`);
+    return null;
+  }
+  if (!markdownHeadingAnchors(readText(targetPath)).has(fragment)) {
+    errors.push(`${BOUNDARY_MAP_REL}:${line}: ${label} heading does not resolve (${link.target})`);
+    return null;
+  }
+
+  return `${normalizeRel(path.relative(ROOT, targetPath))}#${fragment}`;
+}
+
+function checkBoundaryDependencyGraph() {
+  const abs = path.join(ROOT, BOUNDARY_MAP_REL);
+  if (!hasFile(abs)) return;
+
+  const text = readText(abs);
+  const moduleRows = markdownTable(text, 'Modules', BOUNDARY_MODULE_HEADERS);
+  const edgeRows = markdownTable(text, 'Dependency Graph', BOUNDARY_EDGE_HEADERS);
+  markdownSection(text, 'Inline Contracts');
+
+  const modules = new Set();
+  for (const { cells, line } of moduleRows) {
+    const [name, parent, codeRoot, responsibility] = cells;
+    if ([name, parent, codeRoot, responsibility].some(placeholderCell)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: module row contains an empty or placeholder value`);
+      continue;
+    }
+    if (modules.has(name)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: duplicate module/change-unit name '${name}'`);
+    } else {
+      modules.add(name);
+    }
+    resolveExactHeadingLink(abs, exactHeadingLink(parent), 'Parent Architecture Unit', line);
+  }
+
+  const edges = new Set();
+  for (const { cells, line } of edgeRows) {
+    const [consumer, provider, contract] = cells;
+    if ([consumer, provider, contract].some(placeholderCell)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: dependency row contains an empty or placeholder value`);
+      continue;
+    }
+    if (!modules.has(consumer)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: Consumer '${consumer}' is not registered in Modules`);
+    }
+    if (!modules.has(provider)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: Provider '${provider}' is not registered in Modules`);
+    }
+
+    const contractLink = exactHeadingLink(contract);
+    const resolvedContract = resolveExactHeadingLink(abs, contractLink, 'Contract', line);
+    const edgeKey = `${consumer}\u0000${provider}\u0000${resolvedContract ?? contract}`;
+    if (edges.has(edgeKey)) {
+      errors.push(`${BOUNDARY_MAP_REL}:${line}: duplicate Consumer + Provider + Contract edge`);
+    } else {
+      edges.add(edgeKey);
     }
   }
 }
@@ -1066,6 +1278,7 @@ for (const f of files) {
 
 checkAnalysisStructure();
 checkArchitectureSpine();
+checkBoundaryDependencyGraph();
 checkTaskRecords();
 
 if (warnings.length) {

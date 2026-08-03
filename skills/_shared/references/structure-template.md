@@ -96,7 +96,7 @@ status: active
 
 - [.memory-bank/domains/](domains/): Subject-based domain models, storage, schemas, migrations, and persistence rules.
 - [.memory-bank/contracts/](contracts/): Контракты и boundary specs (prefer when present).
-- [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): Lightweight responsibility/scope boundary notes for decomposition and task runtime context.
+- [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md): Canonical accepted module/change-unit dependency graph and boundary contracts.
 - [.memory-bank/states/](states/): Lifecycle/state rules (prefer when present).
 - [.memory-bank/runbooks/](runbooks/): Runbooks (setup, dev, deploy).
 - [.memory-bank/testing/index.md](testing/index.md): Router testing-документации.
@@ -181,7 +181,7 @@ source_of_truth:
 | governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
 | glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or /spec-design |
-| contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Lightweight responsibility/scope notes for task boundaries. | /spec-init or /spec-design |
+| contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Canonical accepted module/change-unit dependency graph and boundary contracts. | /spec-design or /feature-to-tasks |
 | testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |
 
 ## Planned Specs
@@ -189,7 +189,7 @@ source_of_truth:
 |---|---|---|---|
 | user_scenarios | .memory-bank/user-scenarios.md | /prd-to-features, /spec-design | Create only when scenario evidence exists or gaps must be explicit. |
 | core_domain | .memory-bank/domains/core-domain.md | /prd-to-features, /spec-design | Create only when domain model affects decomposition or shared design. |
-| boundary_hints | .memory-bank/contracts/boundary-map.md | /prd-to-features, /spec-design | Seeded lightweight template; fill only evidence-backed responsibility/scope notes, no endpoint/OpenAPI details. |
+| module_dependency_graph | .memory-bank/contracts/boundary-map.md | /spec-design, /feature-to-tasks | Establish accepted architecture units first, then register concrete modules, allowed dependency edges, and exact contract blocks before task handoff. |
 | lifecycle_hints | .memory-bank/states/lifecycle-map.md | /prd-to-features, /spec-design | Create only when lifecycles affect feature boundaries. |
 | system_architecture | .memory-bank/architecture/system-architecture.md | /spec-design | Candidate architecture hub; fill only when selected or needed by /spec-design. |
 | interface_contract_specs | .memory-bank/contracts/*, .memory-bank/testing/*, and .memory-bank/runbooks/* | /spec-design, /foundation-to-tasks, /feature-to-tasks | Generate/update Interface Specification and only applicable Component/API/Event/Data contracts, protocol/agent/tool I/O, boundary compatibility, evidence/redaction, safety/security, testing, runbook, or verification contracts. Data Contract defines payloads crossing a boundary. |
@@ -243,7 +243,7 @@ status: active
 |---|---|---|---|
 | architecture_style | blocked | - | Decide in /spec-design after /prd-to-features. |
 | source_of_truth | blocked | - | Decide in /spec-design after /prd-to-features. |
-| module_boundaries | blocked | .memory-bank/contracts/boundary-map.md | Fill only evidence-backed responsibility/scope notes; decide in /spec-design after /prd-to-features. |
+| module_boundaries | blocked | .memory-bank/contracts/boundary-map.md | Accept parent architecture units in /spec-design; reconcile concrete modules, edges, and contracts in /feature-to-tasks. |
 | user_scenarios | blocked | .memory-bank/user-scenarios.md | Create/review when scenarios affect decomposition or architecture. |
 | constraints | blocked | - | Capture in /spec-init and refine in /spec-design. |
 | non_goals | blocked | - | Capture in /spec-init and refine in /spec-design. |
@@ -371,7 +371,7 @@ Use this section only for durable decisions that constrain shared-boundary, cont
 |---|---|---|
 | TBD | TBD | TBD |
 
-## Main Modules / Bounded Contexts
+## Main Architecture Units
 - TBD
 
 ## Data Flow
@@ -379,6 +379,9 @@ Use this section only for durable decisions that constrain shared-boundary, cont
 
 ## API / Contract Boundaries
 - See [.memory-bank/contracts/boundary-map.md](../contracts/boundary-map.md).
+
+## Module Inventory
+- See [.memory-bank/contracts/boundary-map.md#modules](../contracts/boundary-map.md#modules).
 ```
 
 ---
@@ -387,40 +390,38 @@ Use this section only for durable decisions that constrain shared-boundary, cont
 
 ```markdown
 ---
-description: Lightweight responsibility and scope boundary notes for decomposition, implementation, and verification.
+description: Canonical accepted module/change-unit dependency graph and boundary contracts.
 status: draft
 ---
 # Boundary Map
 
 ## Purpose
-- Keep lightweight boundary notes that help agents avoid crossing ownership, responsibility, or write-scope lines during decomposition and task execution.
-- Use this file as an existing contract/spec input when task records need `purpose`, `success_outcome`, `anti_goals`, `runtime_context.write_boundary`, `runtime_context.forbidden_scope`, or `runtime_context.stop_conditions`.
+- Keep one accepted inventory of project modules/change units and every allowed significant dependency between them.
+- Treat `Consumer -> Provider` as the direction of dependency. Observed imports or calls are evidence, not accepted edges by themselves.
 
-## Boundary Notes
-| Boundary | Purpose | Direction | Owner | Known Constraints | Questions |
-|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD |
+## Modules
+| Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
+|---|---|---|---|
 
-## Boundary: <producer> -> <consumer>
+## Dependency Graph
 
-- Owner:
-- Consumers:
-- Allowed calls:
-- Forbidden calls:
-- Data owner:
-- Compatibility rule:
-- Verification:
-- Linked ADs:
+`Consumer -> Provider` means Consumer depends on Provider through the linked contract.
 
-## Runtime Context Hints
-- Write boundary hints: TBD
-- Forbidden scope hints: TBD
-- Stop condition hints: TBD
+| Consumer | Provider | Contract |
+|---|---|---|
+
+## Inline Contracts
+
+Add a `### <Contract>` block here only for a simple internal boundary. Use an exact heading link from the graph. A contract with independent complexity, multiple consumers, reuse, or its own compatibility surface belongs in a subject contract.
+
+Each contract block defines only the applicable public surface, allowed interaction, state/data authority, failure and compatibility rules, forbidden bypasses, and verification. Topology remains exclusively in `Dependency Graph`.
 
 ## Update Rules
-- Keep entries evidence-backed and short.
-- Do not add endpoint lists, OpenAPI details, request/response schemas, auth policy, error-code design, or implementation pseudocode here.
-- Do not create new task fields for boundaries; link this file through existing task fields such as `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or `verification_targets`, and copy executable scope into `runtime_context` when needed.
+- `Module / Change Unit` is the unique graph key. Use stable functional responsibility names, not feature/task IDs, current paths, or generic technical layers.
+- Every graph row names registered modules and links to one exact contract heading. The graph row alone owns consumer, provider, and direction.
+- Include every accepted significant inter-module dependency. An absent edge is not authorized.
+- Keep the detailed module inventory here. `system-architecture.md` owns only larger architecture units and links to `#modules`.
+- Plans and tasks link relevant graph/contract blocks through existing fields; they do not copy the subgraph or introduce graph-specific task fields.
 ```
 
 ---

@@ -59,6 +59,9 @@ the glossary has no placeholders and its `spec-index.md` row matches it.
 - Preserve any existing Global Backbone `Planning Revision`. `/spec-init` does
   not initialize or increment the post-PRD planning contract; a fresh bootstrap
   placeholder remains `0` until `/spec-design` succeeds.
+- Keep boundary hints preliminary in
+  `spec-backbone.md#Decomposition Inputs`. `/spec-init` does not create accepted
+  module/change-unit nodes, dependency edges, or boundary contracts.
 - Do not turn a later architecture question into a product assumption. Record it
   for `/spec-design` unless it blocks truthful L1-L3 decomposition now.
 </hard_invariants>
@@ -96,8 +99,6 @@ be made explicit:
 - `.memory-bank/user-scenarios.md`;
 - `.memory-bank/domains/core-domain.md` or another subject domain spec;
 - `.memory-bank/invariants.md`;
-- `.memory-bank/contracts/boundary-map.md` with preliminary responsibility and
-  scope hints only;
 - `.memory-bank/states/lifecycle-map.md` when lifecycle affects decomposition.
 
 When the PRD already owns sufficient evidence, link its section instead of
@@ -105,7 +106,8 @@ duplicating it. Created artifacts cover only applicable decomposition criteria:
 - actors, 1-3 representative core scenarios, and out-of-scope scenarios;
 - main entities, roles, business rules, states/lifecycles, and constraints;
 - decomposition-affecting MUST/NEVER rules;
-- preliminary boundary responsibility/direction/owner/questions;
+- preliminary boundary responsibility/direction/owner/questions recorded as
+  decomposition hints, not accepted graph topology;
 - lifecycle transitions needing later detail.
 
 When `.memory-bank/user-scenarios.md` is created, preserve this minimum shape:

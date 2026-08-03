@@ -337,6 +337,10 @@ try {
   runInstaller(['--bootstrap', '--target', target, '--yes']);
 
   const schemaRel = '.memory-bank/schemas/task.schema.json';
+  const boundaryMapRel = '.memory-bank/contracts/boundary-map.md';
+  const boundaryMapOldRel = '.memory-bank/contracts/boundary-map-old.md';
+  const systemArchitectureRel = '.memory-bank/architecture/system-architecture.md';
+  const reservationContractRel = '.memory-bank/contracts/reservation.md';
   const tierPolicyRel = '.memory-bank/workflows/tier-policy.md';
   const executeLoopRel = '.memory-bank/workflows/execute-loop.md';
   const autonomyPolicyRel = '.memory-bank/workflows/autonomy-policy.md';
@@ -348,6 +352,7 @@ try {
   const doctorRel = 'scripts/mb-doctor.mjs';
   const runtimeSkillRel = '.agents/skills/cold-start/SKILL.md';
   const expectedSchema = readTarget(schemaRel);
+  const expectedBoundaryMap = readTarget(boundaryMapRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
   const expectedExecuteLoop = readFileSync(executeLoopSource, 'utf8');
   const expectedAutonomyPolicy = readFileSync(autonomyPolicySource, 'utf8');
@@ -447,12 +452,21 @@ try {
   );
 
   const structureTemplate = readFileSync(structureTemplateSource, 'utf8');
+  const boundaryTemplateMatch = structureTemplate.match(
+    /## 3f\) `\.memory-bank\/contracts\/boundary-map\.md`\n\n```markdown\n([\s\S]*?)\n```/,
+  );
   assert(
     structureTemplate.includes(installedSkillsBeginMarker)
       && structureTemplate.includes(installedSkillsEndMarker)
       && structureTemplate.includes('deployable/AGENTS.md')
+      && structureTemplate.includes('| Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |')
+      && structureTemplate.includes('| Consumer | Provider | Contract |')
       && !structureTemplate.includes('```markdown\n# Agent Operating Guide'),
     'Structure reference does not document the generated skill inventory boundary.',
+  );
+  assert(
+    boundaryTemplateMatch && `${boundaryTemplateMatch[1]}\n` === expectedBoundaryMap,
+    'Structure reference boundary-map skeleton differs from the generated canonical template.',
   );
 
   const emptyTarget = join(tempRoot, 'empty-target');
@@ -779,6 +793,8 @@ try {
   assert(
     initSource.includes("resolveReferenceFile(AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE)")
       && initSource.includes("writeFile('AGENTS.md', agentsGuide(), { ownership: 'framework-owned' })")
+      && initSource.includes('function writeCanonicalBoundaryMap(content)')
+      && initSource.includes('contracts/boundary-map-old.md')
       && !initSource.includes("writeFile('AGENTS.md', `# Agent Operating Guide"),
     'AGENTS.md deployment is not sourced exclusively from the canonical Markdown file.',
   );
@@ -794,6 +810,102 @@ try {
   });
   const lintOutput = `${lintResult.stdout || ''}${lintResult.stderr || ''}`;
   assert(lintResult.status === 0, 'Fresh bootstrap mb-lint failed.', lintOutput);
+
+  const originalSystemArchitecture = readTarget(systemArchitectureRel);
+  writeTarget(systemArchitectureRel, `---
+description: Graph validator architecture fixture.
+status: draft
+---
+# System Architecture
+
+## Commerce
+- Checkout and pricing capability.
+
+## Fulfillment
+- Inventory and reservation capability.
+`);
+  writeTarget(reservationContractRel, `---
+description: Reservation contract fixture.
+status: draft
+---
+# Reservation Contract
+
+## Reservation Command
+- Public surface: reserve available stock.
+- Verification: integration probe.
+`);
+  writeTarget(boundaryMapRel, `---
+description: Canonical accepted module/change-unit dependency graph and boundary contracts.
+status: active
+---
+# Boundary Map
+
+## Modules
+| Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
+|---|---|---|---|
+| checkout | [Commerce](../architecture/system-architecture.md#commerce) | src/checkout | Checkout orchestration |
+| pricing | [Commerce](../architecture/system-architecture.md#commerce) | src/pricing | Accepted price calculation |
+| inventory | [Fulfillment](../architecture/system-architecture.md#fulfillment) | src/inventory | Stock reservation |
+
+## Dependency Graph
+| Consumer | Provider | Contract |
+|---|---|---|
+| checkout | pricing | [Pricing Query](#pricing-query) |
+| checkout | inventory | [Reservation Command](reservation.md#reservation-command) |
+
+## Inline Contracts
+### Pricing Query
+- Public surface: quote an accepted price.
+- Verification: contract probe.
+`);
+  const validGraphLint = runTargetLint();
+  assert(
+    validGraphLint.status === 0,
+    'Deployed mb-lint rejected a valid canonical dependency graph.',
+    validGraphLint.output,
+  );
+
+  writeTarget(boundaryMapRel, `---
+description: Invalid graph validator fixture.
+status: draft
+---
+# Boundary Map
+
+## Modules
+| Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
+|---|---|---|---|
+| checkout | [Commerce](../architecture/system-architecture.md#commerce) | src/checkout | Checkout orchestration |
+| checkout | [Missing](../architecture/system-architecture.md#missing) | src/duplicate | Duplicate identity |
+| TBD | [Commerce](../architecture/system-architecture.md#commerce) | src/placeholder | Placeholder identity |
+| pricing | [Commerce](../architecture/system-architecture.md#commerce) | src/pricing | Accepted price calculation |
+
+## Dependency Graph
+| Consumer | Provider | Contract |
+|---|---|---|
+| checkout | pricing | [Pricing Query](#pricing-query) |
+| checkout | pricing | [Pricing Query](#pricing-query) |
+| checkout | inventory | [Reservation Command](reservation.md) |
+
+## Inline Contracts
+### Pricing Query
+- Public surface: quote an accepted price.
+`);
+  const invalidGraphLint = runTargetLint();
+  assert(
+    invalidGraphLint.status !== 0
+      && invalidGraphLint.output.includes("duplicate module/change-unit name 'checkout'")
+      && invalidGraphLint.output.includes('Parent Architecture Unit heading does not resolve')
+      && invalidGraphLint.output.includes('module row contains an empty or placeholder value')
+      && invalidGraphLint.output.includes('duplicate Consumer + Provider + Contract edge')
+      && invalidGraphLint.output.includes("Provider 'inventory' is not registered in Modules")
+      && invalidGraphLint.output.includes('Contract must be an exact local Markdown heading link'),
+    'Deployed mb-lint did not report the required dependency-graph shape errors.',
+    invalidGraphLint.output,
+  );
+  writeTarget(boundaryMapRel, expectedBoundaryMap);
+  writeTarget(systemArchitectureRel, originalSystemArchitecture);
+  rmSync(targetPath(reservationContractRel), { force: true });
+
   const staleSchema = JSON.parse(expectedSchema);
   staleSchema.title = 'STALE TARGET TASK SCHEMA';
   writeTarget(schemaRel, `${JSON.stringify(staleSchema, null, 2)}\n`);
@@ -840,10 +952,28 @@ try {
 
   const customTaskIndex = '{"version":1,"tasks":[]}\n';
   writeTarget('.memory-bank/tasks/index.json', customTaskIndex);
+  const authoredBoundaryMap = `---
+description: Previous authored boundary map.
+status: active
+---
+# Previous Boundary Map
+
+Authored graph content preserved for manual migration.
+`;
+  writeTarget(boundaryMapRel, authoredBoundaryMap);
   writeTarget(runtimeSkillRel, `${expectedRuntimeSkill}\n<!-- stale runtime command -->\n`);
 
   const syncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(readTarget(schemaRel) === expectedSchema, 'Full sync did not restore the canonical task schema.', syncOutput);
+  assert(
+    readTarget(boundaryMapRel) === expectedBoundaryMap
+      && readTarget(boundaryMapOldRel) === authoredBoundaryMap
+      && expectedBoundaryMap.includes('status: draft')
+      && expectedBoundaryMap.includes('## Modules')
+      && expectedBoundaryMap.includes('## Dependency Graph'),
+    'Full sync did not replace boundary-map.md with the canonical empty graph and preserve the previous file.',
+    syncOutput,
+  );
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Full sync did not restore the canonical tier policy.', syncOutput);
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Full sync did not restore the Architect role.', syncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Full sync did not restore the canonical mb-lint asset.', syncOutput);
@@ -889,6 +1019,12 @@ try {
   const secondSyncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(secondSyncOutput.includes('unchanged framework-owned'), 'Idempotent sync did not classify identical framework assets as unchanged.', secondSyncOutput);
   assert(readTarget(schemaRel) === expectedSchema, 'Idempotent sync changed the canonical task schema.', secondSyncOutput);
+  assert(
+    readTarget(boundaryMapRel) === expectedBoundaryMap
+      && readTarget(boundaryMapOldRel) === authoredBoundaryMap,
+    'Idempotent sync changed the canonical boundary map or its preserved previous version.',
+    secondSyncOutput,
+  );
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Idempotent sync changed the canonical tier policy.', secondSyncOutput);
   assert(readTarget(architectRoleRel) === expectedArchitectRole, 'Idempotent sync changed the Architect role.', secondSyncOutput);
   assert(readTarget(lintRel) === expectedLint, 'Idempotent sync changed the canonical mb-lint asset.', secondSyncOutput);

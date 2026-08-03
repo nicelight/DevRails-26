@@ -80,6 +80,8 @@ scenario review or create the file only to satisfy a template.
 - Do not create TASK records, implementation plans, default feature-owned or
   `FT-*`-named design hubs, a new architecture workflow, a coverage-map
   artifact, or another readiness/status model.
+- Keep detailed module identity/topology only in `boundary-map.md`;
+  `system-architecture.md` owns and links the parent architecture units.
 - Keep `.memory-bank/spec-index.md` a pure registry with
   `Type | Path | Status | Scope | Change route`, planned specs, broken links,
   and concise update rules. Decision bodies, matrices, blockers, and handoffs do
@@ -192,6 +194,9 @@ Planning revision rules:
 - On later runs, increment the revision exactly once only when a durable global
   target rule, boundary, contract, matrix route, or Foundation decision changes
   in a way that can affect feature/task planning; otherwise preserve it.
+- A new leaf module, consumer of an unchanged contract, or edge inside already
+  accepted architecture is feature-level graph concretization and does not
+  increment Planning Revision. `/feature-to-tasks` owns that local change.
 - A newly observed current-state drift or baseline correction alone does not
   increment Planning Revision when the accepted target is unchanged.
 - Under an unchanged accepted linear Alembic topology, a new current head is
@@ -317,6 +322,11 @@ architecture artifacts must make that target directly usable downstream:
   directly. Business orchestration must not live in an HTTP/UI/bot handler,
   generic utility/shared helper, or the composition root; the composition root
   is limited to settings, adapters, wiring, lifecycle, start, and shutdown.
+
+Reconcile observed dependencies with the accepted target. Name parent units in
+`system-architecture.md`; keep modules and accepted `Consumer -> Provider`
+edges with exact contract headings in `boundary-map.md`. Unresolved drift uses
+the existing blocker, never a second observed graph.
 
 A significant slice represents a complete user- or operator-observable
 capability, not a technical layer and not automatically one product feature.
@@ -469,6 +479,8 @@ Before handoff:
 - verify accepted decisions live in owning specs/ADRs/foundation evidence;
 - verify current-state evidence is labelled separately and has not been used as
   normative target authority;
+- verify the module inventory is not duplicated and graph endpoints, parent
+  units, and contract headings resolve;
 - when the accepted target uses capability slices, verify the system shape,
   composition root, slice code roots, semantic/write ownership, forbidden
   ownership, public boundaries, allowed dependencies, cross-slice

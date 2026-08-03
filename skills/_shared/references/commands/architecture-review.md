@@ -43,6 +43,10 @@ Treat these as coverage criteria, not a mandatory order:
    - ownership, source of truth, public boundaries, dependency direction,
      cross-component orchestration, and required proof paths are preserved;
    - dependencies are explicit and no task must invent a material boundary.
+   - the relevant subgraph has registered modules, exact contracts, accepted
+     directions, and complete consumer impact until compatibility stops it;
+   - accepted architecture and rollout constraints—not graph shape alone—justify
+     task dependencies and waves;
    - a capability-sliced cross-slice outcome names one accepted capability slice
      as orchestration owner; reject an orchestration slice invented in planning;
    - applicable linked rules retain existing mechanical gates and required

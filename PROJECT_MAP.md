@@ -197,6 +197,37 @@ Primary source files for this behavior:
 Do not add a new task schema, `/architecture` workflow, BMAD output folders, or
 mandatory ADRs for local/simple work.
 
+## Canonical Dependency Graph Hotspots
+
+`.memory-bank/contracts/boundary-map.md` is the single accepted detailed
+module/change-unit inventory and `Consumer -> Provider` topology. It uses exact
+contract-heading links, remains an architecture input to existing plans/tasks,
+and adds no graph lifecycle, registry, scheduler, or task field.
+
+Primary source files:
+
+- `skills/_shared/references/structure-template.md` and
+  `skills/_shared/scripts/init-mb.js` for the empty canonical template and
+  sync backup to `boundary-map-old.md`
+- `skills/_shared/references/commands/spec-init.md` and
+  `skills/_shared/references/commands/map-codebase.md` for preliminary/as-is
+  evidence without accepted-edge authority
+- `skills/_shared/references/commands/spec-design.md`, `spec-auto.md`, and
+  `feature-to-tasks.md` for accepted architecture units, graph reconciliation,
+  reverse impact, and local-versus-global Planning Revision ownership
+- `skills/_shared/references/commands/architecture-review.md`,
+  `review-tasks-plan.md`, `exe.md`, and `verify.md` for semantic subgraph,
+  point-of-use, and allowed-path checks
+- `skills/_shared/references/commands/mb-sync.md` and
+  `skills/_shared/references/workflows/mb-sync.md` for link-only reconciliation
+- `skills/mb-garden/assets/mb-lint.mjs` for mechanical graph validation
+- `scripts/test-install-sync.mjs` for deployed template, backup, validator, and
+  isolated installer coverage
+
+Do not duplicate module inventory in `system-architecture.md`, copy feature
+subgraphs into implementation plans/tasks, or mechanically convert graph edges
+into task dependencies.
+
 ## Architect And KISS Review Hotspots
 
 - `skills/_shared/references/roles/architect.md`: canonical Architect policy.

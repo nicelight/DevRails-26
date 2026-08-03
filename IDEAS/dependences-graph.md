@@ -1,96 +1,51 @@
-# Граф зависимостей модулей и контрактов
+# Канонический граф зависимостей модулей и контрактов
 
-## 1. Цель
+## Замысел
 
-DevRails должен формировать и поддерживать один канонический граф значимых
-module/change units проекта и контрактов между ними. Узлы графа представляют
-реализационные модули, capability slices, bounded contexts или другие принятые
-primary change units. Направленные рёбра представляют зависимости, а каждое
-ребро ссылается на контракт, через который разрешено взаимодействие.
+DevRails нужен один канонический граф принятых module/change units проекта и
+контрактов между ними. Его владелец —
+`.memory-bank/contracts/boundary-map.md`.
 
-Каноническим владельцем графа становится
-`.memory-bank/contracts/boundary-map.md`. Граф развивается по мере появления
-реализационной конкретики и остаётся пригодным как для первичной генерации, так
-и для последующей доработки уже работающего проекта.
+Узел обозначает конкретный модуль или другую принятую единицу изменения.
+Ребро `Consumer -> Provider` означает, что Consumer зависит от Provider через
+указанный контракт. Граф описывает разрешённую архитектуру, а не все найденные
+imports или вызовы.
 
-Результат должен позволять агенту по новой feature или delta быстро определить:
+Для новой feature или delta граф даёт агенту короткий путь к ответам:
 
-- какие модули владеют затронутым поведением и состоянием;
-- какие контракты меняются или используются;
-- какие непосредственные и транзитивные consumers могут быть затронуты;
-- где совместимая граница останавливает распространение изменений;
-- какие implementation prerequisites определяют порядок задач и waves;
-- какие contract и integration proofs нужны для проверки результата.
+- где находится владелец затронутого поведения и состояния;
+- какие контракты используются или меняются;
+- какие прямые и транзитивные consumers могут быть затронуты;
+- останавливает ли совместимая граница распространение изменения;
+- какие implementation prerequisites определяют задачи и waves;
+- какие contract и integration proofs относятся к изменению.
 
-Граф не становится новым task model, lifecycle или scheduler contract. Он
-служит архитектурным входом для существующих implementation plans, JSON task
-records, review и verification flow.
+Граф остаётся архитектурным входом для существующих implementation plans, JSON
+task records, review и verification flow. Он не создаёт новый task model,
+lifecycle, scheduler contract или отдельную workflow-команду.
 
-## 2. Зачем это нужно
+## Каноническая форма
 
-Сейчас DevRails уже фиксирует architecture units, ownership, allowed
-dependencies, canonical contracts и task dependencies, но эти сведения не
-собраны в одну явную структуру, по которой удобно восстанавливать blast radius.
-Агенту приходится повторно выводить связь модулей из повествовательных specs,
-кода, feature links и task context. При последующих изменениях это повышает
-риск пропустить скрытого consumer, прямую запись чужого состояния или
-несовместимое изменение контракта.
-
-Граф закрывает промежуток между SDD и task generation:
-
-```text
-feature / delta
-  -> затронутые module/change units
-  -> dependency edges и contracts
-  -> impact analysis
-  -> обоснованный implementation order
-  -> task cards, depends_on и waves
-```
-
-Особенно полезен он для живого brownfield-проекта. Внутренняя правка реализации
-может остаться локальной, а изменение public contract, state semantics или
-write ownership получает явный список зависимых модулей до начала реализации.
-Это уменьшает зависимость от размера текущего контекстного окна и делает
-последующие feature/refactoring runs более предсказуемыми.
-
-Граф не заменяет tests, mutation testing или независимую verification. Он
-определяет, что способно быть затронуто и какие границы нужно проверить. Само
-доказательство корректности остаётся у существующих gates, `/verify` и
-`/red-verify`.
-
-## 3. Почему именно так
-
-### Один канонический владелец
-
-`boundary-map.md` уже является canonical contract input для decomposition,
-implementation и verification. Создание отдельной `.memory-bank/graph/`,
-module registry или нового task field породило бы конкурирующий source of truth.
-Поэтому существующий Boundary Map лучше превратить из набора свободных заметок
-в компактный граф.
-
-Текущий шаблон файла содержит `Boundary Notes`, а затем повторяет ту же границу
-в повествовательном блоке через `Owner`, `Consumers`, `Allowed calls`,
-`Forbidden calls`, `Data owner`, `Compatibility rule` и `Verification`.
-Добавление графа поверх этой формы утроило бы одни и те же сведения. В новой
-форме таблица графа владеет топологией, а contract body — только правилами
-взаимодействия.
-
-Предполагаемая компактная форма:
+`boundary-map.md` становится единственным подробным inventory модулей и
+топологии их зависимостей.
 
 ```markdown
 ## Modules
 
 | Module / Change Unit | Parent Architecture Unit | Code Root | Responsibility |
 |---|---|---|---|
+| checkout | [Commerce](../architecture/system-architecture.md#commerce) | src/checkout | Оркестрация оформления заказа |
+| pricing | [Commerce](../architecture/system-architecture.md#commerce) | src/pricing | Расчёт принятой цены |
+| inventory | [Fulfillment](../architecture/system-architecture.md#fulfillment) | src/inventory | Резервирование доступного остатка |
 
 ## Dependency Graph
 
 `Consumer -> Provider` означает, что Consumer зависит от Provider.
 
-| Consumer | Provider | Kind | Contract |
-|---|---|---|---|
-| checkout | pricing | query | [Pricing Query](#pricing-query) |
-| checkout | inventory | command | [Reservation Contract](reservation.md) |
+| Consumer | Provider | Contract |
+|---|---|---|
+| checkout | pricing | [Pricing Query](#pricing-query) |
+| checkout | inventory | [Reservation Command](reservation.md#reservation-command) |
 
 ## Inline Contracts
 
@@ -104,192 +59,187 @@ module registry или нового task field породило бы конку�
 - Verification:
 ```
 
-`Modules` является единственным inventory конкретных change units.
-`Dependency Graph` является единственным местом, где записываются
-consumer/provider и направление зависимости. Contract body не повторяет эти
-поля. Сложный или переиспользуемый контракт живёт в отдельном subject-based
-`contracts/*.md`; простая внутренняя граница может использовать inline contract
-в самом `boundary-map.md`.
+`Module / Change Unit` является уникальным именем узла внутри `Modules` и
+точным ключом для `Consumer` и `Provider`. Отдельные module IDs не нужны.
+Идентичность ребра задаётся тройкой `Consumer + Provider + Contract`.
 
-Subject contract описывает shape, semantics, errors, compatibility и proof, но
-не ведёт собственный список consumers. Reverse usage выводится из графа. Это
-снижает риск рассинхронизации двух списков при добавлении нового потребителя.
+Значение `Contract` всегда является точной ссылкой: либо на heading inline
+contract в `boundary-map.md`, либо на конкретный блок subject contract. Ссылка
+только на файл без нужного блока недостаточна.
 
-### Два уровня декомпозиции
+Таблица графа единолично владеет consumer, provider и направлением зависимости.
+Contract body описывает public surface, правила взаимодействия, authority,
+ошибки, совместимость, запрещённые обходы и proof, но не повторяет topology.
+Один subject contract может обслуживать несколько рёбер; reverse usage всё
+равно выводится из графа.
 
-`/spec-design` действительно не знает будущую реализационную декомпозицию во
-всех деталях. Его область — крупные capability slices или bounded contexts,
-владельцы состояния, composition/runtime boundaries, разрешённые направления
-зависимостей и глобальные API/event/data contracts. Эти решения образуют
-архитектурный каркас графа, но не полный module inventory.
+Простая внутренняя граница остаётся inline. Отдельный `contracts/*.md` оправдан,
+когда контракт имеет самостоятельную сложность, несколько consumers,
+переиспользование или собственную compatibility surface.
 
-Конкретные change units становятся видимыми в `/feature-to-tasks`, когда уже
-известны feature AC, canonical concerns, существующий код и ожидаемый путь к
-наблюдаемому результату. Поэтому именно task planning получает bounded
-dependency-design pass между canonical concern discovery и формированием task
-candidates.
+## Граница с архитектурой системы
 
-Feature и module при этом не смешиваются: одна feature может пересекать
-несколько модулей, а один модуль может обслуживать несколько features. Task
-также не соответствует модулю автоматически. Задачи продолжают формироваться
-вокруг cohesive independently verifiable outcomes; граф лишь раскрывает
-границы, contracts и prerequisites этих outcomes.
+`.memory-bank/architecture/system-architecture.md` описывает форму системы:
+deployables, composition/runtime boundaries, крупные capability slices или
+bounded contexts и принятые архитектурные решения. Второй подробный список
+модулей там не поддерживается. Когда архитектурному описанию нужен module
+inventory, оно ссылается на `boundary-map.md#modules`.
 
-### Downstream использует ссылки, а не копии
+`Parent Architecture Unit` в таблице `Modules` ссылается на соответствующий
+крупный архитектурный блок. Так сохраняются два уровня декомпозиции без двух
+источников истины:
 
-Task cards не копируют из `boundary-map.md` consumer, provider или dependency
-direction. Через существующие `source_artifacts` и/или `normative_inputs` они
-ссылаются на `.memory-bank/contracts/boundary-map.md#dependency-graph` и на
-конкретный inline или subject contract. Task-specific constraints,
-verification targets и scope остаются в существующих полях только в той мере,
-в которой они нужны для выполнения и проверки конкретного outcome.
+- `/spec-design` создаёт и именует крупные architecture units;
+- `/feature-to-tasks` создаёт конкретные modules/change units внутри уже
+  принятой архитектуры.
 
-`IMPL-FT-<NNN>.md` также не хранит копию feature subgraph. В нём остаются только
-затронутые modules/contracts, ссылки на canonical graph и обоснование task
-order, dependencies и waves. Полный набор узлов и рёбер всегда читается из
-`boundary-map.md`.
+Имена отражают устойчивую функциональную ответственность и используют
+принятую доменную лексику. Feature/task IDs, текущие пути и общие технические
+слои не становятся именами модулей. `Code Root` может измениться без смены
+идентичности модуля.
 
-Такой handoff сохраняет single-card execution context, но не превращает task
-records или implementation plan в кэш архитектурного состояния.
+## Полнота и разрешённые зависимости
 
-## 4. Общий план реализации
+Для каждого узла в `Modules` граф содержит все принятые значимые
+межмодульные зависимости. Отсутствующее ребро означает, что такая зависимость
+не разрешена.
 
-Bootstrap-форма `boundary-map.md` может стать пустым компактным графом без
-фиктивных `TBD`-рёбер, повествовательных `Boundary Notes` и глобальных
-`Runtime Context Hints`. Описание файла в root index, spec-index и backbone
-будет отражать его новую роль: canonical module dependency graph и маршрутизация
-контрактов.
+Значимой считается зависимость между зарегистрированными modules/change units,
+которая переносит behavior, state/data authority или runtime responsibility
+через контракт. Совместная сборка, тестовый import или общий инструментарий
+сами по себе не образуют архитектурное ребро.
 
-Pre-PRD `/spec-init` продолжит собирать preliminary boundary hints, но оставит
-их в `spec-backbone.md#Decomposition Inputs`, где они уже являются входом для
-последующей архитектурной работы. До принятия архитектуры эти hints не будут
-записываться как реальные nodes или edges.
+Новый узел готов к task handoff вместе со всеми его принятыми edges и точными
+contract links. Неполная evidence-backed картина не выдаётся за полный граф:
+неразрешённая граница использует существующий blocker route.
 
-`/map-codebase` сможет находить observed change units, imports/calls, writers,
-state paths и exposed boundaries как current-state evidence. Такое наблюдение
-не станет accepted graph автоматически. `/spec-design` сопоставит его с
-нормативным target и зафиксирует только принятый архитектурный каркас,
-глобальные edges и contracts. Расхождение current state и target сохранит
-существующий decision/blocker route, а не создаст второй полный граф рядом с
-первым.
+Эта closed-world семантика сохраняет роль графа простой: accepted edge разрешает
+взаимодействие через свой контракт, отсутствующий edge не даёт агенту права
+изобрести связь во время реализации.
 
-В `/feature-to-tasks` появится dependency-design pass. Для целевой feature
-агент выделит необходимые реализационные change units, привяжет их к принятым
-architecture units и проследит существенные execution paths через module
-boundaries. Дополнительное внимание потребуется переходам через state/data,
-events/messages и runtime composition, поскольку они не всегда видны из
-основного happy path.
+## Как граф развивается
 
-Каждое обнаруженное межмодульное взаимодействие получит направленное edge и
-один contract outcome: `reuse`, `extend`, `create` или `block`. Новое простое
-edge сможет получить inline contract; отдельный subject contract появится
-только для самостоятельной, сложной или переиспользуемой границы. Edge без
-contract basis не будет готов к task handoff.
+До принятия архитектуры `/spec-init` хранит preliminary boundary hints в
+`spec-backbone.md#Decomposition Inputs`. Эти hints помогают последующей
+декомпозиции, но ещё не являются nodes или edges.
 
-После reconciliation канонического графа планирование определит затронутые
-modules/contracts и выполнит reverse impact traversal для изменяемых
-providers. Результат этого анализа выразится не копией подграфа, а
-обоснованием implementation order в `IMPL-FT-*`. Task candidates, их
-`depends_on` и waves будут выводиться из реальных implementation prerequisites,
-compatibility/rollout requirements и independently verifiable outcomes, а не
-механически из направления архитектурных рёбер.
+В brownfield-проекте `/map-codebase` находит observed change units, imports,
+calls, writers, state paths, runtime entrypoints и существующие proof paths как
+current-state evidence. Наблюдаемая связь не становится разрешённой
+зависимостью автоматически. `/spec-design` сопоставляет evidence с принятым
+target и формирует архитектурный каркас графа. Расхождение current state и
+target остаётся drift evidence с существующим decision/blocker route, а не
+вторым графом рядом с accepted graph.
 
-`/architecture-review` и `/review-tasks-plan` смогут проверять, что все
-затронутые contract consumers учтены, новые edges разрешены архитектурой, а
-task order согласован с контрактами и rollout constraints. `/exe` и `/verify`
-получат task-relevant graph и contract links; найденная во время выполнения
-новая граница будет означать planning/design drift, а не разрешение молча
-дописать зависимость.
+Когда feature готовится к tasking, `/feature-to-tasks` связывает её AC и
+canonical concerns с конкретными change units. Существенные execution paths
+прослеживаются через module boundaries, включая state/data, events/messages,
+background work и runtime composition, когда они относятся к feature.
 
-`/mb-sync` останется reconciliation-механизмом. Он сможет согласовать уже
-принятые graph/contract links после изменения, но не будет самостоятельно
-создавать, удалять или легализовывать semantic edges.
+Каждое нужное межмодульное взаимодействие заканчивается одним из существующих
+результатов: `reuse`, `extend`, `create` или `block`. Готовое ребро всегда имеет
+contract basis. Leaf module или edge может быть добавлен в этом проходе.
 
-Рефакторинг затронет canonical templates и runtime contracts, прежде всего
-`structure-template.md`, зеркальный skeleton в `init-mb.js`, `/spec-init`,
-`/spec-design`, `/feature-to-tasks`, autonomous feature-design route,
-architecture/task-plan review и `mb-sync`. Task schema, lifecycle, новая
-директория графа или отдельная workflow-команда для этого не нужны.
+После reconciliation актуальный граф используется для reverse impact traversal
+изменяемых providers. Implementation plan сохраняет затронутые modules и
+contracts, точные canonical links и обоснование task order, dependencies и
+waves. Полная копия feature subgraph в `IMPL-FT-*` не появляется.
 
-## 5. Потенциальные проблемы и важные инварианты
+Task cards также не кэшируют topology. В существующие `source_artifacts` и
+`normative_inputs` попадают точные graph/contract links, а task-specific scope,
+constraints, invariants и verification targets остаются в предназначенных для
+них полях. Primary owner и crossed boundaries должны быть понятны исполнителю,
+но consumer/provider inventory продолжает жить только в графе.
 
-### Смешение accepted target и observed current state
+Module graph не преобразуется механически в task DAG. Архитектурная зависимость
+показывает возможный blast radius, тогда как `depends_on` и waves выражают
+реальный порядок реализации, совместимости, rollout и независимо проверяемых
+outcomes.
 
-Brownfield imports и calls доказывают текущее состояние, но не разрешённую
-архитектуру. Если `/map-codebase` сможет напрямую легализовывать найденные
-edges, существующая связанность начнёт незаметно определять target. В граф
-должны попадать только принятые зависимости; observed drift остаётся evidence
-для `/spec-design` или `/feature-to-tasks`.
+## Planning Revision и локальная свежесть
 
-### Неверная граница ownership между skills
+`Planning Revision` остаётся версией глобальной архитектуры, а не каждой
+конкретизации графа.
 
-`/feature-to-tasks` может добавлять leaf change units и contracts, когда они
-однозначно реализуют принятый каркас. Новое cross-slice edge, изменение
-dependency direction, state/write owner, orchestration owner или глобального
-public contract остаётся материальным архитектурным решением и возвращается в
-`/spec-design`. Иначе task planning постепенно станет скрытым владельцем
-архитектуры.
+| Изменение | Владелец | Planning Revision |
+|---|---|---|
+| Новый consumer неизменного существующего контракта | `/feature-to-tasks` | сохраняется |
+| Новый leaf module или edge внутри принятой архитектуры | `/feature-to-tasks` | сохраняется |
+| Глобальное архитектурное изменение, выполненное через `/spec-design` | `/spec-design` | увеличивается |
 
-### Ложная полнота графа
+Свежесть исполнения проверяется на двух уровнях:
 
-Граф не должен строиться только из happy-path calls. Значимые зависимости могут
-проходить через shared state, storage, events, background jobs, composition,
-configuration или migrations. Dependency-design pass использует accepted
-specs вместе с фактическим code/config/test evidence. Неполная evidence-backed
-карта должна приводить к blocker или явному ограничению scope, а не к заявлению
-полноты.
+1. `REVIEWED_PLANNING_REVISION` связывает task-plan approval с глобальной
+   архитектурой.
+2. Point-of-use preflight `/exe` читает актуальные graph rows и contracts,
+   релевантные выбранной задаче.
 
-### Путаница направления зависимости и data flow
+Если ещё не выполненная задача меняет provider несовместимым образом, а в графе
+появился новый релевантный consumer, устаревшей считается только эта tasking
+surface. `/exe` останавливает задачу и возвращает её в
+`/feature-to-tasks FT-<NNN>`. После локального replan повторяется
+`/review-tasks-plan` для затронутой feature; approvals остальных features не
+инвалидируются.
 
-Текущий шаблон использует форму `producer -> consumer`, тогда как для impact
-analysis полезнее направление `consumer -> provider`. Новая семантика должна
-быть определена один раз и использоваться всеми skills. Направление payload или
-event flow при необходимости описывается contract body и не меняет направление
-dependency edge.
+Глобальное изменение через `/spec-design` увеличивает `Planning Revision` и
+использует существующий all-feature reconciliation/review route.
 
-### Возвращение дублирования через downstream artifacts
+## Review, execution и reconciliation
 
-Наиболее вероятный drift — повторное появление consumer/provider/direction в
-task cards, полного feature subgraph в `IMPL-FT-*`, consumer inventory в
-subject contracts или graph snapshots в indexes. Эти артефакты должны хранить
-только exact links и собственную информацию: task outcome/context,
-implementation-order rationale, contract semantics либо registry metadata.
+`/architecture-review` и `/review-tasks-plan` проверяют релевантный subgraph:
+все ли затронутые consumers учтены, разрешены ли новые edges принятой
+архитектурой, достаточны ли contracts и согласован ли task order с
+compatibility/rollout constraints.
 
-### Механическое преобразование module graph в task DAG
+Во время `/exe` отсутствующее межмодульное ребро является planning/design drift,
+а не разрешением дописать зависимость по ходу реализации. Выполнение
+останавливается без легализации нового edge.
 
-Архитектурная зависимость не всегда задаёт порядок реализации. Изменение
-provider contract может потребовать сначала совместимый контракт, затем
-миграцию consumers и лишь потом удаление старого пути. Task `depends_on` и
-waves остаются результатом implementation/rollout prerequisites, а не
-топологической копией module graph.
+`/verify` проверяет не только функциональный результат, но и использование
+разрешённого contract path без прямой записи чужого состояния или второго
+source of truth.
 
-### Избыточный рост контрактов
+`/mb-sync` согласует уже принятые graph/contract links после изменения. Он не
+создаёт, не удаляет и не легализует semantic edges от своего имени.
 
-Обязательный contract basis для edge не означает отдельный Markdown-файл на
-каждую внутреннюю связь. Inline contract покрывает простую локальную границу;
-subject contract оправдан отдельной сложностью, reuse, consumers, change
-cadence или compatibility surface. Без этого правила граф быстро превратится в
-большой набор малополезных документов.
+## Механическая и семантическая проверка
 
-### Reconciliation существующего графа
+Механический validator покрывает форму, которую можно проверить без
+архитектурного решения:
 
-Повторный `/feature-to-tasks` не должен удалять edge только потому, что текущая
-feature больше его не использует: тот же contract может обслуживать другие
-features или фактический код. Изменение или удаление узла/ребра требует
-проверки remaining consumers, existing task plans и current implementation
-evidence. Material change сохраняет существующие rebuild/review и Planning
-Revision rules.
+- уникальные имена модулей;
+- существующие `Consumer` и `Provider` для каждого ребра;
+- уникальную тройку `Consumer + Provider + Contract`;
+- разрешение каждого contract path и heading;
+- разрешение `Parent Architecture Unit`;
+- отсутствие placeholder и malformed rows.
 
-### Workflow и packaging contract
+Полнота blast radius, соответствие accepted target, достаточность контракта и
+корректность rollout остаются semantic review judgments.
 
-Изменение только source template не попадёт полностью в target project.
-Канонический refactor должен сохранять source-only packaging: согласованные
-изменения в `skills/_shared`, generated skeleton через `init-mb.js`, direct
-runtime command generation для Codex и Claude и isolated installer/bootstrap
-verification. Generated package-local `shared-*` не должны появиться в source
-tree.
+## Поверхность реализации
 
-Главным критерием успешности остаётся не наличие новой таблицы, а поведение
-следующей правки: агент находит затронутые модули и контракты из одного
-канонического графа, обосновывает порядок задач и передаёт исполнителю только
-точные ссылки без повторного пересказа архитектуры.
+Canonical refactor проходит через `skills/_shared`: шаблон
+`boundary-map.md`, зеркальный skeleton в `init-mb.js` и runtime contracts для
+`/spec-init`, `/map-codebase`, `/spec-design`, autonomous design,
+`/feature-to-tasks`, architecture/task-plan review, `/exe`, `/verify` и
+`/mb-sync`. `mb-lint` получает только механическую проверку графа; semantic
+verdict остаётся у существующих review gates.
+
+При обновлении framework installer безусловно заменяет существующий
+`.memory-bank/contracts/boundary-map.md` новым пустым canonical template со
+`status: draft`. Перед заменой прежний файл переименовывается в
+`.memory-bank/contracts/boundary-map-old.md` и остаётся исходным материалом для
+ручного заполнения нового графа; автоматическая semantic migration не
+выполняется.
+
+Source-only packaging сохраняется: generated package-local `shared-*` не
+появляются в source tree, а installer/bootstrap smoke подтверждает доступность
+обновлённого contract и validator в изолированном target.
+
+Успешность изменения определяется следующим реальным planning run: агент
+находит владельцев и contracts из одного accepted graph, видит релевантных
+consumers, обосновывает task order и передаёт исполнителю точные ссылки без
+копии архитектуры. Неизвестная граница не легализуется во время выполнения, а
+локальное развитие графа не запускает глобальную перепроверку без изменения
+глобальной архитектуры.
