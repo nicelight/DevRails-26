@@ -27,6 +27,19 @@ the Constitution is missing, ask for `/constitution` or explicit permission to
 continue without ratified project principles.
 </input_contract>
 
+<creator_vibe_contract>
+Before interpreting PRD sources or interviewing the operator, load and follow
+the installed `creator-vibe` skill. Apply it while reading the Product Brief,
+idea/PRD text, relevant brainstorming context, and operator answers so the PRD
+preserves the product's intended human experience and distinctive center while
+making behavior and acceptance explicit.
+
+Creator-vibe is an interpretation lens, not product authority. Constitution,
+authoritative sources, and explicit accepted decisions still govern; inferred
+intent cannot fill a material ambiguity, create a requirement, or choose a
+branch for the operator.
+</creator_vibe_contract>
+
 <hard_invariants>
 - Constitution and explicit accepted operator decisions outrank lower-level
   product evidence.

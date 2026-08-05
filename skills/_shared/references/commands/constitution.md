@@ -81,12 +81,18 @@ authoritative policy; otherwise stop with the active workflow's existing
 </operator_decisions>
 
 <required_outputs>
-Update the Constitution from accepted evidence and set `project_principles`:
+Ensure the Constitution reflects the current durable governing state from
+accepted evidence and sets `project_principles`:
 - `ratified`: all applicable governing criteria have accepted answers;
 - `partial`: some criteria remain open and the operator explicitly chooses to
   proceed;
 - `framework-default`: generated defaults only;
 - `skipped`: the operator explicitly skipped the interview.
+
+Edit the file only when durable governing state has changed or the existing
+contract needs repair. Do not append per-run evidence review/history or mirror
+the final chat handoff; preserve durable decisions, unresolved conflicts, and
+provenance needed by future agents.
 
 Record accepted decisions in a compact `## Governance Decisions` or
 `## Interview Notes` section when provenance helps future agents. Remove
@@ -106,13 +112,13 @@ Before saving, check consistency with MBB, spec-backbone/spec-index, invariants,
 applicable contracts/states/testing/workflow policies, AGENTS.md, and the
 `T0|T1|T2|T3` model. If a conflict needs an operator decision, do not choose a
 side; record the conflict and keep the dependent handoff blocked.
-
-Report the evidence used, Product Brief state, decisions accepted, resulting
-`project_principles`, conflicts fixed or remaining, and any minimal dependent
-doc update requiring approval.
 </validation>
 
 <handoff_contract>
+In the final chat response, report the evidence used, Product Brief state,
+decisions accepted, resulting `project_principles`, conflicts fixed or
+remaining, and any minimal dependent doc update requiring approval.
+
 When governing conflicts are resolved, the immediate next command is
 `/write-prd`. When a conflict remains, answer the recorded question and rerun
 `/constitution`. An explicit skip also hands off to `/write-prd` with

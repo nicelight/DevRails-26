@@ -448,6 +448,13 @@ Stages do not own each other's outputs:
 4. `/write-prd` owns product-level clarification. Handoff requires
    `type: prd`, `clarification_status: complete` и
    `constitution_checked: true`.
+
+`/brainstorm` first asks one standalone question about the product's most
+important or distinctive functionality. `/brainstorm`, `/brief`, and
+`/write-prd` load the installed `creator-vibe` skill before interpreting idea
+sources or operator answers; the lens preserves intent but never supplies an
+accepted decision or requirement.
+
 5. `/spec-init` first verifies and reconciles the project glossary, creating it
    when missing or placeholder-only. It then owns decomposition-safety framing,
    not architecture, and writes `Pre-PRD Spec Status: ready_for_prd|blocked` in
@@ -922,14 +929,19 @@ subagent support выполняет тот же bounded review локально.
 ### Technical pre-mortem
 
 `/technical-premortem` — самостоятельный skill для анализа запланированного
-технического изменения до реализации. Он восстанавливает blast radius,
-моделирует конкретные сценарии провала, классифицирует риски как Tiger,
-Paper Tiger или Elephant и формирует план отката, pre-flight checklist и
-вердикт `GO | GO с условиями | NO-GO`.
+технического изменения до реализации. Он представляет изменение уже
+провалившимся, работает назад от наблюдаемого симптома к механизму и blast
+radius, затем отделяет evidence-backed Tiger от доказательно пониженного Paper
+Tiger и decision-relevant Elephant. Категории и число findings не заполняются
+искусственно. Результат включает recovery route, проверяемый pre-flight и
+verdict `GO | GO_WITH_CONDITIONS | NO_GO`.
 
 Skill не встроен в обязательную workflow-цепочку и не меняет task lifecycle,
-statuses или ownership. Установленный агент выбирает его семантически по
-контексту задачи и `description`.
+statuses или ownership. В manual flow `/review-tasks-plan` рекомендует его после
+принятого плана только для task с evidenced material exposure; после `/debug`
+он является следующим advisory handoff только для уже сформулированной
+нетривиальной или multi-surface correction внутри принятой task boundary.
+Scheduler retry и failure disposition его не используют.
 
 ### Doctor modes
 
@@ -1466,7 +1478,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/review-tasks-plan` | fresh-context `APPROVE|REJECT` runnable planning review | не чинит specs/cards/status; затем doctor/execution или repair |
 | `/architecture-review` | bounded C4 L1-L3 и architecture verdict для одной feature | read-only; не возвращает итоговый planning verdict и не создаёт отдельный artifact |
 | `/kiss-architect` | Architect proposal preflight для architecture/spec design, findings и corrections | не меняет active role или workflow authority; canonical edits передаёт owning skill |
-| `/technical-premortem` | технический pre-mortem запланированного изменения | выбирается агентом семантически; не является обязательным workflow gate |
+| `/technical-premortem` | read-only technical pre-mortem принятого изменения перед реализацией | optional manual planning-to-execution или post-debug handoff; не является workflow gate |
 
 ### Execution, verification, maintenance и automation
 

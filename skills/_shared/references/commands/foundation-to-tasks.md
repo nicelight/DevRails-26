@@ -125,6 +125,13 @@ mandatory analysis sequence or a requirement to create every spec family.
 </agent_discretion>
 
 <required_outputs>
+Edit the required outputs only when durable Foundation planning state,
+accepted decisions, canonical contracts, evidence basis, task records,
+registry links, or gate anchors have changed, or the existing contract needs
+repair. Do not append per-run audit/reconciliation history, changed-artifact
+inventories, or mirror the final chat handoff; preserve durable decision
+provenance, blockers, lifecycle evidence, and protocol resume state.
+
 When `Foundation Required: false`:
 - require `Foundation Gate Task: not_required` and concise evidence/rationale;
 - create no `REQ-000`, `FT-000`, foundation plans, protocols, or task records.
@@ -228,14 +235,15 @@ Before handoff, prove:
 - Gate Anchors name the final gate or `not_required` truthfully;
 - no affected material operator decision remains unresolved.
 
-Report queue action, specs reused/extended/created, task IDs, final gate ID or
-`not_required`, and blockers/questions.
-
 Do not fabricate or backfill RED/GREEN evidence for historical
 `in_progress|done|failed` Foundation records.
 </validation>
 
 <handoff_contract>
+In the final chat response, report queue action, specs
+reused/extended/created, task IDs, final gate ID or `not_required`, and
+blockers/questions.
+
 - Queue created/reconciled: stop before execution and hand off immediately to
   `/mb-doctor --strict` for the FT-000 queue. In an unattended run, return to
   the `/autonomous`-owned Foundation phase; never hand FT-000 execution to

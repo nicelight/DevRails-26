@@ -206,9 +206,12 @@ positive Planning Revision; and no reviewed durable state was mutated.
 </validation>
 
 <handoff_contract>
-- `APPROVE` manual route -> conditional `/mb-doctor` when required, then
-  `/exe TASK-...` only for a task whose lifecycle context is currently
-  executable; approval does not promote `planned` tasks or normalize status.
+- `APPROVE` manual route -> conditional `/mb-doctor` when required. Before
+  `/exe <TASK_ID>`, recommend optional `/technical-premortem <TASK_ID>` only
+  for an executable task with evidenced material cross-surface, migration/data,
+  security/trust-boundary, operational, delayed-harm, or limited-reversibility
+  exposure; otherwise route `/exe` directly. Approval does not promote tasks,
+  normalize status, or add a gate.
 - Complete scheduler review coverage -> `/mb-doctor --strict`, then the selected
   scheduler, which retains promotion/status ownership.
 - `REJECT` -> the named repair owner, followed by rerun of

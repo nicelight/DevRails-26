@@ -31,6 +31,19 @@ If brainstorming exists, include it under `Source artifacts`. A report is not
 required when the operator supplied a clear concept directly.
 </input_contract>
 
+<creator_vibe_contract>
+Before interpreting source artifacts or interviewing the operator, load and
+follow the installed `creator-vibe` skill. Apply it while reading the concept,
+brainstorming report, notes, PRD-like text, and operator answers so the brief
+preserves the intended human experience and what is distinctive about the
+product.
+
+Creator-vibe guides interpretation and phrasing only. It does not supply a
+missing decision, promote an inference to accepted product intent, or expand
+scope, value, MVP, success measures, constraints, or terminology without an
+explicit operator answer or authoritative source.
+</creator_vibe_contract>
+
 <hard_invariants>
 Allowed outputs are only:
 - `.memory-bank/analysis/index.md`;

@@ -84,8 +84,12 @@ lifecycle, planning, or architecture authority was exercised.
 </validation>
 
 <handoff_contract>
-Return the report path and classification to the caller. In manual flow,
-recommend a separate `/exe <TASK_ID>` only when the report supports a correction
-inside the accepted task boundary; otherwise name the existing planning,
-clarification, or evidence owner. `/debug` does not invoke the next command.
+Return the report path and classification to the caller. In manual flow, when
+the report supports a concrete non-trivial or multi-surface correction inside
+the accepted task boundary, recommend `/technical-premortem <TASK_ID>` as the
+next step instead of `/exe`; its handoff returns the later advisory route back
+to execution. Recommend a separate `/exe <TASK_ID>` only for a contained
+correction that does not need that pre-mortem. Otherwise name the existing
+planning, clarification, or evidence owner. `/debug` does not invoke the next
+command.
 </handoff_contract>

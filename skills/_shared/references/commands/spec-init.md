@@ -89,10 +89,16 @@ source-precedence, link, and decomposition-safety checks before setting
 </operator_decisions>
 
 <required_outputs>
-Update:
+Ensure the current durable pre-PRD framing is reflected in:
 - `.memory-bank/glossary.md` through the mandatory glossary gate;
 - `.memory-bank/spec-index.md` as registry/index only;
 - `.memory-bank/spec-backbone.md` with decomposition state and handoff.
+
+Edit these files only when durable decomposition state, inputs, blockers,
+registry routing, or handoff has changed, or the existing contract needs
+repair. Do not append per-run reconciliation/history, changed-artifact lists,
+or mirror the final chat handoff; preserve current open design questions and
+durable `Handoff To ...` sections.
 
 Create or update the following only when evidence exists or a blocking gap must
 be made explicit:
@@ -190,10 +196,11 @@ not ready is expected: `/spec-design` has not run yet.
 </validation>
 
 <handoff_contract>
+In the final chat response, report the pre-PRD status, artifacts changed,
+decomposition inputs, blockers, and that global backbone/foundation readiness
+remains owned by `/spec-design`.
+
 - `ready_for_prd` -> `/prd-to-features`.
 - `blocked` -> resolve the recorded product/domain decision through
   `/write-prd` or focused discussion, then rerun `/spec-init`.
-
-Report the pre-PRD status, artifacts changed, decomposition inputs, blockers,
-and that global backbone/foundation readiness remains owned by `/spec-design`.
 </handoff_contract>

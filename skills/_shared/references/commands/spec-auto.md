@@ -90,6 +90,11 @@ existing blocker above.
 
 <required_outputs>
 
+Across modes, edit canonical artifacts only when durable framing/design state,
+routes, decisions, blockers, registry links, or applicable contracts have
+changed, or the existing contract needs repair. Do not append per-run
+audit/reconciliation history or mirror the final chat handoff.
+
 ## `--init`
 
 Produce the same boundary contract as `/spec-init`:
@@ -214,8 +219,9 @@ accepted operator decisions in existing canonical artifacts.
 </validation>
 
 <handoff_contract>
-Report mode, targets, specs changed, status per feature, accepted decision
-sources used, blockers, and one immediate next command:
+In the final chat response, report mode, targets, specs changed, status per
+feature, accepted decision sources used, blockers, and one immediate next
+command:
 - successful `--init` -> `/prd-to-features`;
 - ready backbone with required foundation work not yet complete ->
   `/foundation-to-tasks` or continuation of its existing gate;

@@ -143,6 +143,14 @@ not force irrelevant categories or fabricate `not_applicable` filler.
 </agent_discretion>
 
 <required_outputs>
+Edit the required outputs only when durable feature design/planning state,
+accepted decisions, canonical contracts, task records, registry links, or
+routing have changed, or the existing contract needs repair. Do not append
+per-run audit/reconciliation history, changed-spec/task inventories,
+queue-action summaries, or mirror the final chat handoff; preserve durable
+decision provenance, blockers, task lifecycle/evidence, and protocol resume
+state.
+
 ## Planning artifacts
 
 Create/update only the existing artifacts:
@@ -391,16 +399,16 @@ Before handoff:
 Do not fabricate or backfill RED/GREEN evidence for historical
 `in_progress|done|failed` records. Preserve their identity, lifecycle, and
 accumulated evidence under the reconciliation rules above.
+</validation>
 
-Final report:
+<handoff_contract>
+In the final chat response, report:
 - feature ID and queue action `created|reconciled|rebuild_required`;
 - final design status and specs reused/extended/created;
 - task records created/updated;
 - blockers/questions or `none`;
 - immediate next step.
-</validation>
 
-<handoff_contract>
 - Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
 - Successful `--all` -> one fresh-context `/review-tasks-plan FT-<NNN>` per
   task-linked product feature.
