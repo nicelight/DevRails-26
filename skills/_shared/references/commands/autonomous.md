@@ -44,7 +44,8 @@ If substantial code already exists, require/update the brownfield baseline via
 Create/reuse:
 - `.protocols/AUTONOMOUS-RUN/plan.md`;
 - `.protocols/AUTONOMOUS-RUN/status.md` using the durable run checkpoint
-  contract in `.memory-bank/workflows/autonomy-policy.md`;
+  contract in
+  `.memory-bank/workflows/autonomy-policy.md#durable-run-checkpoint`;
 - `.protocols/AUTONOMOUS-RUN/decision-log.md`;
 - `.tasks/TASK-AUTONOMOUS/`.
 
@@ -55,10 +56,13 @@ state, not a second task registry.
 </input_contract>
 
 <hard_invariants>
-- Follow `.memory-bank/workflows/autonomy-policy.md`,
-  `.memory-bank/workflows/tier-policy.md`,
-  `.memory-bank/workflows/execute-loop.md`, and
-  `.memory-bank/workflows/mb-sync.md`.
+- Follow tier policy `#tier-obligations` and `#closure-authority`; load
+  `#hard-write-boundary` only for a task/parallel boundary and
+  `#tier-classification-and-escalation` only for a tier gap. Follow autonomy
+  policy `#phase-ownership`, `#experimental-parallel-execution` when opted in,
+  `#durable-run-checkpoint`, `#required-gates`, `#failure-budgets`,
+  `#scheduler-failure-handling`, `#terminal-fallback`, `#run-state`, and
+  `#terminal-states`, plus the applicable execute-loop and mb-sync contracts.
 - Canonical queue execution is sequential.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
   isolation rules. Never infer independence from advisory `touched_files`.
@@ -73,15 +77,15 @@ state, not a second task registry.
   phase's tasks.
 - `/autonomous` must not restage `/autopilot`'s product-queue algorithm or
   reinterpret its task transitions. `/exe`, `/verify`, `/red-verify`, and
-  `/mb-sync` keep the ownership defined by tier policy.
+  `/mb-sync` keep the ownership defined by tier policy `#closure-authority`.
 - The active scheduler writes every task closure/failure/blocking decision,
   status, and evidence link to the authoritative `.task.json` before any sync
   boundary.
 - `/mb-sync` reconciles already-written state once per wave unless an explicit
   current-wave durable-state dependency requires an early sync; it never
   chooses closure or promotion.
-- Required reviews, lint, doctor, T2 feature semantic gate, and T3 task semantic
-  gate are not bypassed.
+- Required reviews, lint, doctor, and
+  `tier-policy.md#tier-obligations` gates are not bypassed.
 - Preserve failure budgets and all existing terminal states; do not add a
   scheduler, status, lifecycle, or assumption registry.
 </hard_invariants>
@@ -247,9 +251,8 @@ Use `HALT_FAILURE_BUDGET` or `HALT_BUDGET_EXCEEDED` when exceeded.
 `SUCCESS` requires:
 - no `ready|in_progress` tasks and no unresolved blocking work;
 - required REQ/AC lifecycle verified;
-- every completed T2 feature has feature-level semantic-pass;
-- every T3 closure has functional PASS, task semantic-pass, and exact human
-  checkpoint;
+- every task and feature satisfies `tier-policy.md#tier-obligations`, including
+  any exact human checkpoint required for closure;
 - every task-linked product feature has latest task-plan `APPROVE`;
 - every such approval records the current positive Global Backbone Planning
   Revision;

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "skills": {
-    "cold-start": {
+    "start": {
       "source": "/tmp/memobank-skills-ze72bj/repo",
       "sourceType": "local",
       "computedHash": "0331a5e481c0d1543d024e49c6a76a765eda0d6953d24699b782f077e8abbfa2"

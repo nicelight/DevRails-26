@@ -23,14 +23,11 @@ Expected `$ARGUMENTS`:
 Reject `--feature FT-000`. Foundation closes through normal FT-000 tasks and
 the final gate.
 
-Routing from `.memory-bank/workflows/tier-policy.md`:
-- per-task mode is required for T3 closure;
-- per-task mode is optional evidence for T2 and does not make normal T2 task
-  closure stricter;
-- feature mode is required after all tasks for a T2 product feature are
-  implemented and before that feature is treated complete;
-- T0/T1 normally do not use this skill; apparent scope growth routes through
-  tier rebuild before semantic verification.
+Load `.memory-bank/workflows/tier-policy.md#tier-obligations` and
+`#closure-authority` for permitted modes, required gates, and lifecycle
+ownership. Apparent scope growth also loads
+`#tier-classification-and-escalation` and routes through tier rebuild before
+semantic verification.
 
 Require indexed task/feature identity, tier policy, task/feature intent and
 mapped REQ/AC, successful functional verification evidence, actual diff/change
@@ -46,7 +43,8 @@ for semantic-pass.
 <hard_invariants>
 - Use an independent verifier context; do not trust task prose, writer claims,
   or `VERDICT: PASS` as proof of semantic correctness.
-- Route only by task tier and canonical tier policy; never use legacy `risk`.
+- Route only by task tier and the loaded tier-policy sections; never use legacy
+  `risk`.
 - Scheduler mode: `/red-verify` never closes/fails/blocks/reopens tasks,
   promotes dependents, or writes scheduler status. It returns verdict/evidence
   and a recommended owner action.
@@ -183,11 +181,9 @@ replan is required.
 
 <validation>
 - `semantic-pass`: sufficient adversarial coverage produced no admitted
-  material finding or required operator decision;
-  T3 task becomes closure-eligible only when functional PASS and the human
-  checkpoint also satisfy tier policy; T2 feature becomes completion-eligible
-  only when all feature tasks and required gates are satisfied and the feature
-  doc contains the exact marker.
+  material finding or required operator decision; closure/completion
+  eligibility follows the loaded tier-policy sections, applicable human
+  checkpoint, and required durable verdict location.
 - `semantic-concern`: a proved realistic material risk or accepted-outcome
   ambiguity requires an operator-owned decision before normal closure; affected
   task/feature/dependents remain pending or blocked by the lifecycle owner until

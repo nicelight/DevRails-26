@@ -111,7 +111,7 @@ Update `/autopilot`:
 Update command specs that route users toward `/prd-to-tasks` so they insert the
 foundation path when relevant:
 
-- `analysis.md`, `brainstorm.md`, `brief.md`, `cold-start.md`,
+- `analysis.md`, `brainstorm.md`, `brief.md`, `start.md`,
   `constitution.md`, `discuss.md`, `mb-init.md`, `map-codebase.md`,
   `clarify-feature.md`, `prd.md`, `spec-init.md`, `spec-auto.md`,
   `prd-to-tasks.md`, and `review.md`.
@@ -175,7 +175,7 @@ Update `skills/mb-garden/assets/mb-lint.mjs` only for structural hygiene:
 Update package-level `SKILL.md` files so installed source-only skills do not
 teach stale routes:
 
-- `mb-analysis`, `mb-from-prd`, and `cold-start` need the new planning route;
+- `mb-analysis`, `mb-from-prd`, and `start` need the new planning route;
 - `mb-map-codebase` needs the brownfield `--verify-existing` foundation path;
 - `mb-review` needs checks for foundation bypass and `FT-000` pseudo-feature
   handling;
@@ -228,7 +228,7 @@ Command specs:
 - `skills/_shared/references/commands/brainstorm.md`
 - `skills/_shared/references/commands/brief.md`
 - `skills/_shared/references/commands/constitution.md`
-- `skills/_shared/references/commands/cold-start.md`
+- `skills/_shared/references/commands/start.md`
 - `skills/_shared/references/commands/discuss.md`
 - `skills/_shared/references/commands/mb-init.md`
 - `skills/_shared/references/commands/map-codebase.md`
@@ -264,7 +264,7 @@ Package skill entrypoints:
 - `skills/mb-analysis/SKILL.md`
 - `skills/mb-init/SKILL.md`
 - `skills/mb-from-prd/SKILL.md`
-- `skills/cold-start/SKILL.md`
+- `skills/start/SKILL.md`
 - `skills/mb-map-codebase/SKILL.md`
 - `skills/mb-review/SKILL.md`
 - `skills/mb-garden/SKILL.md`

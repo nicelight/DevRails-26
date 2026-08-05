@@ -1,5 +1,5 @@
 ---
-description: Guardrails and terminal states for unattended autonomous runs.
+description: Guardrails, failure handling, budgets, and terminal states for unattended runs.
 status: active
 ---
 # Autonomy policy
@@ -35,7 +35,7 @@ status: active
 - Never use advisory `touched_files` as proof that tasks are disjoint.
 - Parallel candidates require non-empty, deliberately hard, pairwise-disjoint
   `runtime_context.write_boundary` values under the normalized segment rule in
-  `tier-policy.md`, plus isolated worktrees/sandboxes.
+  `tier-policy.md#hard-write-boundary`, plus isolated worktrees/sandboxes.
 - Lexical disjointness is necessary, not sufficient. The opt-in does not
   require concurrency; if existing durable checkpoint/recovery, filesystem
   aliasing, or external-output isolation cannot be proved without new workflow
@@ -133,28 +133,70 @@ status: active
 - mandatory `/mb-doctor --strict` before `/autonomous` selects/promotes FT-000
   work, before `/autopilot` selects/promotes product work, after `/mb-sync`
   before further promotion, and before final success
-- tier-appropriate verification per TASK:
-  - T0/T1: compact evidence may be enough
-  - Scheduler mode T2: full protocol, applicable task/spec gates, and `/verify` PASS are required before scheduler marks the task done; per-task `/red-verify` is not required
-  - T2 feature completion: feature-level `/red-verify --feature FT-<ID>` semantic-pass is required after all feature tasks are implemented and must be recorded in the feature doc
-  - `FT-000`: foundation pseudo-feature; do not apply product feature-completion semantics
-  - Scheduler mode T3: `/verify` PASS and per-task `/red-verify` semantic-pass are required before scheduler marks the task done
-  - Manual mode T0/T1: `/verify` PASS may close only with explicit closure ownership and completed evidence
-  - Manual mode T2: `/verify` PASS plus full protocol and applicable task/spec
-    gates makes the task closure-eligible; the explicit owner writes the
-    lifecycle decision, and T2 feature completion still requires feature-level
-    semantic-pass recorded in the feature doc
-  - Manual mode T3: `/verify` PASS is not final closure; per-task `/red-verify` semantic-pass is required before `done`, with full `/mb-sync` deferred to the wave boundary
-- mandatory `/mb-sync` once at the end of each wave, after task status,
-  closure decisions, and evidence are written immediately; early sync is only
-  for a real RTM/index/spec/contract/changelog dependency inside the current
-  wave or an explicit owner request
+- tier-appropriate protocol, verification, semantic, closure, and sync gates
+  from `tier-policy.md#tier-obligations` and
+  `tier-policy.md#closure-authority`; the active scheduler writes each allowed
+  lifecycle decision and evidence before the required sync boundary
 - mandatory lint/link consistency before final success, covered by `mb-doctor`
 
 ## Failure budgets
 - max_retries_per_task: 2
 - max_consecutive_failures: 3
 - max_open_blockers: 3
+
+## Scheduler Failure Handling
+
+`/autopilot` and `/autonomous` apply this counting, retry-safety, and
+failure-disposition contract. Automatic `diagnose` applies only to `/autopilot`
+product tasks; `/autonomous` FT-000 Foundation execution keeps its existing
+disposition.
+
+- The current Execution Attempt becomes unsuccessful when `/verify` returns
+  `VERDICT: FAIL` or a required `/red-verify` returns
+  `SEMANTIC_VERDICT: semantic-fail`; both markers count once for that attempt.
+  An unfinished `/exe`, replay, resume, `/debug`, multiple findings,
+  `NEEDS-CLARIFICATION`, `semantic-concern`, or a blocker without a completed
+  correction attempt does not increment the count. `max_retries_per_task: 2`
+  permits the initial attempt plus two retries.
+- Before the third unsuccessful attempt, same-task retry requires an
+  evidence-backed correction inside accepted task identity, outcome, scope,
+  tier, dependencies, specs, and hard runtime boundaries, without replaying an
+  unsafe or non-idempotent side effect. The task stays `in_progress`. The
+  scheduler records the correction basis before re-invoking `/exe`; `/exe` owns
+  attempt creation, resume, and replay safety. Every required gate remains due.
+- `/autopilot` may checkpoint `diagnose` and run a fresh `/debug <TASK_ID>` when
+  durable failure evidence supports neither a safe same-task correction nor an
+  evidence-based disposition. `/debug` neither increments nor extends the
+  retry budget; checkpoint and report recovery remain owned by `/autopilot`.
+- Disposition follows evidence: a proven upstream or authority gap becomes
+  `blocked` with exact halt, owner, and resume route; proven task-local failure
+  without a safe retry becomes `failed`; an inconclusive mapping before the
+  third unsuccessful attempt keeps `in_progress` and uses the existing
+  quality/clarification halt with evidence owner and resume route.
+- After the third unsuccessful attempt no fourth is permitted. A proven
+  upstream or authority gap remains `blocked`; every other task-local or
+  inconclusive disposition becomes `failed`.
+- For `/autopilot` product tasks, route task slicing, tier, or direct task spec
+  to `/feature-to-tasks FT-<NNN>`; product ambiguity to
+  `/feature-doctor FT-<NNN>`; and shared architecture, write authority, source
+  of truth, public boundary, or dependency direction to `/spec-design`.
+- A failed disposition writes `in_progress -> failed` with functional/semantic
+  and diagnostic evidence. Before the next strict doctor, create a
+  `.memory-bank/bugs/` note or route a normal indexed follow-up through its
+  planning owner; same-run follow-up still requires normal review/readiness.
+- `NEEDS-CLARIFICATION`, `semantic-concern`, and execution blockers follow the
+  same evidence mapping and never become `done`.
+- Mark direct dependents of every `failed|blocked` task `blocked` before another
+  promotion pass. Repeat the pass so no downstream task is promoted through a
+  failed or blocked dependency.
+- Record retry, consecutive-failure, and open-blocker counters in
+  `.protocols/AUTONOMOUS-RUN/status.md`. Exceeding an applicable failure limit
+  yields `HALT_FAILURE_BUDGET`; a successful task resets the
+  consecutive-failure count.
+
+The scheduler owns these lifecycle decisions. `/exe`, `/verify`,
+`/red-verify`, and `/mb-sync` only return or reconcile their existing evidence
+and ownership deltas.
 
 ## Terminal fallback
 - A no-ready pass or resumed run must preserve any already-recorded specific

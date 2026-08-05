@@ -11,10 +11,6 @@ This file captures the **minimal reproducible context** so a fresh session can r
 - attempt:
 - started:
 
-Reuse this block when `/exe` resumes the unfinished attempt. Create a new
-attempt only for a tier-policy-eligible retry; keep older receipt blocks as
-`superseded` or `supporting-only`.
-
 ## Inputs (what drives this task)
 - Task record: `.memory-bank/tasks/<TASK_ID>.task.json`
 - Task index: `.memory-bank/tasks/index.json`

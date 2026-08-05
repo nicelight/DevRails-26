@@ -19,7 +19,15 @@ Require:
 - non-empty `.memory-bank/tasks/index.json` and resolving schema-valid
   `.memory-bank/tasks/*.task.json` records;
 - `.memory-bank/schemas/task.schema.json`;
-- `.memory-bank/workflows/{tier-policy,execute-loop,autonomy-policy,mb-sync}.md`;
+- installed `.memory-bank/workflows/{tier-policy,execute-loop,autonomy-policy,mb-sync}.md`
+  exist;
+- load tier policy `#tier-obligations` and `#closure-authority`, plus
+  `#hard-write-boundary` only for a task/parallel boundary and
+  `#tier-classification-and-escalation` only for a tier gap;
+- load autonomy policy `#phase-ownership`, `#experimental-parallel-execution` when
+  opted in, `#durable-run-checkpoint`, `#required-gates`, `#failure-budgets`,
+  `#scheduler-failure-handling`, `#terminal-fallback`, `#run-state`, and
+  `#terminal-states`;
 - valid Global Backbone Status and Foundation anchors/dependencies; when
   Foundation is required, its named final gate is `done` and no FT-000 record
   remains `planned|ready|in_progress|blocked`;
@@ -67,9 +75,9 @@ Do not mutate task statuses to represent this invalidation.
   task selected by the scheduler.
 - It never executes or mutates an FT-000 record.
 - Child ownership remains canonical in
-  `.memory-bank/workflows/tier-policy.md`: `/exe` implements, `/verify`
-  provides functional verdict, `/red-verify` provides semantic verdict, and
-  `/mb-sync` only reconciles already-written state.
+  `.memory-bank/workflows/tier-policy.md#closure-authority`: `/exe` implements,
+  `/verify` provides functional verdict, `/red-verify` provides semantic
+  verdict, and `/mb-sync` only reconciles already-written state.
 - Canonical execution is sequential. Select and finish one task's execute,
   verification, lifecycle decision, and evidence write before selecting the
   next.
@@ -120,7 +128,7 @@ Create/reuse `.protocols/AUTONOMOUS-RUN/status.md` with run metadata, task-plan
 review coverage, operator blockers/applied decisions, queue summary linked to
 JSON records, failure budget, and terminal state. This is not authoritative task
 state. Maintain the durable run checkpoint required by
-`.memory-bank/workflows/autonomy-policy.md`.
+`.memory-bank/workflows/autonomy-policy.md#durable-run-checkpoint`.
 
 Scheduler-specific `current stage` values are exactly:
 `selection|execute|verify|red-verify|diagnose|closure|wave-boundary`. They are
@@ -206,8 +214,9 @@ unresolved, do not write `planned -> ready` and do not select a different
      scheduler writes the lifecycle decision and evidence immediately and
      updates the checkpoint from the authoritative task record;
    - functional FAIL, semantic-fail, NEEDS-CLARIFICATION, semantic-concern, or
-     an execution blocker -> apply `## Scheduler Failure Handling` in
-     `.memory-bank/workflows/tier-policy.md` without inventing another route.
+     an execution blocker -> apply
+     `.memory-bank/workflows/autonomy-policy.md#scheduler-failure-handling`
+     without inventing another route.
 4. If current attempt, stage, or safe replay cannot be
    proved, invoke no child and promote/select no work. Record the recovery
    decision, conflicting or missing evidence, owner, and exact resume route,
@@ -217,8 +226,9 @@ unresolved, do not write `planned -> ready` and do not select a different
 
 ### Diagnostic recovery
 
-Apply `## Scheduler Failure Handling` in
-`.memory-bank/workflows/tier-policy.md`. When failure evidence supports neither
+Apply
+`.memory-bank/workflows/autonomy-policy.md#scheduler-failure-handling`. When
+failure evidence supports neither
 a safe task-local correction nor disposition, checkpoint `current task`,
 `current stage: diagnose`, last durable evidence, exact next action, and the
 expected
@@ -254,12 +264,9 @@ selection loop:
    forward handoff runs `verify`, required T3 `red-verify`, and scheduler-owned
    `closure` in order;
 6. write the final closure/failure/blocking decision and evidence, then update
-   the checkpoint from the authoritative lifecycle/evidence write:
-   - T0/T1 `done` after tier-valid compact/functional PASS;
-   - T2 `done` after full protocol, applicable gates, and functional PASS;
-   - T3 `done` only after functional PASS and task semantic-pass;
-   - concern remains non-done pending the recorded owner decision/fix;
-   - failures and blockers follow the referenced tier-policy contract;
+   the checkpoint from the authoritative lifecycle/evidence write only after
+   `tier-policy.md#tier-obligations` permits it; concerns remain non-done, and
+   failures/blockers follow the referenced autonomy-policy contract;
 7. when this closes the last task of a non-FT-000 feature containing T2 work,
    checkpoint `current task: none`, `current stage: red-verify`, the lifecycle
    write as last durable evidence, and exact
@@ -290,11 +297,11 @@ At each wave boundary:
    recovery-first cycle and then the next promotion/dependent-
    blocking pass.
 
-Tier policy owns retry eligibility, `failed|blocked` mapping, failed-task
-BUG/follow-up evidence, dependent blocking, and failure budgets. A schema-backed
-follow-up created through the normal planning owner is considered in the same
-run only after its review and readiness gates pass; verifiers do not create it
-independently.
+Autonomy policy owns retry eligibility, `failed|blocked` mapping, failed-task
+BUG/follow-up evidence, dependent blocking, and failure budgets. A
+schema-backed follow-up created through the normal planning owner is considered
+in the same run only after its review and readiness gates pass; verifiers do
+not create it independently.
 
 If recovery leaves no unresolved product `in_progress` task and no product
 `ready` task remains:
@@ -318,9 +325,8 @@ Do not claim success unless:
   remains;
 - every task-linked product feature has latest final `APPROVE`;
 - every such `APPROVE` records the current positive Planning Revision;
-- all required functional, T2 feature semantic, and T3 task semantic gates
-  pass, and Foundation remains `not_required` or its named gate task remains
-  `done`;
+- all task and feature gates in `tier-policy.md#tier-obligations` pass, and
+  Foundation remains `not_required` or its named gate task remains `done`;
 - latest lint plus strict doctor pass;
 - run protocol matches authoritative JSON records.
 

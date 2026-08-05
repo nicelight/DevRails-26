@@ -23,7 +23,7 @@ node scripts/install-framework.mjs
 ```
 
 После установки откройте целевой проект в Codex или Claude Code и запустите
-`/cold-start`.
+`/start`.
 
 ## Статус
 

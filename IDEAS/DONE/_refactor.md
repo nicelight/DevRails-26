@@ -486,11 +486,11 @@ runtime command виден, skeleton уже создан.
 
 `scripts/install-framework.mjs:952-963` официально поддерживает install-only:
 он генерирует runtime skills, но не создаёт Memory Bank и не устанавливает
-bootstrap helper/template. Selective `--skill cold-start` дополнительно
+bootstrap helper/template. Selective `--skill start` дополнительно
 устанавливает router без требуемого `/mb-init`.
 
 Фактический advertised route
-`install-only -> /mb-init -> /cold-start` поэтому является тупиком.
+`install-only -> /mb-init -> /start` поэтому является тупиком.
 
 **Как исправить**
 
@@ -502,7 +502,7 @@ bootstrap helper/template. Selective `--skill cold-start` дополнитель
 - Не добавлять target-local helper/assets и не пытаться угадать путь к checkout.
   Если checkout недоступен, вернуть честный blocker и описать требуемое внешнее
   действие.
-- Selective `cold-start`/`mb-init` install должен выдавать тот же ясный
+- Selective `start`/`mb-init` install должен выдавать тот же ясный
   point-of-use route без автоматической установки dependency или нового mode.
 
 **Потенциальные опасности**
@@ -518,7 +518,7 @@ bootstrap helper/template. Selective `--skill cold-start` дополнитель
 
 - Full install-only target имеет честный внешний route к skeleton и не обещает
   выполнить bootstrap без доступного DevRails checkout.
-- Selective cold-start/mb-init installs не создают dangling command dependency.
+- Selective start/mb-init installs не создают dangling command dependency.
 - Fresh, sync и existing-AGENTS fixtures проходят.
 
 ## RF-03 — No-ready fallback может заменить реальный blocker на deadlock
@@ -756,7 +756,7 @@ surface только внутри `/autonomous`; RF-02 исключён. `README
 
 1. RF-01A — исправить `/mb-init` как external-bootstrap blocker/router и
    selective fixture без target-local helper.
-2. RF-01B — дать selective `/cold-start` самостоятельный external route без
+2. RF-01B — дать selective `/start` самостоятельный external route без
    dependency на установленный `/mb-init`.
 3. RF-04 — убрать forced fan-out, сохранить baseline outputs и reuse supplied
    delta.
@@ -788,7 +788,7 @@ surface только внутри `/autonomous`; RF-02 исключён. `README
 - `npm run check:syntax --silent`: PASS.
 - `git diff --check`: PASS.
 - Existing source/release assertions и first-package guards: PASS.
-- Full install-only, selective `cold-start`/`mb-init`, fresh bootstrap, explicit
+- Full install-only, selective `start`/`mb-init`, fresh bootstrap, explicit
   sync и custom `AGENTS.md` preservation в isolated targets: PASS.
 - Generated Codex/Claude equality, fresh/applicable `mb-lint` и doctor,
   existing JSON task-card compatibility: PASS.

@@ -9,7 +9,7 @@ Evidence:
 - Allowed outputs are limited to creating/updating `.memory-bank/analysis/index.md` and reporting the next command.
 - It explicitly must not create Product Brief, brainstorming reports, PRD content, task records, implementation plans, research reports, PRFAQ artifacts, assumptions docs, or command aliases.
 - The useful discovery work already lives in `/brainstorm` and `/brief`.
-- Scenario routing already belongs naturally in `/cold-start` and in the entry logic of `/brainstorm`, `/brief`, `/constitution`, `/write-prd`, and `/map-codebase`.
+- Scenario routing already belongs naturally in `/start` and in the entry logic of `/brainstorm`, `/brief`, `/constitution`, `/write-prd`, and `/map-codebase`.
 
 Important naming note:
 - The command is `/analysis`.
@@ -33,7 +33,7 @@ raw idea -> /brainstorm
 clear concept -> /brief
 existing PRD -> /constitution if needed -> /write-prd
 brownfield -> /map-codebase
-unknown start -> /cold-start
+unknown start -> /start
 ```
 
 ## Non-goals
@@ -59,18 +59,18 @@ Primary files:
 - `skills/_shared/scripts/init-mb.js`
 - `skills/_shared/references/structure-template.md`
 - `skills/_shared/references/workflows/execute-loop.md`
-- `skills/_shared/references/commands/cold-start.md`
+- `skills/_shared/references/commands/start.md`
 - `skills/_shared/references/commands/constitution.md`
 - `skills/_shared/references/commands/spec-init.md`
 - `skills/_shared/references/commands/brief.md`
 - `skills/_shared/references/commands/brainstorm.md`
 - `skills/mb-analysis/SKILL.md`
-- `skills/cold-start/SKILL.md`
+- `skills/start/SKILL.md`
 
 Target wording:
 - Replace `/analysis -> /brief` with `/brainstorm or /brief`.
 - Replace `/analysis or /brief` with `/brainstorm for raw ideas, /brief for clear concepts`.
-- In `/cold-start`, route raw idea directly to `/brainstorm` or `/brief`.
+- In `/start`, route raw idea directly to `/brainstorm` or `/brief`.
 - In command references, describe `.memory-bank/analysis/` as an artifact area, not a command phase.
 
 ### Phase 2: Remove command spec
@@ -197,7 +197,7 @@ raw idea -> /brainstorm -> /brief
 clear concept -> /brief
 existing PRD -> /constitution if needed -> /write-prd
 brownfield -> /map-codebase
-unknown start -> /cold-start
+unknown start -> /start
 ```
 
 No canonical workflow should start with `/analysis`.

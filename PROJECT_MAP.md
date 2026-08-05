@@ -84,7 +84,7 @@ Canonical shared source:
 
 Installable skill entrypoints:
 
-- `skills/cold-start/SKILL.md`
+- `skills/start/SKILL.md`
 - `skills/mb-init/SKILL.md`
 - `skills/mb-garden/SKILL.md`
 

@@ -203,7 +203,7 @@ skills/tools текущим агентом-разработчиком DevRails.
 - `skills/_shared/` — единственный canonical source для общих prompts, references и scripts.
 - В рабочем дереве намеренно нет package-local файлов `skills/*/{agents,references,scripts}/shared-*`.
 - В git намеренно нет tracked `.memory-bank/*` baseline; bootstrap/smoke проверяет generated Memory Bank во временной target-директории.
-- При установке фреймворка shared-файлы разворачиваются только во временной копии репозитория для трёх package entrypoints: `cold-start`, `mb-init` и `mb-garden`.
+- При установке фреймворка shared-файлы разворачиваются только во временной копии репозитория для трёх package entrypoints: `start`, `mb-init` и `mb-garden`.
 - Runtime-команды для Codex и Claude генерируются напрямую из `skills/_shared/references/commands/*.md` в `.agents/skills/` и `.claude/skills/` целевого проекта.
 - Актуальная цепочка установки: `scripts/install-framework.mjs` → временная копия repo → `scripts/vendor-shared.mjs` → direct generation выбранных runtime command skills → optional bootstrap/sync Memory Bank.
 - Количество временно vendored `shared-*` файлов не является публичным контрактом и зависит от числа package entrypoints и canonical shared assets.

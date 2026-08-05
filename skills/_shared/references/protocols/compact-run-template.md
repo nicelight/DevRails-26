@@ -17,10 +17,6 @@ status: active
 - attempt:
 - started:
 
-Reuse this block when `/exe` resumes the unfinished attempt. Create a new
-attempt only for a tier-policy-eligible retry; keep older receipt blocks as
-`superseded` or `supporting-only`.
-
 ## Goal
 - ...
 
@@ -42,10 +38,6 @@ attempt only for a tier-policy-eligible retry; keep older receipt blocks as
 - evidence:
 
 ## Reuse Candidates (optional)
-Receipt is executor self-attestation and supporting evidence, not independent
-provenance or task closure. Repeat this block only for current-attempt results
-that `/exe` offers to `/verify`; mark older same-claim blocks superseded.
-
 - receipt_status: current | superseded | supporting-only
 - attempt:
 - claim:

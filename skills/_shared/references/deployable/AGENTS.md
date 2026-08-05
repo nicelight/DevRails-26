@@ -18,17 +18,9 @@ Planning/design priming:
 12. If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.
 13. Read task/feature-specific docs
 
-Manual execution priming for `/exe TASK-NNN-TN-FT-NNN-WN`:
-1. Read `AGENTS.md` (this guide)
-2. Read the selected indexed `.memory-bank/tasks/TASK-*.task.json`
-3. Read `.memory-bank/workflows/tier-policy.md`
-4. Read linked feature/REQ/docs only when needed to interpret the task
-5. Read direct task-linked canonical specs; use feature links only for
-   composition context or drift checks
-
-For manual `T0` / `T1` execution, do not load Constitution, MBB, full
-backbone/index docs, role docs, or broad planning docs by default unless the
-selected task, feature, tier, or linked specs route to them.
+Manual execution priming is owned by the installed `/exe` skill. Invoke it with
+one concrete `TASK-NNN-TN-FT-NNN-WN`; its input contract selects the required
+task, policy sections, and task-linked context.
 
 ## Role Mode
 
@@ -209,33 +201,20 @@ and technical debt.
 - `.codex/` is only for project configuration (e.g. `.codex/config.toml`).
 
 ## Clean context (recommended)
-- Route each `TASK-NNN-TN-FT-NNN-WN` by `task.tier` and `.memory-bank/workflows/tier-policy.md`.
 - Product execution requires task-plan `APPROVE` for the current positive Global
   Backbone `Planning Revision`. A mismatch keeps task statuses unchanged and
   routes `/feature-to-tasks --all` -> `/review-tasks-plan --all`.
-- The caller selects a concrete task. `/exe` prepares/reconciles its tier
-  protocol and neutral current Execution Attempt before writing
-  `ready -> in_progress`; it never selects queue work.
 - Delegation follows `.memory-bank/roles/orchestrator.md`; each delegated agent follows its assigned role contract.
-- T0/T1 may use compact `.protocols/TASK-NNN-TN-FT-NNN-WN/run.md`; compact evidence can be enough.
-- Scheduler mode: T2 requires full protocol state, applicable task/spec gates, and `/verify` `VERDICT: PASS`; per-task `/red-verify` is not required for T2 task closure.
-- Scheduler mode: T2 feature completion requires `/red-verify --feature FT-<ID>` with `SEMANTIC_VERDICT: semantic-pass` after all feature tasks are implemented, recorded in the feature doc. Run it when the last T2 feature task closes, before the wave-boundary `/mb-sync` and strict doctor.
-- Scheduler mode: T3 requires full protocol state, applicable task/spec gates, `/verify` `VERDICT: PASS`, and per-task `/red-verify` `SEMANTIC_VERDICT: semantic-pass` before the scheduler marks `done`.
-- Manual mode: T0/T1 may close in `/exe` with compact evidence when the explicit manual top-level owner conditions are met; standalone `/verify` is optional for uncertainty, widened scope, or explicit request. T2 becomes closure-eligible after `/verify PASS` when full protocol plus applicable task/spec gates are satisfied; the explicit owner writes the lifecycle decision. T3 must run per-task `/red-verify` before final closure; full `/mb-sync` runs at the end of the current wave unless an earlier reconciled-state dependency or explicit owner request requires it.
-- If `/exe` or `/verify` discovers a required higher tier, stop scope growth and route the original task ID through `/feature-to-tasks FT-<NNN>` for controlled rebuild/split; rerun task-plan review and applicable doctor gates before executing the replacement task ID.
 - T2/T3 use the indexed task card as the complete task-scoped handoff; `/mb-doctor` checks structural completeness and `/review-tasks-plan` checks semantic applicability and sufficiency.
 - Execution file scope: touched_files is advisory and non-exhaustive; executor
   preflight confirms actual files, while non-empty write_boundary and
-  forbidden_scope remain hard boundaries.
+  forbidden_scope remain hard boundaries under tier-policy
+  `#hard-write-boundary`.
 - Sequencing: canonical task execution is sequential. Parallel task execution is
   experimental, requires explicit --experimental-parallel, pairwise-disjoint
   hard runtime_context.write_boundary, isolated worktrees/sandboxes, and
-  the exclusions in .memory-bank/workflows/autonomy-policy.md; touched_files
-  alone never proves independence.
-
-## Two modes (manual vs scheduler)
-- **Manual**: run `/brainstorm` for raw ideas or `/brief` for clear concepts → `/constitution` if `project_principles` is not `ratified|partial` → `/write-prd` → `/spec-init` → `/prd-to-features` → `/review-feat-plan` for high-risk/large work → `/spec-design` → `/foundation-to-tasks` when foundation is required → `/mb-doctor --strict` at the foundation/task-queue boundary → execute/verify `FT-000` until the foundation gate is `done` → `/feature-to-tasks FT-<NNN>` → `/review-tasks-plan FT-<NNN>` → conditional `/mb-doctor` at the feature/task-queue boundary for T3, autonomous/autopilot handoff, or complex T2/foundation/dependency/stale-doc/risky-link cases → execute tasks one-by-one with tier routing. T0/T1 manual: `/exe TASK`, compact evidence or no-runnable-check note, optional local closure by explicit owner. T2 manual: `/exe TASK` → `/verify TASK`, then sync at wave/feature boundary. T3 manual: `/exe TASK` → `/verify TASK` → `/red-verify TASK`, then explicit owner closure and wave-boundary `/mb-sync`. Run `/red-verify --feature FT-<NNN>` before T2 feature completion, recording the verdict in the feature doc. Every task writes status/closure/evidence immediately; full `/mb-sync` runs once at the end of the wave, with early sync only for a real reconciled RTM/index/spec/contract/changelog dependency or explicit owner request. `/mb-sync` is not required for local T0/T1 closure when only `task.status`, `task.verify`, and `.protocols/<TASK>/run.md` changed. `/feature-to-tasks` performs canonical concern discovery/task generation and later reconciles subject-based specs, direct task links, task cards, and plans. `/spec-design` is mandatory after `/prd-to-features`, but local/simple feature-set pressure may record a minimal backbone with irrelevant areas `not_applicable`; it always records the explicit `.memory-bank/foundation.md` decision, and `/foundation-to-tasks` creates normal `FT-000` task records only when foundation is required. Use `/feature-doctor FT-<NNN>` only for explicit feature blockers and rerun `/feature-to-tasks FT-<NNN>` for feature-level canonical spec repair.
-- **Autonomous (batch)**: use `/autonomous` for full `PRD → done`; it runs `/spec-auto --init`, `/review-feat-plan`, mandatory `/spec-design --all`, `/foundation-to-tasks` when required, strict `/mb-doctor` at the foundation/task-queue boundary, and execute/verify `FT-000` until the foundation gate is `done` before `/spec-auto --all`, `/feature-to-tasks --all`, and `/review-tasks-plan FT-<NNN>` for each task-linked product feature. Use `/autopilot` only if product JSON task records and required SDD spec links already exist, every task-linked product feature has latest `/review-tasks-plan FT-<NNN>` `APPROVE` for the current positive Planning Revision, strict doctor passes, and Foundation is `not_required` or its named final gate is `done` with no unresolved FT-000 work; `/autopilot` never executes FT-000. See: `.memory-bank/workflows/execute-loop.md` and `.memory-bank/workflows/autonomy-policy.md`.
+  `.memory-bank/workflows/autonomy-policy.md#experimental-parallel-execution`;
+  touched_files alone never proves independence.
 
 Naming:
 - Folder: `.tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>/`
@@ -248,12 +227,10 @@ Naming:
   mandatory before autonomous/autopilot task selection.
 - Do not require a test level solely to fill a category.
 
-## Entry points
-Workflow commands are installed as project skills for Codex and Claude.
-Start with `/cold-start`.
-
-Core manual chain:
-`/brainstorm for raw ideas or /brief for clear concepts -> /constitution if project_principles is not ratified|partial -> /write-prd -> /spec-init -> /prd-to-features -> /review-feat-plan for high-risk/large work -> /spec-design -> /foundation-to-tasks if required -> /mb-doctor --strict at foundation/task-queue boundary -> execute/verify FT-000 until foundation gate done -> /feature-to-tasks FT-<NNN> -> /review-tasks-plan FT-<NNN> -> conditional /mb-doctor -> /exe TASK -> /verify TASK for T2/T3 or uncertainty -> /red-verify TASK for T3 -> /mb-sync at boundary`
+## Default entry
+On the first operator prompt, follow an explicitly named skill or unambiguous
+workflow instruction. Otherwise run `/start`; no other skill is the
+implicit default.
 
 Task execution commands:
 `/feature-to-tasks`, `/review-tasks-plan`, `/exe`, `/verify`, `/red-verify`, `/mb-sync`.

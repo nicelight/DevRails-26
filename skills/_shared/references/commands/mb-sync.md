@@ -33,7 +33,8 @@ Do not require full sync for a local manual T0/T1 closure when only task
 - JSON task records remain authoritative for task status, dependencies, tier,
   gates, verification targets, and evidence markers.
 - Status/closure/promotion ownership comes from
-  `.memory-bank/workflows/tier-policy.md` and
+  `.memory-bank/workflows/tier-policy.md#tier-obligations`,
+  `.memory-bank/workflows/tier-policy.md#closure-authority`, and
   `.memory-bank/workflows/mb-sync.md`.
 - `/mb-sync` never infers or writes closure/failure/blocking/promotion,
   `planned -> ready`, dependent unblock, or dependent block when the explicit

@@ -18,7 +18,12 @@ chooses another task.
 
 Require and resolve:
 - `.memory-bank/tasks/index.json` and exactly one matching indexed task record;
-- `.memory-bank/workflows/tier-policy.md`;
+- `.memory-bank/workflows/tier-policy.md#tier-obligations`;
+- `#tier-classification-and-escalation` only when observed scope may require a
+  higher tier, `#closure-authority` only for manual T0/T1 closure,
+  `#hard-write-boundary` only when a boundary/alias is non-empty,
+  `#task-scoped-acceptance-evidence` when its fields are populated, and
+  `#claim-linked-red--green-for-t2t3` only for T2/T3;
 - the task's direct feature/REQ context needed to interpret its outcome;
 - direct task-linked canonical SDD specs and executable constraints;
 - current `boundary-map.md` module, dependency-graph, and contract blocks when
@@ -105,8 +110,8 @@ replay it.
 </input_contract>
 
 <hard_invariants>
-- Authoritative routing and status ownership come from
-  `.memory-bank/workflows/tier-policy.md`; never use legacy `risk` fields.
+- Authoritative routing and status ownership come from the tier policy sections
+  named in the input contract; never use legacy `risk` fields.
 - `/exe` owns `ready -> in_progress` for the concrete task selected by its
   caller in both manual and scheduler flows. It never selects queue work,
   promotes dependents, or makes final `done|failed|blocked` decisions in
@@ -114,14 +119,10 @@ replay it.
 - Scheduler flow selects the task and durably checkpoints
   `current stage: execute` plus `next action: /exe <TASK_ID>` before invocation;
   it does not write `ready -> in_progress` itself.
-- Manual mode: T0/T1 fast-lane closure is allowed only when the current agent is
-  the explicit manual top-level closure owner, scope stayed task-local, no
-  T2/T3 trigger appeared, hard scopes were respected, and compact PASS evidence
-  was durably written. Compact changes protocol depth, not acceptance-evidence
-  obligations: every task-scoped `verification_targets` and
-  `evidence_required` entry must be satisfied. Otherwise leave lifecycle
-  unchanged for `/verify`, the scheduler, or explicit owner.
-- T2/T3 task closure is never owned by `/exe`.
+- Manual T0/T1 fast-lane closure follows tier policy `#closure-authority` when
+  applicable; `/exe` never closes T2/T3. Compact protocol still satisfies
+  `#task-scoped-acceptance-evidence`; otherwise leave lifecycle unchanged for
+  `/verify`, the scheduler, or explicit owner.
 - `touched_files` is advisory and non-exhaustive. Confirm and record the actual
   change surface; extra files are allowed only for the same outcome/spec/tier
   and inside hard scopes.
@@ -145,8 +146,9 @@ replay it.
   index, and dependencies.
 - Selecting or starting a task does not grant an unapproved production,
   destructive, privileged, secret-reading, or other external side effect.
-- T2/T3 production implementation follows the tier-policy Claim-Linked
-  RED/GREEN contract; it grants no broader permission or lifecycle authority.
+- T2/T3 production implementation follows
+  `.memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3`; it
+  grants no broader permission or lifecycle authority.
 </hard_invariants>
 
 <operator_decisions>

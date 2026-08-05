@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * cold-start/scripts/init-mb.js
+ * start/scripts/init-mb.js
  *
  * A small helper to initialize the Memory Bank skeleton in the current directory.
  *
@@ -349,7 +349,7 @@ ${installedSkillsBlock()}
 
 ## Guidance for installed skills
 - Bootstrap skeleton: mb-init
-- Scenario routing: cold-start
+- Scenario routing: start
 - Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
 - Discovery artifacts: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
 - Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial
@@ -1168,9 +1168,9 @@ status: active
 ---
 # Workflow Index
 
-- [.memory-bank/workflows/tier-policy.md](tier-policy.md): Task tier routing, protocol depth, and closure gates.
+- [.memory-bank/workflows/tier-policy.md](tier-policy.md): Tier classification, obligations, boundaries, and closure authority.
 - [.memory-bank/workflows/execute-loop.md](execute-loop.md): Manual and autonomous task execution sequence.
-- [.memory-bank/workflows/autonomy-policy.md](autonomy-policy.md): Unattended-run guardrails, budgets, and terminal states.
+- [.memory-bank/workflows/autonomy-policy.md](autonomy-policy.md): Scheduler recovery, failure handling, budgets, and terminal states.
 - [.memory-bank/workflows/mb-sync.md](mb-sync.md): Durable state synchronization boundaries and checklist.
 `);
 

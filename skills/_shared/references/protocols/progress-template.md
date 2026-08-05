@@ -31,10 +31,6 @@ setup/syntax/import or artificial break is not RED; pre-implementation GREEN
 avoids artificial RED and unnecessary production changes for that claim.
 
 ## Reuse Candidates (optional)
-Receipt is executor self-attestation and supporting evidence, not independent
-provenance. Repeat the block only for current-attempt results offered by
-`/exe`; mark older same-claim blocks superseded.
-
 - receipt_status: current | superseded | supporting-only
 - attempt:
 - claim:

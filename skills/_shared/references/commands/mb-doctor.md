@@ -56,23 +56,10 @@ manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
 freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
 cases.
 
-`/exe` owns protocol preparation and `ready -> in_progress` for the concrete
-task already selected by its caller. Final status transitions have two modes.
-In scheduler mode, `/autonomous` owns only
-FT-000 Foundation closure/failure/blocking decisions and `/autopilot` owns only
-product-task decisions after the Foundation gate closes. T2 task closure
-requires full protocol, applicable spec gates, and `VERDICT: PASS`; per-task
-`/red-verify` is not required. T2 feature completion separately requires
-feature-level `/red-verify --feature FT-<ID>` with
-`SEMANTIC_VERDICT: semantic-pass` recorded in the feature doc. T3 task closure
-requires `VERDICT: PASS` and per-task `SEMANTIC_VERDICT: semantic-pass`. In
-manual mode, T0/T1 may close in `/exe` with compact
-evidence when explicit top-level owner fast-lane conditions are met, or through
-`/verify PASS` when independent verification is requested; T2 may close when
-full protocol plus applicable task/spec gates are satisfied, only with explicit
-closure ownership; T3 requires per-task `/red-verify`
-`SEMANTIC_VERDICT: semantic-pass` before final closure. Full `/mb-sync` runs at
-the wave boundary.
+Read `.memory-bank/workflows/tier-policy.md#tier-obligations` and
+`#closure-authority` for the authoritative protocol, verdict, closure, and sync
+rules that these mechanical checks enforce. `/mb-doctor` neither starts tasks
+nor makes lifecycle decisions.
 
 ## Required checks
 `mb-doctor` must check only readiness-critical conditions:

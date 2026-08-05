@@ -76,7 +76,7 @@ task boundary, tier, dependencies или verification policy.
 
 ### 🧭 Старт и контекст
 
-- `/cold-start` — выбирает ближайший правильный путь;
+- `/start` — выбирает ближайший правильный путь;
 - `/mb-init` — сообщает внешнюю команду установки или восстановления Memory
 Bank, но сам файлы не создаёт;
 - `/fill` — читает минимально необходимый контекст, ничего не меняя;
@@ -133,7 +133,7 @@ overengineering;
 
 Tracked installable package entrypoints всего три:
 
-- `skills/cold-start/SKILL.md` — package/start и external-bootstrap routing
+- `skills/start/SKILL.md` — package/start и external-bootstrap routing
   surface;
 - `skills/mb-init/SKILL.md` — external installer router для bootstrap или
   coherent framework sync;
@@ -296,7 +296,7 @@ DEVRAILS_KEEP_INSTALL_TMP=1 node scripts/install-framework.mjs \
   --install-only --target /path/to/inspection-target --yes
 ```
 
-После install-only, если `.memory-bank/` отсутствует, `/cold-start` не создаёт
+После install-only, если `.memory-bank/` отсутствует, `/start` не создаёт
 skeleton локально. Он возвращает через доступный checkout DevRails full
 bootstrap route, который устанавливает или обновляет полный runtime command set
 и создаёт skeleton:
@@ -311,7 +311,7 @@ node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <tar
 node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
 ```
 
-После такого bootstrap `/mb-init` передаёт управление в `/cold-start` только
+После такого bootstrap `/mb-init` передаёт управление в `/start` только
 если skill установлен в активной runtime surface; иначе он подтверждает готовый
 skeleton и останавливается, не заявляя отсутствующую команду как доступную.
 
@@ -340,7 +340,7 @@ semantic migration остаётся ручной. Version-critical framework con
 У `.memory-bank/skills/index.md` только paired-marker block `## Installed`
 является generator-managed: bootstrap строит его из фактических
 `.agents/skills/*/SKILL.md` и `.claude/skills/*/SKILL.md`, а sync обновляет этот
-block, сохраняя authored guidance. Exact legacy `- cold-start` мигрируется;
+block, сохраняя authored guidance. Exact legacy baseline мигрируется;
 неразмеченный или неоднозначный block остаётся нетронутым с warning.
 
 Итоговый installer report группирует фактические
@@ -1438,8 +1438,8 @@ Canonical execution sequential. `--experimental-parallel` требует:
 
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
-| `/cold-start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
-| `/mb-init` | external installer route для Memory Bank bootstrap или coherent framework sync | сам не создаёт skeleton; после повторного `/mb-init` передаёт управление только в установленный `/cold-start`, иначе останавливается с готовым skeleton |
+| `/start` | scenario detection и next route | без skeleton возвращает external installer route, не вызывает `/mb-init`; после bootstrap запускается повторно |
+| `/mb-init` | external installer route для Memory Bank bootstrap или coherent framework sync | сам не создаёт skeleton; после повторного `/mb-init` передаёт управление только в установленный `/start`, иначе останавливается с готовым skeleton |
 | `/fill` | минимально достаточный context priming | строго read-only; возвращает gaps и рекомендуемые reads, не создаёт artifacts |
 | `/context-manifest` | optional delegated Explorer routing в компактный read manifest | не пересказывает sources, не выполняет target workflow и не становится gate/scope boundary; caller читает sources лично |
 | `/find-skills` | project-first skill discovery | не устанавливает marketplace skill без confirmation |

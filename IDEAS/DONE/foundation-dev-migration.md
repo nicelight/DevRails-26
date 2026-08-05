@@ -448,7 +448,7 @@ entrypoints, deterministic validators, CI smoke coverage, and user docs.
 - `skills/_shared/references/commands/brainstorm.md`
 - `skills/_shared/references/commands/brief.md`
 - `skills/_shared/references/commands/constitution.md`
-- `skills/_shared/references/commands/cold-start.md`
+- `skills/_shared/references/commands/start.md`
 - `skills/_shared/references/commands/discuss.md`
 - `skills/_shared/references/commands/mb-init.md`
 - `skills/_shared/references/commands/map-codebase.md`
@@ -484,7 +484,7 @@ entrypoints, deterministic validators, CI smoke coverage, and user docs.
 - `skills/mb-analysis/SKILL.md`
 - `skills/mb-init/SKILL.md`
 - `skills/mb-from-prd/SKILL.md`
-- `skills/cold-start/SKILL.md`
+- `skills/start/SKILL.md`
 - `skills/mb-map-codebase/SKILL.md`
 - `skills/mb-review/SKILL.md`
 - `skills/mb-garden/SKILL.md`

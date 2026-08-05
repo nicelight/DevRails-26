@@ -42,7 +42,9 @@ status: active
 ## Ownership boundary
 
 - Canonical lifecycle, tier gates, manual-versus-scheduler closure rules, and
-  status ownership live only in `.memory-bank/workflows/tier-policy.md`.
+  status ownership live only in
+  `.memory-bank/workflows/tier-policy.md#tier-obligations` and
+  `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Before sync, the scheduler or explicit manual owner must already have written
   its allowed closure/failure/blocking decision, final task status, and evidence
   links to the authoritative indexed `.task.json` record.

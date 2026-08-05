@@ -161,7 +161,7 @@ maximum completed repair -> re-review cycles per surface: 2
 
 | RF | Severity | Закрываемая дыра | Минимальный owner |
 |---|---:|---|---|
-| RF-01 | High | install-only/selective runtime обещает недоступный local `/mb-init` route | canonical `/mb-init` и `/cold-start`; existing external installer |
+| RF-01 | High | install-only/selective runtime обещает недоступный local `/mb-init` route | canonical `/mb-init` и `/start`; existing external installer |
 | RF-03 | High | generic no-ready fallback стирает specific terminal blocker | `workflows/autonomy-policy.md`; leaf references в `/autonomous` и `/autopilot` |
 | RF-04 | Medium | `/map-codebase` принуждает 5–7 workers/fan-out и повторно спрашивает уже переданный delta | существующий `/map-codebase` command |
 | RF-05 | Medium | `/mb-garden` валидирует до mutation и сам принимает semantic/destructive решения | только существующий `/mb-garden` command; `/mb-sync` без изменений |
@@ -200,21 +200,21 @@ Selective `mb-init` target должен содержать только generate
 skeleton/helper, сохранять Codex/Claude parity и выдавать executable external
 route либо честный blocker.
 
-## Slice 2 — RF-01B: standalone selective `/cold-start`
+## Slice 2 — RF-01B: standalone selective `/start`
 
 ### Required behavior
 
-- Selective `/cold-start` не предполагает, что `/mb-init` установлен.
+- Selective `/start` не предполагает, что `/mb-init` установлен.
 - При отсутствующей `.memory-bank/` он напрямую выдаёт RF-01A external route и
-  после bootstrap предлагает повторить исходный `/cold-start`.
+  после bootstrap предлагает повторить исходный `/start`.
 - Existing `AGENTS.md` и Memory Bank проходят только через текущую installer
   policy; router её не обходит.
 
 ### Surfaces and evidence
 
-- `skills/_shared/references/commands/cold-start.md`;
-- `skills/cold-start/SKILL.md` как executable package surface;
-- selective `cold-start`, fresh bootstrap, explicit sync и existing-AGENTS
+- `skills/_shared/references/commands/start.md`;
+- `skills/start/SKILL.md` как executable package surface;
+- selective `start`, fresh bootstrap, explicit sync и existing-AGENTS
   fixtures в изолированных agent-run targets.
 
 Target не получает dangling `/mb-init` dependency или второй bootstrap surface.
@@ -369,7 +369,7 @@ behavior change и собственную минимальную regression evid
 - существующие syntax/source/install/bootstrap checks плюс только минимальные
   targeted assertions, непосредственно закрывающие regression текущего slice;
 - install-only всех commands в отдельный temporary target;
-- selective install `cold-start` и `mb-init` в отдельных temporary targets;
+- selective install `start` и `mb-init` в отдельных temporary targets;
 - fresh bootstrap;
 - explicit sync existing target;
 - existing `AGENTS.md` safety fixture;
@@ -415,7 +415,7 @@ runtime counting/resume поведения модели: оно доказыва
 ### Выполненное evidence (2026-07-20)
 
 - Blocking deterministic matrix: `PASS` — syntax, `git diff --check`, existing
-  source assertions, full install-only, selective `cold-start`/`mb-init`, fresh
+  source assertions, full install-only, selective `start`/`mb-init`, fresh
   bootstrap, explicit sync, custom `AGENTS.md` preservation, Codex/Claude
   parity, fresh/applicable lint+doctor fixtures и existing JSON task-card
   compatibility.

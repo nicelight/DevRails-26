@@ -106,7 +106,7 @@ runtime source of truth.
 
 ```md
 ## Entry points
-- /cold-start -> .memory-bank/commands/cold-start.md
+- /start -> .memory-bank/commands/start.md
 - /mb -> .memory-bank/commands/mb.md
 ```
 
@@ -115,7 +115,7 @@ runtime source of truth.
 ```md
 ## Entry points
 Workflow commands are installed as project skills for Codex and Claude.
-Start with /cold-start.
+Start with /start.
 
 Core manual chain:
 /analysis -> /brief -> /constitution -> /write-prd -> /spec-init -> /prd -> ...

@@ -14,8 +14,13 @@ becoming an implementer, planner, scheduler, or adversarial semantic reviewer.
 Expected `$ARGUMENTS`: one `TASK-NNN-TN-FT-NNN-WN`.
 
 Require:
-- exactly one matching indexed task record and
-  `.memory-bank/workflows/tier-policy.md`;
+- exactly one matching indexed task record plus
+  `.memory-bank/workflows/tier-policy.md#tier-obligations` and
+  `#closure-authority`;
+- `#tier-classification-and-escalation` when scope may be under-tiered,
+  `#hard-write-boundary` when a boundary/alias is non-empty,
+  `#task-scoped-acceptance-evidence` when its fields are populated, and
+  `#claim-linked-red--green-for-t2t3` only for T2/T3;
 - task-linked feature/REQ material needed for this outcome;
 - direct task-linked applicable canonical SDD specs;
 - current accepted graph row and exact contract heading for every task-scoped
@@ -45,7 +50,7 @@ the rule above.
 
 <hard_invariants>
 - Route only by `task.tier`; lifecycle/status ownership is canonical in
-  `.memory-bank/workflows/tier-policy.md`.
+  `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or
   acceptance assigned to other tasks.
 - Direct task-linked canonical specs outrank secondary task prose for their

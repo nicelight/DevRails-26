@@ -40,7 +40,9 @@ Before any durable plan or task write, require:
 - `.memory-bank/tasks/index.json`, every existing indexed task for the target,
   and existing plan/protocol/behavior evidence used for reconciliation;
 - parsed `.memory-bank/schemas/task.schema.json` and
-  `.memory-bank/workflows/tier-policy.md` before drafting even provisional task
+  `.memory-bank/workflows/tier-policy.md#tier-classification-and-escalation`,
+  `#hard-write-boundary`, `#task-scoped-acceptance-evidence`, and
+  `#claim-linked-red--green-for-t2t3` before drafting even provisional task
   records.
 
 Block task drafting when clarification is explicitly `pending|blocked`, feature
@@ -63,9 +65,9 @@ new execution mode.
   record fields. Product tasks use dependency-driven `W1+`; `W0` belongs only
   to `FT-000`.
 - Lifecycle/status ownership is defined by
-  `.memory-bank/workflows/tier-policy.md`. Planning writes `planned`, or
-  `ready` only when dependencies and blockers are already satisfied; it does
-  not claim scheduler closure/promotion ownership.
+  `.memory-bank/workflows/tier-policy.md#closure-authority`. Planning writes
+  `planned`, or `ready` only when dependencies and blockers are already
+  satisfied; it does not claim scheduler closure/promotion ownership.
 - Existing queue reconciliation is the default. Preserve ID, feature, wave,
   tier, dependencies, lifecycle status, verification evidence, protocol links,
   and the semantic basis of `in_progress|done|failed` records. Full re-slicing

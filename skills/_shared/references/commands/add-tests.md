@@ -16,7 +16,8 @@ Require one explicit `TASK-NNN-TN-FT-NNN-WN` that:
 - has `status: in_progress`;
 - has an outcome/AC/REQ/spec boundary covering the proposed test behavior.
 
-Read the task record, `.memory-bank/workflows/tier-policy.md`, applicable linked
+Read the task record, `.memory-bank/workflows/tier-policy.md#tier-obligations`,
+`#closure-authority`, `#hard-write-boundary` when applicable, linked
 specs/verification targets, implementation evidence, and project-native test
 configuration needed for the chosen check.
 </input_contract>
@@ -72,7 +73,7 @@ do not authorize or encode an unresolved product/design decision.
 
 <handoff_contract>
 Return immediately to `/exe`, `/verify`, the scheduler, or the explicit task
-owner under `.memory-bank/workflows/tier-policy.md`. Out-of-scope coverage routes
-to normal `/feature-to-tasks FT-<NNN>` planning instead of being smuggled into the
-current task.
+owner under `.memory-bank/workflows/tier-policy.md#closure-authority`.
+Out-of-scope coverage routes to normal `/feature-to-tasks FT-<NNN>` planning
+instead of being smuggled into the current task.
 </handoff_contract>

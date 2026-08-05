@@ -50,7 +50,7 @@ smoke result.
 | 3 | исправлен; Foundation doctor regression проходит | 5/5 | 3/5 | 2/5 | 3/5 | закрыт |
 | 4 | исправлен; boundary grammar/install-sync smoke проходит | 5/5 | 4/5 | 5/5 | 4/5 | закрыт |
 | 5 | исправлен; caller-selected `/exe` start/install smoke проходит | 4/5 | 4/5 | 3/5 | 4/5 | закрыт |
-| 6 | исправлен; partial cold-start recovery/install smoke проходит | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
+| 6 | исправлен; partial start recovery/install smoke проходит | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 7 | исправлен; manual и scheduler closure branches разделены | 4/5 | 1/5 | 1/5 | 2/5 | закрыт |
 | 8 | исправлен; response-only halt/install smoke проходит | 3/5 | 1/5 | 1/5 | 1/5 | закрыт |
 | 9 | исправлен; filesystem registry install/sync smoke проходит | 3/5 | 4/5 | 3/5 | 3/5 | закрыт |
@@ -128,19 +128,19 @@ smoke result.
   добавляет provenance, mode, task field или registry. Resume/replay guards,
   doctor regression и isolated install/bootstrap smoke проходят.
 
-## 6. Partial install `cold-start` ведёт к неполному bootstrap
+## 6. Partial install `start` ведёт к неполному bootstrap
 
 **Статус:** закрыт.
 
-- Missing-skeleton route `/cold-start` возвращает полный `--bootstrap`, который
+- Missing-skeleton route `/start` возвращает полный `--bootstrap`, который
   устанавливает/обновляет runtime commands и создаёт skeleton из одной prepared
   source copy.
-- Canonical runtime command и package-level `cold-start` entrypoint согласованы;
-  documentation больше не объединяет `/cold-start` и `/mb-init` под одним
+- Canonical runtime command и package-level `start` entrypoint согласованы;
+  documentation больше не объединяет `/start` и `/mb-init` под одним
   route.
 - `/mb-init` сохраняет `--bootstrap-only` и передаёт управление в
-  `/cold-start` только когда skill установлен в активной runtime surface.
-- Regression покрывает partial `cold-start` install, recovery до полного набора
+  `/start` только когда skill установлен в активной runtime surface.
+- Regression покрывает partial `start` install, recovery до полного набора
   в Codex/Claude surfaces, factual skill inventory и отсутствие command install
   у fresh `--bootstrap-only`.
 
@@ -166,7 +166,7 @@ smoke result.
 - Новые state, phase и halt artifact не добавлены; install-sync regression и
   isolated install/bootstrap smoke покрывают Codex/Claude runtime contract.
 
-## 9. Fresh skill registry hardcodes только `cold-start`
+## 9. Fresh skill registry hardcodes только `start`
 
 **Статус:** закрыт.
 
@@ -174,7 +174,7 @@ smoke result.
   deterministic per-surface table; отсутствие runtime skills имеет явный empty
   state.
 - Sync обновляет только paired-marker block, мигрирует exact legacy
-  `- cold-start` и сохраняет authored или неоднозначный state с warning.
+  exact legacy baseline и сохраняет authored или неоднозначный state с warning.
 - Guidance условна по active surface; regression покрывает full/empty, drift,
   legacy migration, authored sections и isolated install/bootstrap без нового
   manifest, parser или validator gate.
