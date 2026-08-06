@@ -345,7 +345,6 @@ try {
 
   const schemaRel = '.memory-bank/schemas/task.schema.json';
   const boundaryMapRel = '.memory-bank/contracts/boundary-map.md';
-  const boundaryMapOldRel = '.memory-bank/contracts/boundary-map-old.md';
   const systemArchitectureRel = '.memory-bank/architecture/system-architecture.md';
   const reservationContractRel = '.memory-bank/contracts/reservation.md';
   const tierPolicyRel = '.memory-bank/workflows/tier-policy.md';
@@ -452,6 +451,8 @@ try {
   const autopilotSkill = readTarget('.agents/skills/autopilot/SKILL.md');
   const autonomousSkill = readTarget('.agents/skills/autonomous/SKILL.md');
   const exeSkill = readTarget('.agents/skills/exe/SKILL.md');
+  const featureToTasksSkill = readTarget('.agents/skills/feature-to-tasks/SKILL.md');
+  const reviewTasksPlanSkill = readTarget('.agents/skills/review-tasks-plan/SKILL.md');
   const verifySkill = readTarget('.agents/skills/verify/SKILL.md');
   assert(
     autopilotSkill.includes('/tech-debt wave <N>')
@@ -479,6 +480,14 @@ try {
       && exeSkill.includes('receipt_status')
       && verifySkill.includes('receipt_status'),
     'Task start/resume or receipt-reuse mechanics are missing from their owning runtime skills.',
+  );
+  assert(
+    featureToTasksSkill.includes('`depends_on` keeps dependency proof with its owner')
+      && reviewTasksPlanSkill.includes('card detail cannot authorize itself')
+      && reviewTasksPlanSkill.includes('missing proof and excess')
+      && exeSkill.includes('dependency `done` outcomes are authoritative prerequisites')
+      && verifySkill.includes('transfer ownership.'),
+    'Runtime task workflow lost dependency proof ownership or symmetric excess-proof review.',
   );
 
   const structureTemplate = readFileSync(structureTemplateSource, 'utf8');
@@ -606,6 +615,8 @@ try {
       && expectedTierPolicy.includes('## Hard Write Boundary')
       && expectedTierPolicy.includes('## Task-Scoped Acceptance Evidence')
       && expectedTierPolicy.includes('## Claim-Linked RED / GREEN For T2/T3')
+      && expectedTierPolicy.includes('`depends_on` keeps dependency outcomes as prerequisites')
+      && expectedTierPolicy.includes('Each `evidence_required` item must be task-owned')
       && expectedTierPolicy.includes('## Tier Obligations')
       && expectedTierPolicy.includes('## Closure Authority'),
     'Canonical tier policy lost its stable ownership sections.',
@@ -836,7 +847,7 @@ try {
     initSource.includes("resolveReferenceFile(AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE)")
       && initSource.includes("writeFile('AGENTS.md', agentsGuide(), { ownership: 'framework-owned' })")
       && initSource.includes('function writeCanonicalBoundaryMap(content)')
-      && initSource.includes('contracts/boundary-map-old.md')
+      && !initSource.includes('contracts/boundary-map-old.md')
       && !initSource.includes("writeFile('AGENTS.md', `# Agent Operating Guide"),
     'AGENTS.md deployment is not sourced exclusively from the canonical Markdown file.',
   );
@@ -1008,12 +1019,9 @@ Authored graph content preserved for manual migration.
   const syncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(readTarget(schemaRel) === expectedSchema, 'Full sync did not restore the canonical task schema.', syncOutput);
   assert(
-    readTarget(boundaryMapRel) === expectedBoundaryMap
-      && readTarget(boundaryMapOldRel) === authoredBoundaryMap
-      && expectedBoundaryMap.includes('status: draft')
-      && expectedBoundaryMap.includes('## Modules')
-      && expectedBoundaryMap.includes('## Dependency Graph'),
-    'Full sync did not replace boundary-map.md with the canonical empty graph and preserve the previous file.',
+    readTarget(boundaryMapRel) === authoredBoundaryMap
+      && !existsSync(targetPath('.memory-bank/contracts/boundary-map-old.md')),
+    'Full sync replaced the project-owned boundary map or created a backup copy.',
     syncOutput,
   );
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Full sync did not restore the canonical tier policy.', syncOutput);
@@ -1062,9 +1070,9 @@ Authored graph content preserved for manual migration.
   assert(secondSyncOutput.includes('unchanged framework-owned'), 'Idempotent sync did not classify identical framework assets as unchanged.', secondSyncOutput);
   assert(readTarget(schemaRel) === expectedSchema, 'Idempotent sync changed the canonical task schema.', secondSyncOutput);
   assert(
-    readTarget(boundaryMapRel) === expectedBoundaryMap
-      && readTarget(boundaryMapOldRel) === authoredBoundaryMap,
-    'Idempotent sync changed the canonical boundary map or its preserved previous version.',
+    readTarget(boundaryMapRel) === authoredBoundaryMap
+      && !existsSync(targetPath('.memory-bank/contracts/boundary-map-old.md')),
+    'Idempotent sync changed the project-owned boundary map or created a backup copy.',
     secondSyncOutput,
   );
   assert(readTarget(tierPolicyRel) === expectedTierPolicy, 'Idempotent sync changed the canonical tier policy.', secondSyncOutput);

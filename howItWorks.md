@@ -330,12 +330,11 @@ checkout path является честным blocker; после успешно
 Whole-file framework ownership задаётся только явными generator call sites:
 task schema, copied canonical workflows/roles/protocol templates, runtime
 scripts и другие canonical copied assets. Inline skeleton docs, project state
-и mixed routers после создания сохраняются. Исключение — canonical
-`contracts/boundary-map.md`: framework sync сохраняет предыдущую версию как
-`boundary-map-old.md` и разворачивает новый пустой template со `status: draft`;
-semantic migration остаётся ручной. Version-critical framework contract нельзя
-размещать только в seed-once файле. Installer sync не является runtime
-`/mb-sync` и не меняет task lifecycle, gates или handoffs.
+и mixed routers после создания сохраняются. `contracts/boundary-map.md` создаётся
+только при отсутствии; installer sync не заменяет и не переименовывает
+проектный граф. Version-critical framework contract нельзя размещать только в
+seed-once файле. Installer sync не является runtime `/mb-sync` и не меняет task
+lifecycle, gates или handoffs.
 
 У `.memory-bank/skills/index.md` только paired-marker block `## Installed`
 является generator-managed: bootstrap строит его из фактических
@@ -1033,6 +1032,11 @@ testing task и не меняет `.memory-bank/testing/`.
 `verification_targets` и `evidence_required`, поэтому новый этап или новое поле
 задачи не появляются.
 
+Каждый claim доказывает только owning task. `depends_on` передаёт downstream
+task подтверждённое предусловие, но не AC, probes и evidence dependency.
+Downstream доказывает свой outcome и integration delta. Regression checks
+остаются его gates и не переносят ownership upstream claim.
+
 В плане записываются ожидаемые результаты:
 
 - `RED` — до изменения кода проверка показывает, что нужного поведения ещё нет;
@@ -1114,7 +1118,8 @@ supporting-only. `/add-tests` сам reusable receipt не создаёт: по�
   verification target и применимого spec claim; ни один required claim не
   закрывается только receipt;
 - T3 требует новое functional evidence для каждого independently harm-driving
-  claim, после чего остаётся обычный per-task `/red-verify`.
+  task-owned claim, основанного на принятом требовании или подтверждённом
+  material risk, после чего остаётся обычный per-task `/red-verify`.
 
 Verification report отдельно показывает `reused execute evidence`, `repeated
 checks` и `new targeted probes`. Оптимизируется повтор команд, а не ownership

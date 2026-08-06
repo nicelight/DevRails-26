@@ -29,10 +29,11 @@ status: active
   owns only non-trivial reproducible measurement detail. Tasks proving a
   material NFR carry concrete `verification_targets` and `evidence_required`
   at every tier; compact T0/T1 protocol does not waive that evidence.
-- Newly created or reconciled `planned|ready` T2/T3 cards use existing
-  `evidence_required` and direct links to plan claim-linked RED/GREEN, or one
-  concrete accepted not-applicable reason; `/review-tasks-plan` evaluates this
-  prospective path without adding a workflow stage.
+- Newly created or reconciled `planned|ready` T2/T3 cards map only task-owned
+  outcomes and integration delta. Dependency proof is not inherited;
+  `evidence_required` stays minimal while required probe method remains in the
+  task package. `/review-tasks-plan` rejects missing and excess proof without a
+  new workflow stage.
 - Rerun `/feature-to-tasks FT-<NNN>` to reconcile subject-based canonical specs, task cards,
   and plans.
 - After the current feature task set is decomposed, run

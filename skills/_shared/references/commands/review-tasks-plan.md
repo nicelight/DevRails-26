@@ -151,25 +151,25 @@ Cover:
      mechanically treated as a task hard write boundary.
    - every accepted product AC has one stable feature-matching
      `FT-<NNN>-AC-<NNN>` heading, an existing governing REQ, and at least one
-     exact task `source_artifacts` locator. Task-linked ACs must exist in that
-     task's feature and agree with its governing `reqs`.
+     exact owning-task `source_artifacts` locator. Task-linked ACs must exist in
+     that task's feature and agree with its governing `reqs`.
    - every newly created or reconciled `planned|ready` task at any tier that
      proves a material NFR has its governing REQ, exact AC locator, non-empty
-     `verification_targets`, and `evidence_required` covering result,
-     conditions, pass/fail comparison, and artifact. Shared probes map every
-     covered AC; expert review names its rubric and reviewer role without
-     becoming a T3 checkpoint.
-   - for each `planned|ready` T2/T3 task, independently derive the tier-policy
-     proof closure from its outcome, exact task-linked ACs, material NFRs, and
-     T3 harm-driving outcomes before evaluating existing claim mappings. Reject
-     missing, unrelated, or unresolved locators with applicability evidence.
-     Then confirm realistic pre-implementation probes, expected evidence once
-     per probe, distinguishable shared-probe results, claim-equivalent GREEN,
-     and honest RED caused by absence of the claim rather than setup, syntax, or
-     artificial failure. T3 probes remain inside authorized isolated/disposable
-     state with safe rerun and cleanup. An AC mapping retains its exact ID and
-     RED/GREEN evidence or a concrete `RED_NOT_APPLICABLE` reason and alternative
-     proof.
+     `verification_targets`, and `evidence_required` identifying result,
+     decisive conditions, pass/fail comparison, and artifact without repeating
+     linked method. Shared probes map every covered AC; expert review names its
+     rubric and reviewer role without becoming a T3 checkpoint.
+   - for each `planned|ready` T2/T3 task, derive the allowed proof scope from
+     accepted sources and task/dependency ownership before evaluating the card;
+     card detail cannot authorize itself. Reject both missing proof and excess
+     requirements: inherited dependency proof,
+     unrelated locators, speculative risks, safeguards, fixtures, vectors, or
+     artifact formats. Confirm the remaining probes are realistic and minimal,
+     with distinguishable results, claim-equivalent GREEN, and honest RED caused
+     by claim absence rather than setup, syntax, or artificial failure. T3
+     probes stay inside authorized isolated/disposable state with safe rerun and
+     cleanup. An AC mapping retains its exact ID and RED/GREEN evidence or a
+     concrete `RED_NOT_APPLICABLE` reason and alternative proof.
    - when accepted module/slice boundaries apply, confirm each affected task
      card and its direct links make the primary owner/code root, public boundary,
      semantic/write owner, forbidden bypasses, eligible cross-slice orchestration

@@ -264,27 +264,7 @@ function writeFile(rel, content, { overwrite = false, ownership = 'project/mixed
 
 function writeCanonicalBoundaryMap(content) {
   const rel = `${MB}/contracts/boundary-map.md`;
-  const backupRel = `${MB}/contracts/boundary-map-old.md`;
-  const absPath = path.join(ROOT, rel);
-
-  if (!SYNC_MODE || !fs.existsSync(absPath)) {
-    return writeFile(rel, content, {
-      ownership: SYNC_MODE ? 'framework-owned' : 'project/mixed',
-    });
-  }
-
-  const current = fs.readFileSync(absPath, 'utf8');
-  if (current === content) {
-    return recordWriteResult('unchanged', rel, 'framework-owned');
-  }
-
-  const backupPath = path.join(ROOT, backupRel);
-  const backupExisted = fs.existsSync(backupPath);
-  fs.writeFileSync(backupPath, current, 'utf8');
-  recordWriteResult(backupExisted ? 'updated' : 'created', backupRel, 'project/mixed backup');
-
-  fs.writeFileSync(absPath, content, 'utf8');
-  return recordWriteResult('updated', rel, 'framework-owned');
+  return writeFile(rel, content, { ownership: 'project/mixed' });
 }
 
 function runtimeSkillNames(runtimeRoot) {

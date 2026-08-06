@@ -78,27 +78,35 @@ status, lifecycle, or protocol family.
 
 ## Claim-Linked RED / GREEN For T2/T3
 
-Task-scoped proof closure contains every exact task-linked feature AC, each
-task-owned material NFR result not already expressed by those ACs, and, for T3,
-every independently harm-driving outcome. For `FT-000`, exact task-owned
-`REQ-000` or canonical proof obligations replace feature ACs.
+An exact AC or canonical proof-obligation locator used in a task's proof mapping
+assigns that claim's proof to the task. Governing `reqs` and context links do
+not. Task proof scope contains only its owned observable outcome and integration
+delta: exact task-owned feature ACs, material NFR results not covered by them,
+and T3 harm-driving outcomes required by accepted requirements or evidenced
+material risk. For `FT-000`, exact task-owned `REQ-000` or canonical proof
+obligations replace feature ACs.
 
-REQs and canonical specs remain authority and constraints; linking them in
-`source_artifacts` or `normative_inputs` does not adopt every contained
-statement as a separate proof claim. A product spec rule becomes one only when
-it defines a distinct task-owned observable acceptance result not covered by an
-AC or material NFR. Missing acceptance ownership blocks planning rather than
-silently expanding task scope. A claim locator must resolve in canonical source;
-a section locator is valid only when the whole section is one proof obligation.
-Invented locator suffixes are invalid.
+`depends_on` keeps dependency outcomes as prerequisites and their proof with the
+owning task; execution trusts them only when the dependency is `done`.
+Regression checks for current changes support only the current task outcome and
+never adopt dependency claims, probes, preserved GREEN, or evidence.
 
-Each accepted `planned|ready` T2/T3 card maps this closure to probes through
-`verification_targets`. `evidence_required` retains the claim locators and
-defines RED/GREEN evidence, conditions, comparison, and artifact once per
-probe. A shared probe must distinguish each claim result. Do not copy canonical
-claim wording. An AC mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. When
-meaningful RED is not applicable, record one accepted task-specific reason and
-alternative proof; tier, convenience, or a missing harness is not a reason.
+REQs and canonical specs remain authority and constraints; links do not adopt
+every contained statement as a claim. Planner detail, plausibility, tier, edge
+cases, safeguards, fixtures, vectors, or artifact formats do not expand proof
+scope without accepted requirements or evidenced material risk. A spec rule is
+a claim only when it defines a distinct task-owned acceptance result not covered
+by an AC or material NFR. Missing ownership blocks planning. Claim locators must
+resolve; a section locator is valid only when the whole section is one
+obligation. Invented suffixes are invalid.
+
+Each `evidence_required` item must be task-owned, grounded, necessary for an
+unambiguous verdict, and non-duplicative. Keep one concise result contract per
+probe: claim locators, expected RED/GREEN or accepted alternative proof,
+decisive comparison, and artifact. Keep required probe method in
+`verification_targets` or a direct testing link; do not repeat canonical prose.
+A shared probe must distinguish each claim result. Tier, convenience, or a
+missing harness does not justify `RED_NOT_APPLICABLE`.
 
 After `ready -> in_progress`, initial execution obtains honest
 pre-implementation RED for each applicable claim before changing its production
@@ -113,8 +121,9 @@ retry eligibility and disposition.
 pre-implementation GREEN, and accepted alternative proof remain supporting
 execution evidence and do not change verdict semantics; pre-implementation
 GREEN alone is neither `PASS` nor `NEEDS-CLARIFICATION`. T3 proof covers every
-independently harm-driving claim in already authorized isolated/disposable state
-with safe rerun and cleanup. `/red-verify` retains its hostile semantic role.
+task-owned harm-driving claim required by accepted requirements or evidenced
+material risk, in already authorized isolated/disposable state with safe rerun
+and cleanup. `/red-verify` retains its hostile semantic role.
 
 Do not fabricate or backfill this evidence for historical
 `in_progress|done|failed` tasks. A lifecycle owner does not close a task whose

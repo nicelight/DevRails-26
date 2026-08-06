@@ -43,6 +43,8 @@ Treat these as coverage criteria, not a mandatory order:
    - ownership, source of truth, public boundaries, dependency direction,
      cross-component orchestration, and required proof paths are preserved;
    - dependencies are explicit and no task must invent a material boundary.
+     Their outcomes are prerequisites, not inherited proof; regression checks
+     do not transfer claim ownership;
    - the relevant subgraph has registered modules, exact contracts, accepted
      directions, and complete consumer impact until compatibility stops it;
    - accepted architecture and rollout constraints—not graph shape alone—justify

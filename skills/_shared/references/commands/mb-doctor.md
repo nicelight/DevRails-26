@@ -151,9 +151,9 @@ nor makes lifecycle decisions.
   spec path, non-empty `touched_files` and/or `runtime_context.write_boundary`,
   and at least one verification path through a real gate command and/or
   non-empty `verification_target`.
-- Every stable feature AC is covered by at least one exact task
-  `source_artifacts` locator. Linked T1/T2/T3 task REQs agree with the AC's
-  governing REQs.
+- Every stable feature AC is covered by an exact locator in its owning task's
+  `source_artifacts`. Linked T1/T2/T3 task REQs agree with the AC's governing
+  REQs.
 - A `planned|ready` T2/T3 AC-linked path repeats the AC ID in a concrete
   `verification_target` and `evidence_required` RED/GREEN observations, or in a
   concrete `RED_NOT_APPLICABLE` reason plus alternative proof.

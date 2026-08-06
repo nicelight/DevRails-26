@@ -171,8 +171,8 @@ When `Foundation Required: true`:
    `.memory-bank/tasks/plans/IMPL-FT-000.md`.
 5. Create/reconcile at least one implementation/probe task and exactly one
    final foundation gate task. The final gate depends on every required
-   foundation implementation/probe task and proves build/start/test/smoke plus
-   required compatibility probes.
+   foundation implementation/probe task and proves only the integrated
+   build/start/test/smoke and required compatibility outcome.
 6. Replace `pending_foundation_to_tasks` with the concrete final gate task ID.
 7. Index every record exactly once and keep Foundation records before product
    records.
@@ -203,15 +203,14 @@ Task-record rules:
   least one existing direct task-linked canonical SDD path, advisory expected
   change surface and/or justified hard write scope, and a real gate command
   and/or non-empty verification target.
-- every newly created or reconciled `planned|ready` T2/T3 record uses existing
-  `evidence_required` and direct links to map `REQ-000` or an exact canonical
-  spec claim to a prospective pre-implementation probe, its claim-specific RED,
-  and the corresponding GREEN. When meaningful RED is inapplicable, record one
-  concrete accepted reason instead; tier, convenience, or a missing harness is
-  insufficient. One probe may cover several claims only with explicit mapping;
-- T3 mappings cover every independently harm-driving functional claim using
-  only already authorized isolated/disposable state with safe rerun and
-  cleanup; they never expand permissions.
+- every newly created or reconciled `planned|ready` T2/T3 record maps only its
+  tier-policy proof scope. Dependency outcomes are prerequisites; do not copy
+  their claims, probes, or evidence into the final gate or downstream records;
+- `evidence_required` keeps the minimal result contract; required probe method
+  remains in `verification_targets` or a direct testing link. T3 covers every
+  task-owned harm-driving claim required by accepted requirements or evidenced
+  material risk, using only authorized isolated/disposable state with safe rerun
+  and cleanup.
 </required_outputs>
 
 <validation>
@@ -219,6 +218,7 @@ Before handoff, prove:
 - schema/index validity and ID/tier/feature/wave consistency;
 - `REQ-000`, `FT-000`, W0, and final-gate rules;
 - one and only one final gate with complete dependencies and an acyclic graph;
+- no task inherits dependency proof or adds unsupported evidence requirements;
 - no product behavior or speculative substrate escaped the Foundation scope;
 - accepted composition/module/slice boundaries were applied without inventing
   layer-centric scaffolding, extra slices, or a hard write boundary copied from
@@ -231,7 +231,7 @@ Before handoff, prove:
 - every T2/T3 card satisfies the complete single-card handoff contract;
 - every newly created or reconciled `planned|ready` T2/T3 card has a credible
   claim-linked RED/GREEN path or concrete accepted not-applicable reason, with
-  complete safe T3 risk-driving coverage;
+  safe coverage of its task-owned T3 risk-driving claims;
 - Gate Anchors name the final gate or `not_required` truthfully;
 - no affected material operator decision remains unresolved.
 

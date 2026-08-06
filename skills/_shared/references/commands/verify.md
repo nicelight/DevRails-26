@@ -53,6 +53,9 @@ the rule above.
   `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or
   acceptance assigned to other tasks.
+- Treat `done` dependency outcomes as prerequisites, not claims to prove.
+  Applicable regression checks support the current task outcome and do not
+  transfer ownership.
 - Direct task-linked canonical specs outrank secondary task prose for their
   concerns. For T2/T3, feature links or `spec-index.md` alone are insufficient.
 - Apply only spec families demanded by actual scope. Missing/conflicting/wrong
@@ -142,7 +145,8 @@ current execution evidence before assigning the verdict:
   its production behavior changed; no artificial RED or speculative production
   change may follow;
 - T3 evidence must stay inside authorized isolated/disposable state and cover
-  every independently harm-driving mapped claim.
+  every task-owned harm-driving mapped claim required by accepted requirements
+  or evidenced material risk.
 
 These variants do not change verdict semantics. Independently prove the current
 task outcome. Missing, artificial, unsafe, or contradictory required execution
@@ -219,9 +223,10 @@ Tier-specific independence remains:
   claims only when the report maps it to the complete affected claim set; no
   required claim may rely only on a receipt;
 - T3 never permits reuse-only PASS. New verifier-owned functional evidence must
-  cover every independently harm-driving claim; one probe is sufficient only
-  when it demonstrably covers that full risk-driving set. `/red-verify` remains
-  the separate hostile semantic review and is not duplicated here.
+  cover every task-owned harm-driving claim required by accepted requirements
+  or evidenced material risk; one probe is sufficient only when it demonstrably
+  covers that set. `/red-verify` remains the separate hostile semantic review
+  and is not duplicated here.
 
 For UI/browser scope, use the smallest reproducible project-native automation,
 record runtime/base URL and relevant viewport/device plus redacted artifacts,
@@ -271,10 +276,10 @@ commands/flows/artifacts; no feature-wide requirement was misassigned; actual
 scope did not require a higher tier; and no material branch was silently
 resolved. Also confirm that every planning-required T2/T3 execution path is
 honest, safe, and claim-linked through RED/GREEN, pre-GREEN, or its accepted
-not-applicable reason; no T2 required claim and no T3 independently
-harm-driving claim relies only on self-attested execute evidence, and every
-reused candidate is current-attempt, state-matched, bounded-input, and auditably
-reported.
+not-applicable reason; no T2 required claim and no T3 task-owned harm-driving
+claim required by accepted requirements or evidenced material risk relies only
+on self-attested execute evidence, and every reused candidate is
+current-attempt, state-matched, bounded-input, and auditably reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
 tier and trigger, and routes controlled rebuild/split through

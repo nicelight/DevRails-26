@@ -48,6 +48,8 @@ Point-of-use preflight must confirm:
 - index/file/ID resolution and matching ID tier/feature/wave segments;
 - valid `tier: T0|T1|T2|T3` and executable lifecycle state;
 - every dependency exists and is `done`;
+- dependency `done` outcomes are authoritative prerequisites; execute only the
+  selected task's owned outcome and integration delta;
 - no recorded blocker or unresolved required gate in the resolved task context;
 - success is observable from AC/REQ/spec/gates/verification targets;
 - task, feature, plan, backbone, and linked specs do not contradict;
@@ -135,6 +137,8 @@ replay it.
 - Treat the canonical dependency graph as closed-world: an absent edge grants
   no implementation authority, and task execution never creates, removes, or
   redirects a semantic edge.
+- Do not rerun or reconstruct dependency proof. Applicable regression checks
+  support the selected task outcome and do not adopt dependency claims.
 - Preserve unrelated user changes and do not edit generated package-local
   `skills/*/{agents,references,scripts}/shared-*` files.
 - Do not opportunistically rename brownfield source. A move or rename must be
@@ -235,8 +239,8 @@ unfinished attempt and replay is safe; otherwise stop.
 
 For a current T2/T3 task governed by a prospective path, apply the tier-policy
 Claim-Linked RED/GREEN contract:
-- resolve the planned claim mapping and choose the smallest credible
-  claim-scoped probe;
+- resolve only the selected task's owned claim mapping and choose the smallest
+  credible claim-scoped probe;
 - on the initial attempt, a mapped claim receives honest claim-specific RED
   before its first production change. Setup, syntax, unrelated, or artificial
   failure does not qualify. Pre-implementation GREEN preserves the evidence and

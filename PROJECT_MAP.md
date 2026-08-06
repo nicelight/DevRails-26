@@ -208,7 +208,7 @@ Primary source files:
 
 - `skills/_shared/references/structure-template.md` and
   `skills/_shared/scripts/init-mb.js` for the empty canonical template and
-  sync backup to `boundary-map-old.md`
+  seed-once preservation during sync
 - `skills/_shared/references/commands/spec-init.md` and
   `skills/_shared/references/commands/map-codebase.md` for preliminary/as-is
   evidence without accepted-edge authority
@@ -221,8 +221,8 @@ Primary source files:
 - `skills/_shared/references/commands/mb-sync.md` and
   `skills/_shared/references/workflows/mb-sync.md` for link-only reconciliation
 - `skills/mb-garden/assets/mb-lint.mjs` for mechanical graph validation
-- `scripts/test-install-sync.mjs` for deployed template, backup, validator, and
-  isolated installer coverage
+- `scripts/test-install-sync.mjs` for deployed template preservation, validator,
+  and isolated installer coverage
 
 Do not duplicate module inventory in `system-architecture.md`, copy feature
 subgraphs into implementation plans/tasks, or mechanically convert graph edges

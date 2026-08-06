@@ -262,16 +262,16 @@ relevant examples as described by the hard invariant above.
 
 ## JSON task records
 
-Before task emission or reconciliation, run one bounded acceptance-closure scan:
-material edge/failure outcomes have an AC or sourced authoritative exclusion,
-material NFRs have an accepted REQ/AC result and verification method, and every
-AC maps to a task. Reconcile an obvious missing locator; use `rebuild_required`
-for identity, tier, dependency, AC, accepted target/condition, or material-scope
-changes, and the owning blocker route for unresolved authority.
+Before task emission, internally separate authoritative acceptance, claim
+ownership across dependencies, slicing, and minimal proof. Do not persist this
+analysis or let generated detail create authority.
 
-Before handoff, derive and map the task-scoped proof closure defined by tier
-policy. Do not persist another inventory artifact or copy canonical claim
-wording into task cards.
+Run one bounded acceptance-closure scan: material edge/failure outcomes have an
+AC or sourced authoritative exclusion, material NFRs have an accepted REQ/AC
+result and verification method, and every AC has one owning task. Reconcile an
+obvious missing locator; use `rebuild_required` for identity, tier, dependency,
+AC, accepted target/condition, or material-scope changes, and the owning blocker
+route for unresolved authority.
 
 Before initially emitting JSON task records, form provisional candidates and
 run one bounded execution-path sanity check per candidate. Inspect only one
@@ -301,19 +301,22 @@ record exactly once. The loaded schema and tier policy are authoritative.
 Additionally require:
 - map every task-relevant feature AC through an exact
   `.memory-bank/features/FT-<NNN>-<slug>.md#FT-<NNN>-AC-<NNN>` locator in
-  `source_artifacts`, and cover every accepted feature AC with at least one
-  indexed task. A grounded locator may be added to a historical task without
-  inventing RED/GREEN evidence or changing its lifecycle;
+  its owning task's `source_artifacts`, and cover every accepted feature AC.
+  A grounded locator may be added to a historical task without inventing
+  RED/GREEN evidence or changing its lifecycle;
 - every T1/T2/T3 task has concrete governing `REQ-*` links;
 - every newly created or reconciled `planned|ready` task at any tier that proves
   a material NFR has its governing `REQ-*`, exact AC locator, non-empty
-  `verification_targets`, and non-empty `evidence_required` for the observed
-  result, decisive conditions, pass/fail comparison, and artifact. Shared probes
-  map every covered AC explicitly;
+  `verification_targets`, and non-empty `evidence_required` identifying the
+  result, decisive conditions, pass/fail comparison, and artifact without
+  repeating linked method. Shared probes map every covered AC explicitly;
 - human/expert review names its criterion/rubric, reviewer role, and artifact;
   it is evidence, not a T3 checkpoint;
 - every task has a cohesive, independently observable outcome and grounded
   dependency graph;
+- `depends_on` keeps dependency proof with its owner. Downstream cards map only
+  their task-owned outcome and integration delta; regression checks remain
+  gates or `verification_targets` for that outcome;
 - every required Foundation final-gate dependency is direct or transitive;
 - fields such as `source_artifacts`, `normative_inputs`, `constraints`,
   `invariants`, `verification_targets`, purpose/outcome, and runtime context
@@ -345,9 +348,9 @@ Additionally require:
   expected change surface and/or a deliberate hard write scope, and at least
   one real gate command and/or non-empty verification target;
 - every newly created or reconciled `planned|ready` T2/T3 task maps the
-  tier-policy proof closure through `verification_targets`; `evidence_required`
-  retains every covered locator and defines expected RED/GREEN evidence once
-  per probe. Shared probes produce a distinguishable result for each claim;
+  tier-policy proof scope through `verification_targets`; `evidence_required`
+  contains only the minimal result contract defined there. Shared probes
+  produce a distinguishable result for each claim;
 - an AC-linked mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. A
   not-applicable mapping uses `<AC-ID> RED_NOT_APPLICABLE: <reason>;
   alternative proof: <proof>`;
@@ -355,9 +358,10 @@ Additionally require:
   accepted reason in `evidence_required`. The reason must explain why absence
   of the accepted behavior cannot or should not be observed without falsifying
   the task; tier, convenience, or a missing test harness is insufficient;
-- for T3, cover every independently harm-driving functional claim and keep each
-  planned RED probe inside already authorized isolated/disposable state with
-  safe rerun and cleanup. The proof path never grants broader permissions;
+- for T3, cover every task-owned harm-driving claim required by accepted
+  requirements or evidenced material risk, inside already authorized
+  isolated/disposable state with safe rerun and cleanup. The proof path never
+  grants broader permissions;
 - mutable persistence names the real runtime storage path and a read/write or
   repository-integration proof; otherwise the applicable spec records why it
   is not relevant.
@@ -383,8 +387,8 @@ Before handoff:
   executable without guessing;
 - confirm each newly created or reconciled `planned|ready` T2/T3 card has a
   credible claim-linked RED/GREEN path or a concrete accepted not-applicable
-  reason, and that T3 coverage includes every independently harm-driving claim
-  without unsafe or permission-expanding probes;
+  reason; reject inherited dependency proof, unsupported evidence requirements,
+  and unsafe or permission-expanding T3 probes;
 - when accepted module/slice boundaries apply, confirm a fresh executor can
   locate the primary owner/code root, public boundary, forbidden bypasses,
   eligible cross-slice orchestration owner when relevant, forbidden technical
