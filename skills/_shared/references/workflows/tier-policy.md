@@ -78,16 +78,27 @@ status, lifecycle, or protocol family.
 
 ## Claim-Linked RED / GREEN For T2/T3
 
-Each accepted `planned|ready` T2/T3 card maps every applicable stable
-AC/REQ/canonical-spec claim to a probe through existing direct links and
-`verification_targets`. `evidence_required` retains the probe's claim
-references and defines its RED/GREEN evidence, conditions, comparison, and
-artifact once. One probe may cover several explicit claim references only when
-its result distinguishes each claim. Do not copy canonical claim wording. An AC
-path retains its exact
-`FT-<NNN>-AC-<NNN>` ID. When meaningful RED is not applicable, record one
-accepted task-specific reason and alternative proof; tier, convenience, or a
-missing harness is not a reason.
+Task-scoped proof closure contains every exact task-linked feature AC, each
+task-owned material NFR result not already expressed by those ACs, and, for T3,
+every independently harm-driving outcome. For `FT-000`, exact task-owned
+`REQ-000` or canonical proof obligations replace feature ACs.
+
+REQs and canonical specs remain authority and constraints; linking them in
+`source_artifacts` or `normative_inputs` does not adopt every contained
+statement as a separate proof claim. A product spec rule becomes one only when
+it defines a distinct task-owned observable acceptance result not covered by an
+AC or material NFR. Missing acceptance ownership blocks planning rather than
+silently expanding task scope. A claim locator must resolve in canonical source;
+a section locator is valid only when the whole section is one proof obligation.
+Invented locator suffixes are invalid.
+
+Each accepted `planned|ready` T2/T3 card maps this closure to probes through
+`verification_targets`. `evidence_required` retains the claim locators and
+defines RED/GREEN evidence, conditions, comparison, and artifact once per
+probe. A shared probe must distinguish each claim result. Do not copy canonical
+claim wording. An AC mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. When
+meaningful RED is not applicable, record one accepted task-specific reason and
+alternative proof; tier, convenience, or a missing harness is not a reason.
 
 After `ready -> in_progress`, initial execution obtains honest
 pre-implementation RED for each applicable claim before changing its production

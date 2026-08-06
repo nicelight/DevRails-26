@@ -159,19 +159,17 @@ Cover:
      conditions, pass/fail comparison, and artifact. Shared probes map every
      covered AC; expert review names its rubric and reviewer role without
      becoming a T3 checkpoint.
-   - for each `planned|ready` T2/T3 task, confirm
-     that the complete task-scoped claim set maps through direct links and
-     `verification_targets` to realistic pre-implementation probes, with
-     expected evidence defined once per probe in `evidence_required`. Shared
-     probes must list every covered claim reference and distinguish each result.
-     A containing-section link does not adopt unrelated claims; reject an
-     ambiguous applicable subset. Expected RED must expose absence of the claim,
-     not setup, syntax, or artificial failure; GREEN proves the same claim. T3
-     paths must cover every independently harm-driving functional claim in
-     already authorized isolated/disposable state with safe rerun and cleanup.
-     An AC-linked mapping retains the exact AC ID and either RED/GREEN evidence
-     or its concrete
-     `RED_NOT_APPLICABLE` reason and alternative proof.
+   - for each `planned|ready` T2/T3 task, independently derive the tier-policy
+     proof closure from its outcome, exact task-linked ACs, material NFRs, and
+     T3 harm-driving outcomes before evaluating existing claim mappings. Reject
+     missing, unrelated, or unresolved locators with applicability evidence.
+     Then confirm realistic pre-implementation probes, expected evidence once
+     per probe, distinguishable shared-probe results, claim-equivalent GREEN,
+     and honest RED caused by absence of the claim rather than setup, syntax, or
+     artificial failure. T3 probes remain inside authorized isolated/disposable
+     state with safe rerun and cleanup. An AC mapping retains its exact ID and
+     RED/GREEN evidence or a concrete `RED_NOT_APPLICABLE` reason and alternative
+     proof.
    - when accepted module/slice boundaries apply, confirm each affected task
      card and its direct links make the primary owner/code root, public boundary,
      semantic/write owner, forbidden bypasses, eligible cross-slice orchestration

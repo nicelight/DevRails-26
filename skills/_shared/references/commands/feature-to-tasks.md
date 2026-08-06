@@ -269,9 +269,9 @@ AC maps to a task. Reconcile an obvious missing locator; use `rebuild_required`
 for identity, tier, dependency, AC, accepted target/condition, or material-scope
 changes, and the owning blocker route for unresolved authority.
 
-Before handoff, confirm the complete task-scoped claim set required by tier
-policy is mapped to probes. Do not persist another inventory artifact or copy
-canonical claim wording into task cards.
+Before handoff, derive and map the task-scoped proof closure defined by tier
+policy. Do not persist another inventory artifact or copy canonical claim
+wording into task cards.
 
 Before initially emitting JSON task records, form provisional candidates and
 run one bounded execution-path sanity check per candidate. Inspect only one
@@ -344,11 +344,10 @@ Additionally require:
   it also carries advisory
   expected change surface and/or a deliberate hard write scope, and at least
   one real gate command and/or non-empty verification target;
-- every newly created or reconciled `planned|ready` T2/T3 task maps each
-  applicable stable AC/REQ/canonical-spec claim to a prospective probe through
-  direct links and `verification_targets`; `evidence_required` defines the
-  expected RED/GREEN evidence once per probe and retains every covered claim
-  reference. Shared probes produce a distinguishable result for each claim;
+- every newly created or reconciled `planned|ready` T2/T3 task maps the
+  tier-policy proof closure through `verification_targets`; `evidence_required`
+  retains every covered locator and defines expected RED/GREEN evidence once
+  per probe. Shared probes produce a distinguishable result for each claim;
 - an AC-linked mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. A
   not-applicable mapping uses `<AC-ID> RED_NOT_APPLICABLE: <reason>;
   alternative proof: <proof>`;
