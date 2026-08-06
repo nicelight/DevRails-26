@@ -269,6 +269,10 @@ AC maps to a task. Reconcile an obvious missing locator; use `rebuild_required`
 for identity, tier, dependency, AC, accepted target/condition, or material-scope
 changes, and the owning blocker route for unresolved authority.
 
+Before handoff, confirm the complete task-scoped claim set required by tier
+policy is mapped to probes. Do not persist another inventory artifact or copy
+canonical claim wording into task cards.
+
 Before initially emitting JSON task records, form provisional candidates and
 run one bounded execution-path sanity check per candidate. Inspect only one
 plausible evidence-backed path from the first necessary change through the main
@@ -340,16 +344,14 @@ Additionally require:
   it also carries advisory
   expected change surface and/or a deliberate hard write scope, and at least
   one real gate command and/or non-empty verification target;
-- every newly created or reconciled `planned|ready` T2/T3 task uses existing
-  `evidence_required` plus direct task links to make one prospective
-  claim-linked RED/GREEN path legible. For each applicable path, map a stable
-  accepted AC/REQ/canonical-spec claim to the intended pre-implementation
-  test/probe, the observable claim-specific RED, and the corresponding GREEN.
-  One probe may cover several claims only when the mapping is explicit;
-- an AC-linked path repeats its exact `FT-<NNN>-AC-<NNN>` ID in a concrete
-  `verification_targets` probe and in `evidence_required` entries labelled
-  `<AC-ID> RED: ...` and `<AC-ID> GREEN: ...`. A not-applicable path uses
-  `<AC-ID> RED_NOT_APPLICABLE: <reason>; alternative proof: <proof>`;
+- every newly created or reconciled `planned|ready` T2/T3 task maps each
+  applicable stable AC/REQ/canonical-spec claim to a prospective probe through
+  direct links and `verification_targets`; `evidence_required` defines the
+  expected RED/GREEN evidence once per probe and retains every covered claim
+  reference. Shared probes produce a distinguishable result for each claim;
+- an AC-linked mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. A
+  not-applicable mapping uses `<AC-ID> RED_NOT_APPLICABLE: <reason>;
+  alternative proof: <proof>`;
 - when meaningful RED is not applicable, record one concrete task-specific
   accepted reason in `evidence_required`. The reason must explain why absence
   of the accepted behavior cannot or should not be observed without falsifying

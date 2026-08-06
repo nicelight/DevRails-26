@@ -706,6 +706,32 @@ Flags:
   expectPass(validNotApplicableProof, 'valid not-applicable acceptance proof');
   expectNoFinding(validNotApplicableProof, 'TASK_ACCEPTANCE_PROOF_MISSING');
 
+  const validGroupedAcceptanceProof = runCase('valid-grouped-acceptance-proof', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      sourceArtifacts: [
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-001',
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-002',
+        '.memory-bank/contracts/fixture.md',
+      ],
+      verificationTargets: [
+        'PROBE-1 claims: FT-001-AC-001, FT-001-AC-002; node --test test/fixture.test.mjs',
+      ],
+      evidenceRequired: [
+        'PROBE-1 claims: FT-001-AC-001, FT-001-AC-002; RED: each claim is absent; GREEN: each claim is observed; artifact: fixture report',
+      ],
+    })],
+    files: [{
+      rel: '.memory-bank/features/FT-001-fixture.md',
+      content: featureMarkdown([
+        { id: 'FT-001-AC-001' },
+        { id: 'FT-001-AC-002' },
+      ]),
+    }],
+  }, ['--strict']);
+  expectPass(validGroupedAcceptanceProof, 'valid grouped acceptance proof');
+  expectNoFinding(validGroupedAcceptanceProof, 'TASK_ACCEPTANCE_PROOF_MISSING');
+
   const missingAcceptanceEvidence = runCase('missing-acceptance-evidence', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, { status: 'done' })],

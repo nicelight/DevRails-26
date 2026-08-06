@@ -78,11 +78,14 @@ status, lifecycle, or protocol family.
 
 ## Claim-Linked RED / GREEN For T2/T3
 
-Each accepted `planned|ready` T2/T3 card maps stable AC/REQ/canonical-spec
-claims through existing direct links, `verification_targets`, and
-`evidence_required` to prospective claim-scoped proof. An AC path repeats its
-exact `FT-<NNN>-AC-<NNN>` ID. One probe may cover several claims only with
-explicit complete mapping. When meaningful RED is not applicable, record one
+Each accepted `planned|ready` T2/T3 card maps every applicable stable
+AC/REQ/canonical-spec claim to a probe through existing direct links and
+`verification_targets`. `evidence_required` retains the probe's claim
+references and defines its RED/GREEN evidence, conditions, comparison, and
+artifact once. One probe may cover several explicit claim references only when
+its result distinguishes each claim. Do not copy canonical claim wording. An AC
+path retains its exact
+`FT-<NNN>-AC-<NNN>` ID. When meaningful RED is not applicable, record one
 accepted task-specific reason and alternative proof; tier, convenience, or a
 missing harness is not a reason.
 

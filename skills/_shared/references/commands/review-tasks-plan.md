@@ -160,16 +160,17 @@ Cover:
      covered AC; expert review names its rubric and reviewer role without
      becoming a T3 checkpoint.
    - for each `planned|ready` T2/T3 task, confirm
-     that existing `evidence_required` and direct links map a stable accepted
-     claim to a realistic pre-implementation probe, a RED caused by absence of
-     that claim rather than syntax/setup/artificial damage, and GREEN for the
-     same claim; or confirm one concrete accepted reason why meaningful RED is
-     inapplicable. T3 paths must cover every independently harm-driving
-     functional claim in already authorized isolated/disposable state with safe
-     rerun and cleanup. One probe may cover several claims only with explicit
-     complete mapping.
-     For an AC-linked path, the exact AC ID must also identify its
-     `verification_targets` probe and RED/GREEN observations, or its concrete
+     that the complete task-scoped claim set maps through direct links and
+     `verification_targets` to realistic pre-implementation probes, with
+     expected evidence defined once per probe in `evidence_required`. Shared
+     probes must list every covered claim reference and distinguish each result.
+     A containing-section link does not adopt unrelated claims; reject an
+     ambiguous applicable subset. Expected RED must expose absence of the claim,
+     not setup, syntax, or artificial failure; GREEN proves the same claim. T3
+     paths must cover every independently harm-driving functional claim in
+     already authorized isolated/disposable state with safe rerun and cleanup.
+     An AC-linked mapping retains the exact AC ID and either RED/GREEN evidence
+     or its concrete
      `RED_NOT_APPLICABLE` reason and alternative proof.
    - when accepted module/slice boundaries apply, confirm each affected task
      card and its direct links make the primary owner/code root, public boundary,
@@ -199,10 +200,12 @@ replace downstream `/mb-doctor --strict`.
 </required_outputs>
 
 <validation>
-Before publishing the verdict, verify that every claim cites an inspected task,
-plan, spec, requirement, dependency, or doctor finding; the report uses only
-`APPROVE|REJECT`; its reviewed revision marker exactly matches the current
-positive Planning Revision; and no reviewed durable state was mutated.
+Before publishing the verdict, complete every coverage group and report every
+material gap found in one `REJECT`; do not stop at the first gap. Verify that
+every claim cites an inspected task, plan, spec, requirement, dependency, or
+doctor finding; the report uses only `APPROVE|REJECT`; its reviewed revision
+marker exactly matches the current positive Planning Revision; and no reviewed
+durable state was mutated.
 </validation>
 
 <handoff_contract>
