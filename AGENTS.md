@@ -79,31 +79,40 @@ exact-output требования и strict scope. Не придумывай req
 Не пересказывай интерпретацию пользователю без запроса; она должна проявляться
 в результате.
 
-## Политика reasoning: отбор до расширения
+## Reasoning Policy: Selection Before Expansion (KISS Gate)
 
-**Ключевое правило:** достаточное решение — это основание остановить расширение,
-а не приглашение добавлять необязательные улучшения!
+**Core rule:** A sufficient solution is a reason to stop expanding, not an
+invitation to add optional improvements.
 
-В пределах оставленной тебе discretion считай созданное или выбранное тобой
-материальное решение кандидатом, пока его необходимость, достаточность,
-существенные последствия и совокупная стоимость не подтверждают, что оно
-закрывает текущую цель и обязательные контракты простейшим известным способом.
+Within the discretion left to you, select the simplest solution sufficient for
+the requested outcome and required contracts. Treat every added mechanism,
+abstraction, safeguard, edge-case handling, future-proofing measure, or process
+as a separate candidate. Include it only when an accepted requirement,
+applicable constraint, or evidenced material risk justifies its total
+implementation, verification, and ownership cost. Possible usefulness, best
+practice, or greater completeness is not sufficient justification.
 
-После нахождения достаточного решения не предлагай и не добавляй улучшения по
-инерции. Считай каждый дополнительный mechanism, abstraction, safeguard,
-edge-case handling, future-proofing или process отдельным кандидатом. Включай
-его только когда принятое требование, действующее ограничение или подтверждённый
-материальный риск оправдывает его совокупную стоимость реализации, проверки и
-сопровождения. Возможная полезность, best practice или стремление сделать
-решение полнее не являются достаточным основанием.
+A discovered risk, edge case, or possible failure is not automatically a
+requirement. Assess its realism, impact, recoverability, and remedy cost in the
+current deployment. Use the cheapest sufficient remedy for an accepted
+requirement. If an uncovered serious problem requires expanding the accepted
+target, ask the operator. Otherwise accept or defer a risk whose remedy costs
+materially more than its expected impact. Agent discretion permits only a local
+safeguard with negligible cost and no new state or lifecycle.
 
-Если дополнительный механизм компенсирует слабость, созданную самим базовым
-решением, сначала пересмотри или упрости базовый кандидат. Остановись, когда
-цель и обязательные контракты закрыты. Не включай в результат необязательные
-улучшения и отклонённые кандидаты без прямого запроса пользователя.
+If an additional mechanism compensates for a weakness introduced by the base
+solution, first revise or simplify the base candidate. Stop when the outcome and
+required contracts are satisfied.
 
-Это правило не разрешает пересматривать принятые требования, явные решения
-оператора или governing sources.
+Accepted requirements authorize outcomes, not unnecessarily complex
+mechanisms. Agent-generated reviews, specifications, brainstorm results, and
+best-practice recommendations cannot authorize their own complexity. Do not
+reopen accepted requirements, operator decisions, or governing sources.
+
+Report evidenced defects and issues affecting the requested verdict. Do not
+propose or report optional improvements, rejected candidates, or speculative
+observations unless the user explicitly asks for them.
+
 
 ## Редактирование
 
@@ -184,15 +193,6 @@ skills/tools текущим агентом-разработчиком DevRails.
 - В unattended flow применяется только уже принятое authoritative решение;
   иначе агент использует существующий blocker/terminal halt, а не выбирает за
   оператора.
-
-## KISS / Avoid overengineering
-
-- Implement the simplest solution that fully satisfies current requirements and specs.
-- Prefer existing project patterns over new abstractions, layers, registries, frameworks, or workflow artifacts.
-- Do not design for hypothetical future scale, integrations, configurability, or reuse without a concrete current requirement.
-- Do not introduce enterprise architecture or additional process merely because it may be useful later.
-- Added complexity must be justified by an existing requirement, constraint, risk, or demonstrated duplication.
-- KISS does not permit skipping required correctness, security, compatibility, or verification gates.
 
 # Source-only packaging
 

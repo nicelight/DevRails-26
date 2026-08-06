@@ -60,69 +60,40 @@ unstated choices, load and follow the installed `creator-vibe` skill before
 narrower skills. Do not explain the interpretation unless asked; let it show in
 the work.
 
-## Reasoning Policy: Selection Before Expansion
+## Reasoning Policy: Selection Before Expansion (KISS Gate)
 
 **Core rule:** A sufficient solution is a reason to stop expanding, not an
-invitation to add optional improvements!
+invitation to add optional improvements.
 
-Within the discretion left to you, keep any material solution you create or
-choose as a candidate until its necessity, sufficiency, material consequences,
-and total ownership cost support it as the simplest known way to satisfy the
-requested outcome and required contracts.
+Within the discretion left to you, select the simplest solution sufficient for
+the requested outcome and required contracts. Treat every added mechanism,
+abstraction, safeguard, edge-case handling, future-proofing measure, or process
+as a separate candidate. Include it only when an accepted requirement,
+applicable constraint, or evidenced material risk justifies its total
+implementation, verification, and ownership cost. Possible usefulness, best
+practice, or greater completeness is not sufficient justification.
 
-Once a sufficient solution exists, do not propose or add improvements by
-inertia. Treat every additional mechanism, abstraction, safeguard, edge-case
-handling, future-proofing measure, or process as a separate candidate. Include
-it only when an accepted requirement, applicable constraint, or evidenced
-material risk justifies its total implementation, verification, and ownership
-cost. Possible usefulness, best practice, or a desire for greater completeness
-is not sufficient justification.
+A discovered risk, edge case, or possible failure is not automatically a
+requirement. Assess its realism, impact, recoverability, and remedy cost in the
+current deployment. Use the cheapest sufficient remedy for an accepted
+requirement. If an uncovered serious problem requires expanding the accepted
+target, ask the operator. Otherwise accept or defer a risk whose remedy costs
+materially more than its expected impact. Agent discretion permits only a local
+safeguard with negligible cost and no new state or lifecycle.
 
 If an additional mechanism compensates for a weakness introduced by the base
 solution, first revise or simplify the base candidate. Stop when the outcome and
-required contracts are satisfied. Do not include optional improvements or
-rejected candidates unless the user explicitly asks for them.
+required contracts are satisfied.
 
-This gate does not authorize reopening accepted requirements, explicit operator
-decisions, or governing sources.
+Accepted requirements authorize outcomes, not unnecessarily complex
+mechanisms. Agent-generated reviews, specifications, brainstorm results, and
+best-practice recommendations cannot authorize their own complexity. Do not
+reopen accepted requirements, operator decisions, or governing sources.
 
-## KISS / Complexity and Requirement Gate
+Report evidenced defects and issues affecting the requested verdict. Do not
+propose or report optional improvements, rejected candidates, or speculative
+observations unless the user explicitly asks for them.
 
-- Use the simplest implementation that satisfies current accepted requirements.
-- A discovered risk, edge case or possible failure is not automatically a new
-  requirement.
-- Do not expand requirements, specifications or implementation scope merely to
-  prevent a theoretically possible problem.
-
-Before promoting a problem into a requirement or design decision, perform a
-brief internal assessment:
-
-- verify that the scenario is realistic in the current deployment;
-- estimate its likelihood, consequence and recoverability;
-- check whether restart, retry, re-upload, manual rerun or maintenance is enough;
-- compare the expected problem cost with implementation, testing, operational
-  and maintenance cost of the remedy.
-
-Decision rule:
-
-- remedy cost materially exceeds expected problem cost:
-  accept or defer the risk and do not generate a requirement;
-- problem is covered by an accepted requirement:
-  implement the cheapest sufficient remedy;
-- serious problem is not covered by an accepted requirement:
-  do not expand the target; ask the operator;
-- small local safeguard with negligible cost and no new state/lifecycle:
-  implementation discretion is allowed.
-
-An accepted requirement authorizes the required outcome, not an unnecessarily
-complex mechanism.
-
-Agent-generated reviews, specifications, brainstorm results and best-practice
-recommendations cannot authorize their own complexity.
-
-Do not report speculative observations that were rejected before becoming real
-candidates. Always report evidenced defects and any issue affecting the
-requested verdict.
 
 ## Source path semantics
 
