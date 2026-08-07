@@ -118,7 +118,9 @@ Cover:
    - schema validation; unique/resolving index entries; ID/tier/feature/wave
      consistency; product `W1+`; concrete governing REQ links.
 2. Coverage and slicing
-   - complete feature AC/REQ and material-outcome closure; no
+   - complete feature AC/REQ and material-outcome closure, including ACs added
+     during `/feature-to-tasks` when grounded in accepted REQ/spec and providing
+     exact task ownership; their origin alone is not a reason to `REJECT`; no
      orphan/duplicate/unrelated outcomes; cohesive independently verifiable
      slicing; coherent plans, waves, dependencies, change surface, gates, and
      verification targets;

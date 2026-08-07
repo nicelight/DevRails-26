@@ -269,9 +269,17 @@ analysis or let generated detail create authority.
 Run one bounded acceptance-closure scan: material edge/failure outcomes have an
 AC or sourced authoritative exclusion, material NFRs have an accepted REQ/AC
 result and verification method, and every AC has one owning task. Reconcile an
-obvious missing locator; use `rebuild_required` for identity, tier, dependency,
-AC, accepted target/condition, or material-scope changes, and the owning blocker
-route for unresolved authority.
+obvious missing locator; for an existing indexed queue, use `rebuild_required`
+for identity, tier, dependency, AC, accepted target/condition, or material-scope
+changes, and the owning blocker route for unresolved authority.
+
+For a provisional task with an independent material outcome but no exact
+feature AC, automatically add the minimally sufficient atomic ACs grounded in
+applicable accepted specs and REQ. Use task scope to identify missing acceptance
+ownership; specs are the authority. Choose AC count, boundaries, and proof
+mapping by KISS. This defines the required result, not analysis order or tactic.
+Stop only at a real contradiction or unresolved material decision in
+authoritative sources.
 
 Before initially emitting JSON task records, form provisional candidates and
 run one bounded execution-path sanity check per candidate. Inspect only one
