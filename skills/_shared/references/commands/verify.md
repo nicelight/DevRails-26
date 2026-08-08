@@ -17,6 +17,7 @@ Require:
 - exactly one matching indexed task record plus
   `.memory-bank/workflows/tier-policy.md#tier-obligations` and
   `#closure-authority`;
+- `#task-claim-and-dependency-ownership`;
 - `#tier-classification-and-escalation` when scope may be under-tiered,
   `#hard-write-boundary` when a boundary/alias is non-empty,
   `#task-scoped-acceptance-evidence` when its fields are populated, and

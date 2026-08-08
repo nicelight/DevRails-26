@@ -452,7 +452,9 @@ try {
   const autonomousSkill = readTarget('.agents/skills/autonomous/SKILL.md');
   const exeSkill = readTarget('.agents/skills/exe/SKILL.md');
   const featureToTasksSkill = readTarget('.agents/skills/feature-to-tasks/SKILL.md');
+  const featureToTasksClaudeSkill = readTarget('.claude/skills/feature-to-tasks/SKILL.md');
   const reviewTasksPlanSkill = readTarget('.agents/skills/review-tasks-plan/SKILL.md');
+  const reviewTasksPlanClaudeSkill = readTarget('.claude/skills/review-tasks-plan/SKILL.md');
   const verifySkill = readTarget('.agents/skills/verify/SKILL.md');
   assert(
     autopilotSkill.includes('/tech-debt wave <N>')
@@ -482,12 +484,19 @@ try {
     'Task start/resume or receipt-reuse mechanics are missing from their owning runtime skills.',
   );
   assert(
-    featureToTasksSkill.includes('`depends_on` keeps dependency proof with its owner')
+    featureToTasksSkill === featureToTasksClaudeSkill
+      && reviewTasksPlanSkill === reviewTasksPlanClaudeSkill
+      && featureToTasksSkill.includes('execute-loop.md#execution-cohesive-task-boundary')
+      && featureToTasksSkill.includes('tier-policy.md#task-claim-and-dependency-ownership')
+      && featureToTasksSkill.includes('Counts alone are insufficient')
+      && reviewTasksPlanSkill.includes('#execution-cohesive-task-boundary')
+      && reviewTasksPlanSkill.includes('#task-claim-and-dependency-ownership')
+      && expectedTierPolicy.includes('`depends_on` keeps dependency outcomes as prerequisites')
       && reviewTasksPlanSkill.includes('card detail cannot authorize itself')
       && reviewTasksPlanSkill.includes('missing proof and excess')
       && exeSkill.includes('dependency `done` outcomes are authoritative prerequisites')
       && verifySkill.includes('transfer ownership.'),
-    'Runtime task workflow lost dependency proof ownership or symmetric excess-proof review.',
+    'Runtime task workflow lost staged slicing, shared ownership, or symmetric review.',
   );
 
   const structureTemplate = readFileSync(structureTemplateSource, 'utf8');
@@ -613,6 +622,7 @@ try {
   assert(
     expectedTierPolicy.includes('## Tier Classification and Escalation')
       && expectedTierPolicy.includes('## Hard Write Boundary')
+      && expectedTierPolicy.includes('## Task Claim And Dependency Ownership')
       && expectedTierPolicy.includes('## Task-Scoped Acceptance Evidence')
       && expectedTierPolicy.includes('## Claim-Linked RED / GREEN For T2/T3')
       && expectedTierPolicy.includes('`depends_on` keeps dependency outcomes as prerequisites')
@@ -620,6 +630,12 @@ try {
       && expectedTierPolicy.includes('## Tier Obligations')
       && expectedTierPolicy.includes('## Closure Authority'),
     'Canonical tier policy lost its stable ownership sections.',
+  );
+  assert(
+    expectedExecuteLoop.includes('## Execution-Cohesive Task Boundary')
+      && expectedExecuteLoop.includes('Shared product outcome, capability owner, tier,')
+      && expectedExecuteLoop.includes('task count is not an optimization target.'),
+    'Canonical execute loop lost the shared task-boundary contract.',
   );
   assert(
     expectedAutonomyPolicy.includes('## Scheduler Failure Handling')

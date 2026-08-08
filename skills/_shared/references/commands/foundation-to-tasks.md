@@ -27,8 +27,8 @@ Require:
 - `.memory-bank/tasks/index.json` and
   `.memory-bank/schemas/task.schema.json`;
 - `.memory-bank/workflows/tier-policy.md#tier-classification-and-escalation`,
-  `#hard-write-boundary`, `#task-scoped-acceptance-evidence`, and
-  `#claim-linked-red--green-for-t2t3`.
+  `#hard-write-boundary`, `#task-claim-and-dependency-ownership`,
+  `#task-scoped-acceptance-evidence`, and `#claim-linked-red--green-for-t2t3`.
 
 Read enough of those sources to prove the selected baseline, spec identity,
 task shape, dependencies, and tier. The agent chooses the efficient reading

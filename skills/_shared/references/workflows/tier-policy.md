@@ -63,20 +63,7 @@ writes already owned by the active skill do not need listing, but retain their
 output and lifecycle ownership. This contract grants no external side effect
 and does not replace filesystem isolation.
 
-## Task-Scoped Acceptance Evidence
-
-Compact protocol changes depth, not acceptance obligations. When any task has
-`verification_targets` or `evidence_required`, closure evidence satisfies them.
-A newly created or reconciled `planned|ready` task proving a material NFR has
-both fields non-empty and linked to its governing REQ and exact feature AC.
-Evidence records the observed value or qualitative result, decisive
-conditions, pass/fail comparison, and artifact; human/expert review is an
-evidence method.
-
-This does not require those fields for every T0/T1 task and adds no gate,
-status, lifecycle, or protocol family.
-
-## Claim-Linked RED / GREEN For T2/T3
+## Task Claim And Dependency Ownership
 
 An exact AC or canonical proof-obligation locator used in a task's proof mapping
 assigns that claim's proof to the task. Governing `reqs` and context links do
@@ -100,13 +87,33 @@ by an AC or material NFR. Missing ownership blocks planning. Claim locators must
 resolve; a section locator is valid only when the whole section is one
 obligation. Invented suffixes are invalid.
 
+## Task-Scoped Acceptance Evidence
+
+Compact protocol changes depth, not acceptance obligations. When any task has
+`verification_targets` or `evidence_required`, closure evidence satisfies them.
+A newly created or reconciled `planned|ready` T2/T3 task maps its task-owned
+proof scope through `verification_targets`; its `evidence_required` follows the
+claim-linked contract below.
+A newly created or reconciled `planned|ready` task proving a material NFR has
+both fields non-empty and linked to its governing REQ and exact feature AC.
+Evidence records the observed value or qualitative result, decisive
+conditions, pass/fail comparison, and artifact; human/expert review is an
+evidence method that names its criterion or rubric, reviewer role, and artifact,
+not a T3 checkpoint.
+
+This does not require those fields for every T0/T1 task and adds no gate,
+status, lifecycle, or protocol family.
+
+## Claim-Linked RED / GREEN For T2/T3
+
 Each `evidence_required` item must be task-owned, grounded, necessary for an
 unambiguous verdict, and non-duplicative. Keep one concise result contract per
 probe: claim locators, expected RED/GREEN or accepted alternative proof,
 decisive comparison, and artifact. Keep required probe method in
 `verification_targets` or a direct testing link; do not repeat canonical prose.
 A shared probe must distinguish each claim result. Tier, convenience, or a
-missing harness does not justify `RED_NOT_APPLICABLE`.
+missing harness does not justify `RED_NOT_APPLICABLE`; its reason explains why
+claim absence cannot or should not be observed without falsifying the task.
 
 After `ready -> in_progress`, initial execution obtains honest
 pre-implementation RED for each applicable claim before changing its production
@@ -133,11 +140,12 @@ registry, or lifecycle is added.
 
 ## Tier Obligations
 
-The indexed card is the task-scoped execution and verification handoff. Before
-T2/T3 execution it contains purpose/outcome, direct task-relevant canonical SDD
-paths, grounded scope, a verification path, concrete REQ linkage, and valid
-dependencies. Semantic applicability and sufficiency remain fresh-context
-review concerns.
+The indexed card is the task-scoped execution and verification handoff. Every
+newly created or reconciled `planned|ready` T2/T3 record has non-empty
+`purpose`, scalar `success_outcome`, direct task-relevant canonical SDD paths,
+grounded scope, concrete REQ linkage, valid dependencies, and at least one real
+gate command or non-empty `verification_targets`. Semantic applicability and
+sufficiency remain fresh-context review concerns.
 
 - `T0`: compact protocol is allowed; scheduler flow runs `/verify`, while
   separate manual `/verify` is optional. `/red-verify` is not required.

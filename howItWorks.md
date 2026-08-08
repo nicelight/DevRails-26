@@ -783,6 +783,21 @@ reuse | extend | create | not_applicable | block
 Task slicing строится вокруг cohesive independently verifiable outcomes, а не
 вокруг файлов, слоёв, modules или отдельной «task на tests».
 
+#### Почему task slicing проверяет execution cohesion
+
+Ранее общий product outcome, capability owner или tier могли ошибочно
+приниматься за атомарность исполнения. Это приводило к oversized tasks, а
+линейный review подтверждал полноту карточки, не замечая независимые units
+реализации и проверки.
+
+Теперь exact claims и canonical semantic owners используются как split signals,
+а окончательная граница определяется execution cohesion. Material work
+разделяется, если её часть можно независимо реализовать и доказать до полезного
+completion state либо у неё есть собственная grounded
+failure/retry/rollout/rollback boundary. Reviewer независимо пытается
+опровергнуть cohesion; exact claim ownership сохраняется, а dependency proof не
+наследуется downstream task.
+
 Feature, slice и task остаются разными сущностями. Для принятой module/slice
 architecture implementation plan называет primary owning slice/module и code
 root, а task card переносит применимые architecture/boundary links,

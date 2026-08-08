@@ -43,6 +43,22 @@ status: active
   T2/foundation/dependency/stale-doc/risky-link conditions. Simple manual
   T0/T1 queues do not require `/mb-doctor` by default.
 
+## Execution-Cohesive Task Boundary
+
+A task is one grounded material unit that can reach an owner-valid useful
+implementation-and-proof completion. That completion need not be
+feature-visible, close a whole AC, or complete the surrounding command,
+invariant, transaction, or end-to-end flow.
+
+Different exact task-owned claims or canonical semantic owners are split
+signals. Keep independently completable implementation, proof,
+failure/retry/rollout/rollback surfaces in sibling tasks unless accepted
+contracts and, when available, the bounded code/change surface show that they
+cannot complete separately. Shared product outcome, capability owner, tier,
+transaction, AC, flow, or KISS is not merge evidence. Do not split solely by
+files, layers, artifacts, tests, AC count, or modules without distinct semantic
+ownership; task count is not an optimization target.
+
 ## Interactive mode (you stay)
 1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
 2) `/constitution` for contextual governing principles when `.memory-bank/constitution.md` is missing or `project_principles` is framework-default|skipped|missing; if principles are already ratified/partial, continue to `/write-prd`; if explicitly skipped, continue with framework-default/skipped principles

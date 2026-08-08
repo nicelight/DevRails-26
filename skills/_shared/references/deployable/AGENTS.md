@@ -65,6 +65,10 @@ the work.
 **Core rule:** A sufficient solution is a reason to stop expanding, not an
 invitation to add optional improvements.
 
+Simplicity is measured by total mechanism and coupling cost, not unit count.
+Do not combine independently completable and verifiable outcomes merely to
+reduce their number.
+
 Within the discretion left to you, select the simplest solution sufficient for
 the requested outcome and required contracts. Treat every added mechanism,
 abstraction, safeguard, edge-case handling, future-proofing measure, or process
