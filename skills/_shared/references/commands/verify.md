@@ -232,7 +232,11 @@ Tier-specific independence remains:
 For UI/browser scope, use the smallest reproducible project-native automation,
 record runtime/base URL and relevant viewport/device plus redacted artifacts,
 and return `NEEDS-CLARIFICATION` when required behavior cannot be credibly
-proved.
+proved. When real rendered web behavior is applicable and source inspection or
+ordinary functional tests cannot settle it, load this installed skill's
+`references/web-design-reviewer.md` semantic pack and apply only its relevant
+concerns. Pack use remains an internal evidence tactic and creates no separate
+gate, artifact, status, or verdict.
 
 Write:
 - T0/T1 -> `.protocols/<TASK_ID>/run.md`;

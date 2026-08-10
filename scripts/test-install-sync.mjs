@@ -18,6 +18,14 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, '..');
 const installer = join(repoRoot, 'scripts', 'install-framework.mjs');
 const commandSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'commands');
+const webDesignReviewerPackSource = join(
+  repoRoot,
+  'skills',
+  '_shared',
+  'references',
+  'semantic-packs',
+  'web-design-reviewer.md',
+);
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
 const deployableAgentsSource = join(repoRoot, 'skills', '_shared', 'references', 'deployable', 'AGENTS.md');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
@@ -294,6 +302,7 @@ try {
   runInstaller(['--install-only', '--target', installOnlyTarget, '--yes']);
   const installOnlyAgentsSkillNames = runtimeSkillNames(installOnlyTarget, '.agents');
   const installOnlyClaudeSkillNames = runtimeSkillNames(installOnlyTarget, '.claude');
+  const expectedWebDesignReviewerPack = readFileSync(webDesignReviewerPackSource, 'utf8');
   assert(
     JSON.stringify(installOnlyAgentsSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
       && JSON.stringify(installOnlyClaudeSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
@@ -301,6 +310,19 @@ try {
       && !existsSync(join(installOnlyTarget, 'PAPERCUTS')),
     'Install-only did not deploy the complete runtime command set without Memory Bank.',
   );
+  ['.agents', '.claude'].forEach((runtimeRoot) => {
+    ['verify', 'red-verify'].forEach((skill) => {
+      const skillDir = join(installOnlyTarget, runtimeRoot, 'skills', skill);
+      const deployedSkill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8');
+      assert(
+        readFileSync(join(skillDir, 'references', 'web-design-reviewer.md'), 'utf8')
+          === expectedWebDesignReviewerPack
+          && deployedSkill.includes('references/web-design-reviewer.md')
+          && !deployedSkill.includes('skills/_shared/references/semantic-packs'),
+        `${runtimeRoot}/${skill} did not deploy or route the web-design-reviewer semantic pack.`,
+      );
+    });
+  });
   ['.agents', '.claude'].forEach((runtimeRoot) => {
     const installOnlyStart = readFileSync(
       join(installOnlyTarget, runtimeRoot, 'skills', 'start', 'SKILL.md'),
@@ -357,6 +379,7 @@ try {
   const lintRel = 'scripts/mb-lint.mjs';
   const doctorRel = 'scripts/mb-doctor.mjs';
   const runtimeSkillRel = '.agents/skills/start/SKILL.md';
+  const runtimeSemanticPackRel = '.agents/skills/verify/references/web-design-reviewer.md';
   const expectedSchema = readTarget(schemaRel);
   const expectedBoundaryMap = readTarget(boundaryMapRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
@@ -369,6 +392,7 @@ try {
     doctorModules.map(({ source, target: rel }) => [rel, readFileSync(source, 'utf8')]),
   );
   const expectedRuntimeSkill = readTarget(runtimeSkillRel);
+  const expectedRuntimeSemanticPack = readTarget(runtimeSemanticPackRel);
   const skillIndexRel = '.memory-bank/skills/index.md';
   const freshSkillIndex = readTarget(skillIndexRel);
   const agentsSkillNames = runtimeSkillNames(target, '.agents');
@@ -1031,6 +1055,7 @@ Authored graph content preserved for manual migration.
 `;
   writeTarget(boundaryMapRel, authoredBoundaryMap);
   writeTarget(runtimeSkillRel, `${expectedRuntimeSkill}\n<!-- stale runtime command -->\n`);
+  writeTarget(runtimeSemanticPackRel, '# stale semantic pack\n');
 
   const syncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(readTarget(schemaRel) === expectedSchema, 'Full sync did not restore the canonical task schema.', syncOutput);
@@ -1049,6 +1074,11 @@ Authored graph content preserved for manual migration.
   });
   assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Full sync did not restore the canonical deployable AGENTS.md.', syncOutput);
   assert(readTarget(runtimeSkillRel) === expectedRuntimeSkill, 'Full sync did not restore the canonical runtime command skill.', syncOutput);
+  assert(
+    readTarget(runtimeSemanticPackRel) === expectedRuntimeSemanticPack,
+    'Full sync did not restore the canonical runtime semantic pack.',
+    syncOutput,
+  );
   assert(
     readTarget(staleProtocolRel) === expectedProtocolTemplates.get('compact-run-template.md'),
     'Full sync did not restore the canonical protocol template.',
@@ -1099,6 +1129,11 @@ Authored graph content preserved for manual migration.
     assert(readTarget(rel) === expected, `Idempotent sync changed the canonical mb-doctor module: ${rel}`, secondSyncOutput);
   });
   assert(readTarget('AGENTS.md') === expectedDeployableAgents, 'Idempotent sync changed the canonical deployable AGENTS.md.', secondSyncOutput);
+  assert(
+    readTarget(runtimeSemanticPackRel) === expectedRuntimeSemanticPack,
+    'Idempotent sync changed the runtime semantic pack.',
+    secondSyncOutput,
+  );
   expectedProtocolTemplates.forEach((expected, filename) => {
     assert(
       readTarget(protocolTemplateRel(filename)) === expected,

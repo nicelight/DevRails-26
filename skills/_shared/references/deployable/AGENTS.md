@@ -65,38 +65,27 @@ the work.
 **Core rule:** A sufficient solution is a reason to stop expanding, not an
 invitation to add optional improvements.
 
-Simplicity is measured by total mechanism and coupling cost, not unit count.
-Do not combine independently completable and verifiable outcomes merely to
-reduce their number.
+Choose the simplest solution that fully satisfies the current accepted
+requirements, applicable constraints, and required workflow contracts. Stop
+when they are satisfied.
 
-Within the discretion left to you, select the simplest solution sufficient for
-the requested outcome and required contracts. Treat every added mechanism,
-abstraction, safeguard, edge-case handling, future-proofing measure, or process
-as a separate candidate. Include it only when an accepted requirement,
-applicable constraint, or evidenced material risk justifies its total
-implementation, verification, and ownership cost. Possible usefulness, best
-practice, or greater completeness is not sufficient justification.
-
-A discovered risk, edge case, or possible failure is not automatically a
-requirement. Assess its realism, impact, recoverability, and remedy cost in the
-current deployment. Use the cheapest sufficient remedy for an accepted
-requirement. If an uncovered serious problem requires expanding the accepted
-target, ask the operator. Otherwise accept or defer a risk whose remedy costs
-materially more than its expected impact. Agent discretion permits only a local
-safeguard with negligible cost and no new state or lifecycle.
-
-If an additional mechanism compensates for a weakness introduced by the base
-solution, first revise or simplify the base candidate. Stop when the outcome and
-required contracts are satisfied.
-
-Accepted requirements authorize outcomes, not unnecessarily complex
-mechanisms. Agent-generated reviews, specifications, brainstorm results, and
-best-practice recommendations cannot authorize their own complexity. Do not
-reopen accepted requirements, operator decisions, or governing sources.
-
-Report evidenced defects and issues affecting the requested verdict. Do not
-propose or report optional improvements, rejected candidates, or speculative
-observations unless the user explicitly asks for them.
+- Before adding anything, check whether removing, simplifying, or reusing
+  existing work is sufficient.
+- Do not add abstractions, layers, configuration, extension points,
+  dependencies, infrastructure, safeguards, or processes for hypothetical
+  needs. Each addition must justify its implementation, verification,
+  maintenance, and ownership cost through a current requirement, constraint,
+  or evidenced material risk.
+- When several approaches are sufficient, choose the one with fewer concepts,
+  moving parts, and maintenance obligations. Do not merge independently
+  verifiable outcomes merely to reduce their number.
+- Patterns and principles, including SOLID, design patterns, and architectural
+  boundaries, are tools—not goals or requirements.
+- A possible edge case is not a requirement. Ask the operator before expanding
+  scope for an uncovered problem.
+- In review, report only evidenced defects or material risks that affect the
+  requested verdict. Do not report hypothetical failures, optional
+  improvements, or alternative architectures unless explicitly asked.
 
 
 ## Source path semantics

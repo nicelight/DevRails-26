@@ -269,12 +269,13 @@ or sourced exclusion; material NFRs require an accepted REQ/AC result and
 verification method.
 
 Run one slicing pass:
-1. Discover recursively the unmerged grounded material units from exact claims,
-   canonical semantic owners, and distinct implementation, proof,
-   failure/retry/rollout/rollback surfaces; do not form tasks yet.
-2. State each unit's owner-valid useful task-level implementation-and-proof
-   completion. It need not close an AC or the surrounding command, invariant,
-   transaction, or end-to-end flow.
+1. Enumerate recursively the grounded material implementation, proof,
+   failure/retry/rollout/rollback surfaces exposed by exact claims and canonical
+   owners; do not group them into units yet.
+2. For every surface, state separately `implementation result | independent
+   proof`. A surface that reaches the shared completion definition is an
+   unmerged unit; a claim, owner, section, command, transaction, or flow is not
+   an atomic unit by itself.
 3. Merge only when accepted contracts and, when available, bounded code/change
    evidence show that separate completion is impossible; otherwise keep sibling
    tasks.
@@ -285,8 +286,10 @@ target/condition, or material-scope changes use `rebuild_required`; unresolved
 authority uses its existing blocker route.
 
 In direct interactive use, show the named
-`unmerged units -> justified merges -> final task candidates`: each unit, each
-merge with one brief grounded indivisibility reason, and each candidate outcome.
+`unmerged units -> justified merges -> final task candidates`: each unmerged
+unit as `implementation result | independent proof`, each merge with the
+source/code fact that makes those completions inseparable, and each final
+candidate outcome.
 Counts alone are insufficient. For a new queue, assign no task IDs, tiers,
 waves, concrete `depends_on`, or record fields before explicit boundary
 acceptance. Wait for acceptance or a specific split/consolidation request;

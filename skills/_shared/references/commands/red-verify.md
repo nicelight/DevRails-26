@@ -143,6 +143,13 @@ accepted contract. A verifier-generated probe, review, test, or validator does
 not authorize a new requirement or permanent regression. `/red-verify` does not
 repeat ordinary `/verify` coverage, but any material supported-path break it
 proves remains reportable.
+
+When the accepted outcome or actual change surface includes rendered web UI and
+functional evidence cannot settle its real-use quality, load this installed
+skill's `references/web-design-reviewer.md` semantic pack. Apply only concerns
+relevant to the supported path and affected surface. The pack contributes
+evidence to this command; it does not add a workflow, gate, artifact, status, or
+verdict.
 </agent_discretion>
 
 <required_outputs>

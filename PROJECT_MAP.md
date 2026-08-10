@@ -394,6 +394,25 @@ Do not add a behavior registry, JSON Schema, lint/doctor gate, new task field,
 feature frontmatter field, test runner, or verification requirement for behavior
 specs.
 
+## Rendered Web UI Semantic Pack
+
+`skills/_shared/references/semantic-packs/web-design-reviewer.md` is the
+canonical conditional rendered-interface lens used by the existing `/verify`
+and `/red-verify` commands. The installer deploys it inside both runtime skill
+directories as `references/web-design-reviewer.md`; deployed commands must not
+reference the source-only path.
+
+The pack narrows evidence to applicable rendered UI concerns and contributes to
+the owning command's existing verdict and artifacts. It does not introduce a
+workflow, gate, lifecycle, status, task field, or mandatory separate report.
+
+Primary touch points:
+
+- `skills/_shared/references/commands/verify.md`
+- `skills/_shared/references/commands/red-verify.md`
+- `scripts/install-framework.mjs`
+- `scripts/test-install-sync.mjs`
+
 ## Verification Commands
 
 Fast syntax/source-only check:

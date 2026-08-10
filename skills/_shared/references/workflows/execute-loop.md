@@ -50,6 +50,10 @@ implementation-and-proof completion. That completion need not be
 feature-visible, close a whole AC, or complete the surrounding command,
 invariant, transaction, or end-to-end flow.
 
+A unit reaches useful task-level completion when task closure leaves one
+material owner-valid implementation result true and decisively proved. Later
+work may compose or depend on it but is not required to make that result true.
+
 Different exact task-owned claims or canonical semantic owners are split
 signals. Keep independently completable implementation, proof,
 failure/retry/rollout/rollback surfaces in sibling tasks unless accepted
