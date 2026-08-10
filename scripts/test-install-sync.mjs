@@ -494,9 +494,19 @@ try {
     'Fresh bootstrap did not deploy and index the role contracts.',
   );
   assert(
-    readTarget('.agents/skills/debug/SKILL.md')
-      === readTarget('.claude/skills/debug/SKILL.md'),
-    'Debug deployment differs between runtime surfaces.',
+    readTarget(generalRoleRel).includes('unless the active skill requires them')
+      && !readTarget(reviewerRoleRel).includes('or spawn subagents'),
+    'Fresh role deployment conflicts with skill-owned co-review delegation.',
+  );
+  const debugSkill = readTarget('.agents/skills/debug/SKILL.md');
+  const normalizedDebugSkill = debugSkill.replace(/\s+/g, ' ');
+  assert(
+    debugSkill === readTarget('.claude/skills/debug/SKILL.md')
+      && normalizedDebugSkill.includes('recurrence: `repeated_confirmed|no_prior_evidence|unclassified`')
+      && normalizedDebugSkill.includes('one cheapest sufficient prevention guardrail')
+      && debugSkill.includes('DIAGNOSIS: CONFIRMED|INCONCLUSIVE')
+      && !debugSkill.includes('skills/_shared/'),
+    'Deployed debug skill lost recurrence classification, prevention ownership, or source-only safety.',
   );
   const techDebtAgentsSkill = readTarget('.agents/skills/tech-debt/SKILL.md');
   const techDebtClaudeSkill = readTarget('.claude/skills/tech-debt/SKILL.md');
@@ -700,8 +710,9 @@ try {
     expectedAutonomyPolicy.includes('## Scheduler Failure Handling')
       && expectedAutonomyPolicy.includes('- max_retries_per_task: 2')
       && expectedAutonomyPolicy.includes('- max_consecutive_failures: 3')
-      && expectedAutonomyPolicy.includes('- max_open_blockers: 3'),
-    'Autonomy policy lost scheduler failure/retry semantics or existing budgets.',
+      && expectedAutonomyPolicy.includes('- max_open_blockers: 3')
+      && expectedAutonomyPolicy.includes('Carry advisory recurrence/prevention evidence'),
+    'Autonomy policy lost scheduler failure/retry, prevention handoff, or existing budgets.',
   );
   assert(
     readTarget(lintRel) === expectedLint,

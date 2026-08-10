@@ -169,7 +169,7 @@ Bootstrap разворачивает role contracts в `.memory-bank/roles/`; `A
 
 | Role | Назначение | Ограничение |
 |---|---|---|
-| `GENERAL` | самостоятельная top-level работа одним агентом | не запускает subagents без явного запроса оператора |
+| `GENERAL` | самостоятельная top-level работа одним агентом | запускает subagents только по требованию active skill или оператора |
 | `ORCHESTRATOR` | strategy, decomposition, delegation, risk control и final judgment | не выполняет executor work без явного разрешения |
 | `ARCHITECT` | проектирование practical KISS architecture/specs с proposal-level cost/risk analysis | canonical changes выполняет через owning runtime skill |
 | `Explorer` | bounded read-only discovery и optional `/context-manifest` routing | delegated read-only role, не принимает product/design decisions |
@@ -935,6 +935,10 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 fresh session и возвращают findings, а не silently repair.
 `/review-tasks-plan --all` всё равно создаёт отдельный bounded verdict для каждой
 product feature.
+
+`/review-feat-plan`, `/review-tasks-plan`, `/verify` и `/red-verify` перед
+verdict используют два `Codex Luna xhigh` co-reviewers. Основной агент сам
+выбирает для них разные полезные фокусы и распоряжается их findings.
 
 `/review-tasks-plan` после достаточного task-planning context запускает одного
 fresh Reviewer с `/architecture-review` на feature. Основной reviewer включает
