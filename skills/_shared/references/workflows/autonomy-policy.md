@@ -168,6 +168,9 @@ disposition.
   durable failure evidence supports neither a safe same-task correction nor an
   evidence-based disposition. `/debug` neither increments nor extends the
   retry budget; checkpoint and report recovery remain owned by `/autopilot`.
+- Carry advisory recurrence/prevention evidence into the existing correction,
+  disposition, or bug/follow-up handoff. A same-task retry may include its
+  guardrail only when the accepted task and minimum correction require it.
 - Disposition follows evidence: a proven upstream or authority gap becomes
   `blocked` with exact halt, owner, and resume route; proven task-local failure
   without a safe retry becomes `failed`; an inconclusive mapping before the

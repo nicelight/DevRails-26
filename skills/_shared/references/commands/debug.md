@@ -1,13 +1,15 @@
 ---
-description: Diagnose one observed task failure in a fresh read-only context and record task-owned supporting evidence.
+description: Diagnose one task failure read-only and route evidence-backed recurrence prevention.
 status: active
 ---
 # /debug - Diagnose one TASK failure
 
 <objective>
 Trace one observed failure for a concrete indexed task to its confirmed root
-cause and first violated invariant, or report the exact evidence gap. Produce
-supporting evidence only; do not implement, verify, or own lifecycle decisions.
+cause and first violated invariant, or report the exact evidence gap. When
+confirmed, classify recurrence and recommend durable prevention only for an
+evidence-backed material repeat. Produce supporting evidence only; do not
+implement, verify, or own lifecycle decisions.
 </objective>
 
 <input_contract>
@@ -18,6 +20,10 @@ Read the indexed task card, direct task-linked specs, current-attempt protocol
 and handoff, functional/semantic verdict evidence, actual changes, and only the
 callers or boundaries needed to trace the failure. Missing reproduction or
 evidence is a valid diagnostic input and must remain explicit.
+
+After root-cause confirmation, inspect only relevant prior diagnostic,
+execution, verification, bug, or repository-history evidence needed to compare
+the mechanism. Keep missing history explicit.
 </input_contract>
 
 <hard_invariants>
@@ -28,6 +34,9 @@ evidence is a valid diagnostic input and must remain explicit.
   budget, or permissions.
 - Do not issue functional/semantic verdicts, accept product/spec/architecture
   decisions, implement a correction, or create BUG/follow-up work.
+- Recurrence and prevention are advisory evidence. Do not infer recurrence from
+  similar symptoms or absence of a prior match, create a durable rule without a
+  confirmed material recurring mechanism, or expand current task authority.
 - A probe may mutate only known local isolated or disposable state with safe
   rerun and cleanup. It grants no production, destructive, privileged, secret,
   or external permission. When safety or initial state is uncertain, do not run
@@ -60,6 +69,16 @@ Include:
 - experiments and only materially useful rejected hypotheses;
 - minimum recommended correction;
 - suitable regression check;
+- recurrence: `repeated_confirmed|no_prior_evidence|unclassified`, with inspected
+  evidence scope. `repeated_confirmed` requires a prior failure with the same
+  causal mechanism and first violated invariant; `no_prior_evidence` is scoped
+  to inspected history; insufficient evidence is `unclassified`;
+- for `repeated_confirmed`, prior evidence locators, the previous correction
+  and why it failed to prevent recurrence, or the exact correction-history gap;
+- for a material `repeated_confirmed`, one cheapest sufficient prevention
+  guardrail — test, invariant, contract, lint/tooling check, runbook condition,
+  or architecture boundary — with canonical artifact/owner, owning workflow,
+  and adoption check; otherwise no guardrail and the reason;
 - residual uncertainty and next owner;
 - exactly one standalone marker:
 
@@ -79,17 +98,18 @@ an older attempt does not satisfy the current-attempt output.
 <validation>
 Before returning, confirm that every causal claim points to observable evidence,
 the report names its attempt and change surface, probes stayed within existing
-permissions and replay-safety constraints, and no implementation, verdict,
-lifecycle, planning, or architecture authority was exercised.
+permissions and replay-safety constraints, recurrence/guardrail admission is
+evidence-backed, and no implementation, verdict, lifecycle, planning, or
+architecture authority was exercised.
 </validation>
 
 <handoff_contract>
-Return the report path and classification to the caller. In manual flow, when
-the report supports a concrete non-trivial or multi-surface correction inside
-the accepted task boundary, recommend `/technical-premortem <TASK_ID>` as the
-next step instead of `/exe`; its handoff returns the later advisory route back
-to execution. Recommend a separate `/exe <TASK_ID>` only for a contained
-correction that does not need that pre-mortem. Otherwise name the existing
-planning, clarification, or evidence owner. `/debug` does not invoke the next
-command.
+Return the report path, diagnosis, recurrence, and prevention owner/route when
+present. In manual flow, when the report supports a concrete non-trivial or
+multi-surface correction inside the accepted task boundary, recommend
+`/technical-premortem <TASK_ID>` as the next step instead of `/exe`; its handoff
+returns the later advisory route back to execution. Recommend a separate
+`/exe <TASK_ID>` only for a contained correction that does not need that
+pre-mortem. Otherwise name the existing planning, canonical-change,
+clarification, or evidence owner. `/debug` does not invoke the next command.
 </handoff_contract>
