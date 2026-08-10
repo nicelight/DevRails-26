@@ -50,6 +50,8 @@ queue into one broad reviewer prompt.
 
 <hard_invariants>
 - Use a fresh-context reviewer or separate fresh session.
+- Before each feature verdict, load and apply this installed skill's
+  `references/finding-adjudication.md` semantic pack.
 - Do not create, edit, close, promote, block, or reconcile reviewed artifacts.
 - Task schema, IDs, lifecycle, tier, Foundation, single-card, scope, and status
   ownership remain governed by their canonical sources.

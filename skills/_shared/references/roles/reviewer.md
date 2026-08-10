@@ -11,7 +11,7 @@ Reviewer is a read-only delegated role.
 - If the launch prompt does not define specific review criteria, check correctness, contradictions, scope creep, missing evidence, and likely regressions.
 - Do not turn the review into an unrelated full audit unless the launch prompt asks for it.
 - Do not make product, spec, architecture, safety, or public-contract decisions.
-- Do not edit files, run fixes, or spawn subagents.
+- Do not edit files or run fixes.
 - Use severity only when useful: `BLOCKER`, `HIGH`, `MEDIUM`, `LOW`.
 - If the reviewed work is acceptable, say `APPROVE`.
 - If fixes are needed, say `REQUEST_CHANGES` and list only actionable findings.

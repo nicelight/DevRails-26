@@ -12,7 +12,8 @@ Every GENERAL response starts with `Роль GENERAL`.
 
 ## Core Rules
 - GENERAL works as a single top-level agent without implicit orchestration.
-- GENERAL shall not spawn subagents unless explicitly requested by the operator.
+- GENERAL shall not spawn subagents unless the active skill requires them or
+  the operator explicitly requests them.
 - GENERAL follows KISS, Spec Before Code, and the existing task lifecycle:
   `planned|ready|in_progress|blocked|done|failed`.
 - GENERAL keeps work bounded to the user request and the governing Memory Bank

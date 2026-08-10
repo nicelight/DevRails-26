@@ -26,6 +26,14 @@ const webDesignReviewerPackSource = join(
   'semantic-packs',
   'web-design-reviewer.md',
 );
+const findingAdjudicationPackSource = join(
+  repoRoot,
+  'skills',
+  '_shared',
+  'references',
+  'semantic-packs',
+  'finding-adjudication.md',
+);
 const protocolSourceDir = join(repoRoot, 'skills', '_shared', 'references', 'protocols');
 const deployableAgentsSource = join(repoRoot, 'skills', '_shared', 'references', 'deployable', 'AGENTS.md');
 const structureTemplateSource = join(repoRoot, 'skills', '_shared', 'references', 'structure-template.md');
@@ -303,6 +311,8 @@ try {
   const installOnlyAgentsSkillNames = runtimeSkillNames(installOnlyTarget, '.agents');
   const installOnlyClaudeSkillNames = runtimeSkillNames(installOnlyTarget, '.claude');
   const expectedWebDesignReviewerPack = readFileSync(webDesignReviewerPackSource, 'utf8');
+  const expectedFindingAdjudicationPack = readFileSync(findingAdjudicationPackSource, 'utf8');
+  const normalizedFindingAdjudicationPack = expectedFindingAdjudicationPack.replace(/\s+/g, ' ');
   assert(
     JSON.stringify(installOnlyAgentsSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
       && JSON.stringify(installOnlyClaudeSkillNames) === JSON.stringify(expectedRuntimeSkillNames)
@@ -323,6 +333,27 @@ try {
       );
     });
   });
+  ['.agents', '.claude'].forEach((runtimeRoot) => {
+    ['review-feat-plan', 'review-tasks-plan', 'verify', 'red-verify'].forEach((skill) => {
+      const skillDir = join(installOnlyTarget, runtimeRoot, 'skills', skill);
+      const deployedSkill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8');
+      assert(
+        readFileSync(join(skillDir, 'references', 'finding-adjudication.md'), 'utf8')
+          === expectedFindingAdjudicationPack
+          && deployedSkill.includes('references/finding-adjudication.md')
+          && !deployedSkill.includes('skills/_shared/references/semantic-packs'),
+        `${runtimeRoot}/${skill} did not deploy or route the finding-adjudication semantic pack.`,
+      );
+    });
+  });
+  assert(
+    normalizedFindingAdjudicationPack.includes('model `Codex Luna`')
+      && normalizedFindingAdjudicationPack.includes('reasoning effort `xhigh`')
+      && normalizedFindingAdjudicationPack.includes('Choose two different review focuses')
+      && normalizedFindingAdjudicationPack.includes('retry it once')
+      && normalizedFindingAdjudicationPack.includes('continue without it'),
+    'Finding adjudication lost its model pin, agent-chosen focuses, or retry contract.',
+  );
   ['.agents', '.claude'].forEach((runtimeRoot) => {
     const installOnlyStart = readFileSync(
       join(installOnlyTarget, runtimeRoot, 'skills', 'start', 'SKILL.md'),
@@ -374,12 +405,14 @@ try {
   const autonomyPolicyRel = '.memory-bank/workflows/autonomy-policy.md';
   const architectRoleRel = '.memory-bank/roles/architect.md';
   const explorerRoleRel = '.memory-bank/roles/explorer.md';
+  const generalRoleRel = '.memory-bank/roles/general.md';
   const implementerRoleRel = '.memory-bank/roles/implementer.md';
   const reviewerRoleRel = '.memory-bank/roles/reviewer.md';
   const lintRel = 'scripts/mb-lint.mjs';
   const doctorRel = 'scripts/mb-doctor.mjs';
   const runtimeSkillRel = '.agents/skills/start/SKILL.md';
   const runtimeSemanticPackRel = '.agents/skills/verify/references/web-design-reviewer.md';
+  const runtimeFindingPackRel = '.agents/skills/verify/references/finding-adjudication.md';
   const expectedSchema = readTarget(schemaRel);
   const expectedBoundaryMap = readTarget(boundaryMapRel);
   const expectedTierPolicy = readFileSync(tierPolicySource, 'utf8');
@@ -393,6 +426,7 @@ try {
   );
   const expectedRuntimeSkill = readTarget(runtimeSkillRel);
   const expectedRuntimeSemanticPack = readTarget(runtimeSemanticPackRel);
+  const expectedRuntimeFindingPack = readTarget(runtimeFindingPackRel);
   const skillIndexRel = '.memory-bank/skills/index.md';
   const freshSkillIndex = readTarget(skillIndexRel);
   const agentsSkillNames = runtimeSkillNames(target, '.agents');
@@ -449,10 +483,11 @@ try {
   );
   const freshMemoryBankIndex = readTarget('.memory-bank/index.md');
   assert(
-    [architectRoleRel, explorerRoleRel, implementerRoleRel, reviewerRoleRel]
+    [architectRoleRel, explorerRoleRel, generalRoleRel, implementerRoleRel, reviewerRoleRel]
       .every((rel) => existsSync(targetPath(rel)))
       && freshMemoryBankIndex.includes('(roles/architect.md)')
       && freshMemoryBankIndex.includes('(roles/explorer.md)')
+      && freshMemoryBankIndex.includes('(roles/general.md)')
       && freshMemoryBankIndex.includes('(roles/implementer.md)')
       && freshMemoryBankIndex.includes('(roles/reviewer.md)')
       && !existsSync(targetPath('.memory-bank/roles/worker.md')),
@@ -1056,6 +1091,7 @@ Authored graph content preserved for manual migration.
   writeTarget(boundaryMapRel, authoredBoundaryMap);
   writeTarget(runtimeSkillRel, `${expectedRuntimeSkill}\n<!-- stale runtime command -->\n`);
   writeTarget(runtimeSemanticPackRel, '# stale semantic pack\n');
+  writeTarget(runtimeFindingPackRel, '# stale finding pack\n');
 
   const syncOutput = runInstaller(['--bootstrap', '--sync', '--target', target, '--yes']);
   assert(readTarget(schemaRel) === expectedSchema, 'Full sync did not restore the canonical task schema.', syncOutput);
@@ -1077,6 +1113,11 @@ Authored graph content preserved for manual migration.
   assert(
     readTarget(runtimeSemanticPackRel) === expectedRuntimeSemanticPack,
     'Full sync did not restore the canonical runtime semantic pack.',
+    syncOutput,
+  );
+  assert(
+    readTarget(runtimeFindingPackRel) === expectedRuntimeFindingPack,
+    'Full sync did not restore the canonical finding-adjudication pack.',
     syncOutput,
   );
   assert(
@@ -1132,6 +1173,11 @@ Authored graph content preserved for manual migration.
   assert(
     readTarget(runtimeSemanticPackRel) === expectedRuntimeSemanticPack,
     'Idempotent sync changed the runtime semantic pack.',
+    secondSyncOutput,
+  );
+  assert(
+    readTarget(runtimeFindingPackRel) === expectedRuntimeFindingPack,
+    'Idempotent sync changed the finding-adjudication pack.',
     secondSyncOutput,
   );
   expectedProtocolTemplates.forEach((expected, filename) => {

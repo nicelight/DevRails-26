@@ -23,8 +23,9 @@ except for an obvious stale contradiction with the current product plan.
 </input_contract>
 
 <hard_invariants>
-- Use a fresh-context reviewer or separate fresh session; do not pin a provider,
-  CLI, or model.
+- Use a fresh-context reviewer or separate fresh session.
+- Before the verdict, load and apply this installed skill's
+  `references/finding-adjudication.md` semantic pack.
 - Reviewer reports findings only. It does not rewrite product decisions or
   choose between ambiguous alternatives.
 - `FT-000` remains reserved for Foundation Dev Path.

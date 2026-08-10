@@ -50,6 +50,8 @@ the rule above.
 </input_contract>
 
 <hard_invariants>
+- Before the verdict, load and apply this installed skill's
+  `references/finding-adjudication.md` semantic pack.
 - Route only by `task.tier`; lifecycle/status ownership is canonical in
   `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or

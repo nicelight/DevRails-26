@@ -413,6 +413,28 @@ Primary touch points:
 - `scripts/install-framework.mjs`
 - `scripts/test-install-sync.mjs`
 
+## Finding Adjudication Semantic Pack
+
+`skills/_shared/references/semantic-packs/finding-adjudication.md` adds two
+`Codex Luna xhigh` co-reviewers to `/review-feat-plan`, `/review-tasks-plan`,
+`/verify`, and `/red-verify`. The caller chooses their different focuses and
+retains the existing verdict, artifact, lifecycle, and handoff contracts.
+
+The installer deploys the pack inside each owning runtime skill as
+`references/finding-adjudication.md`; deployed commands must not reference its
+source-only path.
+
+Primary touch points:
+
+- `skills/_shared/references/roles/general.md`
+- `skills/_shared/references/roles/reviewer.md`
+- `skills/_shared/references/commands/review-feat-plan.md`
+- `skills/_shared/references/commands/review-tasks-plan.md`
+- `skills/_shared/references/commands/verify.md`
+- `skills/_shared/references/commands/red-verify.md`
+- `scripts/install-framework.mjs`
+- `scripts/test-install-sync.mjs`
+
 ## Verification Commands
 
 Fast syntax/source-only check:
