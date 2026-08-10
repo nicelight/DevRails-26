@@ -203,6 +203,13 @@ applicable canonical spec defining:
 - edge cases/errors;
 - verification target.
 
+Before handoff, resolve each evidenced material boundary decision in its owning
+canonical artifact when execution would otherwise determine public or
+cross-boundary behavior, compatibility or migration, authority, or state/data
+ownership. Unresolved authority uses the existing operator-decision and blocker
+route. This constrains outcomes, not analysis order, inapplicable coverage, or
+implementation tactics.
+
 Direct routes include Architecture Specification, Component/API/Event/Data
 Contracts, Data Specification for internal models/storage/migrations, domain or
 state specs, testing specs under `.memory-bank/testing/*`, guides/runbooks, and

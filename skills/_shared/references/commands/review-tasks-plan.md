@@ -146,6 +146,13 @@ Cover:
    - confirm registered endpoints, exact contracts, consumer impact, and
      compatibility/rollout basis support the plan. Reject copied topology or an
      interaction execution would have to legalize.
+   - reject only when inspected evidence shows that a material semantic choice
+     left unresolved in its canonical owning artifact affects the current
+     runnable surface and would force execution to choose between behaviorally
+     distinct public or cross-boundary outcomes, compatibility or migration
+     behavior, authority, or state/data ownership. Do not require enumeration
+     of irrelevant concerns or internal tactics that preserve accepted behavior
+     and ownership.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
      context and owner; `ready` is valid iff every dependency is `done` and no

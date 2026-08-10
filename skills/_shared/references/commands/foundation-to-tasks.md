@@ -145,6 +145,12 @@ When `Foundation Required: true`:
 1. Reconcile only the substrate-level canonical specs needed by the proof path.
    Each changed or depended-on concrete concern has one canonical spec defining
    shape, `MUST`/`MUST NOT` rules, edge cases/errors, and a verification target.
+   Before handoff, resolve each evidenced material boundary decision in its
+   owning canonical artifact when execution would otherwise determine public or
+   cross-boundary behavior, compatibility or migration, authority, or state/data
+   ownership. Unresolved authority uses the existing operator-decision and
+   blocker route. This constrains outcomes, not analysis order, inapplicable
+   coverage, or implementation tactics.
    Typical routes are:
    - runtime/module shape -> `.memory-bank/architecture/*`;
    - component/API/event/protocol/agent/tool boundaries and crossing payloads

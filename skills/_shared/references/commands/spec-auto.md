@@ -121,6 +121,13 @@ For each concrete concern, reach exactly one truthful outcome:
 durable artifacts need only the resulting canonical routes, decisions, and
 blockers.
 
+Before handoff, resolve each evidenced material boundary decision in its owning
+canonical artifact when execution would otherwise determine public or
+cross-boundary behavior, compatibility or migration, authority, or state/data
+ownership. Unresolved authority uses the existing operator-decision and blocker
+route. This constrains outcomes, not analysis order, inapplicable coverage, or
+implementation tactics.
+
 Rules:
 - discover existing registered and neighboring subject specs before creating;
 - reuse/extend first; create the smallest subject-based spec only when no
