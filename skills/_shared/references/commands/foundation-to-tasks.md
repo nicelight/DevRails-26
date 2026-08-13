@@ -45,10 +45,10 @@ Require this parseable anchor block:
 - Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required
 ```
 
-If the backbone, foundation decision, anchors, or Feature Pressure Map are
-missing, blocked, contradictory, stale, or contain placeholders, stop before
-foundation specs, plans, requirements, features, or tasks are written and
-route to `/spec-design`.
+If the initial backbone or Foundation decision is missing/incomplete, route to
+`/spec-design`. If an accepted positive-revision backbone, Foundation decision,
+anchors, or Feature Pressure Map needs change, route to `/spec-redesign` before
+foundation writes.
 </input_contract>
 
 <hard_invariants>
@@ -99,11 +99,11 @@ dependency, or verification contract should govern it:
 - record an accepted answer in the existing owning canonical artifact and
   `.protocols/FT-000/decision-log.md` when the queue exists, remove
   contradictory wording, and revalidate the Foundation anchors/spec routes;
-- if the answer changes global design or the Foundation decision, route through
-  `/spec-design` before task generation;
+- if the answer changes accepted global design or the Foundation decision,
+  route through `/spec-redesign` before task generation;
 - unattended flow records the exact question and affected scope, creates no
   affected task records, returns `HALT_BLOCKING_QUESTIONS`, and names
-  `/spec-design` as the resume route.
+  `/spec-redesign` as the resume route.
 
 Do not ask when current authoritative evidence already settles the branch.
 </operator_decisions>
@@ -256,6 +256,6 @@ blockers/questions.
   `/autopilot`.
 - No Foundation required/proven brownfield baseline: hand off to
   `/feature-to-tasks FT-<NNN>`.
-- Unresolved Foundation/design decision: no affected queue handoff;
-  `/spec-design` is the repair/resume owner.
+- Unresolved accepted Foundation/design decision: no affected queue handoff;
+  `/spec-redesign` is the repair/resume owner.
 </handoff_contract>

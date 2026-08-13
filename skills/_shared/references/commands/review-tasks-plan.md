@@ -14,16 +14,14 @@ task cards, or lifecycle state.
 <input_contract>
 Targets:
 - `FT-<NNN>`: review that product feature;
-- no argument: infer the latest decomposed product feature;
-- `--all`: run the same independent review separately for every indexed product
-  feature, excluding `FT-000`.
+- no argument: infer the latest decomposed product feature.
 
 Latest-feature inference order:
 1. most recently modified `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`;
 2. most recently modified indexed product task record;
 3. highest numeric task ID as a final tie-breaker.
 
-If the target cannot be resolved, stop and ask for `FT-<NNN>` or `--all`.
+If the target cannot be resolved, stop and ask for `FT-<NNN>`.
 `FT-000` is not a review target, although its final gate and dependency effect
 must be reviewed when they constrain product tasks.
 
@@ -44,8 +42,9 @@ Require Global Backbone `Planning Revision` to be a positive integer. A missing,
 zero, or invalid revision is a blocking design-readiness gap owned by
 `/spec-design`.
 
-For `--all`, repeat this bounded feature-scoped input set; do not collapse the
-queue into one broad reviewer prompt.
+`PLANNING_RECONCILIATION_REQUIRED` in the target feature blocks review and
+routes `/feature-to-tasks FT-<NNN>`.
+
 </input_contract>
 
 <hard_invariants>
@@ -77,7 +76,8 @@ If such a branch could change the verdict:
   repair owner;
 - route feature-level product/design/tasking repair to
   `/feature-to-tasks FT-<NNN>` or `/feature-doctor FT-<NNN>`;
-- route shared/global design or competing canonical identity to `/spec-design`;
+- route changes to an accepted shared/global design or competing canonical
+  identity to `/spec-redesign`;
 - do not treat a recommendation as an accepted answer.
 
 The accepted answer is applied by the owning skill to the existing canonical
@@ -97,9 +97,7 @@ Create:
 - `.tasks/TASK-MB-REVIEW-TASKS-PLAN/REQUEST.md`;
 - `.tasks/TASK-MB-REVIEW-TASKS-PLAN/TASK-MB-REVIEW-TASKS-PLAN-<STAGE_ID>-final-report-docs-01.md`.
 
-Use a feature-specific stage ID such as `S-TASKS-FT-001`. For `--all`, keep one
-independent report and verdict per feature; an optional summary must not replace
-them.
+Use a feature-specific stage ID such as `S-TASKS-FT-001`.
 
 Every feature report records the exact standalone marker
 `REVIEWED_PLANNING_REVISION: <N>` for the current Global Backbone Planning
@@ -112,9 +110,9 @@ discovered direct architecture/spec routes. Require it to read
 `.memory-bank/roles/reviewer.md` and the installed `/architecture-review` skill,
 then return its compact Reviewer report. If delegation is unavailable or fails,
 perform the same review locally. Include the resulting verdict and evidence in
-the main report; do not create a separate architecture-review artifact. For
-`--all`, repeat this once per feature. Avoid rereading the same full architecture
-sources unless needed to resolve a gap, conflict, or another coverage group.
+the main report; do not create a separate architecture-review artifact. Avoid
+rereading full architecture sources unless needed to resolve a gap, conflict,
+or another coverage group.
 
 Cover:
 
@@ -205,8 +203,8 @@ Verdicts:
 
 For acceptance closure, name the uncovered outcome and route PRD-owned
 acceptance to `/write-prd`, decomposition to `/prd-to-features`, feature-local
-clarification to `/feature-doctor FT-<NNN>`, shared design to `/spec-design`, or
-task proof to `/feature-to-tasks FT-<NNN>`.
+clarification to `/feature-doctor FT-<NNN>`, accepted shared design change to
+`/spec-redesign`, or task proof to `/feature-to-tasks FT-<NNN>`.
 
 For `/autopilot` or autonomous scheduler readiness, every task-linked product
 feature needs a latest independent `APPROVE`; this is necessary but does not

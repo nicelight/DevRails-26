@@ -226,6 +226,10 @@ function assertFreshBootstrap(target) {
   const specRedesign = readTarget(target, '.agents/skills/spec-redesign/SKILL.md');
   const specAuto = readTarget(target, '.agents/skills/spec-auto/SKILL.md');
   const autopilot = readTarget(target, '.agents/skills/autopilot/SKILL.md');
+  const exe = readTarget(target, '.agents/skills/exe/SKILL.md');
+  const featureToTasks = readTarget(target, '.agents/skills/feature-to-tasks/SKILL.md');
+  const reviewTasksPlan = readTarget(target, '.agents/skills/review-tasks-plan/SKILL.md');
+  const autonomyPolicy = readTarget(target, '.memory-bank/workflows/autonomy-policy.md');
   const executeLoop = readTarget(target, '.memory-bank/workflows/execute-loop.md');
   assert(
     sddContract.includes('## Evidence and authority')
@@ -251,6 +255,19 @@ function assertFreshBootstrap(target) {
     autopilot.includes('separate fresh Reviewer')
       && autopilot.includes('Never reuse or resume the `/verify` child for `/red-verify`'),
     'Runtime autopilot lost independent functional and semantic reviewer contexts.',
+  );
+  assert(
+    executeLoop.includes('PLANNING_RECONCILIATION_REQUIRED')
+      && specRedesign.includes('whose planning needs repair')
+      && featureToTasks.includes('removes `PLANNING_RECONCILIATION_REQUIRED`')
+      && reviewTasksPlan.includes('blocks review')
+      && autopilot.includes('makes only that')
+      && exe.includes('stops only the selected feature')
+      && autonomyPolicy.includes('only that feature is withheld')
+      && !autopilot.includes('every previous product task-plan approval is stale')
+      && !exe.includes('every previous product task-plan approval is stale')
+      && !autonomyPolicy.includes('makes every product task-plan approval stale'),
+    'Runtime planning freshness lost bounded feature routing or retained blanket invalidation.',
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');

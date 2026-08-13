@@ -464,8 +464,8 @@ accepted decision or requirement.
 7. `/review-feat-plan` independently checks PRD -> REQ -> EP -> FT. It is
    required for high-risk, large и autonomous work and recommended for small
    manual work.
-8. `/spec-design` is mandatory for every feature set and owns the global SDD
-   backbone plus Foundation Dev Path decision.
+8. `/spec-design` creates the initial global SDD backbone and Foundation Dev
+   Path decision. Later accepted backbone/contract changes use `/spec-redesign`.
 
 ### Brownfield
 
@@ -522,11 +522,12 @@ Architecture artifact strategy: single-file | split-core-docs |
 ```
 
 `Planning Revision: 0` означает, что successful global backbone ещё не создан.
-Первый successful `/spec-design` устанавливает `1`; material rerun увеличивает
-revision ровно один раз. Старый task-plan `APPROVE` принимается только когда его
-`REVIEWED_PLANNING_REVISION` равен текущей revision. При несовпадении task
-statuses сохраняются, а весь product planning проходит
-`/feature-to-tasks --all -> /review-tasks-plan --all` повторно.
+Первый successful `/spec-design` устанавливает `1`. После этого
+`/spec-redesign` увеличивает revision только при доказанном изменении durable
+planning semantics с product-wide impact. Bounded change сохраняет revision и
+перепланирует только затронутые features. Task statuses и completed evidence
+не меняются; affected features проходят tasking и review последовательно, по
+одной feature на fresh context.
 
 Backbone Area Matrix использует только:
 
@@ -584,10 +585,11 @@ Root` и responsibility. Ребро `Consumer -> Provider` существует 
 даёт execution-агенту права изобрести взаимодействие.
 
 `system-architecture.md` хранит более крупные deployable/capability/runtime
-units и ссылается на graph inventory. `/spec-design` владеет глобальной
-архитектурой, а `/feature-to-tasks` конкретизирует leaf modules/edges внутри
-принятой формы, прослеживает reverse impact по consumers и сохраняет в plan/task
-только релевантные graph/contract links. Архитектурный graph не превращается
+units и ссылается на graph inventory. `/spec-design` создаёт начальную
+архитектуру, `/spec-redesign` меняет уже принятую, а `/feature-to-tasks`
+конкретизирует leaf modules/edges внутри принятой формы, прослеживает reverse
+impact по consumers и сохраняет в plan/task только релевантные graph/contract
+links. Архитектурный graph не превращается
 механически в task DAG: `depends_on` и waves выражают реальный порядок
 implementation, compatibility и rollout.
 
@@ -595,8 +597,8 @@ implementation, compatibility и rollout.
 Revision. Если новый consumer делает ещё не выполненную incompatible provider
 task локально устаревшей, `/exe` возвращает только её feature в
 `/feature-to-tasks -> /review-tasks-plan`; approvals других features остаются
-действующими. Глобальное изменение через `/spec-design` по-прежнему увеличивает
-Planning Revision и запускает all-feature reconciliation.
+действующими. Только доказанное product-wide изменение через `/spec-redesign`
+увеличивает Planning Revision; features обрабатываются последовательно.
 
 `AD-* Verification` называет project-native mechanical check только для
 повторяемого, high-blast/security-sensitive или дешёво однозначного нарушения.
@@ -762,6 +764,10 @@ T2 product feature-completion semantics.
   -> conditional /mb-doctor
   -> /exe <TASK_ID> или /autopilot
 ```
+
+`/feature-to-tasks` всегда работает только с одной явной feature в отдельной
+fresh session. Multi-feature flow завершает её durable handoff и review до
+запуска нового изолированного контекста для следующей feature.
 
 `/feature-doctor FT-<NNN>` используется только для реальной feature-level
 ambiguity. Он может обновить feature wording и отметить design impact, но не
@@ -931,10 +937,8 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 | `/verify` | task-scoped functional outcome, applicable linked architecture path и evidence | не проверяет всю feature, не чинит implementation/specs |
 | `/red-verify` | adversarial semantic correctness | не заменяет functional PASS и не закрывает scheduler task |
 
-`/review-feat-plan` и `/review-tasks-plan` требуют fresh context или отдельную
-fresh session и возвращают findings, а не silently repair.
-`/review-tasks-plan --all` всё равно создаёт отдельный bounded verdict для каждой
-product feature.
+`/review-feat-plan` и `/review-tasks-plan FT-<NNN>` требуют fresh context или
+отдельную fresh session и возвращают findings, а не silently repair.
 
 `/review-feat-plan`, `/review-tasks-plan`, `/verify` и `/red-verify` перед
 verdict используют два `Codex Luna xhigh` co-reviewers. Основной агент сам
@@ -1169,7 +1173,7 @@ authority.
 также проверяет write owner, public boundary, source of truth, dependency
 direction и допустимое место orchestration. Проверка ограничена actual change
 surface. Pre-existing current drift может остаться evidence, но необходимость
-изменить accepted target останавливает task и возвращает её в `/spec-design`.
+изменить accepted target останавливает task и возвращает её в `/spec-redesign`.
 
 - T0/T1 `/exe` может закрыть task только если current agent — explicit
   manual top-level closure owner, scope остался local, не возник T2/T3 trigger,
@@ -1386,9 +1390,9 @@ refresh JSON state
 
 Status/evidence-only closure не вызывает повторный `/review-tasks-plan`.
 Re-review нужен, если изменились task cards, specs, dependencies, tier, scope
-или plan assumptions. Изменение Global Backbone Planning Revision инвалидирует
-reviews всей product queue и требует `/feature-to-tasks --all`, затем
-`/review-tasks-plan --all`.
+или plan assumptions. Изменение Global Backbone Planning Revision означает уже
+доказанный global impact и инвалидирует reviews всей product queue; features
+повторно проходят fresh tasking и review последовательно.
 
 Локальная конкретизация dependency graph Planning Revision не меняет. Если
 point-of-use preflight обнаружил нового релевантного consumer или изменённый
@@ -1407,11 +1411,11 @@ authoritative Product Brief / PRD / delta
   -> /spec-auto --init
   -> /prd-to-features
   -> /review-feat-plan
-  -> /spec-design --all
+  -> /spec-design
   -> autonomous-owned FT-000 queue and final gate through the existing workflow
-  -> /spec-auto --all
-  -> /feature-to-tasks --all
-  -> per-feature /review-tasks-plan
+  -> for each FT-NNN: isolated /spec-auto FT-NNN when needed
+  -> isolated /feature-to-tasks FT-NNN child
+  -> separate fresh /review-tasks-plan FT-NNN child
   -> lint + strict doctor
   -> product queue through canonical /autopilot
   -> terminal state
@@ -1419,6 +1423,11 @@ authoritative Product Brief / PRD / delta
 
 `/autonomous` orchestrates child contracts и непосредственно владеет bounded
 FT-000 phase, но не вызывает для неё `/autopilot` и не изменяет product tasks.
+Он завершает tasking и review одной product feature до выбора следующей; child
+не наследует parent/previous-feature conversation. Без isolated child contexts
+flow останавливается и выдаёт точный fresh-session resume route.
+Текущая feature и exact next action живут в existing outer run plan до
+current-revision `APPROVE`; `REJECT` всегда следует named repair owner.
 Foundation resume опирается на outer run plan и durable task protocols. После
 доказанного закрытия final Foundation gate `/autonomous` продолжает
 Product/Design и передаёт готовую product queue `/autopilot`.
@@ -1493,13 +1502,17 @@ Canonical execution sequential. `--experimental-parallel` требует:
 
 ### Product, SDD и tasking
 
+`/spec-design`, `/spec-redesign` и однофичевый `/spec-auto` используют один
+deployed SDD-contract; каждая команда сохраняет собственные statuses, revision и handoff.
+
 | Command | Owns | Не владеет / handoff |
 |---|---|---|
 | `/spec-init` | glossary gate и pre-PRD decomposition framing | не создаёт architecture/Foundation; затем `/prd-to-features` |
 | `/prd-to-features` | product, REQ, epics, product features | не создаёт tasks/testing policy; затем review/design |
 | `/review-feat-plan` | fresh-context `APPROVE|REJECT` PRD decomposition review | не исправляет product docs; затем `/spec-design` или repair |
-| `/spec-design` | mandatory global backbone, preferred architecture recommendation и Foundation decision | не создаёт tasks/plans; затем Foundation или feature design |
-| `/spec-auto` | unattended `--init`, `FT-*` или `--all` SDD from authoritative decisions | не спрашивает и не выбирает missing decision |
+| `/spec-design` | initial global backbone, preferred architecture recommendation и Foundation decision | не меняет accepted backbone; затем Foundation или feature design |
+| `/spec-redesign` | accepted backbone/contract change и `none|bounded|global` impact verdict | не создаёт tasks/state; затем только affected sequential reconciliation |
+| `/spec-auto` | unattended `--init` или одна `FT-*` из authoritative decisions | не спрашивает, не выбирает missing decision и не меняет revision |
 | `/foundation-to-tasks` | minimum FT-000 queue или proven-baseline no-op | не реализует product features; затем strict doctor или product tasking |
 | `/feature-to-tasks` | feature canonical coverage, IMPL plan, behavior examples и JSON tasks | не выполняет tasks; затем `/review-tasks-plan` |
 | `/review-tasks-plan` | fresh-context `APPROVE|REJECT` runnable planning review | не чинит specs/cards/status; затем doctor/execution или repair |

@@ -53,6 +53,8 @@ flowchart TD
 
 `/autonomous` owns the bounded FT-000 phase shown above; `/autopilot` begins
 only at the reviewed product queue and never executes Foundation tasks.
+`/autonomous` tasks one product feature per isolated child context and reviews
+it in a separate fresh context before selecting the next feature.
 Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
 parallel execution is available only through explicit `--experimental-parallel`
 with isolated worktrees/sandboxes and pairwise-disjoint hard

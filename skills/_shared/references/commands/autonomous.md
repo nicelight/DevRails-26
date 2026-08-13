@@ -24,7 +24,7 @@ Preflight:
 - authoritative PRD/brief/delta input exists;
 - `.memory-bank/workflows/{autonomy-policy,tier-policy,execute-loop,mb-sync}.md`
   exist;
-- at least one configured executor is available;
+- an executor capable of isolated child contexts is available;
 - repository safety policy permits code edits but no unapproved marketplace
   install, deployment, production write, secret read, or out-of-repo
   infrastructure change.
@@ -37,6 +37,10 @@ protocol was started or changed; leave any existing
 DevRails installer: from an available DevRails checkout run
 `node scripts/install-framework.mjs --bootstrap --target <project-path> --yes --sync`,
 then resume `/autonomous`. Do not copy missing workflow rules inline.
+
+If isolated child contexts are unavailable, return `HALT_POLICY_VIOLATION` with
+the next feature's fresh tasking, review, and `/autonomous` resume route. Do not
+create or change the run protocol or run tasking in the parent context.
 
 If substantial code already exists, require/update the brownfield baseline via
 `/map-codebase` before applying the PRD delta.
@@ -62,7 +66,9 @@ state, not a second task registry.
   policy `#phase-ownership`, `#experimental-parallel-execution` when opted in,
   `#durable-run-checkpoint`, `#required-gates`, `#failure-budgets`,
   `#scheduler-failure-handling`, `#terminal-fallback`, `#run-state`, and
-  `#terminal-states`, plus the applicable execute-loop and mb-sync contracts.
+  `#terminal-states`, plus execute-loop
+  `#planning-redesign-boundary`, `#fresh-feature-tasking-boundary`, and the
+  applicable mb-sync contract.
 - Canonical queue execution is sequential.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
   isolation rules. Never infer independence from advisory `touched_files`.
@@ -121,7 +127,8 @@ dependency/verification/Foundation branch:
   `HALT_CLARIFICATION_REQUIRED` for product/feature clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract/operator decisions;
 - name the exact interactive resume skill (`/constitution`, `/write-prd`,
-  `/feature-doctor`, `/spec-design`, `/feature-to-tasks`, or another existing owner).
+  `/feature-doctor`, `/spec-design`, `/spec-redesign`, `/feature-to-tasks`, or
+  another existing owner).
 
 After the operator answer is durably applied by the owning skill and its gates
 pass, resume from the recorded boundary without replaying completed work.
@@ -156,9 +163,8 @@ contract proves it already complete:
    - `/spec-auto --init`;
    - `/prd-to-features`;
    - `/review-feat-plan` until `APPROVE`, within review budget;
-   - `/spec-design --all`;
+   - `/spec-design`;
    - required Foundation route below;
-   - `/spec-auto --all`.
 3. Foundation when `Foundation Required: true`:
    - `/foundation-to-tasks`;
    - lint plus `/mb-doctor --strict` for the FT-000 queue;
@@ -170,10 +176,10 @@ contract proves it already complete:
    When Foundation is not required, require truthful `not_required` anchors and
    create no FT-000 queue.
 4. Product tasking:
-   - `/feature-to-tasks --all`;
-   - fresh-context `/review-tasks-plan FT-<NNN>` separately for every
-     task-linked product feature until `APPROVE` records the current positive
-     Global Backbone Planning Revision, within review budget;
+   - apply execute-loop `#fresh-feature-tasking-boundary` to every product
+     feature except `FT-000`; it runs `/spec-auto FT-<NNN>` when design is due,
+     then tasking and review, until each has current-revision `APPROVE`, within
+     the review budget;
    - lint plus `/mb-doctor --strict` after the real product queue exists.
 5. Delegate the strict-ready product queue to default full-queue `/autopilot`.
 
@@ -190,7 +196,7 @@ completed `repair -> re-review` cycles per surface.
   `## Review gates` section of `.protocols/AUTONOMOUS-RUN/status.md`; do not add
   a file, template, schema, policy field, or registry.
 - `APPROVE` continues the recorded flow. On `REJECT` with fewer than `5`
-  completed cycles, run the next repair and re-review for that same surface.
+  completed cycles, follow its named repair route, then re-review.
 - On `REJECT` after completed cycle `5`, record existing
   `HALT_REVIEW_REJECT`, the latest findings, and the named repair owner. Do not
   enter another automatic repair cycle.

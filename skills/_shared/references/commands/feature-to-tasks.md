@@ -16,13 +16,10 @@ This command plans; it never executes tasks.
 </objective>
 
 <input_contract>
-`$ARGUMENTS`:
-- `FT-<NNN>`: one product feature;
-- `--all`: every product feature in priority order, excluding `FT-000`.
-
-Without arguments, ask the operator to select a feature in interactive mode;
-unattended orchestration uses `--all`. Reject `FT-000`; Foundation tasking
-belongs to `/foundation-to-tasks`.
+Accept exactly one product `FT-<NNN>`. Without arguments, ask the operator to
+select one feature in interactive mode; unattended callers must supply it
+explicitly. Reject `FT-000` and every non-single-feature target; Foundation
+tasking belongs to `/foundation-to-tasks`.
 
 Before any durable plan or task write, require:
 - target feature, linked epic, governing REQ/RTM, clarified PRD, and applicable
@@ -39,7 +36,8 @@ Before any durable plan or task write, require:
   transitive dependency of every product task;
 - `.memory-bank/tasks/index.json`, every existing indexed task for the target,
   and existing plan/protocol/behavior evidence used for reconciliation;
-- `.memory-bank/workflows/execute-loop.md#execution-cohesive-task-boundary` and
+- `.memory-bank/workflows/execute-loop.md#fresh-feature-tasking-boundary`,
+  `#execution-cohesive-task-boundary`, and
   `.memory-bank/workflows/tier-policy.md#task-claim-and-dependency-ownership`
   before slicing;
 - available `.memory-bank/schemas/task.schema.json` and remaining applicable
@@ -49,13 +47,8 @@ Before any durable plan or task write, require:
 Block task drafting when clarification is explicitly `pending|blocked`, feature
 design is `blocked`, a decomposition-relevant unresolved marker remains, global
 backbone/foundation readiness is invalid, or schema/tier policy is unavailable
-or incompatible. Missing clarification metadata alone is allowed.
-
-For `--all`, preflight the complete target set before planning writes. Report
-all blockers and create no partial affected queue. After that preflight, keep
-the active planning working set to one feature at a time before moving to the
-next target. This is bounded working focus, not a physical context reset or a
-new execution mode.
+or incompatible. `PLANNING_RECONCILIATION_REQUIRED` is an instruction to
+reconcile, not a blocker. Missing clarification metadata alone is allowed.
 </input_contract>
 
 <hard_invariants>
@@ -114,9 +107,9 @@ or canonical spec identity belongs to the operator.
   Constitution, or Foundation artifact; record it in
   `.protocols/FT-<NNN>/decision-log.md` when useful for handoff, remove
   contradictory wording, and revalidate before task writes.
-- Route shared/global decisions to `/spec-design`, PRD-owned acceptance to
-  `/write-prd`, missing REQ/AC decomposition to `/prd-to-features`, and
-  feature-local ambiguity to `/feature-doctor FT-<NNN>`.
+- Route accepted shared/global design changes to `/spec-redesign`, PRD-owned
+  acceptance to `/write-prd`, missing REQ/AC decomposition to
+  `/prd-to-features`, and feature-local ambiguity to `/feature-doctor FT-<NNN>`.
 - Unattended flow records the question and affected scope, writes no affected
   tasks, returns `HALT_CLARIFICATION_REQUIRED` for product clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract decisions, and names the exact
@@ -172,7 +165,7 @@ registered node and an accepted edge with an exact contract heading, or block.
 For changed providers, cover relevant consumers until a compatible boundary
 stops propagation. Leaf modules/edges inside accepted architecture preserve
 Planning Revision; global architecture or ownership changes route to
-`/spec-design`. The plan records only affected module/contract links and the
+`/spec-redesign`. The plan records only affected module/contract links and the
 implementation reason for task order, dependencies, and waves.
 
 Expected project-authored paths follow `AGENTS.md#source-path-semantics`. Carry
@@ -184,8 +177,9 @@ When the accepted architecture defines modules or capability slices, the plan
 names the primary owner and code root for each outcome. A cross-slice outcome
 names one accepted capability owner, crossed public boundaries, and forbidden
 ownership/direct-write bypasses; business orchestration does not belong in a
-transport handler, generic helper, or composition root. Missing ownership
-routes to `/spec-design`. Do not derive task count from slices, layers, or files.
+transport handler, generic helper, or composition root. Missing accepted
+ownership routes to `/spec-redesign`. Do not derive task count from slices,
+layers, or files.
 
 ## Canonical SDD coverage
 
@@ -245,6 +239,8 @@ spec_design_links:
 - unresolved concern means `blocked` and no affected task handoff;
 - no `needed_before_tasks` Backbone Area Matrix row may remain after a
   successful handoff.
+- Successful reconciliation removes `PLANNING_RECONCILIATION_REQUIRED` even
+  when no artifact change was needed; blocked/incomplete handoff keeps it.
 
 ## Optional behavior specs
 
@@ -395,12 +391,10 @@ In the final chat response, report:
 - immediate next step.
 
 - Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
-- Successful `--all` -> one fresh-context `/review-tasks-plan FT-<NNN>` per
-  task-linked product feature.
 - Blocked PRD-owned target/scope/pass-fail decision -> `/write-prd`;
   feature-local product clarification -> `/feature-doctor
   FT-<NNN>`; missing REQ/AC decomposition -> `/prd-to-features`; blocked
-  shared/global decision -> `/spec-design`.
+  shared/global decision -> `/spec-redesign`.
 
 Conditional `/mb-doctor` and execution happen only after the task-plan review;
 they are not performed by this command.

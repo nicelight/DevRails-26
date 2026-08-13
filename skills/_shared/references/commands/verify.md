@@ -97,7 +97,7 @@ do not choose one.
   acceptance. The owning skill durably updates the canonical artifact and the
   task is revalidated/re-executed before verification resumes.
 - Route task scope/tier/feature-level spec repair to
-  `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-design`, product
+  `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-redesign`, product
   ambiguity to `/feature-doctor FT-<NNN>`, and missing `/exe` evidence
   to `/exe <TASK_ID>`.
 - Unattended flow returns the blocker and exact route to the scheduler for

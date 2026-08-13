@@ -83,10 +83,10 @@ status: active
 - [.memory-bank/behavior-specs/](behavior-specs/): Optional JSON behavior examples linked from feature docs and task `source_artifacts`.
 - [.memory-bank/tasks/index.json](tasks/index.json): Authoritative JSON task record index.
 - [.memory-bank/schemas/task.schema.json](schemas/task.schema.json): JSON schema for task records.
-- [.memory-bank/workflows/index.md](workflows/index.md): Workflow router and tier/execution/sync policies.
+- [.memory-bank/workflows/index.md](workflows/index.md): Workflow router and shared SDD/execution policies.
 
 - [.memory-bank/spec-index.md](spec-index.md): Pure SDD spec registry and planned-spec index.
-- [.memory-bank/spec-backbone.md](spec-backbone.md): Pre-PRD framing status and global backbone state for `/prd-to-features` and `/spec-design`.
+- [.memory-bank/spec-backbone.md](spec-backbone.md): Pre-PRD framing plus initial `/spec-design` and post-acceptance `/spec-redesign` state.
 - `.memory-bank/user-scenarios.md`: optional user scenarios and architecture implications when created by `/spec-init` or `/spec-design`.
 - [.memory-bank/glossary.md](glossary.md): Общий словарь терминов и доменных значений.
 - [.memory-bank/invariants.md](invariants.md): Глобальные MUST/NEVER правила.
@@ -174,14 +174,16 @@ source_of_truth:
 - Read this index before creating new specs or doing serious design-pressure work.
 - Keep readiness, open design questions, backbone status, and routing handoffs in [.memory-bank/spec-backbone.md](spec-backbone.md).
 - Feature `spec_design_status` lives in feature frontmatter, not in this index.
+- `/spec-design` routes below mean initial backbone creation; accepted
+  backbone/shared-contract changes use `/spec-redesign`.
 
 ## Spec Registry
 | Type | Path | Status | Scope | Change route |
 |---|---|---|---|---|
 | governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
-| invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or /spec-design |
-| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or /spec-design |
-| contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Canonical accepted module/change-unit dependency graph and boundary contracts. | /spec-design or /feature-to-tasks |
+| invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or initial /spec-design; post-acceptance /spec-redesign |
+| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |
+| contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Canonical accepted module/change-unit dependency graph and boundary contracts. | initial /spec-design, post-acceptance /spec-redesign, or /feature-to-tasks |
 | testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |
 
 ## Planned Specs
@@ -759,7 +761,7 @@ _No runtime skills detected in `.agents/skills` or `.claude/skills`._
 - Scenario routing: start
 - Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
 - Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
-- SDD design: /spec-init, mandatory adaptive /spec-design, foundation tasking inside /foundation-to-tasks, close the FT-000 foundation gate when required, initial and repair feature-level design/task reconciliation inside /feature-to-tasks, /spec-auto
+- SDD design: /spec-init, initial adaptive /spec-design, accepted backbone changes through /spec-redesign, foundation tasking inside /foundation-to-tasks, then one-feature /spec-auto and /feature-to-tasks reconciliation
 - Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
 - PRD decomposition: /prd-to-features
 - Codebase mapping: /map-codebase
@@ -797,6 +799,7 @@ status: active
 ---
 # Workflow Index
 
+- [.memory-bank/workflows/sdd-design-contract.md](sdd-design-contract.md): Shared SDD authority, canonical ownership, authoring, and validation contract.
 - [.memory-bank/workflows/tier-policy.md](tier-policy.md): Tier classification, obligations, boundaries, and closure authority.
 - [.memory-bank/workflows/execute-loop.md](execute-loop.md): Manual and autonomous task execution sequence.
 - [.memory-bank/workflows/autonomy-policy.md](autonomy-policy.md): Scheduler recovery, failure handling, budgets, and terminal states.

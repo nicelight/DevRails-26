@@ -29,8 +29,9 @@ configuration needed for the chosen check.
   outcome and inside hard allowed/forbidden scopes; record the deviation.
 - Do not weaken assertions, disable failures, introduce decorative tests, or
   substitute screenshots for behavior proof.
-- Do not create or modify `.memory-bank/testing/`; durable testing specs route
-  through `/spec-design`, `/foundation-to-tasks`, or `/feature-to-tasks`.
+- Do not create or modify `.memory-bank/testing/`; accepted shared testing-spec
+  changes route through `/spec-redesign`, Foundation detail through
+  `/foundation-to-tasks`, and feature detail through `/feature-to-tasks`.
 - `/add-tests` does not own task closure or scheduler transitions.
 </hard_invariants>
 
@@ -43,7 +44,7 @@ decision.
 Interactive flow asks the operator and resumes only after the owning
 feature/spec/task plan is durably repaired. Unattended flow returns the blocker
 to the scheduler without choosing and names `/feature-to-tasks FT-<NNN>`,
-`/spec-design`, or `/feature-doctor FT-<NNN>` as the applicable resume route.
+`/spec-redesign`, or `/feature-doctor FT-<NNN>` as the applicable resume route.
 A recommendation is not an accepted decision.
 </operator_decisions>
 

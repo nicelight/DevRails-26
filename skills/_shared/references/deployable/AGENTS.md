@@ -165,9 +165,13 @@ and technical debt.
 - `.codex/` is only for project configuration (e.g. `.codex/config.toml`).
 
 ## Clean context (recommended)
+- `/spec-design` owns only the initial backbone; accepted backbone or shared
+  contract changes use `/spec-redesign` and its evidence-bounded impact verdict.
 - Product execution requires task-plan `APPROVE` for the current positive Global
   Backbone `Planning Revision`. A mismatch keeps task statuses unchanged and
-  routes `/feature-to-tasks --all` -> `/review-tasks-plan --all`.
+  reconciles each product feature in its own fresh
+  `/feature-to-tasks FT-<NNN>` context, followed by a separate fresh review,
+  under `.memory-bank/workflows/execute-loop.md#fresh-feature-tasking-boundary`.
 - Delegation follows `.memory-bank/roles/orchestrator.md`; each delegated agent follows its assigned role contract.
 - T2/T3 use the indexed task card as the complete task-scoped handoff; `/mb-doctor` checks structural completeness and `/review-tasks-plan` checks semantic applicability and sufficiency.
 - Execution file scope: touched_files is advisory and non-exhaustive; executor

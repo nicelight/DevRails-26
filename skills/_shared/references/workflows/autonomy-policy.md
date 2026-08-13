@@ -121,15 +121,13 @@ status: active
   interview registry.
 
 ## Required gates
-- latest `/review-tasks-plan FT-<NNN>` verdict must be `APPROVE` for every
-  task-linked product feature in the product queue, and its exact standalone
-  `REVIEWED_PLANNING_REVISION: <N>` must equal the current positive Global
-  Backbone Planning Revision; FT-000 uses its dedicated `/foundation-to-tasks`
-  plus strict-doctor handoff instead
-- missing, invalid, or mismatched planning revision evidence makes every product
-  task-plan approval stale; keep task statuses unchanged and route
-  `/feature-to-tasks --all` -> `/review-tasks-plan --all` before product
-  promotion or selection
+- a task-linked product feature is eligible only when it has no
+  `PLANNING_RECONCILIATION_REQUIRED` marker and its latest
+  `/review-tasks-plan FT-<NNN>` verdict is `APPROVE` with exact
+  `REVIEWED_PLANNING_REVISION: <N>` equal to the current positive Global
+  Planning Revision; only that feature is withheld when this gate fails
+- missing/invalid Global Planning Revision halts all product work for design
+  repair; keep task statuses unchanged
 - mandatory `/mb-doctor --strict` before `/autonomous` selects/promotes FT-000
   work, before `/autopilot` selects/promotes product work, after `/mb-sync`
   before further promotion, and before final success
@@ -182,7 +180,7 @@ disposition.
 - For `/autopilot` product tasks, route task slicing, tier, or direct task spec
   to `/feature-to-tasks FT-<NNN>`; product ambiguity to
   `/feature-doctor FT-<NNN>`; and shared architecture, write authority, source
-  of truth, public boundary, or dependency direction to `/spec-design`.
+  of truth, public boundary, or dependency direction to `/spec-redesign`.
 - A failed disposition writes `in_progress -> failed` with functional/semantic
   and diagnostic evidence. Before the next strict doctor, create a
   `.memory-bank/bugs/` note or route a normal indexed follow-up through its

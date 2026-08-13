@@ -33,9 +33,10 @@ Require:
   remains `planned|ready|in_progress|blocked`;
 - positive integer Global Backbone `Planning Revision`;
 - at least one indexed product task whose `feature` is not `FT-000`;
-- latest `/review-tasks-plan FT-<NNN>` `APPROVE` for every task-linked product
-  feature in the queue, with exact standalone
-  `REVIEWED_PLANNING_REVISION: <N>` equal to the current Planning Revision;
+- classify each task-linked feature as eligible only when its body lacks
+  `PLANNING_RECONCILIATION_REQUIRED` and its latest `/review-tasks-plan`
+  `APPROVE` has exact `REVIEWED_PLANNING_REVISION: <N>` equal to the current
+  Planning Revision;
 - no unresolved blocking operator decision;
 - invoke `node scripts/mb-doctor.mjs --strict` before the run, including resume,
   and before every later task selection required below. A new run requires
@@ -54,18 +55,19 @@ verification path, concrete REQ links, and valid dependencies.
 
 If no product record exists, return
 `HALT_QUALITY_GATES: no schema-backed product task records found in .memory-bank/tasks/index.json`
-and route to `/feature-to-tasks`. If the Foundation gate is unfinished or any
-FT-000 work remains unresolved, return `HALT_QUALITY_GATES` with `/autonomous`
-as the Foundation execution/resume owner.
+and route the next explicit product feature to a fresh
+`/feature-to-tasks FT-<NNN>` session. If the Foundation gate is unfinished or
+any FT-000 work remains unresolved, return `HALT_QUALITY_GATES` with
+`/autonomous` as the Foundation execution/resume owner.
 Missing/invalid tier is `HALT_POLICY_VIOLATION`; clarification/design/Foundation/
 handoff/readiness gaps use the applicable clarification or quality halt and
 repair route.
 
-Missing, invalid, or mismatched planning revision evidence means every previous
-product task-plan approval is stale. Return `HALT_QUALITY_GATES` without
-promoting or selecting work and route `/feature-to-tasks --all`, then
-`/review-tasks-plan --all`, the applicable doctor gate, and `/autopilot` resume.
-Do not mutate task statuses to represent this invalidation.
+A missing/invalid Global Planning Revision halts all product work and routes
+`/spec-design`; it does not prove feature impact. With a valid revision, a
+missing/mismatched approval or reconciliation marker makes only that
+task-linked feature ineligible. Keep task statuses unchanged and reconcile
+ineligible features one at a time through the Fresh Feature Tasking Boundary.
 </input_contract>
 
 <hard_invariants>
@@ -81,9 +83,14 @@ Do not mutate task statuses to represent this invalidation.
 - Canonical execution is sequential. Select and finish one task's execute,
   verification, lifecycle decision, and evidence write before selecting the
   next.
+- Do not promote, select, resume, or verify a task whose feature is ineligible;
+  checkpoint its local reconciliation/review route instead.
 - Run each selected task in a fresh child execution context/session. Resume an
   interrupted task only from reconciled durable evidence, not from inherited
   conversational state.
+- Run `/verify` and every required `/red-verify` in separate fresh Reviewer
+  child contexts. Never reuse or resume the `/verify` child for `/red-verify`;
+  the semantic reviewer reads durable project evidence in its own context.
 - `--experimental-parallel` remains opt-in and follows autonomy policy exactly:
   isolated worktrees/sandboxes plus pairwise-disjoint non-empty hard
   `write_boundary`; never infer independence from `touched_files`. Fallback
@@ -252,11 +259,12 @@ selection loop:
 
 1. checkpoint `current task: none`, `current stage: selection`, and the next
    promotion/selection action;
-2. run a separate product promotion pass, writing `planned -> ready` only when
-   every dependency is `done` and no blocking review, bug, decision, or
-   unresolved semantic concern remains; write dependent blocking decisions only
-   to affected records;
-3. select one product `ready` task by earliest wave and stable index order;
+2. run a separate product promotion pass, writing `planned -> ready` only for
+   eligible features when every dependency is `done` and no blocking review,
+   bug, decision, or unresolved semantic concern remains; write dependent
+   blocking decisions only to affected records;
+3. select one eligible product `ready` task by earliest wave and stable index
+   order;
 4. require current strict-doctor PASS, then checkpoint the selected task at
    `execute` with exact `next action: /exe <TASK_ID>` and invoke `/exe`; `/exe`
    prepares/reconciles the tier protocol and writes `ready -> in_progress`;
@@ -285,7 +293,7 @@ At each wave boundary:
    cards, specs, dependencies, tier, scope, or plan assumptions changed; pure
    status/evidence closure does not trigger it;
    if Global Backbone Planning Revision changed, stop the boundary and use the
-   all-feature stale-planning route from the input contract instead;
+   global-revision stale-planning route from the input contract instead;
 6. only after all triggered gates pass, checkpoint the existing
    `wave-boundary` stage with exact next action `/tech-debt wave <N>` and run
    `/tech-debt wave <N>` by default. Record its report path in the existing
@@ -303,12 +311,13 @@ schema-backed follow-up created through the normal planning owner is considered
 in the same run only after its review and readiness gates pass; verifiers do
 not create it independently.
 
-If recovery leaves no unresolved product `in_progress` task and no product
-`ready` task remains:
+If recovery leaves no unresolved product `in_progress` task and no eligible
+product `ready` task remains:
 - preserve any already-recorded specific `HALT_*` state, reason, owner, and
   resume route as required by autonomy policy;
-- all product work closed -> run final review coverage and success
-  checks;
+- ineligible task-linked features remain -> `HALT_QUALITY_GATES` with the first
+  feature's `/feature-to-tasks FT-<NNN>` or `/review-tasks-plan FT-<NNN>` route;
+- all product work closed -> run final review coverage and success checks;
 - only when every unfinished product record is non-runnable solely because its
   task dependencies are unfinished -> record exact dependency evidence and
   `HALT_DEPENDENCY_DEADLOCK`;

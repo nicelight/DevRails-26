@@ -15,11 +15,13 @@ status: active
   proof, and verified evidence. Missing product targets/scope decisions remain
   `/write-prd` blockers; agents do not invent them.
 - `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd-to-features`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
-- `/spec-design` is mandatory after `/prd-to-features`; it records a minimal backbone for local/simple feature-set pressure or a full architecture scaffold for shared-boundary, contract, state/data/runtime/security, or strict pressure, and records `.memory-bank/foundation.md` when a Foundation Dev Path is needed.
-- Global Backbone `Planning Revision` starts at `0`, becomes positive on the
-  first successful `/spec-design`, and increments once for a material global
-  planning-contract change. Product task-plan `APPROVE` is valid only for the
-  current revision.
+- `/spec-design` is the mandatory initial post-`/prd-to-features` backbone and
+  Foundation decision gate. Changes to an already accepted positive-revision
+  backbone belong to `/spec-redesign`.
+- Global Backbone `Planning Revision` starts at `0`, becomes `1` on the first
+  successful `/spec-design`, and changes later only under
+  `#planning-redesign-boundary`. Product task-plan `APPROVE` is valid only for
+  the current revision.
 - `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
 - `/feature-to-tasks FT-<NNN>` closes applicable canonical concern coverage and
   creates the implementation plan plus complete JSON task records with direct
@@ -42,6 +44,57 @@ status: active
   queue has T3 work, autonomous/autopilot handoff, or complex
   T2/foundation/dependency/stale-doc/risky-link conditions. Simple manual
   T0/T1 queues do not require `/mb-doctor` by default.
+
+## Planning Redesign Boundary
+
+- `/spec-redesign` changes an already accepted positive-revision backbone or
+  shared contract and returns one impact verdict: `none|bounded|global`.
+- Planning Revision increments exactly once only when both are proved: durable
+  planning semantics changed, and the change affects product-wide planning.
+  Durable semantics are architecture units or ownership, accepted boundaries,
+  feature acceptance, task slicing, dependencies, tiers, compatibility or
+  rollout, verification obligations, or the Foundation path. Shared location,
+  broad wording, schema/API/config text, or implementation detail alone is not
+  proof of global impact.
+- `none` preserves revision and reviews. `bounded` preserves revision and names
+  only affected product features. `global` increments revision and affects all
+  task-linked product features. Uncertain impact blocks for evidence; it does
+  not default to `global`.
+- For `bounded`, `/spec-redesign` writes the exact body marker
+  `PLANNING_RECONCILIATION_REQUIRED` only in affected task-linked feature docs
+  whose planning needs repair. It changes neither Global Backbone Status nor
+  Planning Revision.
+- Reconcile affected product features sequentially through
+  `#fresh-feature-tasking-boundary`. Foundation planning is revisited only when
+  its decision or executable baseline contract changed. Preserve task statuses,
+  completed evidence, and unaffected approvals.
+- Promotion, selection, and execution exclude only features with that marker or
+  without a current-revision task-plan `APPROVE`; independent eligible features
+  continue. Add no revision history, registry, lifecycle, schema, or parallel
+  freshness system.
+
+## Fresh Feature Tasking Boundary
+
+- When feature design is due, run `/spec-auto FT-<NNN>` first in its own
+  isolated one-feature Architect context; its successful handoff names the
+  feature's tasking context.
+- One fresh context owns exactly one `/feature-to-tasks FT-<NNN>` and ends at its
+  durable handoff. Multi-feature owners process features sequentially, including
+  during experimental-parallel execution.
+- Before launch, the owner resumes its recorded current feature or selects one
+  remaining, then records that feature and the exact next action in its existing
+  orchestration plan.
+- Unattended tasking uses an isolated `ROLE: ARCHITECT` child with only the target
+  command and durable project state, not parent or previous-feature conversation.
+  Success sets a separate fresh `ROLE: Reviewer` `/review-tasks-plan FT-<NNN>`
+  child as the next action.
+- `REJECT` invokes its named repair owner; only `/feature-to-tasks` repair uses a
+  new isolated Architect child. Current-revision `APPROVE` clears the current
+  feature; other halts preserve their owner and route.
+- An unattended caller without isolated child contexts returns
+  `HALT_POLICY_VIOLATION` with fresh tasking, review, and parent-resume routes for
+  the current feature; it never tasks in the parent context. Add no tasking
+  status or registry.
 
 ## Execution-Cohesive Task Boundary
 
@@ -91,14 +144,13 @@ use `/mb-doctor --strict` before autonomous handoff
 the planning surface: task cards, specs, dependencies, tier, scope, or
 unresolved plan assumptions. Status/evidence-only closure does not
 trigger another task-plan review.
-14) If `/spec-design` increases Planning Revision after task generation, keep
-all task statuses unchanged and rerun `/feature-to-tasks --all`, then
-`/review-tasks-plan --all`, before any product task execution resumes.
+14) Apply `/spec-redesign` and `#planning-redesign-boundary` to accepted
+backbone/contract changes after initial design.
 
 ## Autonomous end-to-end mode (start and leave)
 1) `/autonomous`
-2) it completes Product/Design, applicable Foundation planning, product tasking,
-and required fresh-context reviews through their installed child contracts
+2) after Product/Design and applicable Foundation planning, it applies
+`#fresh-feature-tasking-boundary`
 3) `/autonomous` directly owns the bounded FT-000 phase through the existing
 `/foundation-to-tasks -> /mb-doctor --strict -> /exe + /verify -> /mb-sync`
 workflow until the final gate is `done`; it never invokes `/autopilot` for

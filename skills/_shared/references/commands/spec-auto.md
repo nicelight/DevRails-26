@@ -10,62 +10,52 @@ without turning autonomy into authority over unresolved product/design choices.
 
 Supported arguments:
 - `--init`;
-- `FT-<NNN>`;
-- `--all`.
+- exactly one `FT-<NNN>`.
 </objective>
 
 <input_contract>
 `--init` requires the normal `/spec-init` inputs after `/write-prd` and before
 `/prd-to-features`.
 
-`FT-<NNN>` and `--all` require:
+`FT-<NNN>` requires:
 - clarified PRD, product, requirements, epics, and product features;
 - `.memory-bank/spec-backbone.md` and pure `.memory-bank/spec-index.md`;
 - a Global Backbone Status of `complete`, or valid `minimal` with explicit
   `not_applicable` rationale, plus positive integer `Planning Revision`; if
-  missing or invalid, invoke/perform `/spec-design --all` under the same
-  unattended decision rules;
+  missing or invalid, route to `/spec-design`;
 - `.memory-bank/foundation.md` with an explicit decision and, when foundation
   work is required, a closed Foundation Gate before product task handoff;
-- relevant canonical specs and accepted operator decisions.
+- relevant canonical specs and accepted operator decisions;
+- `.memory-bank/workflows/sdd-design-contract.md`.
 
-If no argument is given, infer `--init` only when clearly before `/prd-to-features`, or
-`--all` only when clearly after `/prd-to-features`; otherwise halt and report the missing
-argument. Exclude reserved `FT-000` from product feature targets.
+If no argument is given, infer `--init` only when clearly before
+`/prd-to-features`; otherwise halt and request one explicit product feature.
+Reject `FT-000` and every multi-feature target.
 </input_contract>
 
 <hard_invariants>
 - `/spec-auto` does not ask the operator during the unattended run and never
   treats that as permission to choose for them.
-- It may apply a material target decision only when already fixed by
-  Constitution, an explicit accepted operator decision or policy, an active
-  accepted ADR, an authoritative canonical spec, or clarified product sources.
-- Runtime observations, production code, and mapped baseline establish current
-  behavior, constraints, and compatibility or migration evidence only; they do
-  not authorize a new target architecture, contract, data ownership, or
-  migration route.
-- Do not invent external contracts, architecture boundaries, security posture,
-  migrations, irreversible data behavior, Foundation sufficiency, or competing
-  canonical-path resolution.
+- `--init` inherits `/spec-init` source authority and decision boundaries; it
+  does not invent contracts, architecture, security, migration, irreversible
+  data behavior, or Foundation sufficiency.
+- Apply the shared SDD authority and operator-decision contract in `FT-<NNN>`
+  mode; unresolved material choices block instead of receiving agent defaults.
 - In post-PRD modes, inherit the accepted global architecture and material
   module/slice map. Do not reopen, weaken, or replace them with a framework
   recommendation, feature-local heuristic, or one-slice-per-feature mapping.
-- Keep spec-index a registry, use subject-based canonical paths, and do not
-  create feature-owned design hubs, a coverage-map artifact, task records, or a
-  new status/terminal state.
-- Keep module identity/topology only in `boundary-map.md`; do not copy feature
-  subgraphs.
 - Preserve feature status vocabulary
   `spec_design_status: complete|not_required|blocked`.
-- `--init` preserves Global Backbone `Planning Revision`. Feature design changes
-  it only under the global-rule rule below and never uses task lifecycle state as
-  a freshness marker.
+- Do not create a new status or terminal-state model.
+- `/spec-auto` preserves Global Backbone `Planning Revision`. Accepted backbone
+  changes route to `/spec-redesign`; feature design never owns revision.
 - Current-state drift or baseline correction alone does not change Planning
   Revision while the accepted target remains unchanged.
 </hard_invariants>
 
 <operator_decisions>
-When a relevant ambiguity or branch is not already resolved authoritatively:
+Apply the shared operator-decision boundary. When it leaves a relevant material
+branch unresolved:
 - write the exact question, alternatives/impact, affected artifacts/features,
   and decision owner to the existing backbone, feature, spec, or autonomous
   decision log as appropriate;
@@ -74,18 +64,9 @@ When a relevant ambiguity or branch is not already resolved authoritatively:
 - stop with existing `HALT_BLOCKING_QUESTIONS` or
   `HALT_CLARIFICATION_REQUIRED`;
 - report the interactive resume skill (`/write-prd`, `/spec-init`,
-  `/feature-doctor`, or `/spec-design`).
+  `/feature-doctor`, `/spec-design`, or `/spec-redesign`).
 
-Do not apply a recommendation, conservative/reversible default, or agent
-assumption as the missing operator decision. Non-decision implementation detail
-may still be chosen under the agent-discretion contract below.
-
-A difference between current state and an accepted target is not itself a
-blocking authority conflict. When the target and applicable compatibility or
-migration constraints yield one unambiguous route, record the delta and route
-in the existing owning artifact and continue without re-asking. Conflicting
-target authorities or an unresolved material reconciliation branch use the
-existing blocker above.
+Non-decision implementation detail remains agent discretion.
 </operator_decisions>
 
 <required_outputs>
@@ -110,71 +91,18 @@ no accepted graph entries.
 Do not set post-PRD Global Backbone Status or make architecture/Foundation
 decisions in `--init`.
 
-## `FT-<NNN>` and `--all`
+## `FT-<NNN>`
 
-For each target feature, satisfy applicable Architecture,
-Interfaces/Contracts, Data, and Verification coverage. These are coverage
-criteria, not a fixed analysis order or required file set.
+Apply the SDD Design Contract to exactly the target feature. Reconcile each
+applicable canonical owner and affected consumer, then record direct
+Architecture Spine, ADR, boundary, contract, and verification paths in feature
+`spec_design_links`.
 
-For each concrete concern, reach exactly one truthful outcome:
-`reuse|extend|create|not_applicable|block`. The audit may remain in memory;
-durable artifacts need only the resulting canonical routes, decisions, and
-blockers.
-
-Before handoff, resolve each evidenced material boundary decision in its owning
-canonical artifact when execution would otherwise determine public or
-cross-boundary behavior, compatibility or migration, authority, or state/data
-ownership. Unresolved authority uses the existing operator-decision and blocker
-route. This constrains outcomes, not analysis order, inapplicable coverage, or
-implementation tactics.
-
-Rules:
-- discover existing registered and neighboring subject specs before creating;
-- reuse/extend first; create the smallest subject-based spec only when no
-  suitable canonical path exists;
-- never resolve two competing paths by creating a third;
-- keep feature behavior/acceptance in the feature and technical contracts in
-  canonical `.memory-bank/architecture/*`, `.memory-bank/contracts/*`,
-  `.memory-bank/domains/*`, `.memory-bank/states/*`,
-  `.memory-bank/testing/*`, `.memory-bank/runbooks/*`, or
-  `.memory-bank/guides/*`;
-- keep a simple material-quality verification method in its REQ/AC and task
-  plan. Create or extend a subject spec only when reproducible measurement
-  needs a non-trivial dataset/state, statistical window, environment/warm-up,
-  isolation/cleanup, shared procedure, or formal expert rubric. That spec owns
-  method/evidence detail and never supplies a missing product target;
-- legacy `.memory-bank/tech-specs/FT-*.md` is evidence, not a target hub;
-- split specs only for a distinct boundary, change cadence, consumers, or
-  meaningful reuse;
-- update Architecture Spine `AD-*` under the same KISS and evidence rules as
-  `/spec-design` when shared-boundary, contract, state/data, runtime, security,
-  or strict pressure requires executable global rules;
-- for evidenced runtime/state sensitivity, put any required initial-state,
-  safe-rerun, observable-result, and cleanup/isolation proof in the owning
-  canonical spec; do not add it to simple/stateless features;
-- for an accepted linear Alembic topology, keep head/branch/ancestry proof with
-  the project-level database contract and revision-local proof with the feature;
-  treat the current head ID as transient evidence, not a feature spec or
-  Planning Revision change by itself;
-- when feature design durably changes an active global `AD-*` or another global
-  rule in a way that can change downstream planning, increment Global Backbone
-  `Planning Revision` exactly once under `/spec-design` rules; otherwise preserve
-  it;
-- carry relevant Architecture Spine, ADR, boundary, contract, and verification
-  links into feature `spec_design_links`;
-- reconcile each feature so task-relevant units are registered and every
-  required inter-module interaction has an exact contract heading or blocks;
-- leaf modules/edges inside accepted architecture preserve Planning Revision;
-  global architecture or dependency-policy changes route to `/spec-design`;
-- when the accepted target defines capability slices, preserve the applicable
-  owning slice/code root, semantic and write ownership, public boundary,
-  allowed/forbidden dependencies, cross-slice orchestration owner, and proof
-  path in the owning canonical specs; carry the directly relevant architecture
-  and boundary paths into feature `spec_design_links`;
-- if the accepted style requires capability slices but a feature depends on a
-  missing or materially ambiguous slice boundary, mark the feature `blocked`
-  and use the existing `/spec-design` resume route instead of choosing it;
-- update `.memory-bank/spec-index.md` only as registry/discovery routing.
+Do not change the accepted global architecture, dependency policy, or
+Architecture Spine here; route such accepted changes to `/spec-redesign`.
+Leaf modules and edges inside accepted architecture preserve Planning Revision.
+If required capability ownership or a boundary remains materially ambiguous,
+set the feature `blocked` and route to `/spec-redesign` rather than choosing it.
 
 Set feature status:
 - `complete`: every applicable concern has one concrete canonical route and no
@@ -184,45 +112,28 @@ Set feature status:
 - `blocked`: an operator decision, canonical path, or required design block is
   unresolved.
 
-For `--all`, every targeted product feature must end in one of those statuses;
-any `blocked` feature prevents `/feature-to-tasks --all` handoff.
 </required_outputs>
 
 <agent_discretion>
-Choose reading/search order, tools, concern-discovery method, working notes,
-spec organization, and minimum design depth proportional to risk. Choose local
-technical tactics that do not change product behavior, architecture/public
-contracts, data ownership, security, Foundation decision, or another
-operator-owned branch.
-
-Prefer the smallest coherent canonical spec set. The agent is free to reach
-coverage in any order and need not persist an internal concern matrix.
+Choose the minimum design depth and local tactics permitted by the shared
+contract; no internal concern matrix needs to persist.
 </agent_discretion>
 
 <validation>
 For `--init`, validate the same `ready_for_prd|blocked` and pure-registry
 contracts as `/spec-init`.
 
-For feature design, verify:
+For feature design, apply Shared Validation from the SDD Design Contract, then
+verify:
 - global backbone and Foundation decision/gate are ready for the intended
   handoff;
 - each feature status is supported by direct canonical links or explicit
   not-required rationale;
 - no relevant area remains planned, candidate, unknown, conflicting, or hidden
   behind an assumption when status is `complete`;
-- spec-index has one active path per concrete concern and no decision body;
-- an accepted capability-sliced target remains legible through the feature's
-  direct architecture/boundary links without changing global ownership or
-  treating a product feature as a slice;
-- graph endpoints and exact contract links resolve; unreconciled observed
-  relationships remain blockers;
 - blockers use existing statuses/terminal states and name the interactive
   resume route.
 
-For a successful `--all` Product/Design boundary, confirm the durable bundle:
-clarified PRD + product/requirements/epics/features + Global Backbone Status
-`complete|minimal` + canonical spec-index + Foundation Dev Path decision +
-accepted operator decisions in existing canonical artifacts.
 </validation>
 
 <handoff_contract>
@@ -232,11 +143,6 @@ command:
 - successful `--init` -> `/prd-to-features`;
 - ready backbone with required foundation work not yet complete ->
   `/foundation-to-tasks` or continuation of its existing gate;
-- Planning Revision increased after indexed task generation ->
-  `/feature-to-tasks --all`, then `/review-tasks-plan --all`; previous product
-  task-plan approvals are stale, task statuses remain unchanged, and this branch
-  overrides the normal feature handoff;
 - successful one-feature design -> `/feature-to-tasks FT-<NNN>`;
-- successful `--all` -> `/feature-to-tasks --all`;
 - unresolved decision -> named interactive repair skill; no task handoff.
 </handoff_contract>

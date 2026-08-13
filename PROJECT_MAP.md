@@ -54,12 +54,9 @@ Packaging and install:
 - `package.json`: package bin and scripts.
 - `scripts/install-framework.mjs`: correct installer for this fork; no args starts the interactive one-command install/bootstrap flow, every install route deploys the complete runtime command set into both target surfaces, and bootstrap paths prepare a temporary vendored repo before generating target `.agents/.claude` skills.
 - `scripts/vendor-shared.mjs`: generator that copies `skills/_shared` files into every installable skill package; normal install uses it inside a temporary prepared repository, while direct source-tree vendoring requires explicit `--in-place`.
-- `scripts/test-install-sync.mjs`: isolated regression smoke for framework-owned
-  schema/protocol-template/validator/workflow sync, write-boundary grammar,
-  selected-task start ownership, runtime skill collision preflight,
-  filesystem-derived runtime skill inventory, task/project state preservation,
-  stable runtime paths, deployed `mb-doctor` module execution, idempotent
-  reporting, and bootstrap-only repair semantics.
+- `scripts/test-install-sync.mjs`: isolated smoke for collision-safe runtime
+  deployment, source/deployed parity, bootstrap, sync restoration and project
+  state preservation, idempotence, and bootstrap-only ownership boundaries.
 - `scripts/test-mb-doctor.mjs`: isolated CLI/report characterization,
   architecture-boundary assertions, and Foundation/task/acceptance/brownfield
   fixture matrix.
@@ -135,8 +132,11 @@ Primary source files:
 - `skills/_shared/references/commands/foundation-to-tasks.md` for `REQ-000`,
   `FT-000`, foundation task records, and the final foundation gate
 - `skills/_shared/references/commands/feature-to-tasks.md` for rejecting `FT-000`,
-  excluding it from `--all`, and adding final gate dependencies to product tasks
+  accepting one product feature per fresh context, and adding final gate
+  dependencies to product tasks
 - `skills/_shared/references/commands/autonomous.md`
+- `skills/_shared/references/workflows/execute-loop.md` for the shared isolated
+  per-feature tasking and review boundary
 - `skills/_shared/references/commands/autopilot.md`
 - `skills/_shared/references/commands/mb-doctor.md`
 - `skills/_shared/scripts/init-mb.js`
@@ -161,14 +161,20 @@ routing. It adds no DDD artifact, status, or lifecycle.
 
 Global planning freshness uses one integer
 `.memory-bank/spec-backbone.md#Global Backbone Status` `Planning Revision`.
-Material global-contract changes invalidate all previous product task-plan
-approvals without changing task lifecycle state; current reviews bind through
+Only a proved durable planning-semantics change with product-wide impact
+increments it and invalidates all product task-plan approvals. Bounded changes
+preserve the revision and reconcile only affected features; task lifecycle and
+completed evidence remain unchanged. Current reviews bind through
 `REVIEWED_PLANNING_REVISION`.
 
 Primary source files for this behavior:
 
-- `skills/_shared/references/commands/spec-design.md` for creating/updating the
-  spine during the global SDD backbone gate
+- `skills/_shared/references/workflows/sdd-design-contract.md` for shared SDD
+  authority, canonical ownership, architecture integrity, and semantic validation
+- `skills/_shared/references/commands/spec-design.md` for the initial backbone
+  and spine
+- `skills/_shared/references/commands/spec-redesign.md` for accepted contract
+  changes and evidence-bounded impact classification
 - `skills/_shared/references/commands/spec-auto.md` for applying the same KISS
   AD rules during autonomous feature design
 - `skills/_shared/references/commands/feature-to-tasks.md` for registry-first
@@ -187,7 +193,7 @@ Primary source files for this behavior:
   protection and task-scoped verification of the allowed architectural path
 - `skills/_shared/references/workflows/autonomy-policy.md` and
   `skills/_shared/references/workflows/execute-loop.md` for the shared
-  all-feature reconciliation/review route
+  sequential bounded/global reconciliation and review routes
 - `skills/_shared/references/structure-template.md` and
   `skills/_shared/scripts/init-mb.js` for generated skeleton templates
 - `skills/mb-garden/assets/mb-lint.mjs` and
@@ -212,9 +218,11 @@ Primary source files:
 - `skills/_shared/references/commands/spec-init.md` and
   `skills/_shared/references/commands/map-codebase.md` for preliminary/as-is
   evidence without accepted-edge authority
-- `skills/_shared/references/commands/spec-design.md`, `spec-auto.md`, and
-  `feature-to-tasks.md` for accepted architecture units, graph reconciliation,
-  reverse impact, and local-versus-global Planning Revision ownership
+- `skills/_shared/references/workflows/sdd-design-contract.md` for the shared
+  canonical graph and architecture authoring contract
+- `skills/_shared/references/commands/spec-design.md`, `spec-redesign.md`,
+  `spec-auto.md`, and `feature-to-tasks.md` for accepted architecture units,
+  graph reconciliation, reverse impact, and Planning Revision ownership
 - `skills/_shared/references/commands/architecture-review.md`,
   `review-tasks-plan.md`, `exe.md`, and `verify.md` for semantic subgraph,
   point-of-use, and allowed-path checks

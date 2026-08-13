@@ -91,7 +91,7 @@ If an accepted answer invalidates linked design:
 - set misleading `spec_design_status: complete|not_required` to `blocked`;
 - route feature-local canonical reconciliation to `/feature-to-tasks FT-<NNN>`;
 - route shared/global backbone, Architecture Spine, or competing canonical path
-  issues to `/spec-design`;
+  issues to `/spec-redesign`;
 - note behavior-spec refresh without editing behavior JSON unless explicitly
   scoped by the operator.
 </required_outputs>
@@ -123,6 +123,6 @@ behavior.
   ready;
 - feature-local canonical design invalidated -> `/feature-to-tasks FT-<NNN>` for
   reconciliation before task slicing;
-- shared/global design or canonical-path conflict -> `/spec-design`;
+- shared/global design or canonical-path conflict -> `/spec-redesign`;
 - unresolved operator decision -> answer it and rerun `/feature-doctor`.
 </handoff_contract>

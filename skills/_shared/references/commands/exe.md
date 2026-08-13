@@ -55,7 +55,8 @@ Point-of-use preflight must confirm:
 - success is observable from AC/REQ/spec/gates/verification targets;
 - the selected task, its direct feature/REQ context, and direct task-linked
   canonical specs are mutually consistent;
-- for a product task, reviewed and current Planning Revision are equal;
+- for a product task, its feature lacks `PLANNING_RECONCILIATION_REQUIRED` and
+  its reviewed and current Planning Revision are equal;
 - T2/T3 direct canonical coverage is applicable and concrete enough to avoid
   guessing shape, rules, errors, and verification;
 - every current accepted `planned|ready` T2/T3 task satisfies the prospective
@@ -92,16 +93,17 @@ Stop before implementation if the task is missing/malformed, already
 objectively contradictory, is unverifiable, lacks the required T2/T3
 prospective proof path, or is materially under-tiered.
 
-If product planning revision evidence is missing, invalid, or mismatched, every
-previous product task-plan approval is stale. Leave all task statuses unchanged
-and route `/feature-to-tasks --all`, then `/review-tasks-plan --all`, the
-applicable doctor gate, and retry the selected task.
+Missing/invalid Global Planning Revision stops all product execution and routes
+`/spec-design`. A reconciliation marker or missing/mismatched approval stops
+only the selected feature and routes `/feature-to-tasks FT-<NNN>`, then
+`/review-tasks-plan FT-<NNN>` and the applicable doctor gate. Preserve all task
+statuses and other feature approvals.
 
 If the current revision has local graph drift affecting this task, preserve all
 statuses and route `/feature-to-tasks FT-<NNN>`, then
 `/review-tasks-plan FT-<NNN>` and the applicable doctor gate; other feature
-approvals remain valid. An absent required edge stops execution. Route global
-architecture repair to `/spec-design`.
+approvals remain valid. An absent required edge stops execution. Route accepted
+global architecture repair to `/spec-redesign`.
 
 For a selected `planned` task, write `planned -> ready` only when this preflight
 proves it runnable; otherwise leave it `planned` and stop. A selected `ready`
@@ -169,12 +171,12 @@ before choosing or widening work.
   not acceptance. Resume only after the owning PRD/feature/spec/task plan is
   durably updated and revalidated.
 - Feature/task repair or tier rebuild routes to
-  `/feature-to-tasks FT-<NNN>`; shared/global design routes to `/spec-design`;
+  `/feature-to-tasks FT-<NNN>`; shared/global design routes to `/spec-redesign`;
   product clarification routes to `/feature-doctor FT-<NNN>`.
 - Current implementation drift that the task can handle inside its accepted
   target and semantic boundary is evidence, not a new design choice. If work
   requires changing accepted write authority, public boundary, source of truth,
-  orchestration owner, or dependency direction, route it to `/spec-design`.
+  orchestration owner, or dependency direction, route it to `/spec-redesign`.
 - Unattended/scheduler flow returns a blocker without choosing, keeps the task
   non-closed, and tells the scheduler to use
   `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` with the exact
