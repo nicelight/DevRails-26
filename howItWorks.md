@@ -941,13 +941,16 @@ evidence. Изменение identity, tier, dependency, AC или material scop
 отдельную fresh session и возвращают findings, а не silently repair.
 
 `/review-feat-plan`, `/review-tasks-plan`, `/verify` и `/red-verify` перед
-verdict используют два `Codex Luna xhigh` co-reviewers. Основной агент сам
-выбирает для них разные полезные фокусы и распоряжается их findings.
+verdict устанавливают два разных co-review focuses; на bounded rerun
+неизменные focuses/evidence можно сохранить, остальные обновляются через
+`Codex Luna xhigh`. Основной агент распоряжается findings.
 
-`/review-tasks-plan` после достаточного task-planning context запускает одного
-fresh Reviewer с `/architecture-review` на feature. Основной reviewer включает
-его architecture verdict в свой report и сохраняет ownership финального verdict; без
-subagent support выполняет тот же bounded review локально.
+`/review-tasks-plan` запускает fresh Reviewer с `/architecture-review` только
+если текущее accepted evidence оставляет material uncertainty в ownership,
+dependencies или boundaries, способную изменить verdict. Иначе фиксируется
+`ARCHITECTURE_REVIEW: not_required`; retained architecture evidence не является
+текущим verdict. Основной reviewer сохраняет ownership финального verdict, а
+при недоступной делегации выполняет ту же architecture review локально.
 
 ### Technical pre-mortem
 

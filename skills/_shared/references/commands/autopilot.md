@@ -289,9 +289,12 @@ At each wave boundary:
 3. run `/mb-sync` once for authoritative already-written state, updating the
    checkpoint only after its durable handoff;
 4. run lint then the strict doctor;
-5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose task
-   cards, specs, dependencies, tier, scope, or plan assumptions changed; pure
-   status/evidence closure does not trigger it;
+5. rerun `/review-tasks-plan FT-<NNN>` only for product features whose
+   verdict-relevant specs/claims, task outcome/slicing/proof obligations,
+   dependencies, tier, scope, or plan assumptions changed; a current `APPROVE`
+   survives status/evidence-only closure and mechanically equivalent
+   locator/traceability corrections that preserve the canonical owner and claim
+   and pass applicable deterministic checks;
    if Global Backbone Planning Revision changed, stop the boundary and use the
    global-revision stale-planning route from the input contract instead;
 6. only after all triggered gates pass, checkpoint the existing

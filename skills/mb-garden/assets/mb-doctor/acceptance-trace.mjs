@@ -306,7 +306,10 @@ export function createAcceptanceTraceChecks(context) {
     const progress = readTextIfFile(progressRel);
     const verification = readTextIfFile(verificationRel);
     if (
-      !hasConcreteBulletFieldContainingId(progress, 'accepted claim locator(s)', acId)
+      !(
+        hasConcreteBulletFieldContainingId(progress, 'accepted claim locator(s)', acId)
+        || hasConcreteBulletFieldContainingId(progress, 'accepted claim locator', acId)
+      )
       || !includesExactId(verification, acId)
     ) return false;
     if (!PASS_EVIDENCE_RE.test(verification)) return false;
@@ -470,7 +473,7 @@ export function createAcceptanceTraceChecks(context) {
       && includesExactId(match[1], id)
     );
   }
-  
+
   function readTextIfFile(rel) {
     const abs = absolute(rel);
     if (!isFile(abs)) return '';

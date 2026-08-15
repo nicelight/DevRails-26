@@ -25,7 +25,7 @@ If the target cannot be resolved, stop and ask for `FT-<NNN>`.
 `FT-000` is not a review target, although its final gate and dependency effect
 must be reviewed when they constrain product tasks.
 
-Read current:
+A full review reads current:
 - Constitution, requirements/RTM, spec backbone/index, task schema, tier policy,
   task index, and Foundation decision when present;
 - the acceptance-closure and task-boundary definitions in
@@ -41,6 +41,12 @@ Read current:
 Require Global Backbone `Planning Revision` to be a positive integer. A missing,
 zero, or invalid revision is a blocking design-readiness gap owned by
 `/spec-design`.
+
+An existing report may bound a rerun only when its Planning Revision matches
+and the exact repair delta is established from the caller handoff, an isolated
+diff, or direct comparison of cited evidence. Otherwise perform a full review.
+On a bounded rerun, recheck the delta and every coverage area it can affect;
+unchanged cited evidence may cover the rest of the feature.
 
 `PLANNING_RECONCILIATION_REQUIRED` in the target feature blocks review and
 routes `/feature-to-tasks FT-<NNN>`.
@@ -62,9 +68,15 @@ routes `/feature-to-tasks FT-<NNN>`.
   create a simulation artifact, field, report, status, or replacement queue.
 - Rubrics below are coverage criteria, not a mandatory reasoning order or an
   exhaustive limit on reviewer probes.
-- Obtain one bounded architecture review per reviewed feature from a fresh
-  Reviewer using the installed `/architecture-review` skill. If fresh
-  delegation is unavailable or fails, perform the same review locally.
+- A previous report is non-authoritative cache. Retain evidence only when its
+  cited coverage and inputs are unchanged; the new verdict covers the current
+  whole feature.
+- Establish two co-review focuses on a full review. On a bounded rerun, retain
+  each focus only when its target, scope, and governing evidence are unchanged;
+  refresh every other focus through the semantic pack.
+- Run `/architecture-review` only when current accepted evidence leaves a
+  material ownership, dependency, or boundary question that could change the
+  verdict. If delegation fails, perform the same architecture review locally.
 </hard_invariants>
 
 <operator_decisions>
@@ -87,9 +99,8 @@ already resolves the branch.
 
 <agent_discretion>
 The reviewer chooses reading order, search tools, working notes, additional
-adversarial probes, verification depth, and when enough context exists to
-launch the architecture Reviewer. The four coverage groups may be explored in
-any useful order, but all must be addressed before the verdict.
+adversarial probes, and verification depth. The four coverage groups may be
+explored in any useful order, but all must be addressed before the verdict.
 </agent_discretion>
 
 <required_outputs>
@@ -104,15 +115,21 @@ Every feature report records the exact standalone marker
 Revision, for both `APPROVE` and `REJECT`. `APPROVE` is valid only while this
 value equals the current positive Planning Revision.
 
-When delegation is available, give one fresh `Reviewer` the target feature ID,
-product and relevant epic paths, implementation plan, task records, and
-discovered direct architecture/spec routes. Require it to read
+On a bounded rerun, replace the report; record the checked delta, finding
+dispositions, retained evidence, and each co-review focus as retained or
+refreshed. A full review records both selected focuses and their evidence.
+Append no review history.
+
+When architecture review is not required, record the exact standalone marker
+`ARCHITECTURE_REVIEW: not_required`. Retained prior architecture evidence is
+not a current architecture verdict.
+
+When required, give one fresh `Reviewer` the target feature ID, product and
+relevant epic paths, implementation plan, task records, and discovered direct
+architecture/spec routes. Require it to read
 `.memory-bank/roles/reviewer.md` and the installed `/architecture-review` skill,
-then return its compact Reviewer report. If delegation is unavailable or fails,
-perform the same review locally. Include the resulting verdict and evidence in
-the main report; do not create a separate architecture-review artifact. Avoid
-rereading full architecture sources unless needed to resolve a gap, conflict,
-or another coverage group.
+then include its compact verdict and evidence in the main report. Create no
+separate architecture-review artifact.
 
 Cover:
 
@@ -140,9 +157,9 @@ Cover:
      canonical path per concrete concern; sufficient shape/rules/errors/
      verification block; relevant AD/boundary/contract links; no hub-only T2/T3
      design; persistence proof where applicable; no source contradictions.
-   - integrate the architecture verdict and findings; reject a blocking accepted-boundary,
-     ownership, dependency, invariant, or proof-path finding, and resolve any
-     gap that can change the verdict.
+   - integrate any architecture-review verdict and findings; reject a blocking
+     accepted-boundary, ownership, dependency, invariant, or proof-path
+     finding, and resolve any gap that can change the verdict.
    - confirm registered endpoints, exact contracts, consumer impact, and
      compatibility/rollout basis support the plan. Reject copied topology or an
      interaction execution would have to legalize.
@@ -212,10 +229,11 @@ replace downstream `/mb-doctor --strict`.
 </required_outputs>
 
 <validation>
-Before publishing the verdict, complete every coverage group and report every
-material gap found in one `REJECT`; do not stop at the first gap. Verify that
-every claim cites an inspected task, plan, spec, requirement, dependency, or
-doctor finding; the report uses only `APPROVE|REJECT`; its reviewed revision
+Before publishing the verdict, establish every coverage group through current
+inspection or valid retained evidence. For each finding, inspect directly
+coupled fields and artifacts; report all material gaps in one `REJECT`. Verify
+that every claim cites an inspected task, plan, spec, requirement, dependency,
+or doctor finding; the report uses only `APPROVE|REJECT`; its reviewed revision
 marker exactly matches the current positive Planning Revision; and no reviewed
 durable state was mutated.
 </validation>

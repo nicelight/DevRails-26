@@ -141,9 +141,11 @@ use `/mb-doctor --strict` before autonomous handoff
    - a required higher tier follows
      `tier-policy.md#tier-classification-and-escalation`
 13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
-the planning surface: task cards, specs, dependencies, tier, scope, or
-unresolved plan assumptions. Status/evidence-only closure does not
-trigger another task-plan review.
+verdict-relevant specs/claims, task outcome/slicing/proof obligations,
+dependencies, tier, scope, or unresolved plan assumptions. A current `APPROVE`
+survives status/evidence-only closure and mechanically equivalent
+locator/traceability corrections that preserve the canonical owner and claim
+and pass applicable deterministic checks.
 14) Apply `/spec-redesign` and `#planning-redesign-boundary` to accepted
 backbone/contract changes after initial design.
 

@@ -570,6 +570,19 @@ Flags:
   expectPass(validAcceptanceTrace, 'valid acceptance trace');
   expectNoFinding(validAcceptanceTrace, 'TASK_ACCEPTANCE_PROOF_MISSING');
 
+  const fragmentSddLocator = runCase('fragment-sdd-locator', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, {
+      sourceArtifacts: [
+        '.memory-bank/features/FT-001-fixture.md#FT-001-AC-001',
+        '.memory-bank/contracts/fixture.md#fixture-contract',
+      ],
+    })],
+  }, ['--strict']);
+  expectPass(fragmentSddLocator, 'fragment SDD locator');
+  expectNoFinding(fragmentSddLocator, 'TASK_SDD_SPEC_LINK_MISSING');
+  expectNoFinding(fragmentSddLocator, 'TASK_HANDOFF_INCOMPLETE');
+
   const hierarchicalAcceptanceTrace = runCase('hierarchical-acceptance-trace', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, { reqs: ['REQ-ING-001'] })],
@@ -747,6 +760,34 @@ Flags:
     }],
   }, ['--strict']);
   expectFinding(missingAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', 'error');
+
+  const historicalSingularAcceptanceEvidence = runCase('historical-singular-acceptance-evidence', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [task(PRODUCT_T2, { status: 'done' })],
+    files: [
+      {
+        rel: `.protocols/${PRODUCT_T2}/progress.md`,
+        content: `# Progress
+
+## Claim-linked RED / GREEN (T2/T3)
+- accepted claim locator: FT-001-AC-001
+- RED observation and evidence: fixture RED artifact
+- GREEN observation and evidence: fixture GREEN artifact
+`,
+      },
+      {
+        rel: `.protocols/${PRODUCT_T2}/verification.md`,
+        content: `# Verification
+
+- FT-001-AC-001: verifier-owned fixture evidence
+
+VERDICT: PASS
+`,
+      },
+    ],
+  }, ['--strict']);
+  expectPass(historicalSingularAcceptanceEvidence, 'historical singular acceptance evidence');
+  expectNoFinding(historicalSingularAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
 
   const misboundAcceptanceEvidence = runCase('misbound-acceptance-evidence', {
     foundation: foundationMarkdown(false, 'not_required'),

@@ -244,7 +244,8 @@ into task dependencies.
 - `skills/_shared/references/commands/architecture-review.md`: bounded C4 and
   architecture review used by `/review-tasks-plan`.
 - `skills/_shared/references/commands/review-tasks-plan.md`: owns the final
-  planning verdict and integrates one architecture review per feature.
+  planning verdict, reuses unchanged prior evidence, and conditionally
+  escalates unresolved architecture boundary questions.
 - `skills/_shared/references/roles/orchestrator.md`: Architect delegation route.
 - `skills/_shared/references/deployable/AGENTS.md`: deployed role routing and
   KISS text.
@@ -423,10 +424,11 @@ Primary touch points:
 
 ## Finding Adjudication Semantic Pack
 
-`skills/_shared/references/semantic-packs/finding-adjudication.md` adds two
-`Codex Luna xhigh` co-reviewers to `/review-feat-plan`, `/review-tasks-plan`,
-`/verify`, and `/red-verify`. The caller chooses their different focuses and
-retains the existing verdict, artifact, lifecycle, and handoff contracts.
+`skills/_shared/references/semantic-packs/finding-adjudication.md` establishes
+two co-review focuses for `/review-feat-plan`, `/review-tasks-plan`, `/verify`,
+and `/red-verify`; unchanged recorded focus evidence may be retained, while
+each refresh uses `Codex Luna xhigh`. The caller retains the existing verdict,
+artifact, lifecycle, and handoff contracts.
 
 The installer deploys the pack inside each owning runtime skill as
 `references/finding-adjudication.md`; deployed commands must not reference its

@@ -665,8 +665,9 @@ export function createTaskReadinessChecks(context) {
     const missing = [];
   
     for (const candidate of candidates) {
-      if (!isAllowedSddSpecPath(candidate)) continue;
-      if (isFile(absolute(candidate))) {
+      const filePath = candidate.split('#', 1)[0];
+      if (!isAllowedSddSpecPath(filePath)) continue;
+      if (isFile(absolute(filePath))) {
         existing.push(candidate);
       } else {
         missing.push(candidate);
