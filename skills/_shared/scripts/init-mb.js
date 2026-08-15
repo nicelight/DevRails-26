@@ -744,6 +744,7 @@ status: active
 - [.memory-bank/roles/explorer.md](roles/explorer.md): Explorer role contract.
 - [.memory-bank/roles/implementer.md](roles/implementer.md): Implementer role contract.
 - [.memory-bank/roles/reviewer.md](roles/reviewer.md): Reviewer role contract.
+- [.memory-bank/roles/judge.md](roles/judge.md): Judge supervisory role contract.
 - [.memory-bank/product.md](product.md): Продукт (C4 L1).
 - [.memory-bank/requirements.md](requirements.md): Требования + RTM.
 - [.memory-bank/epics/](epics/): Эпики (C4 L2).
@@ -1154,6 +1155,7 @@ status: active
 - [.memory-bank/workflows/tier-policy.md](tier-policy.md): Tier classification, obligations, boundaries, and closure authority.
 - [.memory-bank/workflows/execute-loop.md](execute-loop.md): Manual and autonomous task execution sequence.
 - [.memory-bank/workflows/autonomy-policy.md](autonomy-policy.md): Scheduler recovery, failure handling, budgets, and terminal states.
+- [.memory-bank/workflows/multiagents_with_judge.md](multiagents_with_judge.md): Additive Judge supervision for /multiagentic.
 - [.memory-bank/workflows/mb-sync.md](mb-sync.md): Durable state synchronization boundaries and checklist.
 `);
 
@@ -1173,12 +1175,14 @@ copyWorkflowReference('sdd-design-contract.md');
 copyWorkflowReference('tier-policy.md');
 copyWorkflowReference('autonomy-policy.md');
 copyWorkflowReference('execute-loop.md');
+copyWorkflowReference('multiagents_with_judge.md');
 copyRoleReference('orchestrator.md');
 copyRoleReference('general.md');
 copyRoleReference('architect.md');
 copyRoleReference('explorer.md');
 copyRoleReference('implementer.md');
 copyRoleReference('reviewer.md');
+copyRoleReference('judge.md');
 copyProtocolReferences();
 
 writeFile(`${MB}/adrs/ADR-000-template.md`, `---

@@ -171,6 +171,7 @@ function canonicalCopies() {
         'autonomy-policy.md',
         'execute-loop.md',
         'mb-sync.md',
+        'multiagents_with_judge.md',
         'sdd-design-contract.md',
         'tier-policy.md',
       ],
@@ -225,12 +226,15 @@ function assertFreshBootstrap(target) {
   const specDesign = readTarget(target, '.agents/skills/spec-design/SKILL.md');
   const specRedesign = readTarget(target, '.agents/skills/spec-redesign/SKILL.md');
   const specAuto = readTarget(target, '.agents/skills/spec-auto/SKILL.md');
+  const autonomous = readTarget(target, '.agents/skills/autonomous/SKILL.md');
   const autopilot = readTarget(target, '.agents/skills/autopilot/SKILL.md');
+  const multiagentic = readTarget(target, '.agents/skills/multiagentic/SKILL.md');
   const exe = readTarget(target, '.agents/skills/exe/SKILL.md');
   const featureToTasks = readTarget(target, '.agents/skills/feature-to-tasks/SKILL.md');
   const reviewTasksPlan = readTarget(target, '.agents/skills/review-tasks-plan/SKILL.md');
   const autonomyPolicy = readTarget(target, '.memory-bank/workflows/autonomy-policy.md');
   const executeLoop = readTarget(target, '.memory-bank/workflows/execute-loop.md');
+  const judgeOverlay = readTarget(target, '.memory-bank/workflows/multiagents_with_judge.md');
   assert(
     sddContract.includes('## Evidence and authority')
       && sddContract.includes('## Canonical ownership and coverage')
@@ -257,12 +261,25 @@ function assertFreshBootstrap(target) {
     'Runtime autopilot lost independent functional and semantic reviewer contexts.',
   );
   assert(
+    multiagentic.includes('Load `/autopilot` and its Judge section')
+      && multiagentic.includes('Delegate the queue to the installed')
+      && multiagentic.includes('multiagents_with_judge.md#judge-consultation')
+      && multiagentic.includes('#autonomous-with-judge')
+      && multiagentic.includes('#autopilot-with-judge')
+      && judgeOverlay.includes('## autonomous with judge')
+      && judgeOverlay.includes('## autopilot with judge')
+      && judgeOverlay.includes('whenever the operator explicitly requests consultation')
+      && !autonomous.includes('multiagents_with_judge')
+      && !autopilot.includes('multiagents_with_judge'),
+    'Runtime multiagentic overlay is incomplete or leaked into a base skill.',
+  );
+  assert(
     executeLoop.includes('PLANNING_RECONCILIATION_REQUIRED')
       && specRedesign.includes('whose planning needs repair')
       && featureToTasks.includes('removes `PLANNING_RECONCILIATION_REQUIRED`')
       && reviewTasksPlan.includes('blocks review')
       && autopilot.includes('makes only that')
-      && exe.includes('stops only the selected feature')
+      && exe.includes('only the selected feature')
       && autonomyPolicy.includes('only that feature is withheld')
       && !autopilot.includes('every previous product task-plan approval is stale')
       && !exe.includes('every previous product task-plan approval is stale')
@@ -271,7 +288,7 @@ function assertFreshBootstrap(target) {
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');
-  ['orchestrator', 'general', 'architect', 'explorer', 'implementer', 'reviewer'].forEach((role) => {
+  ['orchestrator', 'general', 'architect', 'explorer', 'implementer', 'reviewer', 'judge'].forEach((role) => {
     assert(existsSync(targetPath(target, `.memory-bank/roles/${role}.md`)), `Role is missing: ${role}`);
   });
 
@@ -299,7 +316,9 @@ function assertSync(target) {
     '.memory-bank/schemas/task.schema.json',
     '.memory-bank/workflows/execute-loop.md',
     '.memory-bank/workflows/sdd-design-contract.md',
+    '.memory-bank/workflows/multiagents_with_judge.md',
     '.memory-bank/roles/architect.md',
+    '.memory-bank/roles/judge.md',
     '.memory-bank/templates/protocols/compact-run-template.md',
     'scripts/mb-lint.mjs',
     'scripts/mb-doctor.mjs',

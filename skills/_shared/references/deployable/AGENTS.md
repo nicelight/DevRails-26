@@ -16,7 +16,8 @@ Planning/design priming:
 10. If ROLE: Explorer, read `.memory-bank/roles/explorer.md`.
 11. If ROLE: Implementer, read `.memory-bank/roles/implementer.md`.
 12. If ROLE: Reviewer, read `.memory-bank/roles/reviewer.md`.
-13. Read task/feature-specific docs
+13. If ROLE: JUDGE, read `.memory-bank/roles/judge.md`.
+14. Read task/feature-specific docs
 
 Manual execution priming is owned by the installed `/exe` skill. Invoke it with
 one concrete `TASK-NNN-TN-FT-NNN-WN`; its input contract selects the required
@@ -38,6 +39,7 @@ Full role contracts live in:
 - `.memory-bank/roles/explorer.md`
 - `.memory-bank/roles/implementer.md`
 - `.memory-bank/roles/reviewer.md`
+- `.memory-bank/roles/judge.md`
 
 Delegated Explorer, Implementer, and Reviewer analyze the consequences of their
 work and report potential or evident problems.
