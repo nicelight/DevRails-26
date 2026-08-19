@@ -53,6 +53,11 @@ complete single-card handoff: purpose/outcome, direct applicable canonical SDD
 links, expected advisory change surface and/or deliberate hard write boundary,
 verification path, concrete REQ links, and valid dependencies.
 
+Tasks whose title starts with `Production acceptance:` are production-only
+acceptance work. During development, exclude them from promotion, selection,
+unfinished/deadlock checks, and success gates. Leave them `planned` for explicit
+`/exe <TASK_ID>` after production deployment.
+
 If no product record exists, return
 `HALT_QUALITY_GATES: no schema-backed product task records found in .memory-bank/tasks/index.json`
 and route the next explicit product feature to a fresh

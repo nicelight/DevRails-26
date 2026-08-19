@@ -144,13 +144,14 @@ Cover:
      dependencies, change surface, gates, and verification targets;
    - independently derive eligible exact claims and canonical semantic owners
      from accepted sources; planner preview and merge rationale are not review
-     proof. Try to partition each task into valid sibling completion units.
-     Reject when a material subset can be implemented and proved without the
-     rest or has its own grounded
-     failure/retry/rollout/rollback boundary. Complete AC coverage, shared
-     outcome, owner, tier, one end-to-end path, or a complete handoff does not
-     prove execution cohesion. Stop after the boundary verdict; do not repeat
-     full implementation planning.
+     proof. Reject proof-only sibling tasks; partition only independent
+     implementation/change outcomes. Allow at most one final `Production
+     acceptance:` task as defined by the execution boundary. Reject only when a
+     material implementation subset can complete separately under accepted
+     contracts or has its own grounded implementation boundary.
+     Complete AC coverage, shared outcome, owner, tier, one end-to-end path, or
+     a complete handoff does not prove execution cohesion. Stop after the
+     boundary verdict; do not repeat full implementation planning.
 3. Design readiness
    - clarification not explicitly pending/blocked; truthful feature design
      status; no applicable `needed_before_tasks|blocked` row; one applicable

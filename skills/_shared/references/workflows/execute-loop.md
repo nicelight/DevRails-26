@@ -98,23 +98,15 @@ status: active
 
 ## Execution-Cohesive Task Boundary
 
-A task is one grounded material unit that can reach an owner-valid useful
-implementation-and-proof completion. That completion need not be
-feature-visible, close a whole AC, or complete the surrounding command,
-invariant, transaction, or end-to-end flow.
+A task owns one material implementation/change result that can complete and be
+proved independently. Proof is completion evidence, not a task boundary; later
+work may compose or depend on the result without completing it.
 
-A unit reaches useful task-level completion when task closure leaves one
-material owner-valid implementation result true and decisively proved. Later
-work may compose or depend on it but is not required to make that result true.
-
-Different exact task-owned claims or canonical semantic owners are split
-signals. Keep independently completable implementation, proof,
-failure/retry/rollout/rollback surfaces in sibling tasks unless accepted
-contracts and, when available, the bounded code/change surface show that they
-cannot complete separately. Shared product outcome, capability owner, tier,
-transaction, AC, flow, or KISS is not merge evidence. Do not split solely by
-files, layers, artifacts, tests, AC count, or modules without distinct semantic
-ownership; task count is not an optimization target.
+Split only independent implementation/change results. Keep tests, probes,
+failure/retry/rollout/rollback checks, and UAT with their implementation task;
+group production-only configuration and checks in at most one final task per
+feature. Files, layers, artifacts, tests, AC count, commands, and modules do not
+create a boundary without a distinct implementation result.
 
 ## Interactive mode (you stay)
 1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts

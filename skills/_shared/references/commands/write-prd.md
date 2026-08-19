@@ -22,6 +22,9 @@ Read `.memory-bank/constitution.md`. Read only relevant optional context from
 brainstorming, product/requirements, glossary/invariants, spec-backbone,
 spec-index, canonical contracts/states/runbooks/testing docs, and `$ARGUMENTS`.
 
+Before writing, record whether `prd.md` or `.memory-bank/prd.md` already
+exists; this selects the handoff route.
+
 If no PRD source exists, stop and request `/brief` or explicit source text. If
 the Constitution is missing, ask for `/constitution` or explicit permission to
 continue without ratified project principles.
@@ -139,8 +142,9 @@ prose. Revalidate source consistency after every accepted decision.
 </validation>
 
 <handoff_contract>
-The immediate handoff is `/spec-init` only when
-`clarification_status: complete` and `constitution_checked: true`. Otherwise
-answer the recorded operator questions or resolve `/constitution`, then rerun
-`/write-prd`.
+When an existing PRD was updated, the immediate handoff is `/prd-to-features`
+after `clarification_status: complete` and `constitution_checked: true`.
+When the PRD was created from source input, the immediate handoff is
+`/spec-init` under the same gates. Otherwise answer the recorded operator
+questions or resolve `/constitution`, then rerun `/write-prd`.
 </handoff_contract>

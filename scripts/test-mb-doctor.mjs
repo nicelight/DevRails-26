@@ -25,6 +25,7 @@ const PRODUCT_FIRST = 'TASK-101-T0-FT-001-W1';
 const PRODUCT_SECOND = 'TASK-102-T0-FT-001-W1';
 const PRODUCT_T2 = 'TASK-201-T2-FT-001-W1';
 const PRODUCT_T3 = 'TASK-301-T3-FT-001-W1';
+const PRODUCTION_ACCEPTANCE = 'TASK-401-T1-FT-001-W2';
 
 function fail(message, report = null) {
   const detail = report ? `\n\n${JSON.stringify(report, null, 2)}` : '';
@@ -56,6 +57,7 @@ function task(id, {
   evidenceRequired,
   verify,
   runtimeContext,
+  title = 'Fixture task',
 } = {}) {
   const idMatch = id.match(/-T([0-3])-FT-([0-9]{3,})-W([0-9]+)$/);
   const tier = `T${idMatch?.[1]}`;
@@ -82,7 +84,7 @@ function task(id, {
     : [];
   return {
     id,
-    title: 'Fixture task',
+    title,
     tier,
     feature: taskFeature,
     wave: taskWave,
@@ -569,6 +571,21 @@ Flags:
   }, ['--strict']);
   expectPass(validAcceptanceTrace, 'valid acceptance trace');
   expectNoFinding(validAcceptanceTrace, 'TASK_ACCEPTANCE_PROOF_MISSING');
+
+  const plannedProductionAcceptance = runCase('planned-production-acceptance', {
+    foundation: foundationMarkdown(false, 'not_required'),
+    tasks: [
+      task(PRODUCT_T2, { status: 'done' }),
+      task(PRODUCTION_ACCEPTANCE, {
+        title: 'Production acceptance: fixture host checks',
+        status: 'planned',
+        dependsOn: [PRODUCT_T2],
+      }),
+    ],
+  }, ['--strict']);
+  expectPass(plannedProductionAcceptance, 'planned production acceptance is non-blocking');
+  expectNoFinding(plannedProductionAcceptance, 'TASK_QUEUE_DEADLOCK');
+  expectNoFinding(plannedProductionAcceptance, 'TASK_PLANNED_READY_CANDIDATE');
 
   const fragmentSddLocator = runCase('fragment-sdd-locator', {
     foundation: foundationMarkdown(false, 'not_required'),

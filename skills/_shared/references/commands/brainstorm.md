@@ -14,9 +14,11 @@ owns product intent, priorities, selections, and rejections.
 </objective>
 
 <creator_vibe_intake>
-At the start of `/brainstorm`, before any other interview question, load and
-follow the installed `creator-vibe` skill, then ask exactly one standalone
-question and wait for the answer:
+At the start of `/brainstorm`, check for
+`.memory-bank/analysis/product-brief.md` and existing
+`.memory-bank/analysis/brainstorming/BR-*.md` reports. When both are absent,
+load and follow the installed `creator-vibe` skill, then ask exactly one
+standalone question and wait for the answer:
 
 > Опишите в нескольких предложениях самый важный или самый особенный
 > функционал, который будет реализовывать ваше приложение.
@@ -24,8 +26,10 @@ question and wait for the answer:
 Do not combine this intake with other questions. The answer may contain the
 idea directly or point to an idea file. Before interpreting the answer, or
 before reading the referenced idea file, load and apply `creator-vibe` again.
-Carry that lens through the adaptive interview and report without explaining
-the interpretation back to the operator.
+When either existing artifact is present, load and apply `creator-vibe` before
+reading it, then continue from the unresolved decisions in that context. Carry
+that lens through the adaptive interview and report without explaining the
+interpretation back to the operator.
 
 Creator-vibe may reveal intent, desired experience, and what must remain
 recognizably authored. It does not turn inferred intent into an accepted
