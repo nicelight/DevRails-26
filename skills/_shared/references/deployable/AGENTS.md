@@ -145,9 +145,10 @@ After finishing a meaningful unit of work:
 
 ## Log papercuts
 
-When minor workflow friction occurs—a failed tool call, confusing setup, flaky
-command, stale cache, misleading error, missing helper, or non-obvious
-gotcha—record it.
+Record minor, evidence-backed problems in the project's code, architecture, or
+structure encountered during current work.
+If current work proves a project-wide problem that makes continuation unsafe or
+invalid, record it in ALL CAPS and stop.
 
 Use one Markdown file per agent session. Create it only when the first papercut
 occurs, at `PAPERCUTS/<model> __ MM-DD-YYYY HH.MM.md`, using the current model
@@ -155,11 +156,6 @@ identifier and the local time of that first papercut. Replace filename-unsafe
 characters in the model identifier with `-`. Reuse that file for every later
 papercut in the same session; do not create a file for each note and do not add
 timestamps inside the file.
-
-Log papercuts proactively when they occur, but do not interrupt the main task.
-Do not record a papercut already present in `PAPERCUTS/`. Papercuts are minor
-workflow friction, distinct from completed-work logs, real bugs, tracked issues,
-and technical debt.
 
 ## Where skills live (don’t confuse)
 - Codex CLI reads project skills from `.agents/skills/<name>/SKILL.md` (not from `.codex/`).
