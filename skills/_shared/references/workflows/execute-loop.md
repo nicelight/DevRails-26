@@ -7,7 +7,8 @@ status: active
 ## Principle: no task explosion
 - `/prd-to-features` creates L1–L3 only (product/requirements/epics/features) and does not
   write testing documentation.
-- `/write-prd` = PRD-level ambiguity closure. `/feature-doctor` = optional feature-level ambiguity pass.
+- `/write-prd` owns PRD-level decisions. `/feature-doctor` validates and routes
+  reported feature-related semantic findings.
 - Acceptance closure applies when an observable edge/failure outcome or
   non-functional quality can itself block acceptance or realize a significant
   accepted risk: it closes through an accepted REQ/feature AC or a sourced
@@ -117,7 +118,8 @@ create a boundary without a distinct implementation result.
 6) `/review-feat-plan` for high-risk, large, or autonomous-boundary work; optional/recommended for small manual flows
 7) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
 8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
-9) Pick one top feature; use `/feature-doctor FT-001` only for explicit feature blockers
+9) Pick one top feature; use `/feature-doctor FT-001` for an explicit feature
+   blocker or a semantic finding reported by planning or verification
 10) `/feature-to-tasks FT-001` (resolves feature design concerns through subject-based canonical specs and creates IMPL plan + complete `TASK-NNN-TN-FT-NNN-WN` records for this feature)
 11) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
 feature/task-queue boundary only when T3, autonomous/autopilot handoff, or

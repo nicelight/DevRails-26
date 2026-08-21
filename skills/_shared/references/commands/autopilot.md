@@ -115,15 +115,13 @@ ineligible features one at a time through the Fresh Feature Tasking Boundary.
 
 <operator_decisions>
 The scheduler may apply only decisions already fixed in authoritative artifacts.
-If a child or queue transition exposes a new material product/design/contract/
-state/data/storage/security/compatibility/task-boundary/tier/dependency/
-verification/Foundation branch:
-- do not choose a recommendation/default or infer consent;
-- record the exact question, affected tasks/state, evidence, and interactive
-  repair owner in the existing run status/decision log;
-- leave affected work non-closed and do not promote dependents;
-- stop with `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and name
-  the exact resume skill.
+Apply autonomy policy to an unresolved product-feature semantic finding: invoke
+`/feature-doctor FT-<NNN>` under the current checkpoint stage and follow or
+persist its handoff. Leave affected work non-closed and do not promote
+dependents.
+
+For another operator decision, record its question, affected state, evidence,
+and owner; stop with the applicable halt and exact owning resume skill.
 
 An ordinary implementation tactic within the approved task/spec boundary is not
 an operator decision.

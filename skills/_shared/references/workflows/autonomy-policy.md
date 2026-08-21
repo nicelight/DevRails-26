@@ -177,10 +177,11 @@ disposition.
 - After the third unsuccessful attempt no fourth is permitted. A proven
   upstream or authority gap remains `blocked`; every other task-local or
   inconclusive disposition becomes `failed`.
-- For `/autopilot` product tasks, route task slicing, tier, or direct task spec
-  to `/feature-to-tasks FT-<NNN>`; product ambiguity to
-  `/feature-doctor FT-<NNN>`; and shared architecture, write authority, source
-  of truth, public boundary, or dependency direction to `/spec-redesign`.
+- For `/autopilot` product tasks, route every unresolved feature-related
+  semantic finding through `/feature-doctor FT-<NNN>` before repair. Follow its
+  authority-set repair owner or persist its decision handoff and halt. Missing
+  evidence and proved implementation-only failures with fixed semantics retain
+  their direct owners.
 - A failed disposition writes `in_progress -> failed` with functional/semantic
   and diagnostic evidence. Before the next strict doctor, create a
   `.memory-bank/bugs/` note or route a normal indexed follow-up through its

@@ -230,8 +230,10 @@ function assertFreshBootstrap(target) {
   const autopilot = readTarget(target, '.agents/skills/autopilot/SKILL.md');
   const multiagentic = readTarget(target, '.agents/skills/multiagentic/SKILL.md');
   const exe = readTarget(target, '.agents/skills/exe/SKILL.md');
+  const featureDoctor = readTarget(target, '.agents/skills/feature-doctor/SKILL.md');
   const featureToTasks = readTarget(target, '.agents/skills/feature-to-tasks/SKILL.md');
   const reviewTasksPlan = readTarget(target, '.agents/skills/review-tasks-plan/SKILL.md');
+  const verify = readTarget(target, '.agents/skills/verify/SKILL.md');
   const autonomyPolicy = readTarget(target, '.memory-bank/workflows/autonomy-policy.md');
   const executeLoop = readTarget(target, '.memory-bank/workflows/execute-loop.md');
   const judgeOverlay = readTarget(target, '.memory-bank/workflows/multiagents_with_judge.md');
@@ -285,6 +287,18 @@ function assertFreshBootstrap(target) {
       && !exe.includes('every previous product task-plan approval is stale')
       && !autonomyPolicy.includes('makes every product task-plan approval stale'),
     'Runtime planning freshness lost bounded feature routing or retained blanket invalidation.',
+  );
+  assert(
+    featureDoctor.includes('Validate the semantic basis')
+      && featureDoctor.includes('Recommend only among options')
+      && featureDoctor.includes('`/spec-redesign` owns')
+      && reviewTasksPlan.includes('unresolved feature-related semantic finding to `/feature-doctor')
+      && verify.includes('preserving the evidence-required functional')
+      && autonomous.includes("doctor's handoff in existing run state")
+      && autopilot.includes('persist its handoff')
+      && autonomyPolicy.includes('semantic finding through `/feature-doctor FT-<NNN>` before repair')
+      && executeLoop.includes('reported feature-related semantic findings'),
+    'Runtime feature-doctor triage or autonomous recommendation contract is incomplete.',
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');

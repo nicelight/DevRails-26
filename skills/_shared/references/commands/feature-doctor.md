@@ -1,16 +1,15 @@
 ---
-description: Optional adaptive clarification of one feature before task decomposition.
+description: Bounded semantic triage and repair routing for one feature.
 status: active
 ---
-# /feature-doctor - Feature ambiguity pass
+# /feature-doctor - Feature semantic triage
 
 <objective>
-Resolve decomposition-affecting ambiguity in exactly one
-`.memory-bank/features/FT-*.md` while preserving existing design routes and
-status contracts.
+Validate the semantic basis of one feature-related finding set, resolve any
+operator-owned decision, and route the minimum contract-correct repair.
 
-This command is optional and manual. It does not create tasks, implementation
-plans, tiers, behavior specs, or canonical SDD design specs.
+This command does not create tasks, implementation plans, tiers, behavior
+specs, or canonical SDD design specs.
 </objective>
 
 <input_contract>
@@ -25,11 +24,13 @@ any write with `HALT_CLARIFICATION_REQUIRED` and report:
 Use the caller's existing halt handoff; do not create a durable artifact solely
 for this missing argument.
 
-Locate exactly one `.memory-bank/features/FT-<NNN>-*.md`; otherwise stop. Read
-product, requirements, and the target feature. Read epics, glossary,
-invariants, contracts, states, testing docs, runbooks, spec-backbone,
-spec-index, and linked `spec_design_links` only when they affect this feature's
-ambiguity or design-impact assessment.
+Locate exactly one `.memory-bank/features/FT-<NNN>-*.md`; otherwise stop. Inspect
+the caller-cited findings or, when none are cited, the target's latest final
+task-plan `REJECT`, current blocking task verdicts, and explicit feature
+blockers. Ignore superseded findings. Read product, requirements, feature,
+relevant canonical design, affected task/plan, and implementation or
+verification evidence only as needed to validate the findings and repair
+impact.
 </input_contract>
 
 <hard_invariants>
@@ -42,36 +43,46 @@ ambiguity or design-impact assessment.
 - Preserve stable `FT-<NNN>-AC-<NNN>` IDs when accepted behavior is unchanged.
   New or split criteria use the next unused feature-local ID; retired IDs are
   not reused.
-- `/feature-doctor` may detect design impact but must not repair linked SDD
-  specs, create tasks/plans, or change tier.
+- Validate downstream specifications against governing product intent and
+  accepted authority. Internally consistent downstream wording does not settle
+  a finding when it conflicts with or leaves that intent materially open.
+- `/feature-doctor` may determine repair ownership but must not repair linked
+  SDD specs, create tasks/plans, change tier, or perform implementation repair.
 - Preserve acceptance closure: a material edge/failure outcome retains a
   covering AC or an authoritative out-of-scope disposition with source and
   `/write-prd` change route; a material NFR retains its governing REQ, accepted
   target/qualitative criterion, decisive conditions, and verification method.
 - Do not create or change a REQ-level product target locally. Route that change
   through `/write-prd`.
-- A recommendation/default is not accepted without an explicit operator answer.
 </hard_invariants>
 
 <operator_decisions>
-Interview adaptively whenever a real feature-level ambiguity or branch can
-change acceptance criteria, use cases/UX, task decomposition, verification,
-data/domain behavior, API/contracts, security/compliance, operations, or future
-tier routing.
+For a material finding, identify only distinct contract-valid options. State
+each decision's evidence basis, material consequences, likely affected
+artifacts/features, repair/revalidation surface, and canonical owner.
 
-Ask one question or a small group of tightly related questions in the most
-useful format. Explain downstream impact and optionally recommend an option.
-Do not impose a pass size, fixed questionnaire, or artificial answer-length
-limit. If evidence already makes the feature unambiguous, do not interview and
-report that no local clarification is needed.
+Recommend only among options that preserve accepted product intent and workflow
+contracts; prefer the least total canonical, implementation, planning, and
+revalidation change after evidenced material risk. Do not invent alternatives
+when authority permits one result.
 
-Unanswered material choices remain blockers; do not infer acceptance from
-silence. This manual command records the question and waits for the operator.
+Interactive flow presents viable alternatives and waits only when an operator
+decision remains. Unattended flow records the recommended option, basis,
+consequences, work surface, exact question, owner, and resume route, then returns
+the caller's existing `HALT_CLARIFICATION_REQUIRED` or
+`HALT_BLOCKING_QUESTIONS`; it never accepts the recommendation. An existing
+authoritative decision may be applied without asking again.
 </operator_decisions>
 
 <required_outputs>
 Create or update only `.protocols/FT-<NNN>/clarification.md` plus the target
-feature doc. Do not create a separate decision log or clarification report.
+feature doc. Do not create a separate decision log or triage report.
+
+Record each finding, its semantic basis, the option analysis above, remaining
+decision, `Design impact: none|feature_design_stale|global_design_stale|blocked`,
+`Behavior spec impact: none|refresh_recommended`, and immediate route. Name only
+evidenced likely consumers; `/spec-redesign` owns exact affected features and
+the `none|bounded|global` verdict.
 
 After every accepted answer:
 - append a dated `## Clarifications` entry in the feature;
@@ -80,49 +91,42 @@ After every accepted answer:
 - keep every affected acceptance block linked to at least one existing
   governing `REQ-*` through its exact `- REQ: REQ-<NNN>[, ...]` line;
 - remove contradictory wording;
-- update the clarification protocol with the question/answer, changed sections,
-  remaining ambiguity, `Design impact:
-  none|feature_design_stale|global_design_stale|blocked`, `Behavior spec impact:
-  none|refresh_recommended`, and an immediate repair route when needed;
-- increment `clarification_questions` when metadata is present or newly needed.
+- increment `clarification_questions` when a question was asked.
 
-If an accepted answer invalidates linked design:
-- preserve `spec_design_links` as historical routing evidence;
-- set misleading `spec_design_status: complete|not_required` to `blocked`;
-- route feature-local canonical reconciliation to `/feature-to-tasks FT-<NNN>`;
-- route shared/global backbone, Architecture Spine, or competing canonical path
-  issues to `/spec-redesign`;
-- note behavior-spec refresh without editing behavior JSON unless explicitly
-  scoped by the operator.
+If no feature change is required, record the validated basis and route without
+adding clarification text or metadata. If the resolved finding invalidates
+linked design, preserve `spec_design_links` as historical routing evidence, set a
+misleading `spec_design_status: complete|not_required` to `blocked`, and note
+behavior-spec refresh without editing behavior JSON.
 </required_outputs>
 
 <agent_discretion>
 Choose context order, search tools, analysis depth, question grouping, and the
-smallest useful feature/protocol edits. Read only evidence relevant to the
-target feature and avoid design repair inside this command.
+smallest useful feature/protocol edits. Bound work to the reported finding and
+direct consequences; do not perform a feature-wide review or design repair.
 </agent_discretion>
 
 <validation>
-- `complete`: no critical decomposition ambiguity remains.
+- `complete`: every finding's semantic basis and repair owner are resolved.
 - `pending`: more operator answers are needed.
 - `blocked`: a required decision remains unresolved or design impact prevents
   a truthful downstream handoff.
 
-If no ambiguity exists, clarification metadata may remain absent. Never retain
-`spec_design_status: complete|not_required` when accepted answers make linked
-design incomplete, contradictory, or unverifiable. Before handoff, confirm AC
-IDs remain unique, feature-matching, REQ-linked, and stable for unchanged
-behavior.
+Never retain `spec_design_status: complete|not_required` when an accepted answer
+makes linked design incomplete, contradictory, or unverifiable. Before handoff,
+confirm changed AC IDs remain unique, feature-matching, REQ-linked, and stable
+for unchanged behavior.
 </validation>
 
 <handoff_contract>
-- missing or changed REQ-level product target, accepted scope, or pass/fail
-  decision -> `/write-prd`;
-- feature wording changed without design invalidation -> `/feature-to-tasks
-  FT-<NNN>` after the global backbone and any required Foundation Gate are
-  ready;
-- feature-local canonical design invalidated -> `/feature-to-tasks FT-<NNN>` for
-  reconciliation before task slicing;
-- shared/global design or canonical-path conflict -> `/spec-redesign`;
-- unresolved operator decision -> answer it and rerun `/feature-doctor`.
+Route to the command owning the first canonical artifact or execution surface
+that must change:
+- product target, accepted scope, REQ, or pass/fail decision -> `/write-prd`;
+- feature wording, local design reconciliation, task scope/tier/dependencies,
+  or planning/proof contract -> `/feature-to-tasks FT-<NNN>`;
+- accepted shared/global design or canonical-path change -> `/spec-redesign`;
+- confirmed implementation/evidence defect with accepted semantics unchanged
+  -> the caller's existing execution, debug, or evidence owner;
+- unresolved operator decision -> answer it and rerun `/feature-doctor
+  FT-<NNN>`.
 </handoff_contract>

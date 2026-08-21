@@ -67,8 +67,9 @@ task boundary, tier, dependencies или verification policy.
 являются принятым решением. Уже однозначное authoritative evidence не требует
 декоративного интервью.
 
-В unattended flow агент не задаёт вопрос и не выбирает за оператора. Он
-записывает exact question, affected scope и owner, затем завершает run через
+В unattended flow агент не выбирает за оператора. Для feature-related semantic
+finding `/feature-doctor` записывает рекомендуемый contract-correct вариант,
+основание, последствия и work surface. Затем flow завершается через
 существующий `HALT_CLARIFICATION_REQUIRED` или `HALT_BLOCKING_QUESTIONS` с
 точным interactive resume skill.
 
@@ -91,7 +92,8 @@ overengineering;
 - `/write-prd` — создаёт уточнённый PRD;
 - `/discuss` — закрывает конкретные вопросы и противоречия;
 - `/map-codebase` — описывает текущее состояние существующего кода;
-- `/feature-doctor` — уточняет одну проблемную функцию продукта.
+- `/feature-doctor` — проверяет semantic basis проблемы одной feature,
+  объясняет варианты и направляет repair владельцу.
 
 ### 🏛️ Проектирование и задачи
 
@@ -769,9 +771,13 @@ T2 product feature-completion semantics.
 fresh session. Multi-feature flow завершает её durable handoff и review до
 запуска нового изолированного контекста для следующей feature.
 
-`/feature-doctor FT-<NNN>` используется только для реальной feature-level
-ambiguity. Он может обновить feature wording и отметить design impact, но не
-создаёт specs, implementation plan, tiers или tasks.
+`/feature-doctor FT-<NNN>` принимает feature-related finding от planning или
+verification, проверяет его основание и определяет canonical repair owner. В
+manual flow он показывает только допустимые варианты, их основание,
+последствия и work surface; unattended flow рекомендует минимальный
+contract-correct вариант, но не принимает его за оператора. Doctor может
+обновить feature wording и отметить design impact, но не создаёт specs,
+implementation plan, tiers или tasks.
 
 `/feature-to-tasks` для каждого applicable concern выбирает ровно один результат:
 
@@ -1106,7 +1112,9 @@ Downstream доказывает свой outcome и integration delta. Regressio
 по себе не определяют результат. Если надёжных данных недостаточно, `/verify`
 выполняет минимальную безопасную проверку или возвращает
 `NEEDS-CLARIFICATION`. Если принятое требование действительно нарушено, он
-возвращает `FAIL`.
+возвращает `FAIL`. Feature-related semantic blocker или violation после этого
+проходит `/feature-doctor`, который повторно проверяет его governing basis и
+выбирает repair owner; functional verdict при этом не переписывается.
 
 Для старых задач со статусом `in_progress`, `done` или `failed` придумывать
 `RED` задним числом не нужно. Для планировщика весь путь по-прежнему остаётся
@@ -1158,7 +1166,9 @@ boundary, отсутствие forbidden write path/second source of truth и bu
 responsibility в запрещённом linked rule техническом месте, включая transport,
 generic helper или composition root. Наблюдаемое нарушение даёт `FAIL`;
 отсутствующее или неоднозначное canonical правило — `NEEDS-CLARIFICATION`.
-Это не full architecture audit.
+Оба feature-related результата проходят bounded triage в `/feature-doctor`, а
+не прямой выбор между локальным repair и `/spec-redesign`. Это не full
+architecture audit.
 
 ### Manual mode
 
@@ -1437,7 +1447,9 @@ Product/Design и передаёт готовую product queue `/autopilot`.
 Любой `/autopilot` `HALT_*` переносится без замены state/reason/owner/resume
 route. Product queue `SUCCESS` переходит к финальным end-to-end gates.
 `/autonomous` не проводит unattended Constitution interview и не принимает
-missing operator decisions.
+missing operator decisions. Для product-feature finding он сначала запускает
+bounded `/feature-doctor`: authority-set route продолжается автоматически, а
+при оставшемся решении run сохраняет рекомендацию doctor и останавливается.
 
 Required-workflow preflight выполняется до создания или reuse run protocol.
 Missing path возвращает response-only `HALT_POLICY_VIOLATION` с external
@@ -1501,7 +1513,7 @@ Canonical execution sequential. `--experimental-parallel` требует:
 | `/write-prd` | clarified Constitution-checked PRD | не декомпозирует; затем `/spec-init` |
 | `/discuss` | bounded accepted decisions в owning artifacts/protocol | не обходит owning skill gate |
 | `/map-codebase` | evidence-backed as-is baseline | не создаёт roadmap без delta; затем PRD route |
-| `/feature-doctor` | ambiguity одной feature и design-impact routing | не создаёт specs/tasks; затем owning repair или tasking |
+| `/feature-doctor` | semantic triage одной feature, варианты и repair routing | не создаёт specs/tasks; затем owning repair или tasking |
 
 ### Product, SDD и tasking
 

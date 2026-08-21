@@ -86,24 +86,15 @@ the rule above.
 </hard_invariants>
 
 <operator_decisions>
-If a credible verdict depends on an unresolved product behavior,
-architecture/contract/state/data/storage/security/compatibility interpretation,
-task boundary, tier, dependency, or verification strategy,
-do not choose one.
-
-- Record `VERDICT: NEEDS-CLARIFICATION`, the exact question, affected proof,
-  and current evidence.
-- Interactive flow asks the operator; a recommendation/default/silence is not
-  acceptance. The owning skill durably updates the canonical artifact and the
-  task is revalidated/re-executed before verification resumes.
-- Route task scope/tier/feature-level spec repair to
-  `/feature-to-tasks FT-<NNN>`, shared/global design to `/spec-redesign`, product
-  ambiguity to `/feature-doctor FT-<NNN>`, and missing `/exe` evidence
-  to `/exe <TASK_ID>`.
-- Unattended flow returns the blocker and exact route to the scheduler for
-  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS`.
-
-No question is needed when authoritative evidence already settles the branch.
+Do not validate a feature-related semantic finding from an apparently
+unambiguous downstream specification alone. When the verdict depends on an
+unresolved interpretation, return `NEEDS-CLARIFICATION` with the exact question,
+affected proof, and evidence. Route it, and any observed semantic violation
+whose repair may change feature planning or canonical design, to
+`/feature-doctor FT-<NNN>` while preserving the evidence-required functional
+verdict. Missing `/exe` evidence and proved implementation-only failures with
+fixed semantics retain their existing owners. Resume after the owning repair;
+unattended flow returns the doctor's exact halt route to the scheduler.
 </operator_decisions>
 
 <agent_discretion>
@@ -289,8 +280,8 @@ on self-attested execute evidence, and every reused candidate is
 current-attempt, state-matched, bounded-input, and auditably reported.
 
 Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
-tier and trigger, and routes controlled rebuild/split through
-`/feature-to-tasks FT-<NNN>`, then review/doctor/re-execution of the replacement ID.
+tier and trigger, and routes `/feature-doctor FT-<NNN>` before the owning
+controlled rebuild/split, review, and re-execution of the replacement ID.
 </validation>
 
 <handoff_contract>

@@ -80,21 +80,17 @@ routes `/feature-to-tasks FT-<NNN>`.
 </hard_invariants>
 
 <operator_decisions>
-The reviewer never chooses between ambiguous product, design, canonical-path,
-task-boundary, tier, dependency, or verification interpretations.
+The reviewer never chooses between competing product, design, canonical-path,
+task-boundary, tier, dependency, or verification interpretations. Route every
+unresolved feature-related semantic finding to `/feature-doctor FT-<NNN>`, even
+when one inspected specification appears to make the defect unambiguous; the
+doctor validates that finding's governing basis and repair owner.
 
-If such a branch could change the verdict:
-- return `REJECT` with the exact operator question, affected tasks/specs, and
-  repair owner;
-- route feature-level product/design/tasking repair to
-  `/feature-to-tasks FT-<NNN>` or `/feature-doctor FT-<NNN>`;
-- route changes to an accepted shared/global design or competing canonical
-  identity to `/spec-redesign`;
-- do not treat a recommendation as an accepted answer.
-
-The accepted answer is applied by the owning skill to the existing canonical
-artifact and re-reviewed. No question is needed when authoritative evidence
-already resolves the branch.
+Direct repair routing is limited to a mechanically invalid schema/index or an
+absent required artifact whose contents are not disputed. Return `REJECT` with
+exact evidence, affected tasks/specs, the operator question when known, and the
+applicable doctor or direct repair owner. A recommendation is not an accepted
+answer.
 </operator_decisions>
 
 <agent_discretion>
@@ -219,10 +215,7 @@ Verdicts:
 - `REJECT`: at least one blocking gap exists. Name the failed coverage group,
   exact evidence, question when applicable, and repair owner.
 
-For acceptance closure, name the uncovered outcome and route PRD-owned
-acceptance to `/write-prd`, decomposition to `/prd-to-features`, feature-local
-clarification to `/feature-doctor FT-<NNN>`, accepted shared design change to
-`/spec-redesign`, or task proof to `/feature-to-tasks FT-<NNN>`.
+For acceptance closure, name the uncovered outcome and use the routing above.
 
 For `/autopilot` or autonomous scheduler readiness, every task-linked product
 feature needs a latest independent `APPROVE`; this is necessary but does not

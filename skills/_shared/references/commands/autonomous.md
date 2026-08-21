@@ -116,19 +116,18 @@ artifact and continue without re-asking. Conflicting target authorities or an
 unresolved material compatibility, migration, or irreversible-behavior branch
 must halt through the existing route below.
 
-When any child skill or scheduler step finds an unresolved product/design/
-contract/state/data/storage/security/compatibility/task-boundary/tier/
-dependency/verification/Foundation branch:
+For a product-feature semantic finding, apply autonomy policy through
+`/feature-doctor FT-<NNN>` instead of choosing its repair route. Preserve the
+doctor's handoff in existing run state.
+
+For every other operator decision:
 - record the exact question, affected scope/tasks, current evidence, and owner
   in the existing run status/decision log and owning blocker artifact;
-- do not treat recommendation, framework preference, reversible default,
-  silence, or a low-risk guess as acceptance;
+- do not infer acceptance;
 - stop before affected writes or promotion with
   `HALT_CLARIFICATION_REQUIRED` for product/feature clarification or
   `HALT_BLOCKING_QUESTIONS` for design/contract/operator decisions;
-- name the exact interactive resume skill (`/constitution`, `/write-prd`,
-  `/feature-doctor`, `/spec-design`, `/spec-redesign`, `/feature-to-tasks`, or
-  another existing owner).
+- name its existing owning resume skill.
 
 After the operator answer is durably applied by the owning skill and its gates
 pass, resume from the recorded boundary without replaying completed work.
@@ -197,6 +196,10 @@ completed `repair -> re-review` cycles per surface.
   a file, template, schema, policy field, or registry.
 - `APPROVE` continues the recorded flow. On `REJECT` with fewer than `5`
   completed cycles, follow its named repair route, then re-review.
+- When that route is `/feature-doctor FT-<NNN>`, run its bounded triage first.
+  A doctor halt consumes no repair cycle. If no operator decision is required,
+  follow its repair owner and count the cycle only after the subsequent
+  re-review.
 - On `REJECT` after completed cycle `5`, record existing
   `HALT_REVIEW_REJECT`, the latest findings, and the named repair owner. Do not
   enter another automatic repair cycle.
