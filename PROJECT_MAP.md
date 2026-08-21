@@ -434,8 +434,13 @@ The installer deploys the pack inside each owning runtime skill as
 `references/finding-adjudication.md`; deployed commands must not reference its
 source-only path.
 
+`/verify` also receives `skills/_shared/agents/review-code.md` as
+`agents/review-code.md` for one non-blocking best-effort code co-review. It
+returns only candidate findings; `/verify` retains its existing contracts.
+
 Primary touch points:
 
+- `skills/_shared/agents/review-code.md`
 - `skills/_shared/references/roles/general.md`
 - `skills/_shared/references/roles/reviewer.md`
 - `skills/_shared/references/commands/review-feat-plan.md`

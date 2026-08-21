@@ -18,6 +18,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const installer = join(repoRoot, 'scripts', 'install-framework.mjs');
 const commandDir = join(repoRoot, 'skills', '_shared', 'references', 'commands');
 const referenceRoot = join(repoRoot, 'skills', '_shared', 'references');
+const sharedAgentRoot = join(repoRoot, 'skills', '_shared', 'agents');
 const runtimeRoots = ['.agents', '.claude'];
 const expectedSkillNames = listFiles(commandDir)
   .filter((name) => name !== 'find-skill.md')
@@ -149,6 +150,15 @@ function assertRuntimeParity(target) {
       });
     });
   });
+
+  const expectedCodeReviewer = read(join(sharedAgentRoot, 'review-code.md'));
+  runtimeRoots.forEach((runtimeRoot) => {
+    assert(
+      readTarget(target, `${runtimeRoot}/skills/verify/agents/review-code.md`)
+        === expectedCodeReviewer,
+      `${runtimeRoot}/verify has stale review-code.md.`,
+    );
+  });
 }
 
 function installedSkillRows(content) {
@@ -263,6 +273,11 @@ function assertFreshBootstrap(target) {
     'Runtime autopilot lost independent functional and semantic reviewer contexts.',
   );
   assert(
+    verify.includes('agents/review-code.md')
+      && verify.includes('Do not retry or block verification'),
+    'Runtime /verify lost its best-effort code co-review.',
+  );
+  assert(
     multiagentic.includes('Load `/autopilot` and its Judge section')
       && multiagentic.includes('Delegate the queue to the installed')
       && multiagentic.includes('multiagents_with_judge.md#judge-consultation')
@@ -340,6 +355,7 @@ function assertSync(target) {
     'AGENTS.md',
     '.agents/skills/start/SKILL.md',
     '.agents/skills/verify/references/finding-adjudication.md',
+    '.agents/skills/verify/agents/review-code.md',
   ];
   const snapshots = new Map(managed.map((rel) => [rel, readTarget(target, rel)]));
   managed.forEach((rel) => writeTarget(target, rel, `${snapshots.get(rel).trimEnd()}\n<!-- stale -->\n`));

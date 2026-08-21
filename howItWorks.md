@@ -951,6 +951,11 @@ verdict устанавливают два разных co-review focuses; на b
 неизменные focuses/evidence можно сохранить, остальные обновляются через
 `Codex Luna xhigh`. Основной агент распоряжается findings.
 
+`/verify` также один раз best-effort запускает отдельного read-only code
+co-reviewer по фактическому change surface. Он возвращает только candidate
+findings; отсутствие запуска не блокирует verification и не меняет ownership
+verdict.
+
 `/review-tasks-plan` запускает fresh Reviewer с `/architecture-review` только
 если текущее accepted evidence оставляет material uncertainty в ownership,
 dependencies или boundaries, способную изменить verdict. Иначе фиксируется
