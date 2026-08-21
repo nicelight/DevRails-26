@@ -10,7 +10,7 @@ launch conditions for three co-reviewers.
 
 The third co-reviewer may occasionally run when irrelevant or fail to run. This
 must not block verification. Its launch is a single best-effort attempt with no
-retry.
+retry, using model `Codex Luna` with reasoning effort `xhigh`.
 
 `review-code.md` is a read-only co-reviewer prompt scoped to the actual change
 surface. It returns only evidence-backed candidate findings and creates no

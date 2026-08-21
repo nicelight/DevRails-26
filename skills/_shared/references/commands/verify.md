@@ -52,10 +52,11 @@ the rule above.
 <hard_invariants>
 - Before the verdict, load and apply this installed skill's
   `references/finding-adjudication.md` semantic pack.
-- Before the verdict, attempt one fresh best-effort co-review using this
-  installed skill's `agents/review-code.md`; give it the task target, governing
-  evidence, scope, and actual change surface. Do not retry or block verification
-  if it cannot launch. Treat its output only as candidate findings.
+- Before the verdict, attempt one fresh best-effort co-review on model
+  `Codex Luna` with reasoning effort `xhigh`, using this installed skill's
+  `agents/review-code.md`; give it the task target, governing evidence, scope,
+  and actual change surface. Do not retry or block verification if it cannot
+  launch. Treat its output only as candidate findings.
 - Route only by `task.tier`; lifecycle/status ownership is canonical in
   `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or

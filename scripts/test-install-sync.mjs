@@ -274,6 +274,7 @@ function assertFreshBootstrap(target) {
   );
   assert(
     verify.includes('agents/review-code.md')
+      && verify.includes('`Codex Luna` with reasoning effort `xhigh`')
       && verify.includes('Do not retry or block verification'),
     'Runtime /verify lost its best-effort code co-review.',
   );

@@ -435,8 +435,9 @@ The installer deploys the pack inside each owning runtime skill as
 source-only path.
 
 `/verify` also receives `skills/_shared/agents/review-code.md` as
-`agents/review-code.md` for one non-blocking best-effort code co-review. It
-returns only candidate findings; `/verify` retains its existing contracts.
+`agents/review-code.md` for one non-blocking best-effort `Codex Luna xhigh`
+code co-review. It returns only candidate findings; `/verify` retains its
+existing contracts.
 
 Primary touch points:
 
