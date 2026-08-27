@@ -247,6 +247,7 @@ function assertFreshBootstrap(target) {
   const autonomyPolicy = readTarget(target, '.memory-bank/workflows/autonomy-policy.md');
   const executeLoop = readTarget(target, '.memory-bank/workflows/execute-loop.md');
   const judgeOverlay = readTarget(target, '.memory-bank/workflows/multiagents_with_judge.md');
+  const judgeRole = readTarget(target, '.memory-bank/roles/judge.md');
   assert(
     sddContract.includes('## Evidence and authority')
       && sddContract.includes('## Canonical ownership and coverage')
@@ -281,9 +282,17 @@ function assertFreshBootstrap(target) {
   assert(
     multiagentic.includes('Load `/autopilot` and its Judge section')
       && multiagentic.includes('Delegate the queue to the installed')
-      && multiagentic.includes('multiagents_with_judge.md#judge-consultation')
+      && multiagentic.includes('single Judge session')
+      && multiagentic.includes('existing Judge target')
+      && multiagentic.includes('must not launch or replace it')
+      && multiagentic.includes('multiagents_with_judge.md#judge-session-and-consultation')
       && multiagentic.includes('#autonomous-with-judge')
       && multiagentic.includes('#autopilot-with-judge')
+      && judgeOverlay.includes('launch exactly one `ROLE: JUDGE`')
+      && judgeOverlay.includes('owns and reuses that subagent')
+      && judgeOverlay.includes('does no routine discovery')
+      && !judgeOverlay.includes('Launch a fresh `ROLE: JUDGE`')
+      && judgeRole.includes('successive proposed orchestration routes in one `/multiagentic`')
       && judgeOverlay.includes('## autonomous with judge')
       && judgeOverlay.includes('## autopilot with judge')
       && judgeOverlay.includes('whenever the operator explicitly requests consultation')

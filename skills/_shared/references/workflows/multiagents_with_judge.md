@@ -8,11 +8,17 @@ The active `/autonomous` or `/autopilot` contract owns lifecycle, status,
 retries, scheduler stages, registries, and durable artifacts. This overlay owns
 Judge consultation and route reaction.
 
-## Judge consultation
+## Judge session and consultation
 
-Launch a fresh `ROLE: JUDGE` subagent on Codex Sol (`gpt-5.6-sol`) with
-`xhigh` reasoning effort and require `.memory-bank/roles/judge.md`. Give it one
-compact `JUDGE_BRIEF`:
+At `/multiagentic` start, launch exactly one `ROLE: JUDGE` subagent on Codex Sol
+(`gpt-5.6-sol`) with `xhigh` reasoning effort, requiring
+`.memory-bank/roles/judge.md`. `/multiagentic` owns and reuses that subagent for
+every consultation, including delegated `/autopilot`; never launch, replace, or
+reset it during the run.
+
+Before each consultation, the orchestrator sends one compact `JUDGE_BRIEF` with
+decision-relevant facts and exact project-relative `file:line` locators. Judge
+does no routine discovery or context assembly:
 
 ```text
 JUDGE_BRIEF
@@ -20,7 +26,7 @@ JUDGE_BRIEF
 objective: original objective and applicable success conditions
 checkpoint: current phase, owner, and reason for consultation
 progress_since_last_judge: material actions and durable outcomes
-evidence: decisive project-relative file:line locators
+evidence: decisive facts with exact project-relative file:line locators
 trajectory: attempts, repairs, verdicts, blockers, and budget counters
 noticed_problems: decision-relevant confirmed or potential signals
 proposed_route: one existing skill/owner and expected result
