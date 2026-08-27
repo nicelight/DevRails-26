@@ -48,8 +48,8 @@ execution context.
 Point-of-use preflight must confirm:
 - index/file/ID resolution and matching ID tier/feature/wave segments;
 - valid `tier: T0|T1|T2|T3` and executable lifecycle state;
-- every dependency exists and is `done`;
-- dependency `done` outcomes are authoritative prerequisites; execute only the
+- every dependency exists and is `done|done_for_prod`;
+- dependency outcomes are authoritative prerequisites; execute only the
   selected task's owned outcome and integration delta;
 - no recorded blocker or unresolved required gate in the resolved task context;
 - success is observable from AC/REQ/spec/gates/verification targets;
@@ -118,10 +118,10 @@ replay it.
 <hard_invariants>
 - Authoritative routing and status ownership come from the tier policy sections
   named in the input contract; never use legacy `risk` fields.
-- `/exe` owns `ready -> in_progress` for the concrete task selected by its
-  caller in both manual and scheduler flows. It never selects queue work,
-  promotes dependents, or makes final `done|failed|blocked` decisions in
-  scheduler mode.
+- `/exe` owns `ready|done_for_prod -> in_progress` for the task selected by its
+  caller. For `done_for_prod`, it executes only the recorded production-acceptance
+  remainder. It never selects queue work, promotes dependents, or makes final
+  `done|failed|blocked` decisions in scheduler mode.
 - Scheduler flow selects the task and durably checkpoints
   `current stage: execute` plus `next action: /exe <TASK_ID>` before invocation;
   it does not write `ready -> in_progress` itself.
@@ -265,7 +265,7 @@ retry correction basis when applicable, GREEN result, probe changes, and
 artifact paths in `progress.md`; link them from `handoff.md`. These labels are
 execution evidence, not `VERDICT` or `SEMANTIC_VERDICT` markers. GREEN may
 separately qualify as a reuse candidate; RED never replaces final gate evidence
-or gets backfilled for historical `done|failed` tasks.
+or gets backfilled for historical `done|done_for_prod|failed` tasks.
 
 Execution evidence must record:
 - actual changed files, including none, and any advisory `touched_files`

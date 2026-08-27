@@ -37,7 +37,7 @@ const ALLOWED_PRD_CLARIFICATION_STATUS = new Set(['pending', 'complete', 'blocke
 const ANALYSIS_DIR_REL = '.memory-bank/analysis';
 const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
-const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
+const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'done_for_prod', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
 const TASK_ID_FORMAT = 'TASK-NNN-TN-FT-NNN-WN';
 const TASK_ID_RE = /^TASK-[0-9]{3}-(T[0-3])-(FT-[0-9]{3})-W([0-9]+)$/;
@@ -1181,7 +1181,7 @@ function checkTaskRecords() {
     checkTaskIdMatchesRecord(rel, task);
     if (!ALLOWED_TASK_STATUS.has(task.status)) {
       errors.push(
-        `${rel}: invalid task status '${task.status}' (allowed: planned|ready|in_progress|blocked|done|failed)`
+        `${rel}: invalid task status '${task.status}' (allowed: planned|ready|in_progress|blocked|done|done_for_prod|failed)`
       );
     }
     if (!ALLOWED_TASK_TIER.has(task.tier)) {

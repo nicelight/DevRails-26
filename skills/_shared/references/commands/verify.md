@@ -61,7 +61,7 @@ the rule above.
   `.memory-bank/workflows/tier-policy.md#closure-authority`.
 - Verify this task's outcome and mapped AC/REQ subset, not the whole feature or
   acceptance assigned to other tasks.
-- Treat `done` dependency outcomes as prerequisites, not claims to prove.
+- Treat `done` and `done_for_prod` dependency outcomes as prerequisites, not claims to prove.
   Applicable regression checks support the current task outcome and do not
   transfer ownership.
 - Direct task-linked canonical specs outrank secondary task prose for their
@@ -72,7 +72,7 @@ the rule above.
   they are not proof. `/exe` local PASS is input, not automatic PASS.
 - Executor claim-path evidence linked by the current attempt is supporting, not
   an independent observation or replacement for this command's functional
-  proof. Never demand fabricated RED from historical `done|failed` tasks.
+  proof. Never demand fabricated RED from historical `done|done_for_prod|failed` tasks.
 - An execute receipt is self-attested supporting evidence. It does not prove
   that its declared snapshot preceded the command or that the reported result
   occurred, and it is never an independent observation by `/verify`.
@@ -292,8 +292,8 @@ controlled rebuild/split, review, and re-execution of the replacement ID.
 <handoff_contract>
 - Scheduler mode -> return verdict/evidence and recommended scheduler action;
   leave lifecycle unchanged.
-- Manual T0/T1 PASS -> may set `done` only under the explicit-owner conditions
-  in tier policy and after evidence is in task `verify`.
+- Manual T0/T1 PASS -> may set `done` or `done_for_prod` under the explicit-owner
+  conditions in tier policy and after evidence is in task `verify`.
 - T2 PASS -> closure-eligible for the explicit owner/scheduler; per-task
   red-verify is optional, while T2 feature completion still requires
   `/red-verify --feature FT-<ID>`.

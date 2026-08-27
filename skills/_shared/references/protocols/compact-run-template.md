@@ -10,8 +10,8 @@ status: active
 - finished:
 - local evidence verdict: <PASS|FAIL|BLOCKED>
 - closure owner: scheduler | explicit standalone owner | human | none
-- manual /exe decision: <status unchanged|status: done>
-- scheduler decision: <none|status: done|status: failed|status: blocked>
+- manual /exe decision: <status unchanged|status: done|status: done_for_prod>
+- scheduler decision: <none|status: done|status: done_for_prod|status: failed|status: blocked>
 
 ## Execution Attempt
 - attempt:
@@ -64,17 +64,17 @@ Record task closure separately from the evidence verdict.
 
 - explicit standalone owner present: yes | no
 - owner basis: user direct instruction | top-level manual workflow ownership | none
-- decision: status unchanged | `status: done`
+- decision: status unchanged | `status: done` | `status: done_for_prod`
 - compact PASS and every fast-lane condition satisfied: yes | no
 - task record evidence updated in `verify`: yes | no
 
-Manual `/exe` may write only `status: done`, and only after exact compact PASS
-plus every tier-policy fast-lane condition. `VERDICT: FAIL|BLOCKED` is evidence,
+Manual `/exe` may set `status` to `done|done_for_prod` only after exact compact
+PASS and every tier-policy fast-lane condition. `VERDICT: FAIL|BLOCKED` is evidence,
 not manual lifecycle authority; leave status unchanged and hand off.
 
 ### Scheduler
 
-- decision: none | `status: done` | `status: failed` | `status: blocked`
+- decision: none | `status: done` | `status: done_for_prod` | `status: failed` | `status: blocked`
 - reason/evidence link:
 
 Only the scheduler records this branch under tier policy. If no authorized

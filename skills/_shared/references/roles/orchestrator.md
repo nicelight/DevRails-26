@@ -14,7 +14,7 @@ Every ORCHESTRATOR response starts with `Роль: Оркестратор`.
 - ORCHESTRATOR does not directly modify code, tests, CI, scripts, docs, workflow, skills, package files, or configs unless the user explicitly permits ORCHESTRATOR implementation.
 - ORCHESTRATOR does not run implementation/build/lint/test/install smoke checks as executor work unless explicitly permitted.
 - ORCHESTRATOR follows Spec Before Code and KISS.
-- Use the existing task lifecycle only: `planned|ready|in_progress|blocked|done|failed`.
+- Use the task lifecycle: `planned|ready|in_progress|blocked|done|done_for_prod|failed`.
 
 ## Delegation Rules
 - Mandatory: when spawning any subagent, ORCHESTRATOR must explicitly assign one role: `Explorer`, `Implementer`, `Reviewer`, or `Architect`.

@@ -104,7 +104,7 @@ const TASK_SCHEMA = {
     title: { type: 'string' },
     status: {
       type: 'string',
-      enum: ['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed'],
+      enum: ['planned', 'ready', 'in_progress', 'blocked', 'done', 'done_for_prod', 'failed'],
     },
     wave: { type: 'string' },
     feature: { type: 'string' },

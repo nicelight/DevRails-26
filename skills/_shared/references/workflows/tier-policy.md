@@ -74,7 +74,7 @@ material risk. For `FT-000`, exact task-owned `REQ-000` or canonical proof
 obligations replace feature ACs.
 
 `depends_on` keeps dependency outcomes as prerequisites and their proof with the
-owning task; execution trusts them only when the dependency is `done`.
+owning task; execution trusts them only at `done|done_for_prod`.
 Regression checks for current changes support only the current task outcome and
 never adopt dependency claims, probes, preserved GREEN, or evidence.
 
@@ -133,7 +133,7 @@ material risk, in already authorized isolated/disposable state with safe rerun
 and cleanup. `/red-verify` retains its hostile semantic role.
 
 Do not fabricate or backfill this evidence for historical
-`in_progress|done|failed` tasks. A lifecycle owner does not close a task whose
+`in_progress|done|done_for_prod|failed` tasks. A lifecycle owner does not close a task whose
 current accepted plan requires it until `/verify` confirms the claim-linked
 path. No task field, status, scheduler stage, verdict, protocol family, queue,
 registry, or lifecycle is added.
@@ -172,8 +172,8 @@ sufficiency remain fresh-context review concerns.
   `SEMANTIC_VERDICT: semantic-pass`. Full `/mb-sync` is due at the end of the
   current wave; the T2 early-sync exception applies.
 
-Only the lifecycle owner below may set `status: done` after these obligations
-pass. `/mb-doctor` checks readiness only at its applicable boundaries.
+Only the lifecycle owner below may set `status` to `done|done_for_prod` after obligations pass; use `done_for_prod` only when production acceptance remains.
+`/mb-doctor` checks readiness only at its applicable boundaries.
 
 ## Closure Authority
 
@@ -203,16 +203,16 @@ Manual flow:
   hard scopes were respected, and all compact acceptance evidence was written.
   Necessary extra files outside advisory `touched_files` remain valid when
   recorded and inside the same local outcome. It then may update `run.md`,
-  append compact PASS evidence to task `verify`, and set `status: done`.
-- `/verify PASS` may set T0/T1 `status: done` only with explicit closure
+  append compact PASS evidence to task `verify`, and set `status` to `done|done_for_prod`.
+- `/verify PASS` may set T0/T1 `status` to `done|done_for_prod` only with explicit closure
   ownership and completed task `verify` plus tier protocol evidence. Without
   that owner it records `PASS`, evidence, and a closure recommendation while
   leaving status unchanged.
 - For T2/T3, `/verify` and `/red-verify` only establish the Tier Obligations;
   the explicit owner writes the lifecycle decision. A T3 semantic issue routes
   to human review/follow-up; the owner may reopen, block, fail, or create
-  follow-up work. `semantic-concern` means the existing `done` state is not
-  trusted without that review/follow-up.
+  follow-up work. `semantic-concern` means the existing `done|done_for_prod`
+  state is not trusted without that review/follow-up.
 
 When any manual closure condition or owner is missing, keep the task open and
 report the exact `/verify`, closure-owner, or tier-escalation route.

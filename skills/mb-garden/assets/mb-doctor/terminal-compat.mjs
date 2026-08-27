@@ -8,6 +8,7 @@ import { isPlainObject, normalizeRel } from './readers.mjs';
 
 const TASK_INDEX_REL = '.memory-bank/tasks/index.json';
 const COMPACT_TIERS = new Set(['T0', 'T1']);
+const DONE_STATUSES = new Set(['done', 'done_for_prod']);
 const TERMINAL_STATUSES = new Set(['done', 'failed']);
 const LEGACY_TERMINAL_GAP_CODES = new Set([
   'TASK_DONE_EVIDENCE_MISSING',
@@ -15,7 +16,7 @@ const LEGACY_TERMINAL_GAP_CODES = new Set([
   'TASK_RED_VERIFY_VERDICT_MISSING',
 ]);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
-const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'failed']);
+const FULL_PROTOCOL_STATUSES = new Set(['in_progress', 'done', 'done_for_prod', 'failed']);
 const FULL_PROTOCOL_FILES = ['context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md'];
 const EVIDENCE_WORD_RE = /\b(evidence|result|fail|failed|error|output|log|artifact|report)\b/i;
 const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
@@ -67,8 +68,8 @@ export function createTerminalCompatibilityChecks(context) {
     if (task.status === 'in_progress') return;
   
     if (!hasTaskStatusEvidence(task, task.status) && !hasProtocolOrArtifactStatusEvidence(id, task.status)) {
-      const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
-      const expected = task.status === 'done' ? 'PASS' : 'FAIL/error';
+      const code = DONE_STATUSES.has(task.status) ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
+      const expected = DONE_STATUSES.has(task.status) ? 'PASS' : 'FAIL/error';
       addTerminalClosureFinding(record, severity, code, `${rel}: ${task.tier} ${task.status} task has no ${expected} verification evidence/verdict.`, {
         path: rel,
         task_id: id,
@@ -76,10 +77,10 @@ export function createTerminalCompatibilityChecks(context) {
       });
     }
   
-    if (task.status === 'done' && task.tier === 'T3') {
+    if (DONE_STATUSES.has(task.status) && task.tier === 'T3') {
       const redFiles = redVerificationFiles(id);
       if (!redFiles.length) {
-        addTerminalClosureFinding(record, severity, 'TASK_RED_VERIFY_EVIDENCE_MISSING', `${rel}: ${task.tier} done task has no red-verify evidence.`, {
+        addTerminalClosureFinding(record, severity, 'TASK_RED_VERIFY_EVIDENCE_MISSING', `${rel}: ${task.tier} ${task.status} task has no red-verify evidence.`, {
           path: rel,
           task_id: id,
           suggested_fix: `Record red-verify evidence in .protocols/${id}/red-verification.md or .tasks/${id}/.`,
@@ -92,7 +93,7 @@ export function createTerminalCompatibilityChecks(context) {
           record,
           severity,
           'TASK_RED_VERIFY_VERDICT_MISSING',
-          `${rel}: ${task.tier} done task has no closure-eligible red-verify semantic verdict.`,
+          `${rel}: ${task.tier} ${task.status} task has no closure-eligible red-verify semantic verdict.`,
           {
             path: rel,
             task_id: id,
@@ -107,13 +108,13 @@ export function createTerminalCompatibilityChecks(context) {
   
   function checkCompactDoneProtocol(record) {
     const { id, rel, task } = record;
-    if (task.status !== 'done' || !COMPACT_TIERS.has(task.tier)) return;
+    if (!DONE_STATUSES.has(task.status) || !COMPACT_TIERS.has(task.tier)) return;
   
     const runRel = normalizeRel(joinRelative('.protocols', id, 'run.md'));
     const runAbs = absolute(runRel);
     if (!isFile(runAbs)) {
       const severity = options.strict || task.tier === 'T1' ? 'error' : 'warning';
-      addFinding(severity, 'TASK_COMPACT_RUN_MISSING', `${rel}: ${task.tier} done task is missing compact ${runRel}.`, {
+      addFinding(severity, 'TASK_COMPACT_RUN_MISSING', `${rel}: ${task.tier} ${task.status} task is missing compact ${runRel}.`, {
         path: rel,
         task_id: id,
         details: { expected: runRel },
@@ -136,7 +137,7 @@ export function createTerminalCompatibilityChecks(context) {
     const hasCompactPassVerdict = hasPassingVerdict(text);
   
     if (options.strict && !hasCompactPassVerdict) {
-      addFinding('error', 'TASK_COMPACT_VERDICT_MISSING', `${runRel}: strict mode requires VERDICT: PASS for a done ${task.tier} task.`, {
+      addFinding('error', 'TASK_COMPACT_VERDICT_MISSING', `${runRel}: strict mode requires VERDICT: PASS for a ${task.status} ${task.tier} task.`, {
         path: runRel,
         task_id: id,
         suggested_fix: 'Record a clear VERDICT: PASS after verification succeeds.',
@@ -155,14 +156,14 @@ export function createTerminalCompatibilityChecks(context) {
   
   function checkTerminalEvidence(record) {
     const { id, rel, task } = record;
-    if (task.status !== 'done' && task.status !== 'failed') return;
-    if (task.status === 'done' && COMPACT_TIERS.has(task.tier)) return;
+    if (!DONE_STATUSES.has(task.status) && task.status !== 'failed') return;
+    if (DONE_STATUSES.has(task.status) && COMPACT_TIERS.has(task.tier)) return;
     if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
   
     if (hasTaskEvidence(task) || hasProtocolOrArtifactEvidence(id, task.status)) return;
   
-    const code = task.status === 'done' ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
-    const expected = task.status === 'done' ? 'pass/result/verdict evidence' : 'failure/error/verdict evidence';
+    const code = DONE_STATUSES.has(task.status) ? 'TASK_DONE_EVIDENCE_MISSING' : 'TASK_FAILED_EVIDENCE_MISSING';
+    const expected = DONE_STATUSES.has(task.status) ? 'pass/result/verdict evidence' : 'failure/error/verdict evidence';
     const severity = options.strict ? 'error' : 'warning';
     addFinding(severity, code, `${rel}: ${task.status} task has no minimal ${expected}.`, {
       path: rel,
@@ -283,7 +284,7 @@ export function createTerminalCompatibilityChecks(context) {
   }
   
   function hasStatusEvidenceMarker(value, status) {
-    const marker = status === 'done' ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
+    const marker = DONE_STATUSES.has(status) ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
     if (typeof value === 'string') return marker.test(value);
     if (Array.isArray(value)) return value.some((item) => hasStatusEvidenceMarker(item, status));
     if (!value || typeof value !== 'object') return false;
@@ -298,7 +299,7 @@ export function createTerminalCompatibilityChecks(context) {
     if (value && typeof value === 'object') return Object.values(value).some((item) => hasNonEmptyEvidenceValue(item));
     return String(value ?? '').trim().length > 0;
   }
-  
+
   function missingFullProtocolFiles(id) {
     return FULL_PROTOCOL_FILES.filter((file) => !isFile(absolute('.protocols', id, file)));
   }
@@ -385,7 +386,7 @@ export function createTerminalCompatibilityChecks(context) {
   
     if (!files.length) return false;
   
-    const statusRe = status === 'done' ? PASS_EVIDENCE_RE : /\bfail(?:ed)?\b|\berror\b|\bverdict\s*:\s*fail\b/i;
+    const statusRe = DONE_STATUSES.has(status) ? PASS_EVIDENCE_RE : /\bfail(?:ed)?\b|\berror\b|\bverdict\s*:\s*fail\b/i;
     return files.some((file) => {
       try {
         const text = readText(file);
@@ -397,7 +398,7 @@ export function createTerminalCompatibilityChecks(context) {
   }
   
   function hasProtocolOrArtifactStatusEvidence(taskId, status) {
-    const marker = status === 'done' ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
+    const marker = DONE_STATUSES.has(status) ? PASS_EVIDENCE_RE : FAIL_EVIDENCE_RE;
     const files = [
       ...listFiles(absolute('.protocols', taskId)).filter((file) => /\.(md|txt|log|json)$/i.test(file)),
       ...listFiles(absolute('.tasks', taskId)).filter((file) => /\.(md|txt|log|json)$/i.test(file)),

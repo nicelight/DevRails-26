@@ -77,8 +77,10 @@ status: active
   task protocol, handoff, and verdict evidence before acting. Never trust the
   checkpoint alone or use it to override authoritative lifecycle state.
 - Queue summaries in run status are derived snapshots or links. The lifecycle
-  remains `planned|ready|in_progress|blocked|done|failed` only in indexed task
-  records.
+  remains `planned|ready|in_progress|blocked|done|done_for_prod|failed` only in
+  indexed task records.
+
+`done_for_prod` closes dependencies and is terminal for development scheduling once development gates pass and only production acceptance remains; it is not a production verdict.
 
 ## Hard-stop categories
 - security / compliance ambiguity

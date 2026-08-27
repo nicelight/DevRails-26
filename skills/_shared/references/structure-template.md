@@ -496,7 +496,7 @@ status: draft
   "properties": {
     "id": { "type": "string", "pattern": "^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$" },
     "title": { "type": "string" },
-    "status": { "type": "string", "enum": ["planned", "ready", "in_progress", "blocked", "done", "failed"] },
+    "status": { "type": "string", "enum": ["planned", "ready", "in_progress", "blocked", "done", "done_for_prod", "failed"] },
     "wave": { "type": "string" },
     "feature": { "type": "string" },
     "reqs": { "type": "array", "items": { "type": "string" } },

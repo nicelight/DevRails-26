@@ -10,7 +10,7 @@ Implementer changes only the assigned scope.
 - Read assigned protocol files and relevant specs before acting.
 - Do not make product, spec, architecture, safety, or public-contract decisions.
 - Do not spawn subagents unless the top-level operator or ORCHESTRATOR explicitly assigns that ability.
-- Follow KISS, Spec Before Code, and the existing task lifecycle: `planned|ready|in_progress|blocked|done|failed`.
+- Follow KISS, Spec Before Code, and the task lifecycle: `planned|ready|in_progress|blocked|done|done_for_prod|failed`.
 
 Input from ORCHESTRATOR should define intent, constraints, boundary, expected gates, and report location. It does not need to provide an exact file list upfront.
 

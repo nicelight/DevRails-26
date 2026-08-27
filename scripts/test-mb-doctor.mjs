@@ -26,6 +26,7 @@ const PRODUCT_SECOND = 'TASK-102-T0-FT-001-W1';
 const PRODUCT_T2 = 'TASK-201-T2-FT-001-W1';
 const PRODUCT_T3 = 'TASK-301-T3-FT-001-W1';
 const PRODUCTION_ACCEPTANCE = 'TASK-401-T1-FT-001-W2';
+const DONE_STATUSES = new Set(['done', 'done_for_prod']);
 
 function fail(message, report = null) {
   const detail = report ? `\n\n${JSON.stringify(report, null, 2)}` : '';
@@ -94,7 +95,7 @@ function task(id, {
     touched_files: ['src/fixture.mjs'],
     gates: [],
     verify: verify ?? (
-      status === 'done'
+      DONE_STATUSES.has(status)
         ? ['VERDICT: PASS\nEvidence: fixture success']
         : status === 'failed' ? ['VERDICT: FAIL\nEvidence: fixture failure'] : []
     ),
@@ -170,14 +171,14 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
     writeJsonFixture(root, `.memory-bank/tasks/${record.id}.task.json`, record);
     if (/^FT-[0-9]{3,}$/.test(record.feature)) featureIds.add(record.feature);
 
-    if (record.status === 'done' && (record.tier === 'T0' || record.tier === 'T1')) {
+    if (DONE_STATUSES.has(record.status) && (record.tier === 'T0' || record.tier === 'T1')) {
       writeFixture(
         root,
         `.protocols/${record.id}/run.md`,
         '# Compact run\n\n- Evidence: fixture result\n\nVERDICT: PASS\n',
       );
     }
-    if (record.status === 'done' && (record.tier === 'T2' || record.tier === 'T3')) {
+    if (DONE_STATUSES.has(record.status) && (record.tier === 'T2' || record.tier === 'T3')) {
       const acId = record.source_artifacts
         .join('\n')
         .match(/FT-[0-9]{3,}-AC-[0-9]{3,}/)?.[0];
@@ -209,7 +210,7 @@ VERDICT: PASS
     const hasCompletedT2 = tasks.some((record) => (
       record.feature === featureId
       && record.tier === 'T2'
-      && record.status === 'done'
+      && DONE_STATUSES.has(record.status)
     ));
     writeFixture(root, `.memory-bank/features/${featureId}-${slug}.md`, `---
 description: Fixture feature.
@@ -575,7 +576,8 @@ Flags:
   const plannedProductionAcceptance = runCase('planned-production-acceptance', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [
-      task(PRODUCT_T2, { status: 'done' }),
+      task(PRODUCT_T2, { status: 'done_for_prod' }),
+      task(PRODUCT_FIRST, { status: 'ready', dependsOn: [PRODUCT_T2] }),
       task(PRODUCTION_ACCEPTANCE, {
         title: 'Production acceptance: fixture host checks',
         status: 'planned',
@@ -584,6 +586,7 @@ Flags:
     ],
   }, ['--strict']);
   expectPass(plannedProductionAcceptance, 'planned production acceptance is non-blocking');
+  expectNoFinding(plannedProductionAcceptance, 'TASK_READY_DEP_NOT_DONE');
   expectNoFinding(plannedProductionAcceptance, 'TASK_QUEUE_DEADLOCK');
   expectNoFinding(plannedProductionAcceptance, 'TASK_PLANNED_READY_CANDIDATE');
 

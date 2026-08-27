@@ -107,14 +107,14 @@ nor makes lifecycle decisions.
   `.protocols/<TASK_ID>/run.md`.
 - `T2` / `T3` `planned` / `ready` tasks do not require protocol files yet.
 - `T2` / `T3` `in_progress` tasks have full protocol files: `context.md`, `plan.md`, `progress.md`, `verification.md`, and `handoff.md`.
-- `T0` / `T1` `done` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.
-- In `--strict`, `T2` `done` tasks have full protocol files and `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts; per-task red-verify evidence is not required.
+- `T0` / `T1` `done|done_for_prod` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.
+- In `--strict`, `T2` `done|done_for_prod` tasks have full protocol files and `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts; per-task red-verify evidence is not required.
 - When every indexed task for a non-`FT-000` feature with at least one `T2`
-  task is `done`, the matching feature doc records an exact standalone
-  `SEMANTIC_VERDICT: semantic-pass` line from `/red-verify --feature FT-<ID>`.
+  task is `done|done_for_prod`, the matching feature doc records an exact
+  standalone `SEMANTIC_VERDICT: semantic-pass` line from `/red-verify --feature FT-<ID>`.
   Until it does, `FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default
   mode and an error in `--strict`.
-- In `--strict`, `T3` `done` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, and closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`.
+- In `--strict`, `T3` `done|done_for_prod` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, and closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`.
 - A terminal `done|failed` task that still carries deprecated
   `runtime_context.allowed_write_scope` is a legacy terminal record. Missing
   historical `TASK_DONE_EVIDENCE_MISSING`, `TASK_RED_VERIFY_EVIDENCE_MISSING`,
@@ -123,7 +123,7 @@ nor makes lifecycle decisions.
   `TASK_LEGACY_TERMINAL_COMPATIBILITY` info. All other findings retain their
   normal severity; non-terminal and current `write_boundary` records receive no
   compatibility exemption.
-- A `done` T3 record with a non-pass red-verify verdict satisfies the mechanical
+- A `done|done_for_prod` T3 record with a non-pass red-verify verdict satisfies the mechanical
   closure-verdict check only when `task.verify` already contains an explicit
   `owner_lifecycle_closure` / `manual_explicit_owner` / `decision: done` record,
   `gate_summary.red_verification` starts with `OWNER-ACCEPTED`, and both
@@ -137,7 +137,7 @@ nor makes lifecycle decisions.
 - For `minimal`, at least one real child item under `## Global Backbone Status` → `- Not applicable areas:` has `not_applicable` plus rationale. Other `not_applicable` text elsewhere does not satisfy readiness.
 - If `.memory-bank/spec-backbone.md` is missing but an old `.memory-bank/spec-index.md` contains `## Global backbone status`, report a migration hint instead of treating the old index shape as ready.
 - If `.memory-bank/spec-backbone.md` exists, `.memory-bank/spec-index.md` remains a pure registry and does not contain old non-index sections: `Feature Design Status Map`, `Global backbone status` / `Global Backbone Status`, or `Backbone Area Matrix`.
-- Other `done` / `failed` tasks have the minimum evidence/protocol basis required by their tier and mode.
+- Other `done` / `done_for_prod` / `failed` tasks have the minimum evidence/protocol basis required by their tier and mode.
 - `failed` tasks have either a bug doc in `.memory-bank/bugs/` mentioning the task id or an indexed follow-up task depending on/referencing the failed task.
 - Direct dependents of failed tasks are marked `blocked`.
 - `T1` / `T2` / `T3` tasks have concrete `REQ-*` and `FT-*` linkage. Placeholder values such as `REQ-XXX` and `FT-XXX` do not count.
@@ -157,7 +157,7 @@ nor makes lifecycle decisions.
 - A `planned|ready` T2/T3 AC-linked path repeats the AC ID in a concrete
   `verification_target` and `evidence_required` RED/GREEN observations, or in a
   concrete `RED_NOT_APPLICABLE` reason plus alternative proof.
-- A done T2/T3 task governed by that prospective path retains the same AC ID
+- A `done` T2/T3 task governed by that prospective path retains the same AC ID
   and filled RED/GREEN or not-applicable evidence in `progress.md`, plus the AC
   ID and `VERDICT: PASS` in `verification.md`. Historical terminal tasks without
   the prospective contract remain exempt.

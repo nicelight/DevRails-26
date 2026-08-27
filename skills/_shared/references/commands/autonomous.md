@@ -73,7 +73,7 @@ state, not a second task registry.
 - `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
   isolation rules. Never infer independence from advisory `touched_files`.
 - Queue/task metadata comes only from indexed JSON task records. Preserve task
-  schema, IDs, lifecycle `planned|ready|in_progress|blocked|done|failed`, tier,
+  schema, IDs, lifecycle `planned|ready|in_progress|blocked|done|done_for_prod|failed`, tier,
   waves, Foundation dependencies, and hard runtime scopes.
 - During the Foundation phase, `/autonomous` owns promotion, selection, and
   final lifecycle decisions only for indexed `feature: "FT-000"` records. After

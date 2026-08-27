@@ -9,11 +9,12 @@ import { isPlainObject, nonEmptyString, normalizeRel } from './readers.mjs';
 // Brownfield tech-specs remain readable; semantic hub-only rejection belongs to review-tasks-plan.
 const TASK_INDEX_REL = '.memory-bank/tasks/index.json';
 const TASK_ID_RE = /^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$/;
-const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'failed']);
+const VALID_STATUSES = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'done_for_prod', 'failed']);
 const VALID_TIERS = new Set(['T0', 'T1', 'T2', 'T3']);
 const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked']);
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
-const TERMINAL_STATUSES = new Set(['done', 'failed']);
+const DONE_STATUSES = new Set(['done', 'done_for_prod']);
+const TERMINAL_STATUSES = new Set(['done', 'done_for_prod', 'failed']);
 const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
 const PRODUCTION_ACCEPTANCE_TITLE_RE = /^\s*Production acceptance\s*:/i;
@@ -202,7 +203,7 @@ export function createTaskReadinessChecks(context) {
   
     const notDone = task.depends_on
       .map((depId) => records.get(depId))
-      .filter((dep) => dep && dep.task.status !== 'done');
+      .filter((dep) => dep && !DONE_STATUSES.has(dep.task.status));
   
     if (!notDone.length) return;
   
@@ -501,7 +502,7 @@ export function createTaskReadinessChecks(context) {
     for (const group of groups.values()) {
       if (!group.hasT2) continue;
       const implementationRecords = group.records.filter((record) => !isProductionAcceptanceTask(record));
-      if (!implementationRecords.every((record) => record.task.status === 'done')) continue;
+      if (!implementationRecords.every((record) => DONE_STATUSES.has(record.task.status))) continue;
   
       const passFiles = featureSemanticPassFiles(group.featureId);
       if (passFiles.length) continue;
@@ -553,7 +554,7 @@ export function createTaskReadinessChecks(context) {
     const inProgress = developmentRecords.filter((record) => record.task.status === 'in_progress');
     const executableReady = developmentRecords.filter((record) => {
       if (record.task.status !== 'ready' || !Array.isArray(record.task.depends_on)) return false;
-      return record.task.depends_on.every((depId) => recordsById.get(depId)?.task.status === 'done');
+      return record.task.depends_on.every((depId) => DONE_STATUSES.has(recordsById.get(depId)?.task.status));
     });
   
     const unfinished = developmentRecords.filter((record) => !TERMINAL_STATUSES.has(record.task.status));
@@ -606,7 +607,7 @@ export function createTaskReadinessChecks(context) {
   
   function isPlannedReadyCandidate(record, recordsById) {
     if (record.task.status !== 'planned' || !Array.isArray(record.task.depends_on)) return false;
-    return record.task.depends_on.every((depId) => recordsById.get(depId)?.task.status === 'done');
+    return record.task.depends_on.every((depId) => DONE_STATUSES.has(recordsById.get(depId)?.task.status));
   }
 
   function isProductionAcceptanceTask(record) {
@@ -614,7 +615,7 @@ export function createTaskReadinessChecks(context) {
       typeof record?.task?.title === 'string' ? record.task.title : ''
     );
   }
-  
+
   function hasBlockedOrFailedUpstream(record, recordsById) {
     if (!Array.isArray(record.task.depends_on)) return false;
     return record.task.depends_on.some((depId) => {
@@ -909,6 +910,7 @@ export function createTaskReadinessChecks(context) {
       in_progress: 0,
       blocked: 0,
       done: 0,
+      done_for_prod: 0,
       failed: 0,
       invalid: invalidEntries.length,
     };

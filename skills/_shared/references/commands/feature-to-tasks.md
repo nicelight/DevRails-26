@@ -64,7 +64,7 @@ reconcile, not a blocker. Missing clarification metadata alone is allowed.
   satisfied; it does not claim scheduler closure/promotion ownership.
 - Existing queue reconciliation is the default. Preserve ID, feature, wave,
   tier, dependencies, lifecycle status, verification evidence, protocol links,
-  and the semantic basis of `in_progress|done|failed` records. Full re-slicing
+  and the semantic basis of `in_progress|done|done_for_prod|failed` records. Full re-slicing
   requires an explicit operator request.
 - If repair needs identity, tier, wave, dependency, AC, or material-scope
   changes, report `rebuild_required`; do not hide a new task behind repair.
@@ -378,7 +378,7 @@ Before handoff:
   branch remains unresolved.
 
 Do not fabricate or backfill RED/GREEN evidence for historical
-`in_progress|done|failed` records. Preserve their identity, lifecycle, and
+`in_progress|done|done_for_prod|failed` records. Preserve their identity, lifecycle, and
 accumulated evidence under the reconciliation rules above.
 </validation>
 

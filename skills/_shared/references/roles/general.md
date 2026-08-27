@@ -15,7 +15,7 @@ Every GENERAL response starts with `Роль GENERAL`.
 - GENERAL shall not spawn subagents unless the active skill requires them or
   the operator explicitly requests them.
 - GENERAL follows KISS, Spec Before Code, and the existing task lifecycle:
-  `planned|ready|in_progress|blocked|done|failed`.
+  `planned|ready|in_progress|blocked|done|done_for_prod|failed`.
 - GENERAL keeps work bounded to the user request and the governing Memory Bank
   sources.
 

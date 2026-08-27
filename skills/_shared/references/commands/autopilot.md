@@ -58,6 +58,8 @@ acceptance work. During development, exclude them from promotion, selection,
 unfinished/deadlock checks, and success gates. Leave them `planned` for explicit
 `/exe <TASK_ID>` after production deployment.
 
+For mixed work, write `done_for_prod` after development gates pass when only production acceptance remains; historical `verify` entries do not create queue work.
+
 If no product record exists, return
 `HALT_QUALITY_GATES: no schema-backed product task records found in .memory-bank/tasks/index.json`
 and route the next explicit product feature to a fresh
@@ -77,7 +79,7 @@ ineligible features one at a time through the Fresh Feature Tasking Boundary.
 
 <hard_invariants>
 - `/autopilot` owns only product task promotion and selection, final
-  `done|failed|blocked` decisions, dependent block/unblock, failure budget, and
+  `done|done_for_prod|failed|blocked` decisions, dependent block/unblock, failure budget, and
   terminal queue result. Installed `/exe` owns `ready -> in_progress` for the
   task selected by the scheduler.
 - It never executes or mutates an FT-000 record.
@@ -263,7 +265,7 @@ selection loop:
 1. checkpoint `current task: none`, `current stage: selection`, and the next
    promotion/selection action;
 2. run a separate product promotion pass, writing `planned -> ready` only for
-   eligible features when every dependency is `done` and no blocking review,
+   eligible features when every dependency is `done|done_for_prod` and no blocking review,
    bug, decision, or unresolved semantic concern remains; write dependent
    blocking decisions only to affected records;
 3. select one eligible product `ready` task by earliest wave and stable index
@@ -323,7 +325,7 @@ product `ready` task remains:
   resume route as required by autonomy policy;
 - ineligible task-linked features remain -> `HALT_QUALITY_GATES` with the first
   feature's `/feature-to-tasks FT-<NNN>` or `/review-tasks-plan FT-<NNN>` route;
-- all product work closed -> run final review coverage and success checks;
+- all development work closed -> run final review coverage and success checks;
 - only when every unfinished product record is non-runnable solely because its
   task dependencies are unfinished -> record exact dependency evidence and
   `HALT_DEPENDENCY_DEADLOCK`;

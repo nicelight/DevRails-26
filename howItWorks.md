@@ -845,12 +845,14 @@ Concrete ID segments обязаны совпадать с record fields `tier`, 
 `wave`. Lifecycle фиксирован:
 
 ```text
-planned | ready | in_progress | blocked | done | failed
+planned | ready | in_progress | blocked | done | done_for_prod | failed
 ```
 
 `ready` допустим только при закрытых dependencies и отсутствии blocker.
 `planned` остаётся корректным для future waves или unmet dependencies. Legacy
 `risk`/`risk.level` не используются; routing идёт только по `task.tier`.
+`done_for_prod` означает, что разработка завершена, а production acceptance
+остаётся для явного запуска после deployment.
 
 Schema-valid пример:
 

@@ -169,10 +169,10 @@ Cover:
      and ownership.
 4. Execution readiness
    - correct tier; every task status is legal and consistent with its lifecycle
-     context and owner; `ready` is valid iff every dependency is `done` and no
+     context and owner; `ready` is valid iff every dependency is `done|done_for_prod` and no
      blocker, review reject, or unresolved semantic gap remains;
    - `planned` remains valid for unmet dependencies or future waves;
-   - existing `in_progress|blocked|done|failed` records are reviewed for evidence and
+   - existing `in_progress|blocked|done|done_for_prod|failed` records are reviewed for evidence and
      ownership consistency, never normalized or mutated by this skill;
      Foundation final gate `done` and linked when required; complete T2/T3
      single-card handoff; hard runtime scope respected; no slice code root was
@@ -205,7 +205,7 @@ Cover:
      path directly discoverable; do not require slices from an accepted
      architecture that uses another primary change unit.
 
-Do not reject historical `in_progress|done|failed` records solely because they
+Do not reject historical `in_progress|done|done_for_prod|failed` records solely because they
 predate this prospective RED/GREEN planning contract, and never request
 fabricated backfill. Apply the material-NFR proof rule prospectively under the
 same boundary.
