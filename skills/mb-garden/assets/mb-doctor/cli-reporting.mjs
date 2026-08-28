@@ -31,7 +31,7 @@ export function printHelp() {
   console.log(`mb-doctor
 
 Usage:
-  node scripts/mb-doctor.mjs [--strict] [--json]
+  node .memory-bank/scripts/mb-doctor.mjs [--strict] [--json]
 
 Flags:
   --strict  Require an executable autonomous/autopilot task queue.

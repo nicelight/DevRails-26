@@ -42,15 +42,15 @@ const AGENTS_TEMPLATE_CATEGORY = 'deployable';
 const AGENTS_TEMPLATE_FILE = 'AGENTS.md';
 const CONSTITUTION_TEMPLATE_FILE = 'constitution-template.md';
 const RUNTIME_SCRIPT_ASSETS = [
-  { asset: 'mb-lint.mjs', target: 'scripts/mb-lint.mjs' },
-  { asset: 'mb-doctor.mjs', target: 'scripts/mb-doctor.mjs' },
-  { asset: 'mb-doctor/cli-reporting.mjs', target: 'scripts/mb-doctor/cli-reporting.mjs' },
-  { asset: 'mb-doctor/readers.mjs', target: 'scripts/mb-doctor/readers.mjs' },
-  { asset: 'mb-doctor/preflight.mjs', target: 'scripts/mb-doctor/preflight.mjs' },
-  { asset: 'mb-doctor/foundation-backbone.mjs', target: 'scripts/mb-doctor/foundation-backbone.mjs' },
-  { asset: 'mb-doctor/task-readiness.mjs', target: 'scripts/mb-doctor/task-readiness.mjs' },
-  { asset: 'mb-doctor/acceptance-trace.mjs', target: 'scripts/mb-doctor/acceptance-trace.mjs' },
-  { asset: 'mb-doctor/terminal-compat.mjs', target: 'scripts/mb-doctor/terminal-compat.mjs' },
+  { asset: 'mb-lint.mjs', target: '.memory-bank/scripts/mb-lint.mjs' },
+  { asset: 'mb-doctor.mjs', target: '.memory-bank/scripts/mb-doctor.mjs' },
+  { asset: 'mb-doctor/cli-reporting.mjs', target: '.memory-bank/scripts/mb-doctor/cli-reporting.mjs' },
+  { asset: 'mb-doctor/readers.mjs', target: '.memory-bank/scripts/mb-doctor/readers.mjs' },
+  { asset: 'mb-doctor/preflight.mjs', target: '.memory-bank/scripts/mb-doctor/preflight.mjs' },
+  { asset: 'mb-doctor/foundation-backbone.mjs', target: '.memory-bank/scripts/mb-doctor/foundation-backbone.mjs' },
+  { asset: 'mb-doctor/task-readiness.mjs', target: '.memory-bank/scripts/mb-doctor/task-readiness.mjs' },
+  { asset: 'mb-doctor/acceptance-trace.mjs', target: '.memory-bank/scripts/mb-doctor/acceptance-trace.mjs' },
+  { asset: 'mb-doctor/terminal-compat.mjs', target: '.memory-bank/scripts/mb-doctor/terminal-compat.mjs' },
 ];
 
 const ARGS = new Set(process.argv.slice(2));
@@ -717,7 +717,6 @@ console.log('\n[1/5] Creating directories...');
   `${MB}/agents`,
   `${MB}/archive`,
   `${MB}/bugs`,
-  'scripts',
   '.tasks',
   '.protocols',
   'PAPERCUTS',

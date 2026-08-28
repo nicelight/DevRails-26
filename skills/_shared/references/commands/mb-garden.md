@@ -32,7 +32,7 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 - Сверь `.memory-bank/skills/index.md` с реально установленными
   `.agents/skills/*/SKILL.md` и `.claude/skills/*/SKILL.md`. Реестр должен
   использовать canonical runtime command names без второй alias/package surface.
-- Если есть `scripts/mb-lint.mjs`, initial lint можно использовать как
+- Если есть `.memory-bank/scripts/mb-lint.mjs`, initial lint можно использовать как
   read-only источник findings. Он не заменяет final lint после edits.
 - Раздели findings на две группы:
   - automatic: только stale/broken links и несогласованные index/router entries,
@@ -86,7 +86,7 @@ mechanical links, indexes и routers. Semantic, destructive и owner-owned
 ## 5) Final validation
 
 - После любого фактического garden edit запусти final
-  `node scripts/mb-lint.mjs` по полностью изменённому final state, если script
+  `node .memory-bank/scripts/mb-lint.mjs` по полностью изменённому final state, если script
   доступен. Если он недоступен, явно укажи это в handoff. Initial lint не
   считается final validation.
 - `mb-doctor` запускай только на уже существующей readiness/risk boundary:

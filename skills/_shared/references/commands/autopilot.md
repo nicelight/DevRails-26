@@ -38,7 +38,7 @@ Require:
   `APPROVE` has exact `REVIEWED_PLANNING_REVISION: <N>` equal to the current
   Planning Revision;
 - no unresolved blocking operator decision;
-- invoke `node scripts/mb-doctor.mjs --strict` before the run, including resume,
+- invoke `node .memory-bank/scripts/mb-doctor.mjs --strict` before the run, including resume,
   and before every later task selection required below. A new run requires
   `PASS`. A resumed run also requires `PASS` unless its only failing findings
   are the durable consequences of the exact unfinished scheduler checkpoint

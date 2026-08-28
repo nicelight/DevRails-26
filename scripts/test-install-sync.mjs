@@ -169,8 +169,8 @@ function installedSkillRows(content) {
 function canonicalCopies() {
   const copies = [
     [join(referenceRoot, 'deployable', 'AGENTS.md'), 'AGENTS.md'],
-    [join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs'), 'scripts/mb-lint.mjs'],
-    [join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs'), 'scripts/mb-doctor.mjs'],
+    [join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs'), '.memory-bank/scripts/mb-lint.mjs'],
+    [join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor.mjs'), '.memory-bank/scripts/mb-doctor.mjs'],
   ];
   [
     ['protocols', '.memory-bank/templates/protocols', listFiles(join(referenceRoot, 'protocols'))],
@@ -195,7 +195,7 @@ function canonicalCopies() {
     .forEach((filename) => {
       copies.push([
         join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-doctor', filename),
-        `scripts/mb-doctor/${filename}`,
+        `.memory-bank/scripts/mb-doctor/${filename}`,
       ]);
     });
   return copies;
@@ -327,6 +327,7 @@ function assertFreshBootstrap(target) {
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');
+  assert(!existsSync(targetPath(target, 'scripts')), 'Fresh bootstrap exposed runtime scripts in visible scripts/.');
   ['orchestrator', 'general', 'architect', 'explorer', 'implementer', 'reviewer', 'judge'].forEach((role) => {
     assert(existsSync(targetPath(target, `.memory-bank/roles/${role}.md`)), `Role is missing: ${role}`);
   });
@@ -338,9 +339,9 @@ function assertFreshBootstrap(target) {
     'Installed skill inventory differs from runtime surfaces.',
   );
 
-  const lint = runTargetScript(target, 'scripts/mb-lint.mjs');
+  const lint = runTargetScript(target, '.memory-bank/scripts/mb-lint.mjs');
   assert(lint.status === 0, 'Fresh deployed mb-lint failed.', lint.output);
-  const doctor = runTargetScript(target, 'scripts/mb-doctor.mjs', ['--json']);
+  const doctor = runTargetScript(target, '.memory-bank/scripts/mb-doctor.mjs', ['--json']);
   let report;
   try {
     report = JSON.parse(doctor.stdout);
@@ -359,9 +360,9 @@ function assertSync(target) {
     '.memory-bank/roles/architect.md',
     '.memory-bank/roles/judge.md',
     '.memory-bank/templates/protocols/compact-run-template.md',
-    'scripts/mb-lint.mjs',
-    'scripts/mb-doctor.mjs',
-    'scripts/mb-doctor/readers.mjs',
+    '.memory-bank/scripts/mb-lint.mjs',
+    '.memory-bank/scripts/mb-doctor.mjs',
+    '.memory-bank/scripts/mb-doctor/readers.mjs',
     'AGENTS.md',
     '.agents/skills/start/SKILL.md',
     '.agents/skills/verify/references/finding-adjudication.md',
@@ -376,6 +377,9 @@ function assertSync(target) {
     ['.protocols/TASK-999-T1-FT-999-W1/run.md', '# Task-owned state\n'],
     ['.memory-bank/templates/protocols/project-notes.md', '# Project template\n'],
     ['PAPERCUTS/session.md', '# Session papercut\n'],
+    ['scripts/mb-lint.mjs', '#!/usr/bin/env node\n// Legacy copy left for operator cleanup.\n'],
+    ['scripts/mb-doctor.mjs', '#!/usr/bin/env node\n// Legacy copy left for operator cleanup.\n'],
+    ['scripts/mb-doctor/readers.mjs', '// Legacy copy left for operator cleanup.\n'],
   ]);
   projectFiles.forEach((content, rel) => writeTarget(target, rel, content));
   const authoredMarker = '<!-- authored skill guidance -->';

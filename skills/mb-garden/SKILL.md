@@ -18,7 +18,8 @@ installed `/mb-garden` instructions. The installer generates target
 
 - `assets/mb-lint.mjs` — structural and mechanical Memory Bank lint.
 - `assets/mb-doctor.mjs` and `assets/mb-doctor/*.mjs` — deterministic readiness
-  gate over `mb-lint`; the deployed entrypoint remains `scripts/mb-doctor.mjs`.
+  gate over `mb-lint`; the deployed entrypoint remains
+  `.memory-bank/scripts/mb-doctor.mjs`.
 
 `mb-lint` and `mb-doctor` keep their separate responsibilities. Asset packaging
 does not make this entrypoint the owner of readiness policy.

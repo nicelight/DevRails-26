@@ -393,8 +393,8 @@ PAPERCUTS/
   TECHDEBTS/
 .agents/skills/<command>/SKILL.md
 .claude/skills/<command>/SKILL.md
-scripts/mb-lint.mjs
-scripts/mb-doctor.mjs
+.memory-bank/scripts/mb-lint.mjs
+.memory-bank/scripts/mb-doctor.mjs
 AGENTS.md
 CLAUDE.md
 GEMINI.md
@@ -988,10 +988,10 @@ Scheduler retry и failure disposition его не используют.
 ### Doctor modes
 
 ```bash
-node scripts/mb-doctor.mjs
-node scripts/mb-doctor.mjs --strict
-node scripts/mb-doctor.mjs --json
-node scripts/mb-doctor.mjs --strict --json
+node .memory-bank/scripts/mb-doctor.mjs
+node .memory-bank/scripts/mb-doctor.mjs --strict
+node .memory-bank/scripts/mb-doctor.mjs --json
+node .memory-bank/scripts/mb-doctor.mjs --strict --json
 ```
 
 - Default mode — human health report. Fresh skeleton с empty task index valid;
@@ -1580,8 +1580,8 @@ Source-only count должен быть `0`.
 ### Target repo
 
 ```bash
-node scripts/mb-lint.mjs
-node scripts/mb-doctor.mjs
+node .memory-bank/scripts/mb-lint.mjs
+node .memory-bank/scripts/mb-doctor.mjs
 ```
 
 `mb-lint` блокирует structural errors, но structurally valid task с
@@ -1592,7 +1592,7 @@ Strict только после появления executable queue или на �
 readiness boundary:
 
 ```bash
-node scripts/mb-doctor.mjs --strict
+node .memory-bank/scripts/mb-doctor.mjs --strict
 ```
 
 ## License

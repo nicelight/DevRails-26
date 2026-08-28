@@ -143,7 +143,7 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
   const root = join(tempRoot, name);
   mkdirSync(root, { recursive: true });
 
-  writeFixture(root, 'scripts/mb-lint.mjs', "#!/usr/bin/env node\nconsole.log('fixture lint passed');\n");
+  writeFixture(root, '.memory-bank/scripts/mb-lint.mjs', "#!/usr/bin/env node\nconsole.log('fixture lint passed');\n");
   writeFixture(root, '.memory-bank/constitution.md', '# Constitution\n');
   writeFixture(root, '.memory-bank/index.md', '# Memory Bank\n\n- constitution.md\n');
   writeFixture(root, '.memory-bank/spec-index.md', '# Spec Index\n\n| Constitution | constitution.md |\n');
@@ -374,7 +374,7 @@ function assertModuleArchitecture() {
   const initSource = readFileSync(join(repoRoot, 'skills', '_shared', 'scripts', 'init-mb.js'), 'utf8');
   expectedModules.forEach((name) => {
     assert(
-      initSource.includes(`{ asset: 'mb-doctor/${name}', target: 'scripts/mb-doctor/${name}' }`),
+      initSource.includes(`{ asset: 'mb-doctor/${name}', target: '.memory-bank/scripts/mb-doctor/${name}' }`),
       `Runtime asset manifest does not deploy ${name}.`,
     );
   });
@@ -391,7 +391,7 @@ try {
     help.stdout === `mb-doctor
 
 Usage:
-  node scripts/mb-doctor.mjs [--strict] [--json]
+  node .memory-bank/scripts/mb-doctor.mjs [--strict] [--json]
 
 Flags:
   --strict  Require an executable autonomous/autopilot task queue.

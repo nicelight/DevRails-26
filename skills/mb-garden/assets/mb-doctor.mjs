@@ -4,7 +4,7 @@
  *
  * Owns CLI entry and the public high-level finding order only. Route check
  * changes through mb-doctor/AGENTS.md; deployed entry remains
- * scripts/mb-doctor.mjs.
+ * .memory-bank/scripts/mb-doctor.mjs.
  */
 
 import {

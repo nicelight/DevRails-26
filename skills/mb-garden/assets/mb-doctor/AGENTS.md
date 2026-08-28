@@ -1,7 +1,7 @@
 # mb-doctor module ownership
 
 This directory is the canonical implementation behind deployed
-`scripts/mb-doctor.mjs`. Preserve finding codes, severities, messages, payload
+`.memory-bank/scripts/mb-doctor.mjs`. Preserve finding codes, severities, messages, payload
 shape and order, CLI output, exit codes, strict/default semantics, lifecycle
 ownership, blockers, and remediation unless the public workflow contract is
 explicitly changed.

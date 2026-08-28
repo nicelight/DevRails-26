@@ -9,7 +9,7 @@ import { splitLines } from './readers.mjs';
 
 const TASK_INDEX_REL = '.memory-bank/tasks/index.json';
 const TASK_BACKLOG_REL = '.memory-bank/tasks/backlog.md';
-const LINT_REL = 'scripts/mb-lint.mjs';
+const LINT_REL = '.memory-bank/scripts/mb-lint.mjs';
 
 export function runPreflight(context) {
   const ROOT = context.root;
@@ -25,7 +25,7 @@ export function runPreflight(context) {
       const severity = options.strict ? 'error' : 'warning';
       addFinding(severity, 'MB_LINT_SCRIPT_MISSING', `${LINT_REL} not found. Install/copy mb-lint before running mb-doctor.`, {
         path: LINT_REL,
-        suggested_fix: 'Create scripts/mb-lint.mjs from the mb-garden asset and rerun mb-doctor.',
+        suggested_fix: 'Create .memory-bank/scripts/mb-lint.mjs from the mb-garden asset and rerun mb-doctor.',
       });
       return;
     }

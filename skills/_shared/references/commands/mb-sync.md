@@ -88,7 +88,7 @@ scheduler-owned promotion or final lifecycle transitions.
 Perform only sync-local consistency validation: re-read the links, indexes,
 RTM, lifecycle/spec state, routers, evidence links, and changelog entries this
 sync changed, and confirm that they agree with their already-authoritative
-sources. `/mb-sync` does not run full `node scripts/mb-lint.mjs` or
+sources. `/mb-sync` does not run full `node .memory-bank/scripts/mb-lint.mjs` or
 `/mb-doctor`.
 
 In scheduler flow, `/autonomous` or `/autopilot` is the sole owner that runs

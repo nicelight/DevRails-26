@@ -7,7 +7,7 @@
 **Симптомы**: пропущен frontmatter, битые ссылки, устаревшие записи, неактуальный changelog.
 
 **Действие**: запусти `mb-garden`.
-1. `node scripts/mb-lint.mjs` — найти ошибки.
+1. `node .memory-bank/scripts/mb-lint.mjs` — найти ошибки.
 2. Добавить пропущенный frontmatter.
 3. Исправить битые ссылки.
 4. Обновить changelog и index.

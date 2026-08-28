@@ -203,7 +203,7 @@ Claude Code;
   структуры проекта; `PAPERCUTS/TECHDEBTS/` хранит отчёты `/tech-debt`;
 - `/tech-debt` — отчёт о техническом долге;
 - `AGENTS.md` — тут ключевые инструкции по работе всего Workflow. Если имеете свой AGENTS.md, позаботьтесь чтобы слить оба файла в один;
-- `scripts/mb-lint.mjs` и `scripts/mb-doctor.mjs` — автоматические проверки
+- `.memory-bank/scripts/mb-lint.mjs` и `.memory-bank/scripts/mb-doctor.mjs` — автоматические проверки
 структуры и готовности проекта.
 
 

@@ -148,7 +148,7 @@ contract.
 Run the canonical gates in this order, skipping a child only when its own input
 contract proves it already complete:
 
-1. Pre-queue health: `node scripts/mb-lint.mjs`, then plain `/mb-doctor`.
+1. Pre-queue health: `node .memory-bank/scripts/mb-lint.mjs`, then plain `/mb-doctor`.
    Strict doctor is not used before a real executable queue.
 2. Product/design:
    - if the input names tools/skills/CLIs, run `/find-skills`, auto-use only

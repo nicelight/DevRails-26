@@ -17,10 +17,10 @@ Can autonomous/autopilot execution continue safely from the current Memory Bank 
 Use the repository-provided script:
 
 ```bash
-node scripts/mb-doctor.mjs
-node scripts/mb-doctor.mjs --strict
-node scripts/mb-doctor.mjs --json
-node scripts/mb-doctor.mjs --strict --json
+node .memory-bank/scripts/mb-doctor.mjs
+node .memory-bank/scripts/mb-doctor.mjs --strict
+node .memory-bank/scripts/mb-doctor.mjs --json
+node .memory-bank/scripts/mb-doctor.mjs --strict --json
 ```
 
 If the repository exposes another documented wrapper for the same script, use that wrapper.

@@ -91,9 +91,9 @@ Skill-specific non-shared assets:
   structural/mechanical hygiene linter.
 - `skills/mb-garden/assets/mb-doctor.mjs`: canonical CLI entrypoint for the
   deterministic workflow/autonomous readiness check over `mb-lint`; it is
-  deployed unchanged as `scripts/mb-doctor.mjs`.
+  deployed unchanged as `.memory-bank/scripts/mb-doctor.mjs`.
 - `skills/mb-garden/assets/mb-doctor/*.mjs`: canonical internal doctor modules,
-  deployed beside the entrypoint under `scripts/mb-doctor/`.
+  deployed beside the entrypoint under `.memory-bank/scripts/mb-doctor/`.
 - `skills/mb-garden/assets/mb-doctor/AGENTS.md`: source-only ownership and
   change-routing contract for future doctor work.
 - `skills/mb-garden/assets/memory-bank-lint.yml`: related lint config asset.
@@ -476,8 +476,8 @@ One-command bootstrap smoke:
 tmpdir="$(mktemp -d)"; node scripts/install-framework.mjs --bootstrap --target "$tmpdir" --yes
 test -f "$tmpdir/.memory-bank/tasks/index.json"
 test -f "$tmpdir/AGENTS.md"
-test -f "$tmpdir/scripts/mb-doctor/readers.mjs"
-(cd "$tmpdir" && node scripts/mb-doctor.mjs --json)
+test -f "$tmpdir/.memory-bank/scripts/mb-doctor/readers.mjs"
+(cd "$tmpdir" && node .memory-bank/scripts/mb-doctor.mjs --json)
 ```
 
 To inspect the generated temporary package tree during installer debugging:
