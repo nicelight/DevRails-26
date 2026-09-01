@@ -151,6 +151,13 @@ prevention guardrail. Диагностика остаётся read-only и не 
 после третьего неудачного выполнения четвёртого не будет.
 
 
+### ⚖️ `/multipilot`
+
+Запускает тот же canonical `/autopilot` для готовой очереди под supervision
+одного read-only Judge. Judge оценивает маршрут на retry и wave boundaries, а
+`/autopilot` сохраняет все lifecycle, recovery и terminal решения.
+
+
 ### ✨ `/autonomous`
 **Это тестовый режим, я им еще не пользовался. **
 Проводит весь процесс от переданного краткого описания продукта (`Product Brief`), PRD или описания изменений до конечного результата. Если нужен
@@ -172,6 +179,8 @@ fresh-контексте и только после этого передаёт 
 пользу решения со стоимостью реализации и возникающими рисками;
 - `Explorer`, `Implementer` и `Reviewer` — назначаемые роли для исследования,
 реализации и независимой проверки.
+- `JUDGE` — read-only оценивает маршрут `/multiagentic` или `/multipilot`, не
+принимая lifecycle и terminal решений за owning workflow.
 
 Роль фиксируется при запуске и не меняется в ходе работы. `/kiss-architect`
 позволяет применить правила Architect к текущему архитектурному решению, не
@@ -194,7 +203,7 @@ node scripts/install-framework.mjs
 
 ## 📦 Что появится в проекте
 
-- `.agents/skills/` и `.claude/skills/` — 36 команд DevRails для Codex и
+- `.agents/skills/` и `.claude/skills/` — 38 команд DevRails для Codex и
 Claude Code;
 - `.memory-bank/` — общая память проекта: архитектура, спеки, декомпозиция в задачи и код;
 - `.protocols/` — записи о ходе выполнения и проверки задач;

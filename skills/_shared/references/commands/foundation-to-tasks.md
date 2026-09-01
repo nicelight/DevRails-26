@@ -184,13 +184,11 @@ When `Foundation Required: true`:
    records.
 
 When a Foundation plan or advisory expected change surface names a new, moved,
-or renamed project-authored source path, treat its code root, directories, and
-complete filename as one context surface. Apply the accepted owner/code root and
-naming/path convention, the nearest relevant local pattern when available, and
-governing framework/tooling/generator/scaffold semantics. Use only necessary
-semantic nesting, avoid mechanical directory/filename repetition, preserve
-required or reserved filename parts, and do not infer import/module, public
-path, package export, route, or build-target identities from name similarity.
+or renamed project-authored source path, follow
+`AGENTS.md#source-path-semantics`, the accepted owner/code root, and governing
+framework/tooling/generator/scaffold semantics. Preserve required or reserved
+filename parts, and do not infer import/module, public path, package export,
+route, or build-target identities from name similarity.
 Leave an immaterial exact filename choice to `/exe`; do not turn it into a task
 blocker or hard `write_boundary`.
 

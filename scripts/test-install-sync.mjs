@@ -239,6 +239,7 @@ function assertFreshBootstrap(target) {
   const autonomous = readTarget(target, '.agents/skills/autonomous/SKILL.md');
   const autopilot = readTarget(target, '.agents/skills/autopilot/SKILL.md');
   const multiagentic = readTarget(target, '.agents/skills/multiagentic/SKILL.md');
+  const multipilot = readTarget(target, '.agents/skills/multipilot/SKILL.md');
   const exe = readTarget(target, '.agents/skills/exe/SKILL.md');
   const featureDoctor = readTarget(target, '.agents/skills/feature-doctor/SKILL.md');
   const featureToTasks = readTarget(target, '.agents/skills/feature-to-tasks/SKILL.md');
@@ -292,13 +293,28 @@ function assertFreshBootstrap(target) {
       && judgeOverlay.includes('owns and reuses that subagent')
       && judgeOverlay.includes('does no routine discovery')
       && !judgeOverlay.includes('Launch a fresh `ROLE: JUDGE`')
-      && judgeRole.includes('successive proposed orchestration routes in one `/multiagentic`')
+      && judgeOverlay.includes('At `/multiagentic` or `/multipilot` start')
+      && judgeRole.includes('one `/multiagentic`')
+      && judgeRole.includes('or `/multipilot` run')
       && judgeOverlay.includes('## autonomous with judge')
       && judgeOverlay.includes('## autopilot with judge')
       && judgeOverlay.includes('whenever the operator explicitly requests consultation')
       && !autonomous.includes('multiagents_with_judge')
       && !autopilot.includes('multiagents_with_judge'),
     'Runtime multiagentic overlay is incomplete or leaked into a base skill.',
+  );
+  assert(
+    multipilot.includes('Run an already reviewed and strict-ready product queue')
+      && multipilot.includes('installed `/autopilot` `SKILL.md`')
+      && multipilot.includes('multiagents_with_judge.md#judge-session-and-consultation')
+      && multipilot.includes('`#autopilot-with-judge`')
+      && multipilot.includes('Delegate the queue to the installed `/autopilot`')
+      && multipilot.includes('existing Judge target')
+      && multipilot.includes('must not launch or replace')
+      && multipilot.includes('Act as `/multipilot`')
+      && !multipilot.includes('#autonomous-with-judge')
+      && !multipilot.includes('installed `/autonomous`'),
+    'Runtime multipilot lost its standalone autopilot-with-Judge contract.',
   );
   assert(
     executeLoop.includes('PLANNING_RECONCILIATION_REQUIRED')

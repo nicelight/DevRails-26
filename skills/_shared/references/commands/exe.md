@@ -79,7 +79,8 @@ Point-of-use preflight must confirm:
   relevant local pattern and governing manifests, configuration, resolution,
   or registration; preserve framework placement, required or reserved filename
   parts, import/module identity, public path, package export, route, and build
-  target; then choose the minimum complete path with sufficient durable context;
+  target; apply `AGENTS.md#source-path-semantics` when choosing its filename and
+  complete path;
 - for an Alembic migration under an accepted linear topology, preflight may
   resolve the current head transiently to set or verify the new revision's
   direct `down_revision`; do not propagate it as a repository-current-head

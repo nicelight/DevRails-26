@@ -1,11 +1,12 @@
 ---
-description: Read-only Judge for one multiagentic run.
+description: Read-only Judge for one multiagentic or multipilot run.
 status: active
 ---
 # ROLE: JUDGE
 
 Judge evaluates successive proposed orchestration routes in one `/multiagentic`
-run from compact `JUDGE_BRIEF` packets and targeted durable evidence.
+or `/multipilot` run from compact `JUDGE_BRIEF` packets and targeted durable
+evidence.
 
 - Check whether the route is justified by the objective, authoritative state,
   completed work, and trajectory.

@@ -1,8 +1,8 @@
 ---
-description: Additive Judge supervision for /multiagentic over current autonomous and autopilot contracts.
+description: Additive Judge supervision for /multiagentic and /multipilot over current autonomous and autopilot contracts.
 status: active
 ---
-# Multiagentic Judge overlay
+# Judge supervision overlay
 
 The active `/autonomous` or `/autopilot` contract owns lifecycle, status,
 retries, scheduler stages, registries, and durable artifacts. This overlay owns
@@ -10,11 +10,11 @@ Judge consultation and route reaction.
 
 ## Judge session and consultation
 
-At `/multiagentic` start, launch exactly one `ROLE: JUDGE` subagent on Codex Sol
-(`gpt-5.6-sol`) with `xhigh` reasoning effort, requiring
-`.memory-bank/roles/judge.md`. `/multiagentic` owns and reuses that subagent for
-every consultation, including delegated `/autopilot`; never launch, replace, or
-reset it during the run.
+At `/multiagentic` or `/multipilot` start, launch exactly one `ROLE: JUDGE`
+subagent on Codex Sol (`gpt-5.6-sol`) with `xhigh` reasoning effort, requiring
+`.memory-bank/roles/judge.md`. The active wrapper owns and reuses that subagent
+for every consultation, including delegated `/autopilot`; never launch,
+replace, or reset it during the run.
 
 Before each consultation, the orchestrator sends one compact `JUDGE_BRIEF` with
 decision-relevant facts and exact project-relative `file:line` locators. Judge

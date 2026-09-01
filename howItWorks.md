@@ -126,7 +126,9 @@ overengineering;
 - `/mb-doctor` — проверяет готовность проекта или очереди задач;
 - `/tech-debt` — создаёт advisory-отчёт о техническом долге;
 - `/autopilot` — выполняет готовую очередь продуктовых задач;
-- `/autonomous` — управляет полным автоматическим процессом.
+- `/autonomous` — управляет полным автоматическим процессом;
+- `/multiagentic` — запускает `/autonomous` с одним read-only Judge;
+- `/multipilot` — запускает только `/autopilot` с таким же Judge.
 
 ## 3. Package skills и runtime-skills
 
@@ -147,7 +149,7 @@ workflow contracts.
 
 ### Canonical runtime commands
 
-Текущие 35 runtime-skills определены в:
+Текущие 38 runtime-skills определены в:
 
 ```text
 skills/_shared/references/commands/*.md
@@ -177,6 +179,7 @@ Bootstrap разворачивает role contracts в `.memory-bank/roles/`; `A
 | `Explorer` | bounded read-only discovery и optional `/context-manifest` routing | delegated read-only role, не принимает product/design decisions |
 | `Implementer` | bounded implementation с preflight и evidence | останавливается при scope/spec conflict |
 | `Reviewer` | independent read-only critique | не исправляет reviewed work |
+| `Judge` | read-only оценка orchestration route для `/multiagentic` или `/multipilot` | не владеет artifacts, lifecycle, retries или terminal state |
 
 Роль фиксируется при назначении и не меняется по ходу работы. Delegated agent
 не становится `GENERAL` или `ORCHESTRATOR` автоматически. Lifecycle ownership
@@ -1560,6 +1563,8 @@ deployed SDD-contract; каждая команда сохраняет собст
 | `/tech-debt` | advisory report по подтверждённому техническому долгу в заданной change surface | ничего не исправляет и не меняет workflow state; `/autopilot` запускает его после успешной wave boundary |
 | `/autopilot` | reviewed product queue scheduler и terminal state после Foundation gate | не создаёт PRD/features/initial queue и не выполняет FT-000 |
 | `/autonomous` | full Product/Design-to-terminal-state orchestration и bounded FT-000 scheduler | не принимает unresolved operator decisions и не копирует product scheduler |
+| `/multiagentic` | `/autonomous` и его delegated `/autopilot` под одним Judge | сохраняет lifecycle, gates и terminal authority базовых contracts |
+| `/multipilot` | standalone `/autopilot` под одним Judge | не запускает `/autonomous`; lifecycle и terminal authority остаются у `/autopilot` |
 
 ## 17. Проверки
 
