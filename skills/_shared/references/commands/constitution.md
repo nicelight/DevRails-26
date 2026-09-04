@@ -17,7 +17,8 @@ policies, or tier policy.
 <input_contract>
 Read relevant evidence from:
 - `.memory-bank/constitution.md`;
-- `.memory-bank/analysis/brief.md`;
+- `.memory-bank/analysis/brief.md`, or legacy
+`.memory-bank/analysis/product-brief.md` until it is consolidated;
 - `.memory-bank/mbb/index.md`, `.memory-bank/spec-backbone.md`, and
   `.memory-bank/spec-index.md`;
 - `.memory-bank/invariants.md` and applicable contracts/states/testing/workflow

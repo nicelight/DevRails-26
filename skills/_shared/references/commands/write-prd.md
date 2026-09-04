@@ -15,6 +15,7 @@ into epics/features or perform architecture/task design.
 <input_contract>
 Require at least one current PRD source:
 - `.memory-bank/analysis/brief.md`;
+- legacy `.memory-bank/analysis/product-brief.md` until it is consolidated;
 - explicit operator-provided PRD text/file;
 - existing `prd.md` or `.memory-bank/prd.md` being clarified.
 

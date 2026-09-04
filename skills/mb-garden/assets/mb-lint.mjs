@@ -35,8 +35,8 @@ const ALLOWED_LIFECYCLE = new Set(['planned', 'implemented', 'verified']);
 const ALLOWED_CLARIFICATION_STATUS = new Set(['pending', 'complete', 'blocked']);
 const ALLOWED_PRD_CLARIFICATION_STATUS = new Set(['pending', 'complete', 'blocked']);
 const ANALYSIS_DIR_REL = '.memory-bank/analysis';
-const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
-const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';
+const ANALYSIS_BRIEF_REL = '.memory-bank/analysis/brief.md';
+const LEGACY_ANALYSIS_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
 const ALLOWED_TASK_STATUS = new Set(['planned', 'ready', 'in_progress', 'blocked', 'done', 'done_for_prod', 'failed']);
 const ALLOWED_TASK_TIER = new Set(['T0', 'T1', 'T2', 'T3']);
 const TASK_ID_FORMAT = 'TASK-NNN-TN-FT-NNN-WN';
@@ -279,10 +279,6 @@ function hasSectionHeading(text, title) {
   return new RegExp(`^#{2,6}\\s+${escapedTitle}\\s*$`, 'im').test(normalized);
 }
 
-function isAnalysisBrainstormingReport(rel) {
-  const n = normalizeRel(rel);
-  return n.startsWith(`${ANALYSIS_DIR_REL}/brainstorming/`) && path.basename(n) !== 'index.md' && n.endsWith('.md');
-}
 
 function prdFiles() {
   const candidates = [
@@ -302,44 +298,29 @@ function checkAnalysisStructure() {
     errors.push(`${ANALYSIS_DIR_REL}: missing required index.md`);
   }
 
-  const productBriefPath = path.join(ROOT, ANALYSIS_PRODUCT_BRIEF_REL);
-  const productBriefExists = hasFile(productBriefPath);
-  if (productBriefExists) {
-    const text = readText(productBriefPath);
+  const briefRel = hasFile(path.join(ROOT, ANALYSIS_BRIEF_REL))
+    ? ANALYSIS_BRIEF_REL
+    : hasFile(path.join(ROOT, LEGACY_ANALYSIS_BRIEF_REL))
+      ? LEGACY_ANALYSIS_BRIEF_REL
+      : null;
+
+  if (briefRel) {
+    const text = readText(path.join(ROOT, briefRel));
     const fm = parseFrontmatter(text);
     if (!fm || stripYamlQuotes(fm.type) !== 'product-brief') {
-      errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: frontmatter must include 'type: product-brief'`);
+      errors.push(`${briefRel}: frontmatter must include 'type: product-brief'`);
     }
     if (!fm || !hasOwn(fm, 'status') || !String(fm.status).trim()) {
-      errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: frontmatter must include non-empty 'status'`);
+      errors.push(`${briefRel}: frontmatter must include non-empty 'status'`);
     }
     if (!hasSectionHeading(text, 'Decision')) {
-      errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: missing 'Decision' section`);
+      errors.push(`${briefRel}: missing 'Decision' section`);
     }
-  }
 
-  for (const filePath of listMarkdownFiles(analysisDir)) {
-    const rel = normalizeRel(path.relative(ROOT, filePath));
-    if (!isAnalysisBrainstormingReport(rel)) continue;
-
-    const text = readText(filePath);
-    const fm = parseFrontmatter(text);
-    if (!fm || stripYamlQuotes(fm.type) !== 'brainstorming-report') {
-      errors.push(`${rel}: frontmatter must include 'type: brainstorming-report'`);
-    }
-    if (!fm || !hasOwn(fm, 'id') || !String(fm.id).trim()) {
-      errors.push(`${rel}: frontmatter must include non-empty 'id'`);
-    }
-    if (!hasSectionHeading(text, 'Recommended next step')) {
-      errors.push(`${rel}: missing 'Recommended next step' section`);
-    }
-  }
-
-  if (productBriefExists) {
     for (const rel of prdFiles()) {
-      const text = readText(path.join(ROOT, rel));
-      if (!text.includes(ANALYSIS_PRD_SOURCE_MARKER)) {
-        warnings.push(`${rel}: PRD exists but does not mention ${ANALYSIS_PRD_SOURCE_MARKER}`);
+      const prd = readText(path.join(ROOT, rel));
+      if (!prd.includes(briefRel)) {
+        warnings.push(`${rel}: PRD exists but does not mention ${briefRel}`);
       }
     }
   }

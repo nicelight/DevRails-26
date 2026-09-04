@@ -15,9 +15,12 @@ installed `creator-vibe` skill.
 
 <input_contract>
 Start from `$ARGUMENTS`, operator-provided sources, the existing
-`.memory-bank/analysis/brief.md`, and relevant project evidence. When the
-product's center is still missing, ask one sharp opening question. Otherwise
-begin from the unresolved or materially changed decisions already visible.
+`.memory-bank/analysis/brief.md`, and relevant project evidence. If the current
+brief is absent, use legacy `.memory-bank/analysis/product-brief.md` or
+`.memory-bank/analysis/brainstorming/BR-*.md` only as migration evidence. When
+the product's center is still missing, ask one sharp opening question.
+Otherwise begin from the unresolved or materially changed decisions already
+visible.
 </input_contract>
 
 <grilling>
@@ -75,8 +78,10 @@ product direction and MVP boundary; findings and sources; accepted decisions
 and rationale; constraints and success conditions; rejected or deferred
 directions; assumptions; and open questions.
 
-Record `Decision: proceed|blocked`. Update the analysis index with the brief
-link, decision, and immediate next command.
+Finish the brief with a `## Decision` section containing one current value:
+`proceed` or `blocked`. Update the analysis index with the brief link, decision,
+and immediate next command. When the analysis index is first created, add its
+annotated link to `.memory-bank/index.md`.
 </brief_artifact>
 
 <agent_discretion>

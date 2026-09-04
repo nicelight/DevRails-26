@@ -183,7 +183,7 @@ source_of_truth:
 |---|---|---|---|---|
 | governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or initial /spec-design; post-acceptance /spec-redesign |
-| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |
+| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /grill-me, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |
 | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Canonical accepted module/change-unit dependency graph and boundary contracts. | initial /spec-design, post-acceptance /spec-redesign, or /feature-to-tasks |
 | testing | [.memory-bank/testing/strategy.md](testing/strategy.md) | active | Framework baseline testing policy. | explicit project-level user decision |
 
@@ -761,7 +761,7 @@ _No runtime skills detected in `.agents/skills` or `.claude/skills`._
 - Bootstrap skeleton / memory: mb-init
 - Scenario routing: start
 - Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
-- Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
+- Product discovery: /grill-me stress-tests the idea and persists .memory-bank/analysis/brief.md
 - SDD design: /spec-init, initial adaptive /spec-design, accepted backbone changes through /spec-redesign, foundation tasking inside /foundation-to-tasks, then one-feature /spec-auto and /feature-to-tasks reconciliation
 - Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
 - PRD decomposition: /prd-to-features
