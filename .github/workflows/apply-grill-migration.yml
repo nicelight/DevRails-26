@@ -1,0 +1,401 @@
+name: Apply grill-me migration
+
+on:
+  push:
+    branches:
+      - feat/grill-me-discovery
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/grill-me-discovery
+          fetch-depth: 0
+
+      - name: Apply migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def load(path):
+              return Path(path).read_text(encoding="utf-8")
+
+          def save(path, text):
+              Path(path).write_text(text, encoding="utf-8")
+
+          def replace_exact(path, old, new, expected=1):
+              text = load(path)
+              count = text.count(old)
+              if count != expected:
+                  raise RuntimeError(f"{path}: expected {expected} matches, found {count}: {old[:80]!r}")
+              save(path, text.replace(old, new))
+
+          def replace_optional(path, old, new):
+              text = load(path)
+              if old in text:
+                  save(path, text.replace(old, new))
+
+          # Finish the new command contract and preserve legacy artifact continuity.
+          replace_exact(
+              "skills/_shared/references/commands/grill-me.md",
+              """Start from `$ARGUMENTS`, operator-provided sources, the existing
+          `.memory-bank/analysis/brief.md`, and relevant project evidence. When the
+          product's center is still missing, ask one sharp opening question. Otherwise
+          begin from the unresolved or materially changed decisions already visible.""",
+              """Start from `$ARGUMENTS`, operator-provided sources, the existing
+          `.memory-bank/analysis/brief.md`, and relevant project evidence. If the current
+          brief is absent, use legacy `.memory-bank/analysis/product-brief.md` or
+          `.memory-bank/analysis/brainstorming/BR-*.md` only as migration evidence. When
+          the product's center is still missing, ask one sharp opening question.
+          Otherwise begin from the unresolved or materially changed decisions already
+          visible.""",
+          )
+          replace_exact(
+              "skills/_shared/references/commands/grill-me.md",
+              """Record `Decision: proceed|blocked`. Update the analysis index with the brief
+          link, decision, and immediate next command.""",
+              """Finish the brief with a `## Decision` section containing one current value:
+          `proceed` or `blocked`. Update the analysis index with the brief link, decision,
+          and immediate next command. When the analysis index is first created, add its
+          annotated link to `.memory-bank/index.md`.""",
+          )
+          replace_exact(
+              "skills/_shared/references/commands/constitution.md",
+              "- `.memory-bank/analysis/brief.md`;",
+              """- `.memory-bank/analysis/brief.md`, or legacy
+          `.memory-bank/analysis/product-brief.md` until it is consolidated;""",
+          )
+          replace_exact(
+              "skills/_shared/references/commands/write-prd.md",
+              "- `.memory-bank/analysis/brief.md`;",
+              """- `.memory-bank/analysis/brief.md`;
+          - legacy `.memory-bank/analysis/product-brief.md` until it is consolidated;""",
+          )
+
+          # Remove retired runtime commands on both clean installs and upgrades.
+          replace_exact(
+              "scripts/install-framework.mjs",
+              """const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
+            'mb-analysis',""",
+              """const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
+            'brainstorm',
+            'brief',
+            'mb-analysis',""",
+          )
+
+          # Keep generated Memory Bank guidance aligned.
+          replace_exact(
+              "skills/_shared/scripts/init-mb.js",
+              "- Discovery artifacts: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief",
+              "- Product discovery: /grill-me stress-tests the idea and persists .memory-bank/analysis/brief.md",
+          )
+          replace_exact(
+              "skills/_shared/scripts/init-mb.js",
+              "- Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial",
+              "- Project principles: /constitution after the discovery brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial",
+          )
+          replace_exact(
+              "skills/_shared/scripts/init-mb.js",
+              "| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |",
+              "| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /grill-me, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |",
+          )
+
+          replace_exact(
+              "skills/_shared/references/structure-template.md",
+              "- Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief",
+              "- Product discovery: /grill-me stress-tests the idea and persists .memory-bank/analysis/brief.md",
+          )
+          replace_optional(
+              "skills/_shared/references/structure-template.md",
+              "- Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial",
+              "- Project principles: /constitution after the discovery brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial",
+          )
+          replace_exact(
+              "skills/_shared/references/structure-template.md",
+              "| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |",
+              "| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /grill-me, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |",
+          )
+
+          # Migrate deterministic analysis validation to the new durable brief.
+          path = "skills/mb-garden/assets/mb-lint.mjs"
+          text = load(path)
+          old_constants = """const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';
+          const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';"""
+          new_constants = """const ANALYSIS_BRIEF_REL = '.memory-bank/analysis/brief.md';
+          const LEGACY_ANALYSIS_BRIEF_REL = '.memory-bank/analysis/product-brief.md';"""
+          if text.count(old_constants) != 1:
+              raise RuntimeError("mb-lint: analysis constants did not match")
+          text = text.replace(old_constants, new_constants)
+          text, count = re.subn(
+              r"\nfunction isAnalysisBrainstormingReport\(rel\) \{\n.*?\n\}\n",
+              "\n",
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise RuntimeError("mb-lint: failed to remove brainstorming report helper")
+          replacement = r"""function checkAnalysisStructure() {
+            const analysisDir = path.join(ROOT, ANALYSIS_DIR_REL);
+            if (!fs.existsSync(analysisDir)) return;
+
+            if (!hasFile(path.join(analysisDir, 'index.md'))) {
+              errors.push(`${ANALYSIS_DIR_REL}: missing required index.md`);
+            }
+
+            const briefRel = hasFile(path.join(ROOT, ANALYSIS_BRIEF_REL))
+              ? ANALYSIS_BRIEF_REL
+              : hasFile(path.join(ROOT, LEGACY_ANALYSIS_BRIEF_REL))
+                ? LEGACY_ANALYSIS_BRIEF_REL
+                : null;
+
+            if (briefRel) {
+              const text = readText(path.join(ROOT, briefRel));
+              const fm = parseFrontmatter(text);
+              if (!fm || stripYamlQuotes(fm.type) !== 'product-brief') {
+                errors.push(`${briefRel}: frontmatter must include 'type: product-brief'`);
+              }
+              if (!fm || !hasOwn(fm, 'status') || !String(fm.status).trim()) {
+                errors.push(`${briefRel}: frontmatter must include non-empty 'status'`);
+              }
+              if (!hasSectionHeading(text, 'Decision')) {
+                errors.push(`${briefRel}: missing 'Decision' section`);
+              }
+
+              for (const rel of prdFiles()) {
+                const prd = readText(path.join(ROOT, rel));
+                if (!prd.includes(briefRel)) {
+                  warnings.push(`${rel}: PRD exists but does not mention ${briefRel}`);
+                }
+              }
+            }
+          }
+
+          function checkRequiredFiles()"""
+          text, count = re.subn(
+              r"function checkAnalysisStructure\(\) \{\n.*?\n\}\n\nfunction checkRequiredFiles\(\)",
+              replacement,
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise RuntimeError("mb-lint: failed to replace analysis validator")
+          if "brainstorming-report" in text or "isAnalysisBrainstormingReport" in text:
+              raise RuntimeError("mb-lint: retired brainstorming report validation remains")
+          save(path, text)
+
+          # Documentation and canonical workflow overview.
+          replace_exact(
+              "README.md",
+              "от мозгового штурма до финальных e2e-тестов",
+              "от прогрева идеи до финальных e2e-тестов",
+          )
+          replace_exact(
+              "README.md",
+              "__Первая фаза__, формируем brief конституцию и PRD, это осноные файлы ДНК проекта.",
+              "__Первая фаза__, формируем discovery brief, конституцию и PRD — основные файлы ДНК проекта.",
+          )
+          replace_exact(
+              "README.md",
+              """**0. Если идея в зачаточном состоянии
+           -> /brainstrorm
+
+          **1. Оформляем идею**
+           -> /brief
+           -> /constitution
+           -> /write-prd""",
+              """**1. Прогреваем и фиксируем идею**
+           -> /grill-me
+           -> /constitution
+           -> /write-prd""",
+          )
+          replace_exact(
+              "README.md",
+              "- `.agents/skills/` и `.claude/skills/` — 38 команд DevRails для Codex и",
+              "- `.agents/skills/` и `.claude/skills/` — 37 команд DevRails для Codex и",
+          )
+
+          replace_exact(
+              "howItWorks.md",
+              """- `/brainstorm` — исследует сырую идею;
+          - `/brief` — создаёт краткое описание продукта;""",
+              "- `/grill-me` — прогревает идею и сохраняет durable Product Brief;",
+          )
+          replace_exact(
+              "howItWorks.md",
+              "Текущие 38 runtime-skills определены в:",
+              "Текущие 37 runtime-skills определены в:",
+          )
+          replace_exact(
+              "howItWorks.md",
+              """raw idea -> /brainstorm -> /brief
+          clear concept ---------> /brief
+          existing PRD ----------> /write-prd
+
+          /brief
+            -> /constitution when principles are not ratified|partial""",
+              """raw idea -------------> /grill-me
+          clear concept ---------> /grill-me
+          existing PRD ----------> /write-prd
+
+          /grill-me
+            -> /constitution when principles are not ratified|partial""",
+          )
+          replace_exact(
+              "howItWorks.md",
+              """1. `/brainstorm` explores directions but does not promote ideas to
+             requirements.
+          2. `/brief` owns the concise Product Brief, analysis index, and initial draft
+             glossary plus its `spec-index` registry row.
+          3. `/constitution` owns governing principles, Definition of Done, autonomy,
+             checkpoints и non-negotiables. An explicit skip may continue as
+             `framework-default|skipped`; silence is not a skip.
+          4. `/write-prd` owns product-level clarification. Handoff requires
+             `type: prd`, `clarification_status: complete` и
+             `constitution_checked: true`.
+
+          `/brainstorm` first asks one standalone question about the product's most
+          important or distinctive functionality. `/brainstorm`, `/brief`, and
+          `/write-prd` load the installed `creator-vibe` skill before interpreting idea
+          sources or operator answers; the lens preserves intent but never supplies an
+          accepted decision or requirement.
+
+          5. `/spec-init` first verifies and reconciles the project glossary, creating it""",
+              """1. `/grill-me` explores and stress-tests the idea, then owns the concise
+             durable Product Brief and analysis index. It does not promote the brief to
+             requirements.
+          2. `/constitution` owns governing principles, Definition of Done, autonomy,
+             checkpoints и non-negotiables. An explicit skip may continue as
+             `framework-default|skipped`; silence is not a skip.
+          3. `/write-prd` owns product-level clarification. Handoff requires
+             `type: prd`, `clarification_status: complete` и
+             `constitution_checked: true`.
+
+          `/grill-me` and `/write-prd` load the installed `creator-vibe` skill before
+          interpreting idea sources or operator answers; the lens preserves intent but
+          never supplies an accepted decision or requirement.
+
+          4. `/spec-init` first verifies and reconciles the project glossary, creating it""",
+          )
+          replace_exact("howItWorks.md", "6. `/prd-to-features` owns L1-L3", "5. `/prd-to-features` owns L1-L3")
+          replace_exact("howItWorks.md", "7. `/review-feat-plan` independently", "6. `/review-feat-plan` independently")
+          replace_exact("howItWorks.md", "8. `/spec-design` creates", "7. `/spec-design` creates")
+
+          # Smoke coverage for the new command, artifact validator, and retired-skill cleanup.
+          path = "scripts/test-install-sync.mjs"
+          text = load(path)
+          old = """  assertCanonicalCopies(target);
+            const sddContract = readTarget(target, '.memory-bank/workflows/sdd-design-contract.md');"""
+          new = """  assertCanonicalCopies(target);
+            const grillMe = readTarget(target, '.agents/skills/grill-me/SKILL.md');
+            const sddContract = readTarget(target, '.memory-bank/workflows/sdd-design-contract.md');"""
+          if text.count(old) != 1:
+              raise RuntimeError("test-install-sync: bootstrap anchor not found")
+          text = text.replace(old, new, 1)
+          old = """  assert(
+              sddContract.includes('## Evidence and authority')"""
+          new = """  assert(
+              grillMe.includes('design tree')
+                && grillMe.includes('**frontier**')
+                && grillMe.includes('.memory-bank/analysis/brief.md')
+                && grillMe.includes('## Decision')
+                && grillMe.includes('creator-vibe')
+                && !expectedSkillNames.includes('brainstorm')
+                && !expectedSkillNames.includes('brief'),
+              'Runtime /grill-me or retired discovery inventory is incomplete.',
+            );
+            assert(
+              sddContract.includes('## Evidence and authority')"""
+          if text.count(old) != 1:
+              raise RuntimeError("test-install-sync: assertion anchor not found")
+          text = text.replace(old, new, 1)
+          old = """  const lint = runTargetScript(target, '.memory-bank/scripts/mb-lint.mjs');
+            assert(lint.status === 0, 'Fresh deployed mb-lint failed.', lint.output);"""
+          new = """  const lint = runTargetScript(target, '.memory-bank/scripts/mb-lint.mjs');
+            assert(lint.status === 0, 'Fresh deployed mb-lint failed.', lint.output);
+
+            writeTarget(target, '.memory-bank/analysis/index.md', `---
+          description: Analysis artifact index.
+          status: active
+          ---
+          # Analysis
+          `);
+            writeTarget(target, '.memory-bank/analysis/brief.md', `---
+          description: Durable product discovery brief.
+          status: draft
+          type: product-brief
+          ---
+          # Product Brief
+
+          ## Decision
+          proceed
+          `);
+            const briefLint = runTargetScript(target, '.memory-bank/scripts/mb-lint.mjs');
+            assert(briefLint.status === 0, 'Deployed mb-lint rejected analysis/brief.md.', briefLint.output);"""
+          if text.count(old) != 1:
+              raise RuntimeError("test-install-sync: lint anchor not found")
+          text = text.replace(old, new, 1)
+          old = """  runInstaller(['--install-only', '--target', target, '--yes']);
+            assertRuntimeInventory(target);"""
+          new = """  runInstaller(['--install-only', '--target', target, '--yes']);
+            const retiredGeneratedSkill = `---
+          name: retired
+          description: Retired generated skill.
+          ---
+          <!-- Generated by DevRails 26 install-framework.mjs. Safe to overwrite with install-framework.mjs --sync. -->
+          `;
+            runtimeRoots.forEach((runtimeRoot) => {
+              writeTarget(target, `${runtimeRoot}/skills/brainstorm/SKILL.md`, retiredGeneratedSkill);
+              writeTarget(target, `${runtimeRoot}/skills/brief/SKILL.md`, retiredGeneratedSkill);
+            });
+            runInstaller(['--install-only', '--target', target, '--yes']);
+            runtimeRoots.forEach((runtimeRoot) => {
+              assert(!existsSync(targetPath(target, `${runtimeRoot}/skills/brainstorm`)), `${runtimeRoot} kept retired /brainstorm.`);
+              assert(!existsSync(targetPath(target, `${runtimeRoot}/skills/brief`)), `${runtimeRoot} kept retired /brief.`);
+            });
+            assertRuntimeInventory(target);"""
+          if text.count(old) != 1:
+              raise RuntimeError("test-install-sync: install-only anchor not found")
+          text = text.replace(old, new, 1)
+          save(path, text)
+
+          # No active workflow source may still route through retired commands.
+          active_paths = [
+              Path("README.md"),
+              Path("howItWorks.md"),
+              Path("GREENFIELD_WORKFLOW.md"),
+              Path("skills/_shared/scripts/init-mb.js"),
+              Path("skills/_shared/references/structure-template.md"),
+              Path("skills/_shared/references/workflows/execute-loop.md"),
+          ]
+          for active in active_paths:
+              body = active.read_text(encoding="utf-8")
+              for retired in ("/brainstorm", "/brief", "/brainstrorm"):
+                  if retired in body:
+                      raise RuntimeError(f"{active}: retired route remains: {retired}")
+          PY
+
+      - name: Verify
+        shell: bash
+        run: |
+          npm run check:syntax
+          npm run test:install-sync
+          npm run test:mb-doctor
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          rm .github/workflows/apply-grill-migration.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: complete grill-me migration"
+          git push origin HEAD:feat/grill-me-discovery
