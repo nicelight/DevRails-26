@@ -1,0 +1,427 @@
+name: Apply complete grill-me migration
+
+on:
+  push:
+    branches: [feat/grill-me-discovery]
+    paths: [.github/workflows/apply-grill-me-migration.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/grill-me-discovery
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apply migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path.cwd()
+
+          def read(rel):
+              return (root / rel).read_text(encoding='utf-8')
+
+          def write(rel, text):
+              p = root / rel
+              p.parent.mkdir(parents=True, exist_ok=True)
+              p.write_text(text.replace('\r\n', '\n'), encoding='utf-8')
+
+          grill = '''---
+          description: Relentlessly clarify a product idea and preserve the result as the durable discovery brief.
+          status: active
+          ---
+          # /grill-me — Product discovery by grilling
+
+          <objective>
+          Reach a shared understanding of a product idea, plan, or major direction and
+          preserve the useful result in `.memory-bank/analysis/brief.md` for the rest of
+          the DevRails workflow.
+          </objective>
+
+          <input_contract>
+          Use `$ARGUMENTS`, operator-provided sources, relevant project evidence, and the
+          existing discovery brief when present. On upgraded repositories, legacy
+          `.memory-bank/analysis/product-brief.md` and
+          `.memory-bank/analysis/brainstorming/BR-*.md` may be used as source material
+          until `/grill-me` consolidates what is still relevant.
+
+          Before interpreting the idea or evidence, load and apply the installed
+          `creator-vibe` skill. Let it preserve the intended experience and distinctive
+          center without supplying decisions the operator did not make.
+          </input_contract>
+
+          <grilling>
+          Interview the operator until you reach a shared understanding. Map the subject
+          as a **design tree**: every decision branches into the decisions that depend on
+          it.
+
+          Work the tree in **rounds**. The **frontier** is every decision whose
+          prerequisites are already settled. Ask the whole frontier in one round, number
+          each question, and include your recommended answer. A question that depends on
+          another answer still open belongs to a later round.
+
+          Format each question like this:
+
+          ```md
+          ❓ **Q1 — <question title>**: <question body and useful options>
+
+          ➡️ <recommended answer and concise rationale>
+          ```
+
+          The operator's answers reshape the tree. Recompute the frontier after every
+          round rather than following a prewritten questionnaire. Recommendations are
+          advice; operator answers settle the decisions.
+
+          Finding facts is the agent's job. Use the repository, tools, external research,
+          or a bounded Explorer when useful. Do not hold back unrelated frontier
+          questions while one fact is still being established; only dependent branches
+          wait.
+
+          When the frontier is empty, present a compact statement of the shared
+          understanding and ask the operator to confirm it. Finalize the durable brief
+          after that confirmation.
+          </grilling>
+
+          <durable_output>
+          Create or update `.memory-bank/analysis/brief.md` as the current durable memory
+          of discovery, not as a transcript. Create `.memory-bank/analysis/index.md` when
+          missing and keep it linked to the brief and its immediate next step.
+
+          Use concise frontmatter and retain only applicable sections:
+
+          ```md
+          ---
+          description: Durable product discovery brief.
+          status: active
+          type: product-brief
+          last_updated: YYYY-MM-DD
+          ---
+          # Product Brief
+
+          ## Intent
+          ## Findings
+          ## Decisions
+          ## Rejected / Deferred
+          ## Constraints
+          ## Open Questions
+          ## Sources
+          ```
+
+          Record material facts, accepted decisions and rationale, still-relevant
+          constraints, meaningful rejected or deferred directions, unresolved questions,
+          and useful source links. Preserve relevant earlier context when updating the
+          brief and replace superseded conclusions rather than accumulating a session
+          log.
+          </durable_output>
+
+          <agent_discretion>
+          Choose the exploration order, ideation techniques, tools, number of useful
+          directions, and grouping of findings according to the maturity of the idea.
+          Stop expanding when additional ideas no longer improve the operator's decision.
+          Keep a clear concept short; explore a genuinely divergent problem more deeply.
+          </agent_discretion>
+
+          <handoff_contract>
+          After the confirmed brief is durable, continue to `/constitution` when project
+          principles still need resolution; otherwise continue to `/write-prd`.
+          </handoff_contract>
+          '''
+          grill = re.sub(r'^          ', '', grill, flags=re.M)
+          write('skills/_shared/references/commands/grill-me.md', grill)
+          for rel in [
+              'skills/_shared/references/commands/brainstorm.md',
+              'skills/_shared/references/commands/brief.md',
+          ]:
+              p = root / rel
+              if p.exists():
+                  p.unlink()
+
+          command_re = re.compile(r'(?<![A-Za-z0-9._/-])/(?:brainstorm|brief)\b')
+          def replace_commands(text):
+              return command_re.sub('/grill-me', text)
+
+          rel = 'skills/_shared/references/commands/constitution.md'
+          text = read(rel)
+          text = text.replace('`.memory-bank/analysis/product-brief.md` and the latest relevant brainstorm;',
+                              '`.memory-bank/analysis/brief.md` and relevant legacy discovery artifacts when needed;')
+          text = text.replace('Missing or blocked Product Brief', 'Missing or incomplete discovery brief')
+          text = text.replace('Product Brief', 'discovery brief')
+          write(rel, replace_commands(text))
+
+          rel = 'skills/_shared/references/commands/write-prd.md'
+          text = read(rel)
+          text = text.replace('Turn Product Brief, Constitution, and optional context into a clarified PRD.',
+                              'Turn the discovery brief, Constitution, and optional context into a clarified PRD.')
+          text = text.replace('`.memory-bank/analysis/product-brief.md`;', '`.memory-bank/analysis/brief.md`;')
+          needle = '- existing `prd.md` or `.memory-bank/prd.md` being clarified.\n'
+          legacy = '- legacy `.memory-bank/analysis/product-brief.md` or `.memory-bank/analysis/brainstorming/BR-*.md` in upgraded repositories.\n'
+          if needle in text and legacy not in text:
+              text = text.replace(needle, needle + legacy)
+          text = text.replace('If no PRD source exists, stop and request `/brief` or explicit source text.',
+                              'If no PRD source exists, request explicit source text or run `/grill-me`.')
+          text = text.replace('the Product Brief,', 'the discovery brief,')
+          text = text.replace('relevant brainstorming context', 'relevant discovery and research context')
+          write(rel, replace_commands(text))
+
+          rel = 'skills/_shared/references/commands/discuss.md'
+          write(rel, replace_commands(read(rel)))
+
+          rel = 'skills/_shared/references/workflows/execute-loop.md'
+          text = read(rel)
+          text = text.replace('`/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts',
+                              '`/grill-me` when product discovery or durable rationale is needed; otherwise continue from an explicit product source')
+          write(rel, replace_commands(text))
+
+          rel = 'GREENFIELD_WORKFLOW.md'
+          text = read(rel)
+          text = text.replace('idea["Идея / черновик"] --> brief["/brainstorm или /brief"]',
+                              'idea["Идея / черновик"] --> grill["/grill-me"]')
+          text = text.replace('brief --> constitution', 'grill --> constitution')
+          write(rel, replace_commands(text))
+
+          rel = 'skills/_shared/references/commands/spec-init.md'
+          text = read(rel)
+          text = text.replace('Constitution, Product Brief, existing',
+                              'Constitution, `.memory-bank/analysis/brief.md`, existing')
+          text = text.replace('from the Product Brief, clarified PRD,',
+                              'from the discovery brief, clarified PRD,')
+          write(rel, text)
+
+          for rel in ['skills/_shared/references/structure-template.md', 'skills/_shared/scripts/init-mb.js']:
+              text = read(rel)
+              text = text.replace(
+                  '- Discovery artifacts: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief',
+                  '- Product discovery: /grill-me clarifies the idea and maintains `.memory-bank/analysis/brief.md`; clear explicit sources may continue directly to /constitution or /write-prd')
+              text = text.replace(
+                  '- Discovery: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief',
+                  '- Product discovery: /grill-me clarifies the idea and maintains `.memory-bank/analysis/brief.md`; clear explicit sources may continue directly to /constitution or /write-prd')
+              text = text.replace('Project principles: /constitution after /brief or existing PRD context',
+                                  'Project principles: /constitution after /grill-me or from existing product/PRD context')
+              text = replace_commands(text)
+              text = text.replace('| /grill-me, /spec-init, or initial /spec-design;',
+                                  '| /spec-init or initial /spec-design;')
+              text = text.replace('| /grill-me, /spec-init, or initial /spec-design |',
+                                  '| /spec-init or initial /spec-design |')
+              marker = '- [.memory-bank/product.md](product.md): Продукт, аудитория, core value (C4 L1).'
+              optional = '- `.memory-bank/analysis/brief.md`: Durable product discovery brief maintained by `/grill-me` when present.'
+              if marker in text and optional not in text:
+                  text = text.replace(marker, optional + '\n' + marker)
+              write(rel, text)
+
+          rel = 'scripts/install-framework.mjs'
+          text = read(rel)
+          if "  'brainstorm'," not in text:
+              text = text.replace('const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([\n',
+                                  "const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([\n  'brainstorm',\n  'brief',\n")
+          write(rel, text)
+
+          rel = 'skills/mb-garden/assets/mb-lint.mjs'
+          text = read(rel)
+          text = text.replace("const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/product-brief.md';",
+                              "const ANALYSIS_PRODUCT_BRIEF_REL = '.memory-bank/analysis/brief.md';")
+          text = text.replace("const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/product-brief.md';",
+                              "const ANALYSIS_PRD_SOURCE_MARKER = '.memory-bank/analysis/brief.md';")
+          text = re.sub(r'\nfunction isAnalysisBrainstormingReport\(rel\) \{.*?\n\}\n', '\n', text, count=1, flags=re.S)
+          new_check = '''function checkAnalysisStructure() {
+            const analysisDir = path.join(ROOT, ANALYSIS_DIR_REL);
+            if (!fs.existsSync(analysisDir)) return;
+
+            if (!hasFile(path.join(analysisDir, 'index.md'))) {
+              errors.push(`${ANALYSIS_DIR_REL}: missing required index.md`);
+            }
+
+            const productBriefPath = path.join(ROOT, ANALYSIS_PRODUCT_BRIEF_REL);
+            const productBriefExists = hasFile(productBriefPath);
+            if (productBriefExists) {
+              const text = readText(productBriefPath);
+              const fm = parseFrontmatter(text);
+              if (!fm || stripYamlQuotes(fm.type) !== 'product-brief') {
+                errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: frontmatter must include 'type: product-brief'`);
+              }
+              if (!fm || !hasOwn(fm, 'status') || !String(fm.status).trim()) {
+                errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: frontmatter must include non-empty 'status'`);
+              }
+              for (const section of ['Intent', 'Decisions', 'Open Questions']) {
+                if (!hasSectionHeading(text, section)) {
+                  errors.push(`${ANALYSIS_PRODUCT_BRIEF_REL}: missing '${section}' section`);
+                }
+              }
+            }
+
+            if (productBriefExists) {
+              for (const rel of prdFiles()) {
+                const text = readText(path.join(ROOT, rel));
+                if (!text.includes(ANALYSIS_PRD_SOURCE_MARKER)) {
+                  warnings.push(`${rel}: PRD exists but does not mention ${ANALYSIS_PRD_SOURCE_MARKER}`);
+                }
+              }
+            }
+          }
+          '''
+          new_check = re.sub(r'^          ', '', new_check, flags=re.M)
+          text, count = re.subn(r'function checkAnalysisStructure\(\) \{.*?\n\}\n\nfunction checkRequiredFiles',
+                                new_check + '\nfunction checkRequiredFiles', text, count=1, flags=re.S)
+          if count != 1:
+              raise RuntimeError('could not migrate checkAnalysisStructure')
+          write(rel, text)
+
+          rel = 'README.md'
+          text = replace_commands(read(rel).replace('/brainstrorm', '/grill-me'))
+          text = re.sub(r'(\n\s*-> /grill-me\s*){2,}', '\n -> /grill-me\n', text)
+          text = text.replace('**1. Оформляем идею**', '**1. Оформляем и фиксируем идею**')
+          text = text.replace('38 runtime', '37 runtime').replace('38 команд', '37 команд').replace('38 skills', '37 skills')
+          write(rel, text)
+
+          rel = 'howItWorks.md'
+          text = read(rel)
+          text = re.sub(r'- `/brainstorm`[^\n]*\n- `/brief`[^\n]*',
+                        '- `/grill-me` — проясняет идею через design tree/frontier rounds и сохраняет текущий discovery brief;',
+                        text, count=1)
+          text = replace_commands(text)
+          text = text.replace('38 runtime', '37 runtime').replace('38 команд', '37 команд').replace('38 skills', '37 skills')
+          section = '''## 8. Канонический Product/Design flow
+
+          ```text
+          raw idea / major product direction
+                  -> /grill-me
+                  -> .memory-bank/analysis/brief.md
+
+          clear explicit product source -----------> /constitution or /write-prd
+          existing PRD ----------------------------> /write-prd
+          ```
+
+          `/grill-me` directly owns the grilling mechanism: it builds a decision tree,
+          asks the current frontier in rounds, researches facts, recommends answers, and
+          waits for the operator's decisions. After shared-understanding confirmation it
+          updates the durable discovery brief; the legacy brainstorming and brief
+          commands are no longer separate workflow stages.
+
+          The normal greenfield chain is:
+
+          ```text
+          /grill-me
+            -> /constitution        # when project principles need resolution
+            -> /write-prd
+            -> /spec-init
+            -> /prd-to-features
+            -> /review-feat-plan    # required for high-risk/large/autonomous work
+            -> /spec-design
+          ```
+
+          Stage ownership:
+
+          1. `/grill-me` owns product discovery and `.memory-bank/analysis/brief.md`.
+          2. `/constitution` owns durable project principles, autonomy, checkpoints, and
+             Definition of Done.
+          3. `/write-prd` turns current product evidence into the clarified canonical PRD.
+          4. `/spec-init` owns glossary readiness and decomposition-safe product/domain
+             framing.
+          5. `/prd-to-features` derives product, requirements, epics, and features.
+
+          The brief keeps intent, findings, decisions and rationale, rejected/deferred
+          directions, constraints, open questions, and useful sources. The Constitution
+          stores governing principles; the PRD stores the current formal product
+          contract. Git history preserves superseded brief versions.
+          '''
+          section = re.sub(r'^          ', '', section, flags=re.M)
+          text, _ = re.subn(r'## 8\. Канонический Product/Design flow.*?(?=\n## 9\.)',
+                            section.rstrip() + '\n', text, count=1, flags=re.S)
+          write(rel, text)
+
+          test = '''#!/usr/bin/env node
+
+          import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+          import { tmpdir } from 'node:os';
+          import { dirname, join, resolve } from 'node:path';
+          import { fileURLToPath } from 'node:url';
+          import { spawnSync } from 'node:child_process';
+          import assert from 'node:assert/strict';
+
+          const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+          const target = mkdtempSync(join(tmpdir(), 'devrails-grill-me-'));
+          const installer = join(repoRoot, 'scripts', 'install-framework.mjs');
+
+          function run(command, args, options = {}) {
+            const result = spawnSync(command, args, { cwd: repoRoot, encoding: 'utf8', ...options });
+            assert.equal(result.status, 0, `${command} ${args.join(' ')} failed\\n${result.stdout || ''}\\n${result.stderr || ''}`);
+          }
+
+          try {
+            run(process.execPath, [installer, '--bootstrap', '--target', target, '--yes', '--no-tui']);
+            for (const runtimeRoot of ['.agents/skills', '.claude/skills']) {
+              const grillPath = join(target, runtimeRoot, 'grill-me', 'SKILL.md');
+              assert.ok(existsSync(grillPath), `${runtimeRoot}/grill-me was not installed`);
+              assert.ok(!existsSync(join(target, runtimeRoot, 'brainstorm')));
+              assert.ok(!existsSync(join(target, runtimeRoot, 'brief')));
+              const grill = readFileSync(grillPath, 'utf8');
+              for (const required of ['design tree', 'frontier', 'external research', 'creator-vibe', '.memory-bank/analysis/brief.md', '<agent_discretion>']) {
+                assert.ok(grill.includes(required), `generated grill-me is missing ${required}`);
+              }
+              for (const obsolete of ['brainstorm', 'brief']) {
+                const skillDir = join(target, runtimeRoot, obsolete);
+                mkdirSync(skillDir, { recursive: true });
+                writeFileSync(join(skillDir, 'SKILL.md'), `---\\nname: ${obsolete}\\ndescription: legacy\\n---\\n<!-- Generated by DevRails 26 install-framework.mjs. Safe to overwrite with install-framework.mjs --sync. -->\\n`, 'utf8');
+              }
+            }
+            run(process.execPath, [installer, '--install-only', '--target', target, '--yes', '--no-tui']);
+            for (const runtimeRoot of ['.agents/skills', '.claude/skills']) {
+              assert.ok(!existsSync(join(target, runtimeRoot, 'brainstorm')));
+              assert.ok(!existsSync(join(target, runtimeRoot, 'brief')));
+            }
+            const analysisDir = join(target, '.memory-bank', 'analysis');
+            mkdirSync(analysisDir, { recursive: true });
+            writeFileSync(join(analysisDir, 'index.md'), `---\\ndescription: Analysis artifact index.\\nstatus: active\\n---\\n# Analysis\\n\\n- [brief.md](brief.md): Current product discovery brief.\\n`, 'utf8');
+            writeFileSync(join(analysisDir, 'brief.md'), `---\\ndescription: Durable product discovery brief.\\nstatus: active\\ntype: product-brief\\nlast_updated: 2026-09-04\\n---\\n# Product Brief\\n\\n## Intent\\nTest intent.\\n\\n## Decisions\\nTest decision.\\n\\n## Open Questions\\n- None.\\n`, 'utf8');
+            run(process.execPath, [join(repoRoot, 'skills', 'mb-garden', 'assets', 'mb-lint.mjs')], { cwd: target });
+            console.log('grill-me migration smoke passed');
+          } finally {
+            rmSync(target, { recursive: true, force: true });
+          }
+          '''
+          test = re.sub(r'^          ', '', test, flags=re.M)
+          write('scripts/test-grill-me-migration.mjs', test)
+
+          package_path = root / 'package.json'
+          package = json.loads(package_path.read_text(encoding='utf-8'))
+          scripts = package.setdefault('scripts', {})
+          if 'scripts/test-grill-me-migration.mjs' not in scripts.get('check:syntax', ''):
+              scripts['check:syntax'] += ' && node --check scripts/test-grill-me-migration.mjs'
+          scripts['test:grill-me'] = 'node scripts/test-grill-me-migration.mjs'
+          package_path.write_text(json.dumps(package, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          # Keep artifact paths intact while rejecting active references to removed commands.
+          violations = []
+          for rel in ['README.md', 'howItWorks.md', 'GREENFIELD_WORKFLOW.md']:
+              for match in command_re.finditer(read(rel)):
+                  violations.append((rel, match.group(0)))
+          if violations:
+              raise RuntimeError(f'stale command references: {violations}')
+          if len(read('skills/_shared/references/commands/grill-me.md').splitlines()) > 115:
+              raise RuntimeError('grill-me command became too long')
+          PY
+      - name: Validate
+        run: |
+          git diff --check
+          npm run check:syntax
+          npm run test:grill-me
+          npm run test:install-sync
+          npm run test:mb-doctor
+      - name: Commit migration
+        shell: bash
+        run: |
+          git rm .github/workflows/apply-grill-me-migration.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Complete grill-me discovery migration"
+          git push origin HEAD:feat/grill-me-discovery
