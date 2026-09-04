@@ -17,7 +17,7 @@ policies, or tier policy.
 <input_contract>
 Read relevant evidence from:
 - `.memory-bank/constitution.md`;
-- `.memory-bank/analysis/product-brief.md` and the latest relevant brainstorm;
+- `.memory-bank/analysis/brief.md`;
 - `.memory-bank/mbb/index.md`, `.memory-bank/spec-backbone.md`, and
   `.memory-bank/spec-index.md`;
 - `.memory-bank/invariants.md` and applicable contracts/states/testing/workflow
@@ -36,8 +36,8 @@ ratified: null
 last_updated: YYYY-MM-DD
 ```
 
-Missing or blocked Product Brief does not prevent a generic governing-principles
-discussion, but it must be reported as context quality.
+A missing or blocked Product Brief does not prevent a generic
+governing-principles discussion, but it must be reported as context quality.
 </input_contract>
 
 <hard_invariants>

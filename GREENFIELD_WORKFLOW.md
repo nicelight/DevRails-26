@@ -4,8 +4,8 @@
 
 ```mermaid
 flowchart TD
-  idea["Идея / черновик"] --> brief["/brainstorm или /brief"]
-  brief --> constitution["/constitution"]
+  idea["Идея / черновик"] --> grill["/grill-me<br/>analysis/brief.md"]
+  grill --> constitution["/constitution"]
   constitution --> writePrd["/write-prd"]
   writePrd --> specInit["/spec-init"]
   specInit --> prd["/prd-to-features"]
