@@ -110,7 +110,7 @@ feature. Files, layers, artifacts, tests, AC count, commands, and modules do not
 create a boundary without a distinct implementation result.
 
 ## Interactive mode (you stay)
-1) `/brainstorm -> /brief` when raw idea discovery is needed, or `/brief` directly for clear concepts
+1) `/grill-me -> /constitution` when raw or uncertain product discovery is needed; a clear authoritative product source may start at `/constitution` or `/write-prd` according to Constitution state
 2) `/constitution` for contextual governing principles when `.memory-bank/constitution.md` is missing or `project_principles` is framework-default|skipped|missing; if principles are already ratified/partial, continue to `/write-prd`; if explicitly skipped, continue with framework-default/skipped principles
 3) `/write-prd` (creates clarified .memory-bank/prd.md)
 4) `/spec-init` (updates .memory-bank/spec-backbone.md framing and .memory-bank/spec-index.md registry)

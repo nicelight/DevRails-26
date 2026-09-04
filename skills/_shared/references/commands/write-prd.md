@@ -1,5 +1,5 @@
 ---
-description: Turn Product Brief, Constitution, and optional context into a clarified PRD.
+description: Turn a discovery brief, Constitution, or explicit product source into a clarified PRD.
 status: active
 ---
 # /write-prd - Product input -> clarified PRD
@@ -13,27 +13,29 @@ into epics/features or perform architecture/task design.
 </objective>
 
 <input_contract>
-Require at least one current PRD source:
-- `.memory-bank/analysis/product-brief.md`;
-- explicit operator-provided PRD text/file;
+Require at least one current product source:
+- `.memory-bank/analysis/brief.md`;
+- legacy `.memory-bank/analysis/product-brief.md` or relevant
+  `.memory-bank/analysis/brainstorming/BR-*.md` migration evidence;
+- explicit operator-provided product or PRD text/file;
 - existing `prd.md` or `.memory-bank/prd.md` being clarified.
 
 Read `.memory-bank/constitution.md`. Read only relevant optional context from
-brainstorming, product/requirements, glossary/invariants, spec-backbone,
+discovery, product/requirements, glossary/invariants, spec-backbone,
 spec-index, canonical contracts/states/runbooks/testing docs, and `$ARGUMENTS`.
 
 Before writing, record whether `prd.md` or `.memory-bank/prd.md` already
 exists; this selects the handoff route.
 
-If no PRD source exists, stop and request `/brief` or explicit source text. If
+If no product source exists, stop and request `/grill-me` or explicit source text. If
 the Constitution is missing, ask for `/constitution` or explicit permission to
 continue without ratified project principles.
 </input_contract>
 
 <creator_vibe_contract>
 Before interpreting PRD sources or interviewing the operator, load and follow
-the installed `creator-vibe` skill. Apply it while reading the Product Brief,
-idea/PRD text, relevant brainstorming context, and operator answers so the PRD
+the installed `creator-vibe` skill. Apply it while reading the discovery brief,
+idea/PRD text, relevant discovery context, and operator answers so the PRD
 preserves the product's intended human experience and distinctive center while
 making behavior and acceptance explicit.
 

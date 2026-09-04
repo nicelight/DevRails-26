@@ -81,8 +81,10 @@ const RENAMED_RUNTIME_SKILLS = new Map([
   ['execute', 'exe'],
   ['execute-task', 'exe'],
   ['clarify-feature', 'feature-doctor'],
+  ['brainstorm', 'grill-me'],
 ]);
 const OBSOLETE_DEVRAILS_RUNTIME_SKILLS = new Set([
+  'brief',
   'mb-analysis',
   'mb-execute',
   'mb-from-prd',
