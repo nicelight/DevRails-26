@@ -17,7 +17,8 @@ policies, or tier policy.
 <input_contract>
 Read relevant evidence from:
 - `.memory-bank/constitution.md`;
-- `.memory-bank/analysis/product-brief.md` and the latest relevant brainstorm;
+- `.memory-bank/analysis/brief.md`, or legacy product-brief and brainstorming
+  artifacts when migrating an existing project;
 - `.memory-bank/mbb/index.md`, `.memory-bank/spec-backbone.md`, and
   `.memory-bank/spec-index.md`;
 - `.memory-bank/invariants.md` and applicable contracts/states/testing/workflow
@@ -36,7 +37,7 @@ ratified: null
 last_updated: YYYY-MM-DD
 ```
 
-Missing or blocked Product Brief does not prevent a generic governing-principles
+Missing or blocked discovery brief does not prevent a generic governing-principles
 discussion, but it must be reported as context quality.
 </input_contract>
 
@@ -115,7 +116,7 @@ side; record the conflict and keep the dependent handoff blocked.
 </validation>
 
 <handoff_contract>
-In the final chat response, report the evidence used, Product Brief state,
+In the final chat response, report the evidence used, discovery brief state,
 decisions accepted, resulting `project_principles`, conflicts fixed or
 remaining, and any minimal dependent doc update requiring approval.
 

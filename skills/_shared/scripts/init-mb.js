@@ -331,8 +331,8 @@ ${installedSkillsBlock()}
 - Bootstrap skeleton: mb-init
 - Scenario routing: start
 - Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
-- Discovery artifacts: /brainstorm for raw ideas, then /brief; clear concepts may start at /brief
-- Project principles: /constitution after /brief or existing PRD context, before /write-prd only when project_principles is not ratified|partial
+- Discovery: /grill-me clarifies raw or uncertain ideas and keeps analysis/brief.md durable; clear authoritative product sources may continue without grilling
+- Project principles: /constitution after /grill-me or existing authoritative product/PRD context, before /write-prd only when project_principles is not ratified|partial
 - PRD → MB: /write-prd, lightweight /spec-init, /prd-to-features, initial /spec-design, /foundation-to-tasks when required, then one-feature /spec-auto and /feature-to-tasks
 - SDD design: /spec-design creates the initial backbone/Foundation decision; /spec-redesign changes accepted backbone contracts with evidence-bounded impact; feature design/tasking remains one feature per context
 - Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
@@ -836,7 +836,7 @@ source_of_truth:
 |---|---|---|---|---|
 | governance | [.memory-bank/constitution.md](constitution.md) | active | Top governing policy. | /constitution |
 | invariants | [.memory-bank/invariants.md](invariants.md) | planned | Global MUST/NEVER rules when evidence exists. | /spec-init or initial /spec-design; post-acceptance /spec-redesign |
-| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /brief, /spec-init, or initial /spec-design; post-acceptance /spec-redesign |
+| glossary | [.memory-bank/glossary.md](glossary.md) | planned | Shared vocabulary. | /spec-init or initial /spec-design; post-acceptance /spec-redesign |
 | contract | [.memory-bank/contracts/boundary-map.md](contracts/boundary-map.md) | draft | Canonical accepted module/change-unit dependency graph and boundary contracts. | initial /spec-design, post-acceptance /spec-redesign, or /feature-to-tasks |
 ${TESTING_SPEC_REGISTRY_ROW}
 

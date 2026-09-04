@@ -72,7 +72,7 @@ Confirm that no decision-log or other artifact was created by `/discuss`.
 </validation>
 
 <handoff_contract>
-Return to the immediate owning skill: `/brief`, `/constitution`, `/write-prd`,
+Return to the immediate owning skill: `/grill-me`, `/constitution`, `/write-prd`,
 `/spec-init`, `/prd-to-features`, `/feature-doctor FT-<NNN>`, initial
 `/spec-design`, or post-backbone `/spec-redesign` according to the artifact and
 blocker being resolved. `/discuss` never routes directly

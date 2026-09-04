@@ -26,7 +26,7 @@ constitution_checked: true
 
 If any marker is missing or has another value, stop and route to `/write-prd`
 or `/constitution` according to the failed owner contract; do not frame the PRD
-as ready. Read relevant context from the Constitution, Product Brief, existing
+as ready. Read relevant context from the Constitution, the discovery brief, existing
 `glossary.md`, `spec-backbone.md`, pure `spec-index.md`, user scenarios,
 invariants, and canonical subject specs under `architecture/`, `contracts/`,
 `domains/`, `states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/`.
