@@ -237,3 +237,23 @@ Deployed strict doctor подтвердил active exe → pending-off → done 
 Source shared-* =0. Архитектура во время этого исправления не менялась.
 Теперь единственный architecture acceptance agent продолжает согласование
 документов с исправленным контрактом и завершает приёмку.
+
+### Итоговая архитектурная приёмка — READY_FOR_IMPLEMENTATION_SPIKE
+
+`nav_architecture_acceptance` завершил повторный проход после `f757db1`.
+Согласованы architecture settings/recovery/handlers/sequences и build plan:
+freeze целой task attempt/batch устранён, pending enablement применяется
+перед соответствующим launch/skip. Semantic blocker закрыт.
+
+Source review подтверждает 75/75 переходов, 34 локальные и 37 pinned DSH links,
+два необходимых узких admission seams и existing native header Stop extension.
+Side seed/metadata/model selection явно описаны. Diff-check и source-only=0
+прошли. Финальный verdict и ограничения — `ARCHITECTURE_ACCEPTANCE.md`.
+
+Этап пользователя завершён: семантика адаптирована и проверена, затем
+архитектура спроектирована и независимо проверена. Агенты работали по одному;
+возврат к semantic correction был отдельной последовательной фазой.
+DSH plugin/hooks/UI ещё не реализованы. Следующий технический этап — isolated
+integration spike по `IMPLEMENTATION_PLAN.md`; перед полной картой требуется
+согласовать визуальное расположение маршрутов. Papercut logs остаются локальными
+пользовательскими workflow-записями и в продуктовый commit не включаются.
