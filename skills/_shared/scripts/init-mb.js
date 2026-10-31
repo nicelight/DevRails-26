@@ -500,7 +500,7 @@ function constitutionSkeleton() {
   const absPath = resolveTopLevelReferenceFile(CONSTITUTION_TEMPLATE_FILE);
   if (!absPath) {
     console.error(`\nERROR: Constitution template not found: ${path.join(REFERENCES_DIR, CONSTITUTION_TEMPLATE_FILE)} or flattened shared-${CONSTITUTION_TEMPLATE_FILE}.`);
-    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    console.error('Run init-mb.js from the DevRails Nav 27 package (do not copy it standalone).');
     process.exit(1);
   }
 
@@ -511,7 +511,7 @@ function agentsGuide() {
   const absPath = resolveReferenceFile(AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE);
   if (!absPath) {
     console.error(`\nERROR: Deployable AGENTS.md not found: ${path.join(REFERENCES_DIR, AGENTS_TEMPLATE_CATEGORY, AGENTS_TEMPLATE_FILE)} or flattened shared-${AGENTS_TEMPLATE_CATEGORY}-${AGENTS_TEMPLATE_FILE}.`);
-    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    console.error('Run init-mb.js from the DevRails Nav 27 package (do not copy it standalone).');
     process.exit(1);
   }
 
@@ -533,7 +533,7 @@ function copyRuntimeScript(asset, target) {
   const absPath = resolveRuntimeAsset(asset);
   if (!absPath) {
     console.error(`\nERROR: Runtime script asset not found: ${asset}`);
-    console.error('Run init-mb.js from the DevRails 26 package with mb-garden installed alongside mb-init.');
+    console.error('Run init-mb.js from the DevRails Nav 27 package with mb-garden installed alongside mb-init.');
     process.exit(1);
   }
 
@@ -552,7 +552,7 @@ function copyWorkflowReference(filename) {
   const absPath = resolveReferenceFile('workflows', filename);
   if (!absPath) {
     console.error(`\nERROR: Workflow reference not found: ${path.join(WORKFLOW_REFERENCES_DIR, filename)} or flattened shared-workflows-${filename}.`);
-    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    console.error('Run init-mb.js from the DevRails Nav 27 package (do not copy it standalone).');
     process.exit(1);
   }
 
@@ -566,7 +566,7 @@ function copyRoleReference(filename) {
   const absPath = resolveReferenceFile('roles', filename);
   if (!absPath) {
     console.error(`\nERROR: Role reference not found: ${path.join(ROLE_REFERENCES_DIR, filename)} or flattened shared-roles-${filename}.`);
-    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    console.error('Run init-mb.js from the DevRails Nav 27 package (do not copy it standalone).');
     process.exit(1);
   }
 
@@ -580,7 +580,7 @@ function copyProtocolReferences() {
   const filenames = listReferenceFilenames('protocols');
   if (filenames.length === 0) {
     console.error(`\nERROR: No protocol references found in ${path.join(REFERENCES_DIR, 'protocols')} or flattened shared-protocols-*.md files.`);
-    console.error('Run init-mb.js from the DevRails 26 package (do not copy it standalone).');
+    console.error('Run init-mb.js from the DevRails Nav 27 package (do not copy it standalone).');
     process.exit(1);
   }
 
@@ -657,7 +657,7 @@ function mergeAgentsGuide(existingContent, generatedContent) {
 
 ## Preserved Previous AGENTS.md
 
-The following content existed before DevRails 26 bootstrap and was appended automatically.
+The following content existed before DevRails Nav 27 bootstrap and was appended automatically.
 Review it for contradictions with the generated guide above.
 
 ${uniqueExistingContent}

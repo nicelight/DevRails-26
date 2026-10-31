@@ -175,17 +175,12 @@ const SPLASH_ART = `·───○ init ───────╮        ╭─�
 ·───○ agents ─────╯        ╰────── evidence ───○────── index ──·
 
 
-██████╗ ███████╗██╗   ██╗██████╗  █████╗ ██╗██╗     ███████╗     ██████╗  ██████╗
-██╔══██╗██╔════╝██║   ██║██╔══██╗██╔══██╗██║██║     ██╔════╝    ╚════██╗██╔════╝
-██║  ██║█████╗  ██║   ██║██████╔╝███████║██║██║     ███████╗     █████╔╝███████╗
-██║  ██║██╔══╝  ╚██╗ ██╔╝██╔══██╗██╔══██║██║██║     ╚════██║    ██╔═══╝ ██╔═══██╗
-██████╔╝███████╗ ╚████╔╝ ██║  ██║██║  ██║██║███████╗███████║    ███████╗╚██████╔╝
-╚═════╝ ╚══════╝  ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝    ╚══════╝ ╚═════╝
+                         ${PRODUCT_NAME}
 
         source-only skills · durable context · BMAD + SDD · agent workflow
 
 
-·───○ PRD ──◇── tasks ──○── T0/T1 compact ──◇── T2/T3 protocol ──○── red-verify ──·`;
+·───○ PRD ──◇── tasks ──○── T0/T1 compact ──◇── selected proof ──○── red-verify ──·`;
 const INTERNAL_FLAGS = new Set([
   '--bootstrap',
   '--bootstrap-only',
@@ -997,8 +992,8 @@ async function askYesNo(rl, label, defaultYes = false) {
 
 async function askAgentsPolicy(rl) {
   uiCardStart('AGENTS.md уже существует');
-  uiCardLine(`${uiKeycap('1')}  ${uiTone('Заменить файлом DevRails 26', 'silver', true)}  ${uiTone('рекомендуется', 'success')}`);
-  uiCardLine(`${uiKeycap('2')}  Слить существующий файл с версией DevRails 26`);
+  uiCardLine(`${uiKeycap('1')}  ${uiTone(`Заменить файлом ${PRODUCT_NAME}`, 'silver', true)}  ${uiTone('рекомендуется', 'success')}`);
+  uiCardLine(`${uiKeycap('2')}  Слить существующий файл с версией ${PRODUCT_NAME}`);
   uiCardEnd();
 
   const answer = (await rl.question(uiPrompt('Выбор [1]'))).trim().toLowerCase();

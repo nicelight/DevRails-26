@@ -40,8 +40,8 @@
 
 1. **Завершён:** полная инвентаризация семантики, переходов и необходимых изменений.
 2. **Завершён:** shared/entry, planning/reviews, execution/validators.
-3. **В работе:** итоговые docs и независимая проверка всей семантики; исправления.
-4. Ожидает завершения этапов 1–3: архитектура Nav/DSH.
+3. **Завершён:** независимая приёмка — READY_FOR_ARCHITECTURE.
+4. **В работе:** архитектура Nav/DSH на принятой семантике.
 
 ## Записи
 
@@ -152,3 +152,25 @@ optional Foundation, malformed identity/dependency и сохранение ис�
 из result-файла и краткой сводки оркестратора. Незавершённого follow-up нет.
 Независимый следующий проход проверяет согласованность всех пакетов и обновляет
 общие описания. Только после его verdict начинается архитектура.
+
+### Независимая приёмка — READY_FOR_ARCHITECTURE
+
+Исполнитель: `/root/semantics_acceptance`, Astra medium. Проверены 37/37 commands
+и все семейства source, generator и validators. `SEMANTIC_ACCEPTANCE.md` содержит
+покрытие, walkthrough и фактическую validation. Блокеров нет.
+
+Исправлены пять подтверждённых дефектов: historical repair учитывает selected
+своей попытки; optional design matrix; candidate-only verification template;
+global redesign без recorded revision; sync только host-recorded lifecycle.
+Обновлены общие docs, inventory/transitions и metadata/display Nav27; compatibility
+markers/bin сохранены. Исторические результаты предыдущих пакетов сохранены.
+
+Syntax/full doctor/install-sync прошли. Независимо сверены 148 command copies,
+68 resource copies, workflows/roles/templates/validator files и required references.
+Deployed strict doctor подтвердил all-off closure, selected historical repair
+и optional matrix; unselected repair отвергнут. Source shared-* =0.
+
+Архитектурная делегация начинается только после этого verdict. Её source of truth:
+принятые решения пользователя, текущая canonical семантика и проверяемый код DSH.
+Архитектурные эскизы в DEVRAILS_NAV_27 не являются обязательством сохранить
+раньше предложенные механизмы. Runtime/UI implementation остаётся вне этапа.

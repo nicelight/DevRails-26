@@ -31,14 +31,19 @@ export function createFoundationBackboneChecks(context) {
     readText,
   } = context.readers;
 
-  function designDisabledForQueue() {
+  function queueMatchesWorkflow(predicate) {
     const index = readJson(TASK_INDEX_REL);
     if (!index.ok || !Array.isArray(index.value?.tasks) || !index.value.tasks.length) return false;
     return index.value.tasks.every((entry) => {
       if (!TASK_ID_RE.test(entry?.id ?? '') || entry.file !== `${entry.id}.task.json`) return false;
       const record = readJson(normalizeRel(joinRelative('.memory-bank/tasks', entry.file)));
-      return record.ok && context.workflowContract(record.value)?.selected.design === false;
+      const workflow = record.ok && context.workflowContract(record.value);
+      return workflow && predicate(workflow);
     });
+  }
+
+  function designDisabledForQueue() {
+    return queueMatchesWorkflow((workflow) => workflow.selected.design === false);
   }
 
   function checkConstitutionStructure() {
@@ -120,6 +125,9 @@ export function createFoundationBackboneChecks(context) {
     const status = extractBackboneStatusFromSection(section);
     const prePrdStatus = extractPrePrdStatus(text);
     if (status === 'complete') {
+      // Nav design requires accepted meaning, not an optional area-table artifact.
+      // A recorded matrix still has to be internally consistent.
+      if (queueMatchesWorkflow(() => true) && !extractBackboneAreaMatrixSection(text)) return;
       const matrix = analyzeBackboneAreaMatrix(text);
       if (matrix.ready) return;
       if (matrixAllowsFoundationOnlyStrictGate(matrix) && isFoundationOnlyTaskQueue()) return;

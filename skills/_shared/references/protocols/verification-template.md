@@ -63,8 +63,10 @@ Executor GREEN is supporting evidence only. Record independent proof for the
 selected claims. No hidden main participant or local execution check is required.
 
 ## Verdict
-Replace the placeholder with one exact standalone marker:
+For performed functional verification, use one exact standalone marker:
 VERDICT: <PASS|FAIL|NEEDS-CLARIFICATION>
+For candidate-only code review, retain `candidate_findings: none` or the actual
+material findings instead; do not emit a functional verdict or add a main reviewer.
 
 ## Handoff
 - Recommended owner/action: ...

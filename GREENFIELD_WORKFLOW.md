@@ -1,67 +1,53 @@
-# Greenfield Manual + Autopilot Workflow
+# Greenfield workflow — DevRails Nav 27
 
-Эта Mermaid-схема показывает happy path для greenfield проекта: сначала ручная подготовка Memory Bank и JSON task queue, затем выбор между ручным исполнением задач и `/autopilot`.
+Схема показывает предметные owners и условные операции, а не алгоритм модели
+или уже работающий DSH-контроллер. Ясный принятый input позволяет входить сразу
+в нужную операцию; disabled design/review не требует placeholder или APPROVE.
 
 ```mermaid
 flowchart TD
-  idea["Идея / черновик"] --> grill["/grill-me → analysis/brief.md"]
-  grill --> constitution["/constitution"]
-  constitution --> writePrd["/write-prd"]
-  writePrd --> specInit["/spec-init"]
-  specInit --> prd["/prd-to-features"]
-  prd --> reviewFeat{"High-risk / large work?"}
-  reviewFeat -- "да" --> reviewFeatPlan["/review-feat-plan"]
-  reviewFeat -- "нет" --> specDesign["/spec-design"]
-  reviewFeatPlan --> specDesign
-
-  specDesign --> foundation{"Нужен executable baseline?"}
-  foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
-  foundationTasks --> foundationDoctor["/mb-doctor --strict<br/>foundation/task-queue"]
-  foundationDoctor --> foundationExec["/exe + /verify<br/>FT-000 до final gate done"]
-  foundationExec --> tasking["/feature-to-tasks FT-001"]
-  foundation -- "нет" --> tasking
-
-  tasking --> reviewTasks["/review-tasks-plan<br/>FT-001<br/>contract readiness"]
-  reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>stale-doc/risky-link?"}
-  doctorNeeded -- "да" --> doctor["/mb-doctor<br/>feature/task-queue"]
-  doctorNeeded -- "нет" --> mode
-  doctor --> mode{"Как выполнять JSON task queue?"}
-
-  mode -- "Manual" --> exec["/exe<br/>TASK-NNN-TN-FT-NNN-WN"]
-  exec --> fastLane{"T0/T1 fast-lane?<br/>explicit owner + compact evidence"}
-  fastLane -- "да" --> localDone["Task done<br/>compact evidence / no-runnable-check note"]
-  fastLane -- "нет / T2-T3 / uncertainty" --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]
-  localDone --> more
-  verify --> redTask{"Нужен semantic pass?"}
-  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-TN-FT-NNN-WN"]
-  redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
-  redTask -- "нет" --> sync["/mb-sync<br/>boundary when needed"]
-  redVerify --> sync
-  redFeature --> sync
-  sync --> more{"Еще tasks/features?"}
-  more -- "следующая task" --> exec
-  more -- "следующая feature" --> tasking
-  more -- "нет" --> done["Готово"]
-
-  mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Recovery-first sequential scheduler:<br/>resume checkpoint + in_progress; then one task -> execute -> verify -> closure;<br/>red-verify для T3; mb-sync once per wave"]
-  scheduler --> terminal{"Queue terminal?"}
-  terminal -- "done" --> done
-  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
-  repair --> reviewTasks
+  input["Идея / принятый PRD"] --> product["Нужные grill-me / constitution / write-prd"]
+  product --> decomposition["spec-init при необходимости → prd-to-features"]
+  decomposition --> planning["Выбранные review-feat-plan / spec-design"]
+  planning --> baseline{"Нужен executable baseline?"}
+  baseline -- "да" --> foundation["foundation-to-tasks → FT-000 implementation<br/>и выбранные проверки"]
+  baseline -- "нет" --> feature["feature-to-tasks FT-NNN"]
+  foundation --> feature
+  feature --> review["Выбранные review-tasks-plan / doctor"]
+  review --> exe["Host подаёт одну runnable task → exe"]
+  exe --> checks["Выбранные verify / red-verify<br/>Отключённые операции: skipped"]
+  checks --> decision{"Нужно решение?"}
+  decision -- "нет" --> closure["Host фиксирует результат<br/>done не означает verified"]
+  decision -- "да" --> wait["Общий feedback → вопрос / красный<br/>либо autonomous decision"]
+  wait -- "repair при неизменном смысле" --> exe
+  wait -- "изменился смысл" --> owner["PRD / design / tasking owner"]
+  owner --> feature
+  closure --> boundary["Нужный mb-sync и выбранные boundary checks"]
+  boundary --> next{"Есть незавершённая работа?"}
+  next -- "задача" --> exe
+  next -- "фича" --> feature
+  next -- "нет" --> done["Завершение с фактическим coverage"]
 ```
 
-`/autonomous` owns the bounded FT-000 phase shown above; `/autopilot` begins
-only at the reviewed product queue and never executes Foundation tasks.
-`/autonomous` tasks one product feature per isolated child context and reviews
-it in a separate fresh context before selecting the next feature.
-Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
-parallel execution is available only through explicit `--experimental-parallel`
-with isolated worktrees/sandboxes and pairwise-disjoint hard
-`runtime_context.write_boundary`; advisory `touched_files` does not prove
-independence.
+Обычный режим ждёт согласия в основном чате или зелёного для конкретного
+предложения. Отказ отменяет его; неполный ответ оставляет зависимую работу
+в ожидании. То же правило действует для консультации без смены маршрута.
+`/autonomous` принимает семантические решения на всём пути, но сохраняет
+ручной красный/Pause/Stop, permissions и отсутствующие внешние факты.
 
-Within task planning, implementation, testing, and verification, agents choose
-their local tactics. A new material product/design/contract/task-boundary/tier/
-dependency/verification branch always returns to the operator; unattended mode
-halts with the existing clarification/blocking state and an exact resume route.
+`/autopilot` получает только подготовленную продуктовую очередь и не выполняет
+FT-000. `/autonomous` охватывает также Product/Design и нужную Foundation.
+У выбранной Foundation может не быть отдельной proof gate task, но реальные
+baseline dependencies остаются. Judge в `/multiagentic` и `/multipilot`
+условен и не принимает lifecycle решения.
+
+Local checks `/exe`, functional verify и red-verify настраиваются отдельно.
+All-off verify допускает закрытие реализации без PASS/отчёта; code-only review
+сохраняет candidates; red-alone не доказывает functional acceptance.
+Полученный отрицательный результат остаётся evidence и требует disposition.
+
+После обрыва продолжение опирается на фактическую работу, partial effects и
+снимок выбранных операций попытки. Выполненное не повторяется, skipped не
+включается автоматически. Последовательное выполнение — baseline; concurrency
+требует opt-in, изоляции и непересекающихся hard write boundaries.
+Полный каталог repairs, blockers и resume: [TRANSITIONS.md](docs/nav27/TRANSITIONS.md).

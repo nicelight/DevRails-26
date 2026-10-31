@@ -1,9 +1,9 @@
 {
-  "name": "devrails-26",
-  "productName": "DevRails 26",
+  "name": "devrails-nav-27",
+  "productName": "DevRails Nav 27",
   "version": "0.1.1",
   "private": true,
-  "description": "Agent development framework with durable memory and controlled workflows.",
+  "description": "DSH-oriented agent development workflow semantics with durable Memory Bank context.",
   "license": "MIT",
   "repository": {
     "type": "git",

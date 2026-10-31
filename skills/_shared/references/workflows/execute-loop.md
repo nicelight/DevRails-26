@@ -39,8 +39,10 @@ subject specs own only non-trivial reproducible measurement detail.
 `/spec-redesign` returns `none|bounded|global` from evidenced planning impact.
 `none` preserves revision/reviews. `bounded` preserves revision and names only
 affected features, marking their planning `PLANNING_RECONCILIATION_REQUIRED`
-where repair is needed. `global` increments the positive Planning Revision once
-only when durable planning semantics changed with product-wide impact.
+where repair is needed. `global` increments an existing positive Planning Revision
+once only when durable planning semantics changed with product-wide impact.
+Without a recorded revision, mark only affected planning for reconciliation;
+do not create a revision for a disabled global-design stage.
 Initial accepted design establishes revision 1 from 0. Uncertain impact needs
 evidence, not an automatic global reset.
 

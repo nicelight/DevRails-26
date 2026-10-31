@@ -95,6 +95,12 @@ function validParticipantResult(result) {
     || concreteEvidence(result.candidate_findings));
 }
 
+function selectedResult(entry, key, result) {
+  if (key === 'local_checks') return entry.selected.local_checks && concreteEvidence(result.evidence);
+  if (key === 'red_verify') return entry.selected.red_verify && concreteEvidence(result.evidence);
+  return entry.selected.verify.includes(result?.participant) && validParticipantResult(result);
+}
+
 export function createTerminalCompatibilityChecks(context) {
   const ROOT = context.root;
   const { options, addFinding } = context;
@@ -173,7 +179,7 @@ export function createTerminalCompatibilityChecks(context) {
       for (const [key, result, success] of resultChecks(prior)) {
         if (resultValue(result) === success) continue;
         const laterSuccess = entries.slice(index + 1).some((later) => resultChecks(later).some(([laterKey, laterResult]) => (
-          laterKey === key && resultValue(laterResult) === success && concreteEvidence(laterResult.evidence)
+          laterKey === key && resultValue(laterResult) === success && selectedResult(later, laterKey, laterResult)
         )));
         if (validDisposition(result, 'continue') || (validDisposition(result, 'repair') && laterSuccess)) continue;
         resultIssues.push(`attempt ${prior.attempt} ${key}: negative evidence needs explicit continue disposition or a completed selected repair`);

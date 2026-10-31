@@ -18,8 +18,9 @@ promote tasks, unblock dependencies, or turn transient claims into durable truth
 
 ## Reconciliation
 
-Update only affected links, indexes, routers, RTM, feature/epic lifecycle,
-changelog and spec references. Preserve document status
+Update only affected links, indexes, routers, RTM, changelog and spec references,
+reflecting the host-recorded feature/epic lifecycle without writing transitions.
+Preserve document status
 `draft|active|deprecated|archived` separately from entity lifecycle
 `planned|implemented|verified`. `done` without verification supports implemented,
 not verified. Missing reports for disabled checks are expected.

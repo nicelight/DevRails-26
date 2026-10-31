@@ -1,6 +1,7 @@
 # DevRails Nav 27: каталог переходов и продолжения
 
-Карта извлечена из canonical source на базе `82e3c4f` (2026-11-01).
+Карта первоначально извлечена из `82e3c4f` и сверена с итоговым canonical source
+поверх `45ae29e` (2026-11-01).
 Она покрывает существующие основные пути, repairs, loops, blockers/resume и
 консультации. Это semantic inventory, не граф API и не state machine Nav.
 Сопутствующая [карта файлов](SEMANTIC_INVENTORY.md) определяет scope правок.
@@ -42,16 +43,16 @@ autonomous принятие маршрута не делает отсутств�
 | M07 | [write-prd](../../skills/_shared/references/commands/write-prd.md) | Есть product source, новый PRD | Clarified product intent, acceptance, unresolved issues | Material choices, отсутствующие сведения | `/spec-init` при достаточном результате |
 | M08 | [write-prd](../../skills/_shared/references/commands/write-prd.md) | Обновляется существующий PRD | Reconciled PRD delta | Material changed choices | `/prd-to-features`; не безусловный reset всех downstream |
 | M09 | [spec-init](../../skills/_shared/references/commands/spec-init.md), [spec-auto --init](../../skills/_shared/references/commands/spec-auto.md) | Нужно decomposition framing | Термины, domain/scenario/lifecycle hints; `ready_for_prd` или конкретный gap | Только unresolved decomposition choice | `/prd-to-features` |
-| M10 | [prd-to-features](../../skills/_shared/references/commands/prd-to-features.md) | Clarified product ready | REQ/EP/FT и stable feature AC | Неопределённые decomposition choices | Включённый `/review-feat-plan`, иначе `/spec-design` |
-| M11 | [review-feat-plan](../../skills/_shared/references/commands/review-feat-plan.md) | Review включён, decomposition готова | APPROVE/REJECT с material evidence | Нет для штатного APPROVE | `/spec-design`; REJECT → R03 |
+| M10 | [prd-to-features](../../skills/_shared/references/commands/prd-to-features.md) | Clarified product ready | REQ/EP/FT и stable feature AC | Неопределённые decomposition choices | Включённый `/review-feat-plan`, иначе выбранный design/tasking owner |
+| M11 | [review-feat-plan](../../skills/_shared/references/commands/review-feat-plan.md) | Review включён, decomposition готова | APPROVE/REJECT с material evidence | Нет для штатного APPROVE | Выбранный design/tasking owner; REJECT → R03 |
 | M12 | [spec-design](../../skills/_shared/references/commands/spec-design.md) | Initial technical design нужно | Минимально достаточные accepted boundaries/specs и Foundation decision | Material architecture/Foundation choices | Foundation branch либо one-feature design/tasking |
 | M13 | [foundation-to-tasks](../../skills/_shared/references/commands/foundation-to-tasks.md) | Foundation действительно нужен | Минимальные ordinary FT-000 tasks для executable baseline | Новая sufficiency/scope branch → R09 | Выбранные checks и выполнение Foundation, затем product tasking |
 | M14 | [foundation-to-tasks --verify-existing](../../skills/_shared/references/commands/foundation-to-tasks.md) | Brownfield baseline уже есть | Доказанный baseline → no queue; недостаточно evidence → минимальные probes | Выбор добавочного proof work/изменения baseline через общий decision flow | `/feature-to-tasks` либо завершение Foundation |
 | M15 | [spec-auto FT](../../skills/_shared/references/commands/spec-auto.md), [feature-to-tasks](../../skills/_shared/references/commands/feature-to-tasks.md) | Одна product feature готова к design/tasking | Canonical concern coverage, cohesive indexed tasks, usable handoff | Material choices/slicing consultation при необходимости | Включённый task-plan review, иначе execution readiness |
 | M16 | [review-tasks-plan](../../skills/_shared/references/commands/review-tasks-plan.md), [architecture-review](../../skills/_shared/references/commands/architecture-review.md) | Включён planning review | Final APPROVE/REJECT; architecture review возвращает свой bounded result caller | Unresolved choice → общий вопрос/repair | Применимый enabled doctor/optional pre-mortem/`exe` |
 | M17 | [exe](../../skills/_shared/references/commands/exe.md) | Выбрана runnable task | Реализация ровно выбранного исхода, actual result/change surface | Новая semantic/scope branch → R13–R17 | Enabled verification, иначе closure с явным skipped |
-| M18 | [verify](../../skills/_shared/references/commands/verify.md), [tier policy](../../skills/_shared/references/workflows/tier-policy.md) | Есть enabled verify participants | Functional result/evidence; PASS только реальной проверки | Decision gap → R18–R20 | Enabled semantic review либо closure |
-| M19 | [red-verify](../../skills/_shared/references/commands/red-verify.md) | Semantic review включён для task/feature | semantic-pass/concern/fail | Material interpretation/repair decision → R21 | Closure/completion либо repair proposal |
+| M18 | [verify](../../skills/_shared/references/commands/verify.md), [tier policy](../../skills/_shared/references/workflows/tier-policy.md) | Есть enabled verify participants | Собственные functional verdicts/evidence или code-only candidates; без hidden main | Decision gap → R18–R20 | Enabled semantic review либо closure |
+| M19 | [red-verify](../../skills/_shared/references/commands/red-verify.md) | Semantic review включён для task/feature, независимо от verify | semantic-pass/concern/fail | Material interpretation/repair decision → R21 | Closure/completion либо repair proposal |
 | M20 | [mb-sync](../../skills/_shared/references/commands/mb-sync.md), [sync workflow](../../skills/_shared/references/workflows/mb-sync.md) | Состояние/документы действительно требуют согласования | RTM/feature/index/links согласованы с фактическим исполнением/проверками | Consistency gap → R28 | Следующая задача/feature/завершение; post-sync checks только включённые |
 | M21 | [autopilot](../../skills/_shared/references/commands/autopilot.md) | Подготовленная product queue | Продолжение/выполнение выбранных задач и terminal outcome | Нестандартные решения по общему механизму | Следующий разрешённый unfinished task/boundary |
 | M22 | [autonomous](../../skills/_shared/references/commands/autonomous.md) | End-to-end работа поручена автономно | Те же предметные операции с автоматическим принятием решений | Отсутствующие факты/внешние constraints не выдумывать; manual stops действуют | Сохранённая незавершённая операция |
@@ -100,20 +101,21 @@ task может быть `done`, но feature/REQ evidence не становит
 | R19 | [verify](../../skills/_shared/references/commands/verify.md): proved task-local implementation FAIL | Correction на той же задаче при прежнем accepted scope либо debug | Evidence-backed correction proposal; бюджет/безопасность повтора учитывает код | exe correction → enabled checks, не ручное проставление PASS |
 | R20 | [verify](../../skills/_shared/references/commands/verify.md): apparent downstream violation может требовать feature/design change | Feature-doctor triage, затем соответствующий planning owner | Governing product basis и actual observed failure | Owner repair → affected enabled checks |
 | R21 | [red-verify](../../skills/_shared/references/commands/red-verify.md): semantic-concern/fail | Concern — decision/evidence consultation; fail — repair по proved defect; без благоприятного переосмысления target | Exact question/defect, impact на closure/dependents, proposal | Implementation correction либо feature/task/spec repair, затем applicable enabled verification |
-| R22 | [autonomy policy](../../skills/_shared/references/workflows/autonomy-policy.md#scheduler-failure-handling): failure с безопасной bounded correction | Предложить same-task retry; старый contract разрешает initial + 2 retries | Fixed task identity/outcome/scope, безопасный повтор, correction basis | Новый attempt exe; выполненные старые findings не стираются |
-| R23 | [autopilot diagnostic recovery](../../skills/_shared/references/commands/autopilot.md#diagnostic-recovery), [debug](../../skills/_shared/references/commands/debug.md): cause/disposition не доказаны | Fresh bounded diagnosis | Текущий failure/attempt/change surface; permission для реального probe если нужна | Confirmed → correction/owner; inconclusive → evidence/decision owner |
+| R22 | [autonomy policy](../../skills/_shared/references/workflows/autonomy-policy.md#scheduler-failure-handling): failure с безопасной bounded correction | Предложить same-task retry внутри настроенного budget | Fixed task identity/outcome/scope, безопасный повтор, correction basis | Новый attempt exe; выполненные старые findings не стираются |
+| R23 | [autopilot diagnostic recovery](../../skills/_shared/references/commands/autopilot.md), [debug](../../skills/_shared/references/commands/debug.md): cause/disposition не доказаны | Fresh bounded diagnosis | Текущий failure/attempt/change surface; permission для реального probe если нужна | Confirmed → correction/owner; inconclusive → evidence/decision owner |
 | R24 | [debug handoff](../../skills/_shared/references/commands/debug.md): confirmed сложная/multi-surface correction | Optional technical-premortem; простая correction → exe | Разрешение дополнительного advisory шага, если не выбран настройкой/запросом | Pre-mortem → exe либо named repair owner |
 | R25 | [debug](../../skills/_shared/references/commands/debug.md): repeated_confirmed material mechanism | Минимальная prevention мера через настоящий owner | Доказанный повтор причины/нарушенного invariant и цена меры | В текущем task только внутри accepted scope; иначе нормальный planning route |
 | R26 | [technical-premortem](../../skills/_shared/references/commands/technical-premortem.md): GO / GO_WITH_CONDITIONS / NO_GO | GO → original execution; conditions/NO_GO → один actual owner/action | Решение по материальному условию/unknown, не speculative risk checklist | Тот же task если accepted scope прежний; иначе repaired plan |
 | R27 | [add-tests](../../skills/_shared/references/commands/add-tests.md): полезный regression proof в текущем task | Scoped test work; out-of-scope behavior/policy → feature/task/shared owner | Дополнительная test операция или material scope decision | Исходный exe/verify/caller, без synthetic testing lifecycle |
-| R27a | [autonomy policy](../../skills/_shared/references/workflows/autonomy-policy.md): safe retry невозможен / бюджет исчерпан | Evidence-based blocked или failed; existing owner/follow-up proposal | Scope/authority gap либо failure disposition и next owner | Repair/normal follow-up planning; не четвёртая скрытая попытка по старому default |
+| R27a | [autonomy policy](../../skills/_shared/references/workflows/autonomy-policy.md): safe retry невозможен / бюджет исчерпан | Evidence-based blocked или failed; existing owner/follow-up proposal | Scope/authority gap либо failure disposition и next owner | Repair/normal follow-up planning; без скрытого расширения budget |
 | R27b | [feature-to-tasks](../../skills/_shared/references/commands/feature-to-tasks.md), [exe](../../skills/_shared/references/commands/exe.md): осталась production acceptance | Отделить development completion от production remainder | Реальный production input/permission; не считать auto mode blanket production consent | Тот же accepted production remainder/финальная acceptance task |
 
 Локальный цикл реализации и проверки возвращается к той же задаче/месту
 implementation. Нестандартный выбор correction, debug, redesign или иной
 route использует общий decision flow. Обычный повтор уже разрешённой операции
 не требует выдуманного нового user approval, но сохраняет ручные остановки.
-Точные retry defaults — старый policy baseline, ещё не новые immutable Nav settings.
+Budget задаётся эффективной политикой; диагностика не расходует execution attempt
+и не даёт дополнительную попытку.
 
 ## 4. Maintenance, installation и вспомогательные консультации
 
@@ -133,10 +135,9 @@ route использует общий decision flow. Обычный повтор
 | R39 | [kiss-architect](../../skills/_shared/references/commands/kiss-architect.md) | Архитектурный proposal/preflight нужен | Bounded KISS reasoning без смены роли; accepted edits только через owner | Новый material choice → общий запрос | Активная design/task операция |
 | R40 | [tech-debt](../../skills/_shared/references/commands/tech-debt.md) | Explicit bounded debt review либо включённый wave option | Advisory report, без auto tasks/gates | Сам finding не требует нового решения/действия; adoption — отдельный owner proposal | Caller продолжает; отсутствие report не превращается в failure проверки |
 
-`recovery-plan.md` и большинство shared agent prompts сейчас source-only для
-direct install: каталог сохраняет их полезный смысл, не заявляя runtime
-доступность. Их старые инструкции архивировать документы и запускать scanners
-не обходят новый общий decision flow.
+`recovery-plan.md` доступен в установленном mb-garden; все шесть agent prompts
+доставляются своим command owners. Availability не разрешает archive/rebuild
+или запуск дополнительного участника без общего decision flow/selected работы.
 
 ## 5. Judge и независимые reviewers
 
@@ -146,7 +147,7 @@ direct install: каталог сохраняет их полезный смыс
 | J02 | [Judge overlay](../../skills/_shared/references/workflows/multiagents_with_judge.md#autopilot-with-judge): retry verification; wave boundary | Проверка progress/route, repeated patterns | Штатная consultation может быть выбранной операцией; необычное предложение маршрута требует общего решения |
 | J03 | Те же источники: second REJECT, contradictory evidence, owning-layer drift, no progress, materially different recovery | SUPPORT / REDIRECT / ESCALATE_OPERATOR | SUPPORT не заменяет user permission; REDIRECT — предложение, не запуск; disagreement/ESCALATE — вопрос основного пути |
 | J04 | [judge role](../../skills/_shared/references/roles/judge.md): конкретная просьба пользователя | Bounded read-only assessment | После результата исходный main owner; не заставлять Judge менять lifecycle |
-| J05 | [multiagentic](../../skills/_shared/references/commands/multiagentic.md), [multipilot](../../skills/_shared/references/commands/multipilot.md): Judge/base contract/session недоступны | Current source HALT_POLICY_VIOLATION | Нужна реальная availability repair либо решение изменить enabled route; не compulsory immutable model/session |
+| J05 | [multiagentic](../../skills/_shared/references/commands/multiagentic.md), [multipilot](../../skills/_shared/references/commands/multipilot.md): Judge/base contract/session недоступны | Concrete unavailable-capability gap и repair/change proposal | Нужна реальная availability repair либо решение изменить enabled route; не compulsory immutable model/session |
 | J06 | [finding-adjudication](../../skills/_shared/references/semantic-packs/finding-adjudication.md), [review-code](../../skills/_shared/agents/review-code.md) | Candidate findings независимых enabled участников | Не голосование, не самостоятельный repair launch; отключённый main reviewer не должен порождать скрытый обязательный main launch |
 | J07 | [web-design-reviewer](../../skills/_shared/references/semantic-packs/web-design-reviewer.md) | Rendered UI evidence при доступных route/browser/safe state | Возврат active verifier, без нового workflow и неизбежной browser ceremony |
 
@@ -158,10 +159,10 @@ direct install: каталог сохраняет их полезный смыс
 
 Эти правила полезны как требования к продолжению, но не как инструкция модели
 пошагово выполнять scheduler. Источники:
-[autopilot recovery](../../skills/_shared/references/commands/autopilot.md#recovery-first-scheduler-loop),
+[autopilot recovery](../../skills/_shared/references/commands/autopilot.md),
 [autonomy checkpoint](../../skills/_shared/references/workflows/autonomy-policy.md#durable-run-checkpoint),
 [exe attempt](../../skills/_shared/references/commands/exe.md),
-[autonomous Foundation resume](../../skills/_shared/references/commands/autonomous.md#foundation-execution-and-resume).
+[autonomous Foundation resume](../../skills/_shared/references/commands/autonomous.md).
 
 | Ситуация | Сохранить смысл | Продолжение / решение |
 | --- | --- | --- |
@@ -180,19 +181,17 @@ direct install: каталог сохраняет их полезный смыс
 | Side session недоступна / основной процесс перезапущен | Memory Bank позволяет дать контекст новой DSH-сессии | Не обещать точный resume прежнего сетевого запроса; схема session management вне этого этапа |
 | Manual red/Pause/Stop | Согласие с route не снимает независимую ручную остановку | Продолжение лишь после соответствующего разрешения пользователя; не агентным self-consent |
 
-Старые конкретные vocabularies, которые сейчас обслуживают эти смыслы:
+Сохранённые предметные vocabularies:
 
 - Task lifecycle: `planned`, `ready`, `in_progress`, `blocked`, `done`,
   `done_for_prod`, `failed` в indexed JSON records.
-- Scheduler stages: `selection`, `execute`, `verify`, `red-verify`, `diagnose`,
-  `closure`, `wave-boundary`; это не task statuses.
-- Run: `RUNNING`, `SUCCESS`, `HALT_BLOCKING_QUESTIONS`,
+- Run terminal reasons: `SUCCESS`, `HALT_BLOCKING_QUESTIONS`,
   `HALT_CLARIFICATION_REQUIRED`, `HALT_REVIEW_REJECT`, `HALT_FAILURE_BUDGET`,
   `HALT_DEPENDENCY_DEADLOCK`, `HALT_POLICY_VIOLATION`, `HALT_QUALITY_GATES`,
   `HALT_BUDGET_EXCEEDED`.
 - Planning: feature `complete/not_required/blocked`, clarification
   `pending/complete/blocked`, redesign `none/bounded/global`,
-  `PLANNING_RECONCILIATION_REQUIRED`, positive Planning Revision.
+  `PLANNING_RECONCILIATION_REQUIRED`, positive Planning Revision когда она записана.
 - Verdicts: review `APPROVE/REJECT`; architecture Reviewer
   `APPROVE/REQUEST_CHANGES/OWNER_DECISION_NEEDED`; functional
   `PASS/FAIL/NEEDS-CLARIFICATION`; semantic
@@ -207,7 +206,8 @@ flow-feedback. Их предметное различие нужно сохра�
 
 ## 7. Контроль полноты миграции по каталогу
 
-После адаптации всех файлов проверить следующие пути по deployed instructions:
+Итоговая приёмка сверяет следующие пути по canonical/deployed instructions
+(фактические проверки и verdict — в [SEMANTIC_ACCEPTANCE.md](SEMANTIC_ACCEPTANCE.md)):
 
 1. Greenfield от raw idea и от уже ясного PRD; brownfield с baseline и без него;
    не переспрашивается уже полученный input.
@@ -227,9 +227,17 @@ flow-feedback. Их предметное различие нужно сохра�
    а не наличию пяти файлов или потерянной сессии; нет повторного unsafe effect.
 8. Проверить, что используемый owner/reference доступен в target, а validator
    не требует исключённый artifact/verdict. Это связывает маршруты с
-   [кодовым inventory](SEMANTIC_INVENTORY.md#6-что-переживёт-правку-prompts-в-исполняемом-коде).
+   [кодовым inventory](SEMANTIC_INVENTORY.md#6-исполняемые-validators-и-generator).
 
-Не выбранные комбинации (red включён без functional verify; execution-time
-RED/GREEN при выключенных verify; defaults/handling отрицательных reviews)
-перечислены в [разделе 8 inventory](SEMANTIC_INVENTORY.md#8-реальные-невыбранные-семантические-детали).
-Их нельзя разрешить случайным сохранением прежнего mandatory gate.
+Рабочие defaults после пакета 3: red-verify независим от functional verify и
+честно обозначает отсутствие functional proof; local exe checks отдельно
+configurable/default on. Это не ответы пользователя на optional уточнения.
+Полученный negative результат требует scoped repair/continue disposition,
+сохраняя user/autonomous provenance. Code-only result не functional PASS.
+
+Новые task attempts сохраняют selected work в existing `task.verify` с
+`stage: workflow`; protocols default `[]`. Recovery/diagnostics используют
+выбор этой попытки, не live settings. Disabled global design не требует revision;
+если shared delta меняется без recorded revision, reconcile только affected
+features существующим marker. Optional Foundation proof не отменяет actual
+baseline dependencies. Исторические результаты и partial effects сохраняются.

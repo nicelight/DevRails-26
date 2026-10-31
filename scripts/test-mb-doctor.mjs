@@ -1116,6 +1116,13 @@ VERDICT: PASS
   historyTask.verification_targets = ['FT-001-AC-001: outcome probe'];
   expectPass(navRun('nav-repair-then-proof', historyTask), 'repair with later actual selected PASS');
 
+  // A retained intermediate result cannot satisfy repair when that attempt did
+  // not select the participant, even if the current attempt skips verification.
+  const unselectedRepair = structuredClone(historyTask);
+  unselectedRepair.verify[1].selected.verify = [];
+  unselectedRepair.verify.push(navWorkflow({}, { attempt: '3' }));
+  expectFinding(navRun('nav-unselected-historical-proof-cannot-close-repair', unselectedRepair), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+
   for (const [name, workflow] of [
     ['after-implementation', navWorkflow({}, { verification: undefined, red_verification: undefined })],
     ['after-review', secondaryOnly],
@@ -1135,6 +1142,9 @@ VERDICT: PASS
   expectFinding(navRun('nav-incomplete-implementation', navTask(PRODUCT_T3, navWorkflow({}, { implementation: 'partial' }))), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
 
   const noDesign = navTask(PRODUCT_T2, navWorkflow());
+  expectPass(navRun('nav-design-without-optional-matrix', navTask(PRODUCT_FIRST, navWorkflow({ design: true })), {
+    files: [{ rel: '.memory-bank/spec-backbone.md', content: '# Spec Backbone\n\n## Global Backbone Status\n- Status: complete\n- Planning Revision: 1\n\nAccepted fixture boundary is recorded in contracts/fixture.md.\n' }],
+  }), 'selected Nav design does not require an optional area matrix');
   const absentDesign = ['.memory-bank/spec-backbone.md', '.memory-bank/spec-index.md', '.memory-bank/contracts/fixture.md'];
   expectPass(navRun('nav-no-design-bundle-real-lint', noDesign, { omit: absentDesign, realLint: true }), 'disabled design without backbone/revision/spec bundle under real lint');
   const badIdentity = structuredClone(noDesign); badIdentity.tier = 'T3';
