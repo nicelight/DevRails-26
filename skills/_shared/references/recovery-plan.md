@@ -1,54 +1,30 @@
-# Memory Bank Recovery Plan
+---
+description: Evidence-bounded recovery routes for Memory Bank damage and drift.
+status: active
+---
+# Memory Bank recovery
 
-Три уровня восстановления в зависимости от масштаба повреждений.
+Apply `.memory-bank/workflows/autonomy-policy.md` for recovery and decisions.
+The host reconciles actual partial effects, recorded results, selected operations
+and manual stops before continuation. A lost session does not authorize replay
+of completed work or enabling skipped checks.
 
-## Level 1: Cosmetic (быстрый фикс)
+Propose the least sufficient repair from observed damage:
+- mechanical links/index/router defects -> `/mb-garden`;
+- meaningful code/documentation drift -> bounded `/map-codebase`, then the first
+  canonical owner whose accepted meaning or routing needs reconciliation;
+- missing framework assets -> coherent `/mb-init` bootstrap/sync;
+- lost project meaning -> recover available authoritative sources and useful
+  prior decisions/evidence, then `/start` at the first unfinished selected owner.
 
-**Симптомы**: пропущен frontmatter, битые ссылки, устаревшие записи, неактуальный changelog.
+These are proposals, not automatic reset or rebuild permission. Do not classify
+recovery by error counts or stale percentages. Preserve task identity, partial
+implementation, decisions and actual verification outcomes; archive/delete/rebuild
+needs a concrete disposition through the common decision flow. Never overwrite
+accepted targets with observed code merely because documents drifted.
 
-**Действие**: запусти `mb-garden`.
-1. `node .memory-bank/scripts/mb-lint.mjs` — найти ошибки.
-2. Добавить пропущенный frontmatter.
-3. Исправить битые ссылки.
-4. Обновить changelog и index.
-5. Архивировать stale docs.
-
-**Время**: 10–30 минут.
-
-## Level 2: Structural (рассинхрон с кодом)
-
-**Симптомы**: MB описывает архитектуру/фичи, которые уже не соответствуют коду. RTM разошёлся. Support docs неполные, противоречивы или врут.
-
-**Действие**: запусти `/map-codebase` (re-scan).
-1. Создай `.tasks/TASK-MB-RECOVERY/`.
-2. Запусти repo-scanner сабагентов по зонам.
-3. Сравни отчёты с текущим MB — найди расхождения.
-4. Обнови MB: architecture, guides, spec-index, glossary, invariants, contracts, states, runbooks, features, requirements, RTM — только те слои, которые реально используются и подтверждаются evidence.
-5. Запусти MB-SYNC чеклист.
-6. Запусти `/review-feat-plan` или `/review-tasks-plan` для нужной поверхности.
-
-**Время**: 1–3 часа.
-
-## Level 3: Full Rebuild (MB утерян или полностью устарел)
-
-**Симптомы**: MB отсутствует, или >80% контента невалидно, или произошла крупная миграция без обновления docs.
-
-**Действие**: запусти `/start` заново.
-1. Сохрани старый MB в `.memory-bank/archive/pre-rebuild/`.
-2. Запусти `mb-init` для создания нового скелета.
-3. Для brownfield: запусти `/map-codebase`.
-4. Для greenfield: запусти `/prd-to-features` после `/write-prd` и `/spec-init`.
-5. Перенеси salvageable контент из archive (ADRs, decision logs).
-6. Запусти `/review-feat-plan`, затем `/review-tasks-plan` после task planning.
-
-**Время**: 3–8 часов.
-
-## Как определить уровень
-
-| Признак | Level |
-|---------|-------|
-| lint errors < 10 | 1 |
-| lint errors > 10 + RTM drift | 2 |
-| >50% файлов MB stale / MB отсутствует | 3 |
-| Крупный рефакторинг без обновления MB | 2 |
-| Миграция на новый стек | 3 |
+Use only selected discovery/review participants and needed outputs. No scanner
+fanout, report directory, full artifact cascade or review APPROVE is required for
+a disabled operation. Recheck affected meaning when review is enabled; retain
+unaffected results and real negative findings. Return compact structured feedback
+with observed damage, bounded repair/owner and exact resume route.

@@ -1,48 +1,20 @@
-# Review Subagent: Security reviewer
+# Review assignment: security
 
-Ты ревьюишь Memory Bank и/или код на предмет security рисков.
+Apply `.memory-bank/workflows/autonomy-policy.md`. The DSH host assigns the
+selected scope, sources and output needs; it owns launches and lifecycle writes.
+Return the common compact structured flow feedback with the subject result.
+No disabled participant requires a report or verdict. Missing material inputs,
+repair and consultation proposals use the caller's common decision flow.
 
-## Вход
-Оркестратор должен дать:
-- `TASK_ID` (например `TASK-MB-REVIEW`)
-- `STAGE_ID` (например `S-04`)
+Assess the assigned Memory Bank/code surface read-only against accepted security
+requirements and concrete risk. Follow relevant sensitive data, trust boundaries,
+authentication/authorization, injection, XSS/CSRF, secrets, SSRF, dependencies,
+logging/privacy and operational exposure. These are coverage lenses, not a
+required threat-model artifact or universal control list.
 
-## Что проверить
-
-1) **Threat model (минимальный)**
-- какие данные чувствительные
-- какие границы доверия (client/server, services)
-
-2) **Auth/AuthZ**
-- описано ли в MB, как работает аутентификация
-- есть ли роли/права
-
-3) **OWASP-ish риски (по стеку)**
-- injection
-- XSS/CSRF
-- secrets
-- SSRF
-- dependency risks
-
-4) **Operational**
-- логирование без PII
-- rate limits (если public)
-
-## Артефакт
-Запиши отчёт в:
-- `.tasks/<TASK_ID>/<TASK_ID>-<STAGE_ID>-final-report-docs-01.md`
-
-## Формат ответа
-
-```
-VERDICT: [APPROVE / REJECT]
-
-Security Risks:
-- [P0/P1/P2] риск → mitigation
-
-Missing docs:
-- чего не хватает в MB
-
-FILES:
-- .tasks/<TASK_ID>/...
-```
+Report only evidenced material vulnerabilities or accepted-constraint gaps with
+path/observation, realistic impact and a bounded repair owner. Do not invent
+security policy or expand permissions. Missing proof stays unknown; disabled
+checks are not synthetic PASS/REJECT. Return `VERDICT: APPROVE|REJECT`, findings
+and necessary questions with common feedback. A separate report is conditional
+at the supplied path or existing `.tasks/<TASK_ID>/` convention.

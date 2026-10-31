@@ -4,6 +4,11 @@ status: active
 ---
 # /feature-doctor - Feature semantic triage
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for effective settings,
+host ownership, decisions, conditional artifacts, and required compact structured
+flow feedback. Routes below are semantic handoffs, not instructions to launch
+agents or write task lifecycle transitions.
+
 <objective>
 Validate the semantic basis of one feature-related finding set, resolve any
 operator-owned decision, and route the minimum contract-correct repair.
@@ -13,16 +18,9 @@ specs, or canonical SDD design specs.
 </objective>
 
 <input_contract>
-Require `$ARGUMENTS` with one `FT-<NNN>`. Do not auto-select a feature. If the
-ID is absent, ask for it in interactive mode. In unattended flow, halt before
-any write with `HALT_CLARIFICATION_REQUIRED` and report:
-- reason: `missing required FT-<NNN> argument for /feature-doctor`;
-- affected command: `/feature-doctor`;
-- owner and next action: the operator supplies the exact feature ID;
-- exact resume command: `/feature-doctor FT-<NNN>`.
-
-Use the caller's existing halt handoff; do not create a durable artifact solely
-for this missing argument.
+Require one supplied `FT-<NNN>`; do not select another feature. A missing target
+returns a missing-input decision with `/feature-doctor FT-<NNN>` as resume route;
+create no artifact solely for this gap.
 
 Locate exactly one `.memory-bank/features/FT-<NNN>-*.md`; otherwise stop. Inspect
 the caller-cited findings or, when none are cited, the target's latest final
@@ -66,26 +64,24 @@ contracts; prefer the least total canonical, implementation, planning, and
 revalidation change after evidenced material risk. Do not invent alternatives
 when authority permits one result.
 
-Interactive flow presents viable alternatives and waits only when an operator
-decision remains. Unattended flow records the recommended option, basis,
-consequences, work surface, exact question, owner, and resume route, then returns
-the caller's existing `HALT_CLARIFICATION_REQUIRED` or
-`HALT_BLOCKING_QUESTIONS`; it never accepts the recommendation. An existing
-authoritative decision may be applied without asking again.
+Propose repair or unresolved consultation through the common decision flow.
+An existing authoritative decision may be applied without asking again;
+autonomous policy permits the model's decision with its provenance.
 </operator_decisions>
 
 <required_outputs>
-Create or update only `.protocols/FT-<NNN>/clarification.md` plus the target
-feature doc. Do not create a separate decision log or triage report.
+Update the target feature only when its owned meaning changes.
+`.protocols/FT-<NNN>/clarification.md` is optional when a durable triage record
+helps recovery; do not require a separate report or decision log.
 
-Record each finding, its semantic basis, the option analysis above, remaining
+Return each material finding, its semantic basis, remaining
 decision, `Design impact: none|feature_design_stale|global_design_stale|blocked`,
 `Behavior spec impact: none|refresh_recommended`, and immediate route. Name only
 evidenced likely consumers; `/spec-redesign` owns exact affected features and
 the `none|bounded|global` verdict.
 
 After every accepted answer:
-- append a dated `## Clarifications` entry in the feature;
+- retain the material decision and its provenance in the owning feature;
 - apply it to the relevant behavior, actor, data, NFR, edge-case, terminology,
   dependency, or verification section;
 - keep every affected acceptance block linked to at least one existing

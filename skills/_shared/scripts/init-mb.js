@@ -1199,13 +1199,15 @@ accepted
 
 ## Context
 Используй этот файл как шаблон для новых ADR.
-Копируй и заполняй: Status, Context, Decision, Consequences, Alternatives.
+Создавай ADR только для нужного durable rationale; используй применимые секции.
 
 ## Decision
-Каждое значимое архитектурное решение фиксируется как ADR в этой папке.
+ADR не обязателен для каждого решения или review. Принятые изменения проходят
+общий decision flow; источник решения (user/autonomous/authoritative source)
+фиксируется правдиво. Достаточный существующий canonical owner не дублируется.
 
 ## Consequences
-Все решения трассируемы и reviewable.
+Сохраняй значимые последствия и основание принятия без обязательного отчёта.
 `);
 
 console.log('\n[3/4] Writing runtime scripts and creating symlinks...');

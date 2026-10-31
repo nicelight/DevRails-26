@@ -4,6 +4,11 @@ status: active
 ---
 # /architecture-review - Feature architecture review
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for effective settings,
+host ownership, decisions, conditional artifacts, and required compact structured
+flow feedback. Routes below are semantic handoffs, not instructions to launch
+agents or write task lifecycle transitions.
+
 <objective>
 Review one feature's task-planning surface against its accepted C4 context,
 architecture support, boundaries, dependencies, and invariants. Return a
@@ -11,8 +16,9 @@ compact Reviewer report to the calling reviewer.
 </objective>
 
 <input_contract>
-Require one `FT-<NNN>` plus its product, relevant epic, feature, implementation
-plan, and indexed tasks. Include applicable direct architecture/spec links;
+Require one `FT-<NNN>` and its indexed task scope. Use product, epic, feature and
+implementation plan evidence when present; missing disabled-stage artifacts alone
+do not block review. Include applicable direct architecture/spec links;
 their absence is valid when canonical evidence shows none applies to the
 reviewed feature. Read additional canonical specs or code evidence only when
 needed to verify a finding.
@@ -25,7 +31,8 @@ needed to verify a finding.
   final `APPROVE|REJECT`.
 - Do not require an ADR unless accepted project policy or the reviewed decision
   requires one.
-- Create no separate report artifact.
+- A separate report is unnecessary; retain the actual result through the caller.
+- Disabled architecture review requires no launch, verdict or report.
 </hard_invariants>
 
 <coverage>
@@ -45,14 +52,14 @@ Treat these as coverage criteria, not a mandatory order:
    - dependencies are explicit and no task must invent a material boundary.
      Their outcomes are prerequisites, not inherited proof; regression checks
      do not transfer claim ownership;
-   - the relevant subgraph has registered modules, exact contracts, accepted
-     directions, and complete consumer impact until compatibility stops it;
+   - when an accepted graph applies, its relevant modules, exact contracts, accepted
+     directions and consumers are consistent until compatibility stops impact;
    - accepted architecture and rollout constraints—not graph shape alone—justify
      task dependencies and waves;
    - a capability-sliced cross-slice outcome names one accepted capability slice
      as orchestration owner; reject an orchestration slice invented in planning;
-   - applicable linked rules retain existing mechanical gates and required
-     runtime reproducibility proof; require neither without canonical evidence.
+   - selected checks retain applicable accepted rules and reproducibility proof;
+     disabled checks require no missing report or synthetic pass.
 4. Anti-patterns
    - speculative architecture without current evidence;
    - hidden or cyclic dependencies;
@@ -67,7 +74,7 @@ relevant dependencies beyond the feature only when they can change the verdict.
 </agent_discretion>
 
 <required_outputs>
-Return only:
+Return the subject result plus common structured flow feedback:
 
 - `verdict: APPROVE|REQUEST_CHANGES|OWNER_DECISION_NEEDED`;
 - `findings`;
@@ -83,6 +90,7 @@ from an optional improvement, and states its effect on task-plan readiness.
 </validation>
 
 <handoff_contract>
-Return the report to `/review-tasks-plan`; the caller owns the final verdict and
-repair route.
+Return the result to the caller, normally `/review-tasks-plan`; it owns the final
+verdict. Material repair/consultation proposals use the common decision flow,
+not an automatic new review gate.
 </handoff_contract>

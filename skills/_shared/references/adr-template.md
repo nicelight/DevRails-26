@@ -1,6 +1,10 @@
 # ADR Template
 
-Use this template for `.memory-bank/adrs/ADR-<NNN>-<slug>.md`.
+Use `.memory-bank/adrs/ADR-<NNN>-<slug>.md` only for a selected durable decision
+record whose rationale has lasting value. No ADR is required merely because
+Architect/review ran. Apply the common decision flow before changing accepted
+targets; record user or autonomous provenance truthfully. Reuse existing canonical
+owners and include only applicable sections, without invented alternatives.
 
 ```markdown
 ---
@@ -21,6 +25,7 @@ proposed | accepted | deprecated | superseded by ADR-XXX
 Факты, ограничения, движущие силы (drivers).
 
 ## Decision
+Источник принятия: пользователь / autonomous / существующий authoritative source.
 Что решили делать. Формулировка должна быть конкретной и однозначной.
 
 ## Consequences

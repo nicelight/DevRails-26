@@ -39,7 +39,7 @@
 ## Этапы
 
 1. **Завершён:** полная инвентаризация семантики, переходов и необходимых изменений.
-2. **В работе:** общий контракт/entry завершены; следующий пакет — planning и reviews.
+2. **В работе:** общий контракт и planning/reviews завершены; execution/validators далее.
 3. Ожидает: независимая проверка семантики и изолированного deployment; исправления.
 4. Ожидает завершения этапов 1–3: архитектура Nav/DSH.
 
@@ -100,3 +100,26 @@ decision policy во всём run, включая legacy handoff в autopilot. �
 Следующий исполнитель адаптирует planning/review commands, shared agent prompts
 и связанные references. Исполняемые validators пока сохраняют известные старые
 ограничения; готовность всей миграции не заявляется.
+
+### Пакет 2 — завершён
+
+Исполнитель: `/root/semantics_planning`, Astra medium. Адаптированы 12 команд,
+шесть agent prompts, оба semantic packs и recovery/concept/ADR/deprecated references.
+Результат и доказательства: `SEMANTIC_PLANNING_RESULT.md`.
+
+Installer теперь доставляет все шесть prompts по владельцам; recovery и optional
+design templates доступны в target. Проверены parity/sync ресурсов, anchors,
+148 command copies, 17 resource routes, отдельные install-only/bootstrap/sync,
+syntax, mb-doctor regression, install-sync, deployed doctor и 0 generated shared-*.
+Прохождение старых regressions не доказывает conditional evidence: это пакет 3.
+
+Для пакета 3 существенны conditional Foundation gate, tasking без отключённого
+design/positive revision и честное закрытие без PASS. Существующие ID и evidence
+сохраняются; отрицательный verdict не переписывается.
+
+Ответов на два необязательных уточнения пока нет. Оркестратор сообщил выбранные
+стартовые defaults для продолжения: red-verify независим и использует доступное
+implementation evidence, явно отмечая отсутствие functional proof; локальные exe
+checks имеют отдельную настройку и включены по умолчанию. Это рабочие defaults,
+не новое явное решение пользователя и не запрет их отключить. Общая авторизация
+адаптации позволяет продолжить; дальнейший ответ пользователя имеет приоритет.

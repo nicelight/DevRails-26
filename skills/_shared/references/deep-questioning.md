@@ -1,5 +1,5 @@
 # Deep Questioning — deprecated
 
-This reference is retained only as a compatibility stub.
-
-Deep Questioning is superseded by `/write-prd` targeted clarification and must not be used by `/prd-to-features`.
+Compatibility stub only. Use `/write-prd` for material product clarification and
+its common decision flow. No fixed questionnaire, separate report or mandatory
+clarification stage is introduced; `/prd-to-features` does not use this reference.

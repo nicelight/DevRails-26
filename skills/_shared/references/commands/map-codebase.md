@@ -4,6 +4,9 @@ status: active
 ---
 # /map-codebase — Brownfield mapping
 
+When bounded scanner work is selected, its installed prompt is
+`agents/repo-scanner.md`; the host supplies the assignment and launch.
+
 Apply `.memory-bank/workflows/autonomy-policy.md` for decisions, effective
 settings, host ownership and recovery.
 

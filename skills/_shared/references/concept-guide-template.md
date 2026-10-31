@@ -4,6 +4,10 @@ status: active
 ---
 # CON-<NNN> — <Concept name> (Guide)
 
+Use only needed sections; subject specs may already provide sufficient support.
+A paired architecture/guide file is optional, not a completion gate. Preserve
+one canonical owner and link existing support instead of duplicating it.
+
 ## When to use
 
 ## How to use
@@ -17,7 +21,7 @@ status: active
 - Invariants: `.memory-bank/invariants.md`
 - Contracts / states / runbooks: ...
 
-## Related architecture doc
+## Related architecture doc (when used)
 - `.memory-bank/architecture/CON-<NNN>-<slug>.md`
 
 ## Related support docs (optional)

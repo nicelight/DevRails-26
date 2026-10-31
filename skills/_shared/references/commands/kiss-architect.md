@@ -4,13 +4,18 @@ status: active
 ---
 # /kiss-architect - Architect proposal preflight
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for effective settings,
+host ownership, decisions, conditional artifacts, and required compact structured
+flow feedback. Routes below are semantic handoffs, not instructions to launch
+agents or write task lifecycle transitions.
+
 <objective>
 Apply `.memory-bank/roles/architect.md` to the current architecture or
 specification work.
 
-Ensure that every architecture finding, design element, or proposed correction
-entering an operator response or canonical artifact has passed the Architect
-proposal preflight.
+Assess the value and total cost of the assigned architecture candidates. This
+operation is selected explicitly or by effective settings; it does not require
+a separate Architect for other design work.
 </objective>
 
 <input_contract>
@@ -23,8 +28,9 @@ Read:
 - accepted requirements, decisions, specifications, and current-state evidence
   required by the proposal's consequence surface.
 
-If the deployed role contract is missing, stop and request coherent framework
-bootstrap or sync.
+If the selected operation lacks its deployed role contract, report that resource
+gap and propose coherent framework sync. A disabled Architect needs no role
+launch, preflight report or verdict.
 </input_contract>
 
 <hard_invariants>
@@ -55,12 +61,11 @@ within the Architect role and active skill contract.
 </agent_discretion>
 
 <required_outputs>
-Return only preflighted architecture conclusions, material trade-offs, remaining
-risks, and operator decisions using the communication contract defined by the
-Architect role.
+Return supported architecture conclusions, material trade-offs and needed
+decisions under the Architect communication contract, with common flow feedback.
 
 The active skill may require additional output fields or artifacts. Create no
-durable artifact unless the active owning skill requires it.
+durable artifact unless selected or needed by the active owning work.
 </required_outputs>
 
 <validation>

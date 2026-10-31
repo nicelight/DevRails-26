@@ -53,10 +53,30 @@ const CODE_REVIEWER_PROMPT = {
   sourceRel: join('skills', '_shared', 'agents', 'review-code.md'),
   targetRel: join('agents', 'review-code.md'),
 };
+const sharedAgent = (filename) => ({
+  sourceRel: join('skills', '_shared', 'agents', filename),
+  targetRel: join('agents', filename),
+});
+const sharedReference = (filename) => ({
+  sourceRel: join('skills', '_shared', 'references', filename),
+  targetRel: join('references', filename),
+});
 const COMMAND_RESOURCE_SPECS = new Map([
+  ['map-codebase', [sharedAgent('repo-scanner.md')]],
+  ['mb-garden', [sharedAgent('mb-reviewer.md'), sharedReference('recovery-plan.md')]],
+  ['spec-design', [
+    sharedReference('adr-template.md'),
+    sharedReference('concept-architecture-template.md'),
+    sharedReference('concept-guide-template.md'),
+  ]],
+  ['spec-redesign', [sharedReference('adr-template.md')]],
   ['red-verify', [WEB_DESIGN_REVIEWER_PACK, FINDING_ADJUDICATION_PACK]],
-  ['review-feat-plan', [FINDING_ADJUDICATION_PACK]],
-  ['review-tasks-plan', [FINDING_ADJUDICATION_PACK]],
+  ['review-feat-plan', [FINDING_ADJUDICATION_PACK, sharedAgent('review-scope.md')]],
+  ['review-tasks-plan', [
+    FINDING_ADJUDICATION_PACK,
+    sharedAgent('review-plan.md'),
+    sharedAgent('review-security.md'),
+  ]],
   ['verify', [
     WEB_DESIGN_REVIEWER_PACK,
     FINDING_ADJUDICATION_PACK,

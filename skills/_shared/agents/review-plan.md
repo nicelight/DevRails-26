@@ -1,76 +1,30 @@
-# Review Subagent: Plan reviewer (task records, waves, gates)
+# Review assignment: task planning
 
-Ты ревьюишь implementation plans и JSON task records, составленные другим агентом. Будь критичен.
+Apply `.memory-bank/workflows/autonomy-policy.md`. The DSH host assigns the
+selected scope, sources and output needs; it owns launches and lifecycle writes.
+Return the common compact structured flow feedback with the subject result.
+No disabled participant requires a report or verdict. Missing material inputs,
+repair and consultation proposals use the caller's common decision flow.
 
-## Вход
-Оркестратор должен дать:
-- `TASK_ID` (например `TASK-MB-REVIEW`)
-- `STAGE_ID` (например `S-03`)
+Review the assigned planning surface read-only. Plans are useful inputs when
+present; indexed JSON task cards remain the task model. Use the schema, tier
+policy and accepted source contracts, not a fixed file bundle.
 
-## Что проверить
+Applicable coverage:
+- unique/resolving index entries; schema and ID/tier/feature/wave consistency;
+- cohesive implementation outcomes rather than file/layer/proof-only tasks;
+- concrete purpose/outcome, direct accepted context, realistic dependencies,
+  advisory change surface and deliberate hard boundaries;
+- sufficient selected proof/UAT and required project constraints; no filler or
+  inherited dependency claims, unsupported proof or invented reports;
+- one applicable canonical route per material concern, sufficient boundary
+  meaning, no FT-* technical-spec hub or competing canonical identities;
+- legal host-recorded lifecycle and runnable dependencies; no inferred parallelism;
+- grounded sequencing and useful durable reconciliation/RTM handoff.
 
-1) **Task registry structure**
-- `.memory-bank/tasks/index.json` существует и ссылается только на indexed `.memory-bank/tasks/TASK-*.task.json` records
-- задачи сгруппированы в waves по зависимостям
-- не оценивай tasks в часах и не дроби их по файлам, модулям, слоям или tests;
-  предпочитай меньшее число связных tasks
-- у каждого task record есть `status`, `wave`, `depends_on`, `touched_files`, `gates`, `verify`, `docs`, `tier`
-- task record валиден по `.memory-bank/schemas/task.schema.json`, а ID segments
-  совпадают с `tier`, `feature` и `wave`
-
-2) **Definition of done per task**
-- явные outputs
-- тесты указаны (unit/integration/e2e)
-- verification steps (UAT)
-- docs-first update чеклист
-- для T2/T3: непустые `purpose`, один scalar `success_outcome`, advisory
-  `touched_files` или hard `write_boundary`, реальная gate command и/или
-  `verification_target`
-- optional `anti_goals`, `constraints`, `invariants`, `evidence_required`,
-  `forbidden_scope` и `stop_conditions` не заполнены фиктивными значениями
-
-3) **Canonical SDD context**
-- каждая T2/T3 task напрямую ссылается только на применимый subset
-  subject-based canonical specs через существующие task fields
-- feature links или `spec-index.md` сами по себе не заменяют direct task links
-- linked spec действительно применима и содержит достаточные shape/rules/errors/
-  verification details для task scope
-- новый default `FT-*` spec hub или hub-only legacy coverage — REJECT
-- competing paths для одного concern не маскируются созданием третьей spec
-
-4) **Dependency correctness**
-- зависимости реалистичны
-- нет скрытых блокеров
-- `ready` помечены только задачи без незакрытых dependencies
-- canonical queue is sequential; не требуй parallel plan
-
-5) **Risk & sequencing**
-- ранние задачи снижают риск (spikes/POCs)
-- нет “big bang” интеграции в конце
-
-6) **MB-SYNC в плане**
-- план предусматривает MB-SYNC после каждой wave
-- есть шаг обновления RTM и changelog
-- Docs First не забыт (обновление MB идёт до коммита, не после)
-
-## Артефакт
-Запиши отчёт в:
-- `.tasks/<TASK_ID>/<TASK_ID>-<STAGE_ID>-final-report-docs-01.md`
-
-## Формат ответа
-
-```
-VERDICT: [APPROVE / REJECT]
-
-Plan Issues:
-- [P0/P1/P2] проблема → как исправить
-
-Missing:
-- что добавить
-
-Suggested rewrite:
-- если надо, предложи новую структуру waves
-
-FILES:
-- .tasks/<TASK_ID>/...
-```
+Do not demand a wave checklist, risk spike, test category or separate plan merely
+by default. Disabled design/review/proof leaves no mandatory absent artifact.
+Preserve existing identity/history; propose rebuild for material identity/scope
+change instead of replacement tasks. Return `VERDICT: APPROVE|REJECT`, material
+findings with evidence, questions and repair owner. Separate reports are
+conditional at the supplied path or existing `.tasks/<TASK_ID>/` convention.

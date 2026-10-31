@@ -1,206 +1,77 @@
 ---
-description: Validate project vocabulary and frame pre-PRD context before PRD decomposition.
+description: Frame product vocabulary, scenarios, domain, and lifecycle for decomposition.
 status: active
 ---
-# /spec-init - Pre-PRD spec framing
+# /spec-init - Decomposition framing
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for effective settings,
+host ownership, decisions, conditional artifacts, and required compact structured
+flow feedback. Routes below are semantic handoffs, not instructions to launch
+agents or write task lifecycle transitions.
 
 <objective>
-Prepare enough evidence-backed product/domain framing after clarified
-`/write-prd` for `/prd-to-features` to derive meaningful requirements, epics, and features
-without cutting across the wrong scenario, domain, lifecycle, or boundary.
-
-`/spec-init` is a decomposition-safety gate, not architecture design. Its result
-is `Pre-PRD Spec Status: ready_for_prd|blocked`; the global SDD backbone and
-Foundation Dev Path remain intentionally pending for `/spec-design` after
-`/prd-to-features`.
+Prepare evidence-backed framing sufficient to derive meaningful requirements,
+epics, and features. Return `Pre-PRD Spec Status: ready_for_prd|blocked`.
+Architecture and Foundation design remain owned by `/spec-design` when selected.
 </objective>
 
 <input_contract>
-Require `.memory-bank/prd.md` with all existing clarified-PRD markers:
-
-```yaml
-type: prd
-clarification_status: complete
-constitution_checked: true
-```
-
-If any marker is missing or has another value, stop and route to `/write-prd`
-or `/constitution` according to the failed owner contract; do not frame the PRD
-as ready. Read relevant context from the Constitution, the discovery brief, existing
-`glossary.md`, `spec-backbone.md`, pure `spec-index.md`, user scenarios,
-invariants, and canonical subject specs under `architecture/`, `contracts/`,
-`domains/`, `states/`, `adrs/`, `testing/`, `guides/`, and `runbooks/`.
-
-Legacy `.memory-bank/tech-specs/FT-*.md` may be read as brownfield evidence only;
-it is not a target path for new specs. If the PRD is missing or too unclear to
-frame truthfully, stop and route to `/write-prd`.
+Use the accepted product source, normally clarified `.memory-bank/prd.md`,
+applicable Constitution, discovery brief, glossary, scenarios, invariants,
+spec-backbone/index, and relevant subject specs. Missing artifacts from disabled
+earlier operations do not block framing when supplied intent is sufficient.
+A material product gap or authority conflict needs a decision at `/write-prd`
+or `/constitution`; do not manufacture readiness from a marker.
+Legacy `tech-specs/FT-*.md` may supply brownfield evidence, never a new spec path.
 </input_contract>
 
-<glossary_gate>
-Before any other framing, inspect `.memory-bank/glossary.md`. It is unfilled if
-missing, empty, or placeholder-only. In that case populate it from the Product
-Brief, clarified PRD, and other authoritative project sources; otherwise
-reconcile existing terms with current evidence.
-
-Keep only evidenced definitions. If a conflicting meaning can affect
-decomposition, use the existing operator-decision blocker. Continue only when
-the glossary has no placeholders and its `spec-index.md` row matches it.
-</glossary_gate>
-
 <hard_invariants>
-- Do not create feature files, task records, implementation plans, feature-owned
-  or `FT-*` design specs, full architecture decisions, source-of-truth
-  hierarchy, API/OpenAPI details, DB migrations, deployment design, detailed
-  state machines, or invented security posture.
-- Do not set feature `spec_design_status`; `/prd-to-features` creates features and later
-  design skills own that status.
-- Keep `.memory-bank/spec-index.md` a pure registry. Readiness, open design
-  questions, matrices, and handoffs belong in `spec-backbone.md`.
-- Preserve any existing Global Backbone `Planning Revision`. `/spec-init` does
-  not initialize or increment the post-PRD planning contract; a fresh bootstrap
-  placeholder remains `0` until `/spec-design` succeeds.
-- Keep boundary hints preliminary in
-  `spec-backbone.md#Decomposition Inputs`. `/spec-init` does not create accepted
-  module/change-unit nodes, dependency edges, or boundary contracts.
-- Do not turn a later architecture question into a product assumption. Record it
-  for `/spec-design` unless it blocks truthful L1-L3 decomposition now.
+- No feature/task creation, implementation plans, full architecture decisions,
+  API/DB/deployment design, detailed state machines, or invented security policy.
+- Do not set feature `spec_design_status` or initialize/increment Global Backbone
+  `Planning Revision`; preserve existing accepted design and revision.
+- `spec-index.md` is a pure registry, not a decision or handoff document.
+- Boundary hints are preliminary; they do not establish accepted modules/edges.
+- Defer architecture questions unless they block truthful decomposition now.
 </hard_invariants>
 
-<operator_decisions>
-If an unresolved product/domain branch can change actors, core scenarios,
-non-goals, entity/business-rule ownership, lifecycles, boundary hints,
-constraints, risks, or feature/epic cuts, ask the operator before setting
-`ready_for_prd`.
+<decisions>
+Resolve material ambiguity in terminology, actors/scenarios, entity/business-rule
+ownership, lifecycle, constraints, risks, or proposed cuts through the common
+decision flow. Reuse accepted answers; autonomous decisions retain autonomous
+provenance. Missing facts remain gaps. Apply decisions at their canonical owner
+and remove conflicting active wording before dependent decomposition.
+</decisions>
 
-Use an adaptive interview: ask one question or a small group of tightly related
-questions, explain decomposition impact, and optionally recommend an option.
-Do not run a fixed framing questionnaire. A recommendation is not a decision.
-Do not re-ask matters settled by authoritative PRD/Constitution/spec evidence.
+<outputs>
+Retain only useful durable framing. Reconcile glossary definitions when terms
+affect decomposition; a separate filled glossary is not a gate. Link an adequate
+PRD section instead of duplicating it. If used, `spec-backbone.md` holds:
+- `## Pre-PRD Spec Status` with `Status: ready_for_prd|blocked` and concise basis;
+- `## Decomposition Inputs`: scenarios, domain, constraints, non-goals, risks,
+  boundary and lifecycle hints;
+- material open design questions and the immediate handoff.
 
-In unattended flow, use only an already accepted authoritative decision. If
-none exists, record the question and affected decomposition inputs, set
-`Pre-PRD Spec Status: blocked`, and halt with `HALT_BLOCKING_QUESTIONS`.
-
-After every accepted answer, apply the decision to its existing owning
-canonical artifact and to the corresponding `spec-backbone.md` decomposition
-input or blocker. Remove contradictory superseded wording and rerun the PRD,
-source-precedence, link, and decomposition-safety checks before setting
-`ready_for_prd`. Do not create a separate decision artifact or status.
-</operator_decisions>
-
-<required_outputs>
-Ensure the current durable pre-PRD framing is reflected in:
-- `.memory-bank/glossary.md` through the mandatory glossary gate;
-- `.memory-bank/spec-index.md` as registry/index only;
-- `.memory-bank/spec-backbone.md` with decomposition state and handoff.
-
-Edit these files only when durable decomposition state, inputs, blockers,
-registry routing, or handoff has changed, or the existing contract needs
-repair. Do not append per-run reconciliation/history, changed-artifact lists,
-or mirror the final chat handoff; preserve current open design questions and
-durable `Handoff To ...` sections.
-
-Create or update the following only when evidence exists or a blocking gap must
-be made explicit:
-- `.memory-bank/user-scenarios.md`;
-- `.memory-bank/domains/core-domain.md` or another subject domain spec;
-- `.memory-bank/invariants.md`;
-- `.memory-bank/states/lifecycle-map.md` when lifecycle affects decomposition.
-
-When the PRD already owns sufficient evidence, link its section instead of
-duplicating it. Created artifacts cover only applicable decomposition criteria:
-- actors, 1-3 representative core scenarios, and out-of-scope scenarios;
-- main entities, roles, business rules, states/lifecycles, and constraints;
-- decomposition-affecting MUST/NEVER rules;
-- preliminary boundary responsibility/direction/owner/questions recorded as
-  decomposition hints, not accepted graph topology;
-- lifecycle transitions needing later detail.
-
-When `.memory-bank/user-scenarios.md` is created, preserve this minimum shape:
-
-```markdown
-## Primary Actors
-## Core Scenarios
-## Out Of Scope Scenarios
-## Architecture/Domain Implications
-## Review Status
-- Status: draft|reviewed|blocked
-- Notes:
-```
-
-The review status is required only for a created scenario artifact. When a
-decomposition decision is scenario-sensitive, missing review state or
-`draft|blocked` scenarios are not authoritative: interactive flow asks an
-adaptive operator question, while unattended flow records the affected input,
-sets `Pre-PRD Spec Status: blocked`, and uses the existing blocking halt. If no
-decomposition decision depends on scenarios, do not create or demand a
-decorative scenario review.
-
-Keep `spec-index.md` to:
-- Purpose;
-- `Spec Registry` table `Type | Path | Status | Scope | Change route`;
-- `Planned Specs`;
-- `Broken / Missing Links`;
-- concise Update Rules.
-
-Keep `spec-backbone.md` parseable with:
-
-```markdown
-## Pre-PRD Spec Status
-- Status: ready_for_prd|blocked
-- Last updated:
-- Notes:
-
-## Decomposition Inputs
-- User scenarios:
-- Domain model:
-- Constraints:
-- Non-goals:
-- Risks:
-- Boundary hints:
-- Lifecycle hints:
-
-## Open Design Questions
-
-## Handoff To /prd-to-features
-- Ready: yes|no
-- Required reads:
-- Stop conditions:
-
-## Handoff To /spec-design
-- Global Backbone Status: intentionally pending until /spec-design
-- Downstream readiness: tasking and autonomous execution wait for /spec-design
-- Backbone areas to revisit:
-- Candidate specs:
-```
-</required_outputs>
-
-<agent_discretion>
-After the mandatory glossary gate, choose evidence-reading order, tools,
-analysis shape, question grouping, and the minimum artifact set. Treat
-actors/scenarios, domain/lifecycle, constraints, non-goals, risks, boundaries,
-and invariants as coverage criteria rather than a mandatory sequence. Do not
-create a file when a precise PRD link is enough.
-</agent_discretion>
+Create/update user-scenarios, domain, invariants, or lifecycle-map only when they
+add necessary durable meaning. Scenario coverage includes primary actors, core
+and out-of-scope scenarios, and domain implications. Preserve existing
+`draft|reviewed|blocked` review state truthfully; a disabled scenario review
+requires no reviewed marker. Evidence must still support the chosen cuts.
+Register created specs using `Type | Path | Status | Scope | Change route`.
+Do not append per-run audit history or duplicate the final feedback.
+</outputs>
 
 <validation>
-Set `ready_for_prd` only when the evidence is sufficient for meaningful L1-L3
-decomposition. Set `blocked` when `/prd-to-features` would likely invent scope or cut the
-product incorrectly. Verify that `spec-index.md` remains pure, all links resolve,
-scenario-sensitive inputs are reviewed or otherwise authoritative, accepted
-answers were applied consistently, the glossary is filled and its registry row
-is consistent, and no architecture/foundation decision was silently made.
-
-At this boundary, a non-strict doctor warning that Global Backbone Status is
-not ready is expected: `/spec-design` has not run yet.
+`ready_for_prd` means evidence supports meaningful L1-L3 decomposition without
+inventing product scope. `blocked` names the concrete missing decision/fact or
+conflict. Check affected terminology, source precedence, links and registry
+consistency; no architecture/Foundation assumption may become accepted design.
+A pending or absent global backbone alone does not block this result.
 </validation>
 
 <handoff_contract>
-In the final chat response, report the pre-PRD status, artifacts changed,
-decomposition inputs, blockers, and that global backbone/foundation readiness
-remains owned by `/spec-design`.
-
-- `ready_for_prd` -> `/prd-to-features`.
-- `blocked` -> resolve the recorded product/domain decision through
-  `/write-prd` or focused discussion, then rerun `/spec-init`.
+Ready -> `/prd-to-features`. Blocked -> propose the owning product/domain
+consultation, `/write-prd`, or `/constitution`, then resume framing. Return the
+status, material inputs/blocker, changed artifacts when any, and immediate route
+with the common feedback; no separate report is required.
 </handoff_contract>

@@ -1,57 +1,21 @@
-# Review Subagent: Scope analyst (REQ/RTM coverage)
+# Review assignment: accepted scope and traceability
 
-Ты ревьюишь Memory Bank, заполненный ДРУГИМ агентом. Свежий контекст — будь критичен.
+Apply `.memory-bank/workflows/autonomy-policy.md`. The DSH host assigns the
+selected scope, sources and output needs; it owns launches and lifecycle writes.
+Return the common compact structured flow feedback with the subject result.
+No disabled participant requires a report or verdict. Missing material inputs,
+repair and consultation proposals use the caller's common decision flow.
 
-## Вход
-Оркестратор должен дать:
-- `TASK_ID` (например `TASK-MB-REVIEW`)
-- `STAGE_ID` (например `S-02`)
+Review accepted product scope and REQ/EP/FT/AC traceability read-only. Use actual
+product sources and relevant tasks when present. Check stable identities,
+observable acceptance, non-goals and material ambiguity; no unsupported scope or
+orphan/duplicate product outcomes. Material edge/failure outcomes need an AC or
+sourced exclusion; material quality criteria retain accepted targets/conditions.
 
-## Что проверить
-
-1) **Traceability (RTM)**
-- каждый REQ привязан к Epic и Feature
-- нет REQ без фичи
-- нет фич без REQ (откуда взялась?)
-- RTM таблица реально заполнена и не фиктивная
-
-2) **Completeness**
-- v1 scope чётко определён
-- Out of scope указан явно
-- ambiguities минимизированы
-- edge cases/empty states/error states хотя бы перечислены
-
-3) **Gaps**
-- нет фич без acceptance criteria
-- нет эпиков без метрик успеха
-- нет задач без привязки к фиче
-
-4) **Hidden requirements**
-- auth/authz (если применимо)
-- error handling
-- observability/logging (если нужно)
-- data migration (если меняется схема)
-- backward compatibility (API versioning, breaking changes)
-- rate limits / throttling (если public-facing)
-- i18n / l10n (если multi-language)
-
-## Артефакт
-Запиши отчёт в:
-- `.tasks/<TASK_ID>/<TASK_ID>-<STAGE_ID>-final-report-docs-01.md`
-
-## Формат ответа
-
-```
-VERDICT: [APPROVE / REJECT]
-
-Gaps Found:
-- gap → как закрыть
-
-Ambiguities:
-- что неясно → какой вопрос задать
-
-Recommendation: [Proceed / Clarify First / Reconsider]
-
-FILES:
-- .tasks/<TASK_ID>/...
-```
+Auth, errors, observability, migration, compatibility, throttling or localization
+are relevant only when accepted requirements or concrete material evidence make
+them part of the assigned outcome. A checklist item does not create a requirement.
+Do not reject omitted artifacts from disabled stages or write the replacement
+product plan. Return `VERDICT: APPROVE|REJECT`, material gaps/evidence, unresolved
+questions and first repair owner. A separate report is conditional at the supplied
+path or existing `.tasks/<TASK_ID>/` convention.

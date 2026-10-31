@@ -1,25 +1,24 @@
 ---
-description: Two independent co-review focuses with model-pinned refresh for existing review and verification commands.
+description: Evidence-based adjudication of selected review participants' findings.
 status: active
 ---
 # Semantic pack: finding-adjudication
 
-Before the calling skill's verdict:
+Apply `.memory-bank/workflows/autonomy-policy.md`. Effective settings select
+participants, models, reasoning and outputs; the host performs DSH launches.
+This pack does not mandate two focuses, a model, extra delegation or launch retry.
 
-- On a full review, establish and record two different review focuses most
-  likely to add useful information for the current target. This pack does not
-  prescribe them.
-- Retain a prior focus only when the calling skill permits reuse and its report
-  proves the focus, target, scope, and governing evidence unchanged.
-- For each unretained focus, launch one fresh co-reviewer on model `Codex Luna`
-  with reasoning effort `xhigh`.
-- Give each launched co-reviewer the same target, governing evidence, and scope
-  plus its selected focus. Do not expose one focus's findings to the other.
-- Ask for evidence-backed candidate findings. Use returned findings at your
-  discretion under the calling skill's existing contracts.
+For selected co-review, focus on a bounded uncertainty material to the assigned
+outcome. Use the same accepted target, evidence and scope. Retain prior focus
+evidence only when the caller permits reuse and governing inputs are unchanged.
+An additional consultation is a proposal through the common decision flow.
 
-If a co-reviewer does not launch, retry it once. After the second failed launch,
-continue without it. Do not substitute another model.
+Assess candidate findings against direct evidence and accepted authority.
+Agreement is not a vote and a co-review cannot authorize new requirements.
+Preserve actual negative results and distinguish failed execution from skipped
+participants. Disabled participants require no fallback, report or verdict.
 
-The caller owns the final judgment. Agreement is not a vote. This pack creates
-no separate artifact, gate, lifecycle, status, verdict, or handoff.
+The assigned caller owns its final subject judgment and common structured flow
+feedback. If that caller is disabled, do not invent a replacement reviewer;
+selected participants retain their own results and substantive conflicts use the
+common decision flow. This pack adds no artifact, gate, lifecycle or status.

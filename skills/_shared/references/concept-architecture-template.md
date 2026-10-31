@@ -4,6 +4,10 @@ status: active
 ---
 # CON-<NNN> — <Concept name> (Architecture)
 
+Use only needed sections; subject specs may already provide sufficient support.
+A paired architecture/guide file is optional, not a completion gate. Preserve
+one canonical owner and link existing support instead of duplicating it.
+
 ## What
 
 ## Why
@@ -28,7 +32,7 @@ status: active
 ## Where to look in code
 - `path/...`
 
-## Related guide
+## Related guide (when used)
 - `.memory-bank/guides/CON-<NNN>-<slug>.md`
 
 ## Related support docs (optional)

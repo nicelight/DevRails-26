@@ -1,62 +1,28 @@
-# Review Subagent: Memory Bank compliance (MBB)
+# Review assignment: Memory Bank consistency
 
-Ты ревьюишь Memory Bank, заполненный ДРУГИМ агентом. У тебя свежий контекст — будь критичен.
+Apply `.memory-bank/workflows/autonomy-policy.md`. The DSH host assigns the
+selected scope, sources and output needs; it owns launches and lifecycle writes.
+Return the common compact structured flow feedback with the subject result.
+No disabled participant requires a report or verdict. Missing material inputs,
+repair and consultation proposals use the caller's common decision flow.
 
-## Вход
-Оркестратор должен дать:
-- `TASK_ID` (например `TASK-MB-REVIEW`)
-- `STAGE_ID` (например `S-05`)
+Review the assigned Memory Bank surface read-only against its actual project
+rules and accepted outcomes. Use index/MBB routing and relevant product, REQ/RTM,
+features, task records, testing and normative subject sources when present.
 
-## Обязательные действия
-1) Прочитай:
-- `.memory-bank/index.md`
-- `.memory-bank/mbb/index.md`
+Applicable coverage:
+- frontmatter, navigation and resolving annotated links;
+- atomic documentation, no duplicated implementation or speculative claims;
+- truthful current/archived state and separation of facts from interpretations;
+- canonical subject identity and direct applicable feature/task links;
+- coherent classic duo docs when used, or sufficient equivalent subject support;
+- RTM/task/feature consistency and reconciliation after known merge conflicts;
+- actual selected evidence and durable handoff, distinguishing skipped checks
+  from missing performed results. Terminal task status alone is not verification.
 
-2) Выборочно проверь ключевые файлы:
-- `product.md`, `requirements.md`, `testing/index.md`, `tasks/index.json`
-- зарегистрированную testing policy (в fresh targets — `testing/strategy.md`),
-  если она существует и маршрутизирована через `spec-index.md`
-- несколько файлов из `epics/`, `features/`, `architecture/`, `guides/` (если есть)
-- если есть normative layer: `spec-index.md`, `glossary.md`, `invariants.md`,
-  `architecture/*`, `contracts/*`, `domains/*`, `states/*`, `testing/*`,
-  `runbooks/*`, `guides/*`, `adrs/*`
-
-3) Проверь соответствие MBB:
-- frontmatter (`description`, `status`) есть в КАЖДОМ `.memory-bank/**/*.md`
-- индекс-роутеры присутствуют там, где файлов много
-- ссылки аннотированы и не битые
-- соблюдена атомарность, нет псевдокода/копипаста реализации
-- duo docs взаимно ссылаются, если используется классическая пара
-- spec-driven support docs явно маршрутизированы и не противоречат classic docs, если присутствуют
-- новые specs используют subject-based canonical paths без `FT-*` hub names;
-  feature/task links указывают на exact applicable specs
-
-4) Проверь 12 антипаттернов MBB:
-- copy-paste реализации вместо ссылок на код
-- дублирование контента между документами
-- монолитный документ без router-index
-- stale docs (устаревшие, не архивированные)
-- `.tasks/` артефакты внутри `.memory-bank/`
-- speculative claims без evidence из кода
-- отсутствие frontmatter
-- битые или неаннотированные ссылки
-- концепт без достаточного support coverage: нет ни duo-пары, ни эквивалентных spec-driven support docs
-- changelog не обновлён после изменений
-- RTM рассинхронизирован с реальными features
-- task records содержат задачи без привязки к feature/REQ
-
-5) Проверь дополнительные GUIDE-правила:
-- **facts vs interpretations**: документы чётко разделяют факты (из кода, метрик, тестов) и интерпретации/гипотезы. Интерпретации помечены ("предположительно", "вероятно", "требует проверки")
-- **merge/rebase discipline**: если были конфликты слияния — MB перепроверен на consistency после resolve
-- наличие MB-SYNC чеклиста в `.protocols/*/plan.md` или `.memory-bank/workflows/`
-- наличие verification artifacts для закрытых задач
-
-## Артефакт
-Запиши подробный отчёт в:
-- `.tasks/<TASK_ID>/<TASK_ID>-<STAGE_ID>-final-report-docs-01.md`
-
-## Ответ оркестратору (кратко)
-Верни:
-- `VERDICT: APPROVE|REJECT`
-- 3–10 пунктов самых важных замечаний (P0/P1)
-- список созданных файлов
+Absent optional reports, duo pairs, changelog entries or checklists are not
+independent defects. Cite only evidenced material contradictions/gaps within
+scope; do not expand into a mandatory document audit or mutate the Memory Bank.
+Return `VERDICT: APPROVE|REJECT`, findings with evidence/impact, unknowns and
+repair owner. Persist a report only when selected, at the caller's supplied path
+or `.tasks/<TASK_ID>/<TASK_ID>-<STAGE_ID>-final-report-docs-01.md` when IDs apply.

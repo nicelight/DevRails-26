@@ -39,6 +39,22 @@ const resourceOwners = new Map([
   ['finding-adjudication.md', ['review-feat-plan', 'review-tasks-plan', 'verify', 'red-verify']],
   ['web-design-reviewer.md', ['verify', 'red-verify']],
 ]);
+const planningResources = [
+  ['map-codebase', 'agents/repo-scanner.md', join(sharedAgentRoot, 'repo-scanner.md')],
+  ['mb-garden', 'agents/mb-reviewer.md', join(sharedAgentRoot, 'mb-reviewer.md')],
+  ['mb-garden', 'references/recovery-plan.md', join(referenceRoot, 'recovery-plan.md')],
+  ['review-feat-plan', 'agents/review-scope.md', join(sharedAgentRoot, 'review-scope.md')],
+  ['review-tasks-plan', 'agents/review-plan.md', join(sharedAgentRoot, 'review-plan.md')],
+  ['review-tasks-plan', 'agents/review-security.md', join(sharedAgentRoot, 'review-security.md')],
+  ...['adr-template.md', 'concept-architecture-template.md', 'concept-guide-template.md']
+    .map((file) => ['spec-design', `references/${file}`, join(referenceRoot, file)]),
+  ['spec-redesign', 'references/adr-template.md', join(referenceRoot, 'adr-template.md')],
+];
+const planningSkills = [
+  'spec-init', 'prd-to-features', 'feature-doctor', 'spec-design', 'spec-redesign',
+  'spec-auto', 'foundation-to-tasks', 'feature-to-tasks', 'review-feat-plan',
+  'review-tasks-plan', 'architecture-review', 'kiss-architect',
+];
 const tempRoot = mkdtempSync(join(tmpdir(), 'devrails26-install-sync-'));
 
 function fail(message, output = '') {
@@ -149,6 +165,17 @@ function assertRuntimeParity(target) {
         );
       });
     });
+  });
+
+  planningResources.forEach(([owner, rel, source]) => {
+    runtimeRoots.forEach((runtimeRoot) => {
+      assert(
+        readTarget(target, `${runtimeRoot}/skills/${owner}/${rel}`) === read(source),
+        `${runtimeRoot}/${owner} has missing or stale ${rel}.`,
+      );
+    });
+    assert(read(join(commandDir, `${owner}.md`)).includes(rel),
+      `Resource ${owner}/${rel} has no owning command route.`);
   });
 
   const expectedCodeReviewer = read(join(sharedAgentRoot, 'review-code.md'));
@@ -386,7 +413,7 @@ function assertFreshBootstrap(target) {
     featureDoctor.includes('Validate the semantic basis')
       && featureDoctor.includes('Recommend only among options')
       && featureDoctor.includes('`/spec-redesign` owns')
-      && reviewTasksPlan.includes('unresolved feature-related semantic finding to `/feature-doctor')
+      && reviewTasksPlan.includes('can triage unclear semantic ownership; it is not a mandatory intermediate gate')
       && verify.includes('preserving the evidence-required functional')
       && autonomous.includes("doctor's handoff in existing run state")
       && autopilot.includes('persist its handoff')
@@ -404,6 +431,39 @@ function assertFreshBootstrap(target) {
       && autonomyPolicy.includes('Disabling\nlater work does not erase findings')
       && autonomyPolicy.includes('Resume the first\nactually unfinished selected operation'),
     'Shared Nav policy lost host ownership, decision, skip, failure, or recovery semantics.',
+  );
+  planningSkills.forEach((name) => {
+    const content = readTarget(target, `.agents/skills/${name}/SKILL.md`);
+    assert(content.includes('.memory-bank/workflows/autonomy-policy.md')
+      && content.includes('compact structured')
+      && !/Codex Luna|reasoning effort `xhigh`|Establish two co-review|unattended mode, block|unattended flow records the exact question/i.test(content),
+    `Planning /${name} lost shared feedback/settings or retained fixed execution policy.`);
+    assert(!content.includes('skills/_shared/'), `Planning /${name} exposes a source-only path.`);
+  });
+  const featureReview = readTarget(target, '.agents/skills/review-feat-plan/SKILL.md');
+  const foundationTasking = readTarget(target, '.agents/skills/foundation-to-tasks/SKILL.md');
+  const pack = readTarget(target, '.agents/skills/review-tasks-plan/references/finding-adjudication.md');
+  assert(
+    featureToTasks.includes('Disabled task review requires no APPROVE or report')
+      && featureToTasks.includes('Missing artifacts\nfrom disabled design/framing/review stages do not block tasking')
+      && featureToTasks.includes('Preserve ID, feature, wave')
+      && featureToTasks.includes('`rebuild_required`')
+      && foundationTasking.includes('Do not\n   create a proof-only gate for disabled checks')
+      && foundationTasking.includes('host initializes or changes lifecycle')
+      && reviewTasksPlan.includes('A disabled Architect/reviewer requires no')
+      && reviewTasksPlan.includes('Separate request\nand report files are conditional')
+      && featureReview.includes('Disabled review\n  requires no launch, verdict or report')
+      && specAuto.includes('Resolve semantic choices with autonomous')
+      && specAuto.includes('manual stops')
+      && pack.includes('host performs DSH launches')
+      && pack.includes('Disabled participants require no fallback, report or verdict')
+      && !pack.includes('Codex Luna'),
+    'Planning conditional stages, identity, decisions or host ownership regressed.',
+  );
+  assert(
+    !readTarget(target, '.memory-bank/adrs/ADR-000-template.md')
+      .includes('Каждое значимое архитектурное решение фиксируется как ADR'),
+    'Fresh ADR skeleton restored a mandatory artifact cascade.',
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');
@@ -452,6 +512,7 @@ function assertSync(target) {
     '.agents/skills/start/SKILL.md',
     '.agents/skills/verify/references/finding-adjudication.md',
     '.agents/skills/verify/agents/review-code.md',
+    ...planningResources.map(([owner, rel]) => `.agents/skills/${owner}/${rel}`),
   ];
   const snapshots = new Map(managed.map((rel) => [rel, readTarget(target, rel)]));
   managed.forEach((rel) => writeTarget(target, rel, `${snapshots.get(rel).trimEnd()}\n<!-- stale -->\n`));
@@ -459,6 +520,7 @@ function assertSync(target) {
   const projectFiles = new Map([
     ['.memory-bank/tasks/index.json', '{"version":1,"tasks":[]}\n'],
     ['.memory-bank/contracts/boundary-map.md', '# Project boundary map\n'],
+    ['.memory-bank/adrs/ADR-000-template.md', '# Project-owned ADR guidance\n'],
     ['.protocols/TASK-999-T1-FT-999-W1/run.md', '# Task-owned state\n'],
     ['.memory-bank/templates/protocols/project-notes.md', '# Project template\n'],
     ['PAPERCUTS/session.md', '# Session papercut\n'],

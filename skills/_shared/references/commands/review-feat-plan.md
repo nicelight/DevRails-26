@@ -4,12 +4,20 @@ status: active
 ---
 # /review-feat-plan - Feature plan review
 
+The installed `agents/review-scope.md` is available for selected scope co-review;
+its availability does not enable another participant.
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for effective settings,
+host ownership, decisions, conditional artifacts, and required compact structured
+flow feedback. Routes below are semantic handoffs, not instructions to launch
+agents or write task lifecycle transitions.
+
 <objective>
 Independently decide whether PRD -> requirements -> epics -> features
-decomposition is ready for `/spec-design`.
+decomposition supports the next selected design/tasking work.
 
 The verdict vocabulary remains `APPROVE|REJECT`. This review does not inspect
-JSON task design; `/review-tasks-plan` owns that later gate.
+JSON task design; `/review-tasks-plan` owns that later review when enabled.
 </objective>
 
 <input_contract>
@@ -23,38 +31,30 @@ except for an obvious stale contradiction with the current product plan.
 </input_contract>
 
 <hard_invariants>
-- Use a fresh-context reviewer or separate fresh session.
+- The host supplies an independent review context when this review is selected.
 - Before the verdict, load and apply this installed skill's
   `references/finding-adjudication.md` semantic pack.
-- Reviewer reports findings only. It does not rewrite product decisions or
-  choose between ambiguous alternatives.
+- Review is read-only; findings do not rewrite product decisions or authorize
+  new scope. Route material choices through the common decision flow.
 - `FT-000` remains reserved for Foundation Dev Path.
-- `REJECT` is blocking; `APPROVE` may include non-blocking notes.
-- High-risk, large, and autonomous flows require `APPROVE`; small manual flows
-  use this gate when required by the operator/Constitution or as recommended.
+- A performed `REJECT` remains negative evidence; disposition uses the decision
+  flow. `APPROVE` may include material non-blocking notes. Disabled review
+  requires no launch, verdict or report, including autonomous runs.
 </hard_invariants>
 
 <operator_decisions>
-If correctness depends on an unresolved product/decomposition choice, return
-`REJECT` with the exact question, affected artifacts, decision owner, and repair
-route. A reviewer recommendation may accompany the question but must not be
-applied as the operator's decision.
+If correctness depends on a material unresolved product/decomposition choice,
+return `REJECT` with evidence, the question and owning repair route. The review
+does not silently resolve the target; the caller uses the common decision flow,
+including autonomous decisions. A recommendation alone is not user approval.
 </operator_decisions>
 
 <required_outputs>
-Create:
-- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/REQUEST.md`;
-- `.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-<STAGE_ID>-final-report-docs-01.md`.
-
-The report must contain `VERDICT: APPROVE|REJECT`, evidence, blocking findings,
-non-blocking notes, unresolved operator questions, and the owning repair route.
-
-Use `TASK_ID=TASK-MB-REVIEW-FEAT-PLAN` and `STAGE_ID=S-FEAT`. The bounded
-reviewer request must name the inputs above, the output path ending in
-`TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md`, the
-`APPROVE|REJECT` vocabulary, and the prohibition on reviewing task
-implementation detail. This is the reviewer handoff contract; review order and
-probes remain discretionary.
+Return `VERDICT: APPROVE|REJECT`, material evidence/findings, unresolved questions
+and immediate owner with common flow feedback. A separate request or report is
+optional. When selected, reuse the existing report path
+`.tasks/TASK-MB-REVIEW-FEAT-PLAN/TASK-MB-REVIEW-FEAT-PLAN-S-FEAT-final-report-docs-01.md`.
+Retain enough actual outcome and evidence for recovery without a fixed file set.
 </required_outputs>
 
 <agent_discretion>
@@ -79,8 +79,8 @@ coverage criteria, not a required reasoning script:
   whether a concrete second product slice has its own observable value and
   acceptance and can be verified or released independently;
 - truthful `clarification_status: pending|blocked` handling;
-- no bypass from analysis to tasking around `/write-prd`, `/spec-init`, `/prd-to-features`,
-  `/spec-design`, or required Foundation Dev Path;
+- sufficient accepted product meaning for the next selected operation; missing
+  disabled-stage markers/artifacts alone are not defects;
 - `FT-000` reservation;
 - visible Foundation pressure signals for `/spec-design` without creating
   foundation tasks here.
@@ -104,10 +104,9 @@ analysis; route repair to the owning command.
 </validation>
 
 <handoff_contract>
-- `APPROVE` -> `/spec-design`.
-- `REJECT` -> the named owner command, normally `/write-prd`, `/spec-init`,
-  `/prd-to-features`, `/feature-doctor FT-<NNN>`, or `/constitution`; rerun this review
-  after repair.
-
-Do not restate the full downstream task/execution workflow.
+`APPROVE` -> next selected design/tasking operation, normally `/spec-design`
+when global design is selected. `REJECT` -> propose the first owning repair
+(`/write-prd`, `/prd-to-features`, `/spec-init`, `/constitution`, or optional
+`/feature-doctor FT-<NNN>` triage), then re-review affected claims only if enabled.
+A decision to continue preserves the actual REJECT; it does not fabricate APPROVE.
 </handoff_contract>

@@ -4,6 +4,10 @@ status: active
 ---
 # /mb-garden — Memory Bank maintenance
 
+Для выбранного независимого MB review доступен `agents/mb-reviewer.md`;
+для recovery proposal — `references/recovery-plan.md` внутри этого skill.
+Их наличие не включает review и не разрешает автоматический rebuild.
+
 <objective>
 Находить Memory Bank drift и безопасно исправлять только однозначные
 mechanical links, indexes и routers. Semantic, destructive и owner-owned
