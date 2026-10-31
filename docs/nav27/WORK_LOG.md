@@ -174,3 +174,66 @@ Deployed strict doctor подтвердил all-off closure, selected historical
 принятые решения пользователя, текущая canonical семантика и проверяемый код DSH.
 Архитектурные эскизы в DEVRAILS_NAV_27 не являются обязательством сохранить
 раньше предложенные механизмы. Runtime/UI implementation остаётся вне этапа.
+
+### Архитектурный проект — подготовлен, передан на независимую приёмку
+
+Исполнитель: `/root/nav_architecture`, Astra medium; завершил после приёмки
+семантики, без параллельных изменений contracts. Созданы `ARCHITECTURE.md`
+и `IMPLEMENTATION_PLAN.md`; прежние эскизы заменены ссылками в общих docs.
+DSH source и remote HEAD: `ce7073d51254c26cd63b22a60835b8f948deb447`.
+
+Выбраны один host-controller, шесть семейств обработчиков, компактный feedback
+с ситуационным уточнением, один pending decision и existing task.verify evidence.
+Main — постоянный семантический оркестратор; предметную работу выполняют native
+DSH children, механический переход не требует дополнительного main LLM call.
+Standalone Svelte использует headless native transport; маленькое дополнение
+native client отвечает за переход в main chat и показ pending proposal.
+
+Проверенные ограничения DSH: native model selection не знает Nav run state;
+native Stop main сам не останавливает host-owned children; generic fork наследует
+preset; scoped guards наследуются дочерними агентами. Предложены два маленьких
+admission hooks, собственная Side composition и точная область guards.
+Workspace-write shell не обеспечивает protected-path isolation host JSON;
+абсолютная гарантия такой защиты не заявляется.
+
+Архитектор проверил 33 pinned source links, mapping всех 75 transition IDs,
+diff-check и отсутствие generated shared-* в source. Runtime ещё не создан:
+auth/bootstrap, отмена и гонки требуют integration spike из плана.
+Следующий единственный агент `/root/nav_architecture_acceptance` проверяет
+доказательность seams, необходимость hooks, KISS и соответствие contracts;
+runtime/UI и canonical semantics не меняет.
+
+### Приёмка архитектуры — последовательный возврат к семантике
+
+`nav_architecture_acceptance` завершил source review и сохранил
+`ARCHITECTURE_ACCEPTANCE.md`. Исправлены три доказанные детали: native header
+Stop при idle main/active children, обязательный `meta.isSeeded` для Side seed,
+явный Side model selection после seed вместо перекрываемого agentOptions.
+Два узких upstream hooks подтверждены; третьего hook не требуется.
+
+Root заметил слишком ранний freeze selected, reviewer подтвердил blocker:
+tier-policy фиксирует все будущие проверки до exe. Это противоречит исходному
+требованию live enablement будущих этапов. Архитектурный проход остановлен
+с `BLOCKED_SEMANTIC_ALIGNMENT`, canonical не менялся в параллель с ним.
+
+Единственный следующий агент `semantics_live_selection` корректирует эту
+границу: planned work можно менять до соответствующего запуска в текущей
+attempt без повторного exe/approval; начатая работа сохраняет snapshot,
+исторические результаты и failures не стираются. Новые registry/lifecycle
+не нужны. После результата архитектурная приёмка возобновится последовательно.
+
+### Live selection — исправлено и проверено
+
+`semantics_live_selection` завершил узкое исправление; результат сохранён
+в `SEMANTIC_LIVE_SELECTION_RESULT.md`, semantic verdict READY_FOR_ARCHITECTURE.
+Freeze относится к launch/skip конкретной операции или участника; pending
+selection изменяется в той же attempt. Embedded local checks сохраняют snapshot
+exe; ещё не запущенные verify peers и red можно менять. Начатая работа и
+результаты сохраняются; schema/validator/lifecycle не изменены.
+
+Syntax, full doctor suite, install-sync и isolated install/bootstrap/sync прошли.
+Deployed strict doctor подтвердил active exe → pending-off → done одной attempt
+без reports/PASS и без повторного exe; pending-peer off не устраняет main FAIL.
+Source shared-* =0. Архитектура во время этого исправления не менялась.
+Теперь единственный architecture acceptance agent продолжает согласование
+документов с исправленным контрактом и завершает приёмку.

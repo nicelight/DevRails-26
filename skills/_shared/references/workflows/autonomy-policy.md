@@ -10,6 +10,15 @@ All models, subagents, tools, and sessions use DSH. Effective settings determine
 available participants, models, reasoning, checks, and reports. A model name
 never selects an external agent CLI or Codex App Server.
 
+Settings changes, including enablement, apply to the next launch of the affected
+operation or participant within the current workflow. Each launch retains its
+own settings; starting one participant does not freeze unstarted participants.
+Embedded local checks share the active `/exe` launch settings. Future `/verify`
+participants and `/red-verify` remain configurable while `/exe` runs. Changing
+unstarted work requires no new attempt, workflow restart, repeated `/exe`, or
+separate approval; existing non-negotiables and negative-result dispositions
+still apply. Started, completed, skipped, or interrupted work is not rewritten.
+
 The host owns queue selection, dependency scheduling, launches, lifecycle writes,
 check/skip recording, budgets, and recovery sequencing. Models perform the
 assigned subject work and return outcomes, evidence, and semantic decisions;

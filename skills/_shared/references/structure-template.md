@@ -596,7 +596,7 @@ the indexed card. Foundation remains ordinary FT-000 work. Its integrated proof
 gate is optional; real accepted dependencies remain. Product tasking uses
 accepted inputs and selected design/reviews, not an obligatory full bundle.
 
-Before new Nav task readiness the host retains the effective selection in the
+Before new Nav task readiness the host retains the planned selection in the
 existing `verify` array under
 `.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
 That compact record can exist without backbone/spec files, and selected results

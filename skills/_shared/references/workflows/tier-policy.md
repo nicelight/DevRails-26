@@ -136,14 +136,20 @@ for the current planned/execution attempt. No new task status or top-level field
 is introduced. Its `attempt` is a non-empty stable identifier. `selected` records
 booleans `design`, `local_checks`, `red_verify`, `feature_red_verify`, the unique
 enabled participant names in `verify`, and selected protocol filenames in
-`protocols` (empty is valid). These are the effective choices for that work,
-not a live settings lookup. No protocol bundle is selected by tier alone.
+`protocols` (empty is valid). Unstarted work has planned choices; started or
+skipped work retains its effective choices. No protocol bundle is selected by tier alone.
 
-Before execution the host freezes these choices; a new attempt appends its own
-record and preserves prior results. Configuration changes affect future work,
-not interpretation of completed or skipped operations. Legacy records without
-this marker retain their historical evidence rules; do not fabricate a Nav
-snapshot or proof for them during sync.
+The host may update only unstarted work's `selected` choices in the current
+attempt under `autonomy-policy.md#runtime-ownership`; pending choices are not
+evidence. Freeze each operation's or participant's choices at its launch, or
+when recording its skip, including its selected reports. Preserve started
+participants in `selected.verify` when updating unstarted participants. Active
+`/exe` retains its local-check choice; it does not freeze future verify/red.
+Closed attempts and recorded results remain immutable; a genuinely new attempt
+appends a record. Diagnostics use retained choices for the corresponding work,
+never current settings to reinterpret evidence. Legacy records without this
+marker retain their historical evidence rules; do not fabricate a Nav snapshot
+or proof for them during sync.
 
 The same object retains actual results as work completes:
 - `implementation: partial|complete` and concise `evidence` string array for

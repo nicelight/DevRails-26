@@ -119,10 +119,13 @@ selected proof and closure authority. `touched_files` is advisory;
 registry, lifecycle or durable context object.
 
 New Nav applicability/results use existing `task.verify`, `stage: workflow`,
-with stable attempt and retained `selected`: design/local_checks/task red/feature
+with stable attempt and `selected`: design/local_checks/task red/feature
 red booleans, verify participants and protocol filenames. `protocols: []` is
-valid. Check that attempt's choices, never live configuration. Append a new
-attempt without rewriting history; inline evidence can satisfy selected work.
+valid. Unstarted choices remain editable within the attempt; each operation or
+participant retains its choices at launch/skip. Embedded local checks inherit
+`/exe`; future verify/red remain configurable. Diagnostics use retained choices,
+never live configuration to reinterpret evidence. New attempts preserve history;
+inline evidence can satisfy selected work.
 Code candidates and functional verdicts remain distinct. Negative repair needs
 later applicable selected success, or an explicit scoped continuation decision.
 

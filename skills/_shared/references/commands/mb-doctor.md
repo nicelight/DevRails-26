@@ -41,8 +41,9 @@ semantic applicability and proof quality belong to the selected subject review.
 
 New Nav cards are identified by the existing task.verify `stage: workflow`
 record defined in `.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
-The latest attempt carries its retained effective selection, never current live
-settings. Invalid selection is TASK_WORKFLOW_EVIDENCE_INVALID. Closure needs
+Use the latest attempt's recorded selection; pending choices follow tier policy.
+Do not reinterpret retained evidence through live settings. Invalid selection
+is TASK_WORKFLOW_EVIDENCE_INVALID. Closure needs
 actual implementation evidence and results for selected checks, or explicit
 skipped values for disabled checks. Missing/mismatched results and unresolved
 negative dispositions are TASK_WORKFLOW_RESULT_INCOMPLETE. Only selected

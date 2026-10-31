@@ -1,7 +1,11 @@
 # DevRails Nav 27 — независимая приёмка семантики
 
 **Verdict: READY_FOR_ARCHITECTURE.** Дерево поверх `45ae29e`, 2026-11-01; blockers отсутствуют. DSH runtime/UI/controller не
-реализованы; legacy packaging не является DSH adapter. 
+реализованы; legacy packaging не является DSH adapter.
+
+Live-selection correction проверена отдельно: [SEMANTIC_LIVE_SELECTION_RESULT.md](SEMANTIC_LIVE_SELECTION_RESULT.md).
+Freeze всей task attempt устранён; readiness относится к исправленной границе
+каждого launch/skip, а не к прежнему замороженному pipeline.
 
 ## Покрытие
 
@@ -48,6 +52,10 @@ Source независимо сверён с policy/handoffs/deployment; coverage
    no-recorded-revision route с spec-redesign: только affected reconciliation.
 5. Общий mb-sync предписывал обновлять feature/epic lifecycle. Уточнено отражение
    host-recorded state без записи transitions моделью.
+6. Tier policy замораживал все будущие checks перед exe. Теперь pending selection
+   обновляется в той же attempt до запуска соответствующей операции/участника;
+   local checks входят в exe snapshot, будущие verify/red — нет. Начатая работа,
+   skip, interruption и закрытые attempts не переписываются.
 
 ## Walkthrough
 
@@ -68,7 +76,9 @@ Read-only walkthrough инструкций:
 
 Local checks default-on и red-alone — рабочие defaults, не ответы пользователя.
 Nav использует existing `task.verify`, `stage: workflow`, attempt/selected,
-`protocols: []`; проверяется выбор попытки, не live config.
+`protocols: []`; pending — план, не evidence. Diagnostics проверяют retained
+choices соответствующей работы, не live config. Toggle будущей работы не требует
+новой attempt, повторного exe или отдельного approval и не отменяет actual FAIL.
 
 ## Фактическая validation
 
@@ -84,6 +94,11 @@ Nav использует existing `task.verify`, `stage: workflow`, attempt/sele
 - После финального уточнения mb-sync повторены isolated sync и parity audit;
   полный suite без кодовых изменений повторно не запускался.
 - `git diff --check` — pass; source generated `shared-*` — **0**.
+- Live-selection correction: полный doctor/install-sync и syntax — pass;
+  isolated delivery `/tmp/nav27-live.syZfDL/`, deployed strict doctor на active →
+  pending-off → done одной attempt — pass, без reports/PASS и изменений evidence
+  диагностикой. Отдельный regression сохраняет FAIL при отключении pending peer.
+  Fresh empty skeleton даёт ожидаемый strict `TASK_INDEX_EMPTY`.
 
 Root AGENTS/WORK_LOG, исторические результаты, чужие papercuts сохранены.
 Без commit/push. Feedback transport и DSH execution/enforcement — следующий этап.

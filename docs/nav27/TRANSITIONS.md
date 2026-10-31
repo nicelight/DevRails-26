@@ -237,7 +237,11 @@ configurable/default on. Это не ответы пользователя на 
 
 Новые task attempts сохраняют selected work в existing `task.verify` с
 `stage: workflow`; protocols default `[]`. Recovery/diagnostics используют
-выбор этой попытки, не live settings. Disabled global design не требует revision;
+выбор соответствующей работы, не live settings для переоценки evidence. Пока
+операция/участник не запущены и skip не записан, host обновляет их план в той же
+attempt без повторного exe/approval. Запуск фиксирует только соответствующую
+работу: local checks входят в exe, будущие verify/red остаются изменяемыми.
+Disabled global design не требует revision;
 если shared delta меняется без recorded revision, reconcile только affected
 features существующим marker. Optional Foundation proof не отменяет actual
 baseline dependencies. Исторические результаты и partial effects сохраняются.

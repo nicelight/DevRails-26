@@ -446,7 +446,7 @@ function assertFreshBootstrap(target) {
   assert(tierPolicy.includes('## Selected Work And Retained Results')
     && tierPolicy.includes('No protocol bundle is selected by tier alone')
     && tierPolicy.includes('Legacy records without')
-    && tierPolicy.includes('not a live settings lookup')
+    && tierPolicy.includes('never current settings to reinterpret evidence')
     && exe.includes('independently disableable')
     && redVerify.includes('all functional\nverification is off'),
   'Selected work lost durable applicability, independent local checks or red-only semantics.');
