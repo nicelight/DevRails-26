@@ -1,79 +1,30 @@
 ---
-description: Маппинг существующего репозитория в Memory Bank (brownfield → baseline docs).
+description: Record an evidence-backed current-state baseline for brownfield work.
 status: active
 ---
 # /map-codebase — Brownfield mapping
 
-<objective>
-Построить evidence-backed as-is baseline текущего состояния существующего
-репозитория.
-</objective>
+Apply `.memory-bank/workflows/autonomy-policy.md` for decisions, effective
+settings, host ownership and recovery.
 
-<process>
+Build the as-is baseline from relevant code, configuration, CI/tooling,
+data/state and tests. Choose direct reads or bounded DSH discovery according to
+the actual repository; no delegation or report is mandatory.
 
-1) Создай `.tasks/TASK-MB-MAP/`.
-2) Выбери минимально достаточную тактику discovery по фактическому размеру и
-структуре repository:
-- для малого repository или очевидного полного read set используй direct reads
-  одним агентом;
-- для действительно широкого discovery `/context-manifest` или bounded
-  delegation допустимы только когда это дешевле direct reads и текущие роль и
-  operator contract разрешают delegation;
-- delegation не является default; delegated agent не запускает других
-  агентов;
-- поисковые globs должны матчиться, а evidence должно покрывать применимые code,
-  config, CI/tooling, data/state и test surfaces.
+Record useful current facts in the applicable existing Memory Bank owners and
+navigation. Cover architecture/entrypoints, change units, contracts, writers,
+state paths and proof paths only where evidenced. Do not create every document
+family. A separate `.tasks/TASK-MB-MAP/` report is conditional on selected output
+or a need to retain substantive evidence outside canonical documentation.
 
-Записывай substantive mapping evidence и отчёты в `.tasks/TASK-MB-MAP/`
-независимо от выбранной тактики.
+Separate Fact from Inference and link decisive evidence. Mark unproved claims
+or gaps `needs verification`. Preserve accepted targets, AD rules and normative
+contracts; observed code is not authority to rewrite them. Target/current
+differences are reconciliation deltas, not automatically authority conflicts.
+Do not create a duplicate dependency graph or accepted edges from observation.
 
-3) Синтезируй evidence-backed as-is current-state baseline `.memory-bank/` по
-чеклисту:
-- product
-- architecture (C4)
-- spec-index / spec-backbone / glossary / invariants (только для регистрации
-  существующих artifacts и явно обозначенного current-state routing; не
-  выводи normative target или Global Backbone decision из кода)
-- runbooks
-- contracts
-- states (если lifecycle/state rules очевидны из кода, workflow или тестов)
-- testing
-- index
-
-`/map-codebase` фиксирует change units/code roots, imports/calls,
-events/background work, writers/state paths, runtime entrypoints и proof paths
-только как as-is evidence, не target authority или accepted graph rows.
-
-> **PRD-less rule (non-negotiable)**: если **нет `prd.md`**, запрещено генерировать roadmap сущности:
-> - `.memory-bank/epics/*`
-> - `.memory-bank/features/*`
-> - `.memory-bank/tasks/*.task.json` task records
-> - `.memory-bank/tasks/index.json` task links
->
-> Маппинг = **as-is документация** по evidence, а не планирование.
-
-4) Проверь качество baseline:
-- отдели facts от inferences и явно привяжи их к evidence;
-- противоречия, недоказанные выводы и неполное покрытие запиши как
-  `needs verification` / unresolved evidence;
-- не заменяй существующие baseline facts догадками.
-- помечай as-is claims как current state, чтобы downstream skill не принял их
-  за желаемую архитектуру;
-- если обновляемый artifact уже содержит accepted target, сохрани его и явно
-  отдели от current state; не создавай и не изменяй target `AD-*`, normative
-  rules или architecture decisions на основании одного as-is evidence;
-- если current отличается от accepted target, зафиксируй оба состояния и уже
-  известный reconciliation route в существующем owning artifact. Само отличие
-  является delta, а не authority conflict; неизвестную material route оставь
-  unresolved для её downstream owner. Не создавай второй dependency graph или
-  обязательный artifact для этого разделения.
-
-5) Заверши immediate handoff:
-- если authoritative PRD/delta уже передан вызывающим workflow, сохрани его как
-  downstream input и не спрашивай повторно; верни invoking workflow/current PRD
-  owner ссылки на baseline вместе с тем же переданным PRD/delta;
-- если PRD/delta не передан, заверши as-is baseline, запроси его у оператора и
-  остановись;
-- не воспроизводи дальнюю downstream chain и не переходи к roadmap, task
-  generation или execution из `/map-codebase`.
-</process>
+Mapping never creates roadmap, feature or task records, including when no PRD
+exists. Return baseline links and the already supplied PRD/delta to the invoking
+owner without asking for it again. If product input is absent, complete the
+baseline and request the missing PRD/delta through the common decision flow;
+do not invent it or launch planning/execution.

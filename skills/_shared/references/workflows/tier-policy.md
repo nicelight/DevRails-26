@@ -1,38 +1,27 @@
 ---
-description: Tier classification, protocol, verification, closure, and MB-SYNC policy.
+description: Task risk, identity, write boundaries, evidence, and host closure authority.
 status: active
 ---
 # Tier Policy
 
+Apply `autonomy-policy.md` for effective settings and decisions.
+
 ## Tier Classification and Escalation
 
-Every task record has one authoritative `tier: T0|T1|T2|T3`; do not use a
-separate `risk` model.
+The indexed task has one `tier: T0|T1|T2|T3`, not a separate risk model:
+- T0: safe documentation/format/link work without runtime or contract impact.
+- T1: contained local behavior or test change with low blast radius.
+- T2: API/contracts/events/schemas, state/data/migrations, multi-module or
+  meaningful domain behavior.
+- T3: security/auth/secrets, production/deployment, destructive or irreversible
+  operations, data loss, payments or compliance.
 
-- `T0` — typos, formatting, broken links, or safe documentation changes with no
-  runtime, contract, state, data, security, or test impact.
-- `T1` — one local function, small component, local unit test, or contained
-  behavior change with low blast radius.
-- `T2` — APIs, contracts, events, schemas, state machines, lifecycle changes,
-  data behavior, migrations, multiple modules, or meaningful domain logic.
-- `T3` — auth, permissions, secrets, security-sensitive behavior, deploy/runtime
-  or production impact, irreversible migration, data loss, payments,
-  compliance, or destructive operations.
-
-When evidenced scope triggers several tiers, use the highest. `touched_files`
-is advisory and non-exhaustive; another file needed for the same outcome does
-not raise tier unless actual behavior, boundaries, data/state/security/runtime
-impact, dependencies, or blast radius trigger it. A non-empty
-`runtime_context.write_boundary` remains hard.
-
-Tier is embedded in task identity. When execution or verification requires a
-higher tier, stop scope growth, record original/required tier, trigger, partial
-changes/evidence, and split recommendation, then route the original task ID to
-`/feature-to-tasks FT-<NNN>` for controlled rebuild or split. Rerun
-`/review-tasks-plan`, the applicable doctor gate, and `/exe` with the replacement
-task ID. Interactive planning asks the operator when tier is genuinely
-ambiguous; unattended planning records the question and uses the existing
-clarification/blocking halt instead of choosing.
+Use the highest evidenced tier. Extra files alone do not raise tier. Because
+tier is embedded in task identity, an evidenced escalation stops scope growth
+and proposes `/feature-to-tasks` rebuild/split, preserving partial work and
+original evidence. Never silently rewrite the ID. Ambiguity follows the common
+decision flow; enabled review assesses the replacement, without forcing a
+review that settings disabled.
 
 ## Hard Write Boundary
 
@@ -89,130 +78,53 @@ obligation. Invented suffixes are invalid.
 
 ## Task-Scoped Acceptance Evidence
 
-Compact protocol changes depth, not acceptance obligations. When any task has
-`verification_targets` or `evidence_required`, closure evidence satisfies them.
-A newly created or reconciled `planned|ready` T2/T3 task maps its task-owned
-proof scope through `verification_targets`; its `evidence_required` follows the
-claim-linked contract below.
-A newly created or reconciled `planned|ready` task proving a material NFR has
-both fields non-empty and linked to its governing REQ and exact feature AC.
-Evidence records the observed value or qualitative result, decisive
-conditions, pass/fail comparison, and artifact; human/expert review is an
-evidence method that names its criterion or rubric, reviewer role, and artifact,
-not a T3 checkpoint.
+Proof maps only task-owned claims to accepted REQ/AC and decisive conditions.
+Preserve prospective `verification_targets` and `evidence_required` where they
+explain the selected proof path, especially material NFR and T3 harm-driving
+outcomes. A link to a broad spec does not adopt all its claims. Keep evidence
+minimal, grounded and non-duplicative; simple criteria need no separate spec.
 
-This does not require those fields for every T0/T1 task and adds no gate,
-status, lifecycle, or protocol family.
+Recorded evidence states what was observed, conditions, comparison, and any
+artifact. Human/expert evidence identifies its criterion and reviewer type.
+Do not fabricate historical evidence or label skipped work verified.
 
 ## Claim-Linked RED / GREEN For T2/T3
 
-Each `evidence_required` item must be task-owned, grounded, necessary for an
-unambiguous verdict, and non-duplicative. Keep one concise result contract per
-probe: claim locators, expected RED/GREEN or accepted alternative proof,
-decisive comparison, and artifact. Keep required probe method in
-`verification_targets` or a direct testing link; do not repeat canonical prose.
-A shared probe must distinguish each claim result. Tier, convenience, or a
-missing harness does not justify `RED_NOT_APPLICABLE`; its reason explains why
-claim absence cannot or should not be observed without falsifying the task.
+When the execution proof policy requires RED/GREEN, RED must expose the actual
+claim absence before changing its production behavior, followed by equivalent
+GREEN. Setup/syntax/unrelated/artificial failure is not RED. Preserve valid
+pre-implementation GREEN rather than making an unnecessary change. Alternative
+proof explains why observing absence would falsify the task or be unsafe;
+missing harness or tier alone is not that reason.
 
-After `ready -> in_progress`, initial execution obtains honest
-pre-implementation RED for each applicable claim before changing its production
-behavior, then claim-equivalent GREEN. Setup, syntax, unrelated, or artificial
-failure is not RED. Pre-implementation GREEN is preserved and prevents an
-unneeded production change for that claim. `/exe` owns task start, Execution
-Attempt, retry execution, resume/replay safety, and evidence-recording mechanics
-and returns the ordinary handoff to `/verify`; autonomy policy owns scheduler
-retry eligibility and disposition.
-
-`/verify` independently proves the current task outcome. RED/GREEN,
-pre-implementation GREEN, and accepted alternative proof remain supporting
-execution evidence and do not change verdict semantics; pre-implementation
-GREEN alone is neither `PASS` nor `NEEDS-CLARIFICATION`. T3 proof covers every
-task-owned harm-driving claim required by accepted requirements or evidenced
-material risk, in already authorized isolated/disposable state with safe rerun
-and cleanup. `/red-verify` retains its hostile semantic role.
-
-Do not fabricate or backfill this evidence for historical
-`in_progress|done|done_for_prod|failed` tasks. A lifecycle owner does not close a task whose
-current accepted plan requires it until `/verify` confirms the claim-linked
-path. No task field, status, scheduler stage, verdict, protocol family, queue,
-registry, or lifecycle is added.
+Execution evidence supports an independent selected verification; it is not
+itself PASS. Use authorized isolated/disposable state, safe rerun and cleanup
+for harmful probes. Do not infer execution-check policy from verify settings
+or infer a red-verify prerequisite here; the active execution contract owns
+those choices.
 
 ## Tier Obligations
 
-The indexed card is the task-scoped execution and verification handoff. Every
-newly created or reconciled `planned|ready` T2/T3 record has non-empty
-`purpose`, scalar `success_outcome`, direct task-relevant canonical SDD paths,
-grounded scope, concrete REQ linkage, valid dependencies, and at least one real
-gate command or non-empty `verification_targets`. Semantic applicability and
-sufficiency remain fresh-context review concerns.
+Tiers inform the relevant risk and proof depth, not unconditional role launches,
+full protocol files or PASS requirements. The indexed card carries sufficient
+purpose, outcome, scope, REQ/spec links and dependencies for its selected work.
+T2/T3 need direct canonical inputs, not registry-only guesses.
 
-- `T0`: compact protocol is allowed; scheduler flow runs `/verify`, while
-  separate manual `/verify` is optional. `/red-verify` is not required.
-  `VERDICT: PASS` or clear compact evidence is required for closure. Full
-  `/mb-sync` is not required when only task `status`, task `verify`, and
-  `.protocols/<TASK>/run.md` changed; run it when broader durable Memory Bank
-  state changed.
-- `T1`: T0 obligations apply, plus the cheapest relevant local
-  lint/typecheck/unit check when available, or a recorded reason that no
-  meaningful runnable check exists.
-- `T2`: full protocol is required; compact-only protocol is invalid. Store any
-  substantive artifacts under `.tasks/<TASK_ID>/`. Task closure requires
-  applicable task/spec gates and `/verify` `VERDICT: PASS`; per-task
-  `/red-verify` is optional. After
-  every task for a product feature is implemented, feature completion requires
-  `/red-verify --feature FT-<ID>` with
-  `SEMANTIC_VERDICT: semantic-pass` recorded in the feature document. `FT-000`
-  does not use product feature-completion semantics. Full `/mb-sync` is due at
-  the wave/feature boundary, or earlier only for a current-wave dependency on
-  reconciled RTM/index/spec/contract/changelog state or an explicit owner
-  request.
-- `T3`: full protocol and `/verify` `VERDICT: PASS` are required; compact-only
-  protocol is invalid. Task closure also requires per-task `/red-verify`
-  `SEMANTIC_VERDICT: semantic-pass`. Full `/mb-sync` is due at the end of the
-  current wave; the T2 early-sync exception applies.
-
-Only the lifecycle owner below may set `status` to `done|done_for_prod` after obligations pass; use `done_for_prod` only when production acceptance remains.
-`/mb-doctor` checks readiness only at its applicable boundaries.
+Only enabled checks and selected artifacts are due. All verify off means
+`skipped`, with no verification report; implemented work may close without PASS.
+Red-verify and feature-level semantic review are conditional. An actual FAIL or
+semantic failure remains recorded and follows the common disposition flow.
+Disabled evidence cannot be made mandatory through tier, sync or closure.
 
 ## Closure Authority
 
-Closure authority comes from the active outer workflow; an Execution Attempt
-carries no manual/scheduler mode and grants none. No persisted `mode` field is
-used.
+The host owns promotion and every task lifecycle write in manual and autonomous
+flows. `/exe` returns the implementation result; enabled `/verify` returns its
+functional verdict; enabled `/red-verify` returns its semantic verdict. Models
+return evidence and a closure/blocker/disposition recommendation, not status edits.
 
-Scheduler flow:
-- `/autonomous` owns promotion, selection, and final lifecycle decisions only
-  for its bounded FT-000 Foundation phase; `/autopilot` owns them only for the
-  reviewed product queue after the Foundation gate closes.
-- `/exe` implements the selected task, `/verify` returns the functional verdict,
-  and `/red-verify` returns required semantic verdicts. They do not
-  close/fail/block/promote in scheduler flow.
-- The scheduler writes its closure/failure/blocking decision, final status, and
-  evidence links to the authoritative indexed `.task.json` immediately after
-  the task and before `/mb-sync`. `/mb-sync` only reconciles already-written
-  state.
-
-Manual flow:
-- Closure requires an explicit standalone owner: either the user asked the
-  current top-level agent to close the task, or the top-level
-  agent/orchestrator recorded ownership of one concrete TASK workflow.
-  Subagent prompts do not grant it.
-- `/exe` may close T0/T1 only when that agent is the manual top-level executor,
-  scope stayed task-local, no hard runtime boundary or T2/T3 trigger appeared,
-  hard scopes were respected, and all compact acceptance evidence was written.
-  Necessary extra files outside advisory `touched_files` remain valid when
-  recorded and inside the same local outcome. It then may update `run.md`,
-  append compact PASS evidence to task `verify`, and set `status` to `done|done_for_prod`.
-- `/verify PASS` may set T0/T1 `status` to `done|done_for_prod` only with explicit closure
-  ownership and completed task `verify` plus tier protocol evidence. Without
-  that owner it records `PASS`, evidence, and a closure recommendation while
-  leaving status unchanged.
-- For T2/T3, `/verify` and `/red-verify` only establish the Tier Obligations;
-  the explicit owner writes the lifecycle decision. A T3 semantic issue routes
-  to human review/follow-up; the owner may reopen, block, fail, or create
-  follow-up work. `semantic-concern` means the existing `done|done_for_prod`
-  state is not trusted without that review/follow-up.
-
-When any manual closure condition or owner is missing, keep the task open and
-report the exact `/verify`, closure-owner, or tier-escalation route.
+Closure records actual completion and performed/skipped checks. `done_for_prod`
+is used only when production acceptance remains; it neither proves production
+success nor authorizes external effects. `/mb-sync` reconciles the already
+recorded decision and never grants closure authority. A manual stop or unresolved
+operation restriction remains effective even if all checks are disabled.

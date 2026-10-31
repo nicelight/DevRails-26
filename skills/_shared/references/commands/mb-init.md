@@ -1,55 +1,37 @@
 ---
-description: Route Memory Bank bootstrap or coherent framework sync through an available external DevRails checkout.
+description: Route bootstrap or coherent sync through a verified external installer.
 status: active
 ---
-# /mb-init — Route external Memory Bank bootstrap
+# /mb-init — External bootstrap router
 
-<objective>
-Inspect the target repository and return the exact external DevRails installer
-command required to create its Memory Bank or coherently sync the installed
-framework. `/mb-init` is a thin router: it does not create, sync, or reconstruct
-the skeleton itself.
-</objective>
+Return the exact installer action for a verified target and available DevRails
+checkout. Use the current repository as target unless another was supplied.
+A checkout is valid only when supplied or already known and its
+`scripts/install-framework.mjs` is verifiable. Never invent paths.
 
-<process>
-1. Treat the current repository root as `<target-repo>` unless the operator
-   supplied another target explicitly.
-2. Accept `<devrails-checkout>` only when the operator supplied it or its
-   `scripts/install-framework.mjs` can be verified at an already known path.
-   Never guess or invent `<devrails-checkout>`.
-3. If `.memory-bank/` is missing, return this command with both placeholders
-   replaced by verified, shell-safe paths:
+For missing Memory Bank:
 
-   ```bash
-   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
-   ```
+```bash
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
+```
 
-4. For an explicit framework sync request on an existing target, update runtime
-   command skills and Memory Bank managed assets from the same prepared source
-   copy:
+For explicitly requested coherent framework sync:
 
-   ```bash
-   node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
-   ```
+```bash
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
+```
 
-5. `--bootstrap-only --sync` repairs only Memory Bank managed assets and does
-   not update runtime command skills. Do not present it as a full framework
-   sync.
-6. Do not run local bootstrap logic, copy a helper into the target, install a
-   dependency, or create the skeleton manually. The external installer owns
-   bootstrap and its existing target-file safety policy.
-7. If the DevRails checkout is unknown or unavailable, stop with a blocker:
-   ask the operator to provide an available checkout path or run the external
-   installer action, then rerun `/mb-init`. Do not present a placeholder as an
-   executable command.
-</process>
+Replace placeholders with shell-safe verified paths; an unresolved placeholder
+is not an executable command. `--bootstrap-only --sync` repairs only managed
+Memory Bank assets, not runtime skills. Preserve installer collision handling;
+this operation does not create the skeleton, copy helpers or install dependencies.
 
-<handoff_contract>
-- After a successful external bootstrap or sync, rerun `/mb-init` to confirm
-  `.memory-bank/` is present.
-- If the Memory Bank is present and no sync was requested, make no changes and
-  hand off to `/start` only when its `SKILL.md` exists in the active
-  `.agents/skills/` or `.claude/skills/` runtime surface. Otherwise report that
-  the skeleton is ready and stop; do not claim `/start` is available.
-  Runtime command installation remains an explicit external installer action.
-</handoff_contract>
+Unknown/unavailable checkout or a real install conflict needs its actual input
+or owner decision. When Memory Bank exists, apply
+`.memory-bank/workflows/autonomy-policy.md`; before bootstrap, report the missing
+input without fabricating a reference or successful deployment.
+
+After external installation return to `/mb-init` to confirm the result, then
+`/start` only if it is available in DSH. Otherwise report the ready skeleton and
+missing runtime capability. Packaging directories alone do not prove DSH
+availability. Installation is not agent launch or automatic recovery work.

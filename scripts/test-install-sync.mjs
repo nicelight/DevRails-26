@@ -293,16 +293,15 @@ function assertFreshBootstrap(target) {
   const judgeRole = readTarget(target, '.memory-bank/roles/judge.md');
 
   assert(
-    grillMe.includes('design tree')
-      && grillMe.includes('The **frontier**')
-      && grillMe.includes('Finding facts is the agent')
-      && grillMe.includes('`.memory-bank/analysis/brief.md`')
-      && grillMe.includes('load and apply the installed `creator-vibe` skill')
+    grillMe.includes('`.memory-bank/analysis/brief.md`')
+      && grillMe.includes('common decision flow')
+      && grillMe.includes('installed `creator-vibe`')
       && writePrd.includes('`.memory-bank/analysis/brief.md`')
-      && writePrd.includes('request `/grill-me`')
+      && writePrd.includes('propose `/grill-me`')
       && constitution.includes('`.memory-bank/analysis/brief.md`')
-      && executeLoop.includes('`/grill-me -> /constitution`'),
-    'Runtime discovery flow lost /grill-me mechanics or durable brief routing.',
+      && executeLoop.includes('`/grill-me` produces the durable brief')
+      && !grillMe.includes('The **frontier**'),
+    'Runtime discovery lost durable brief, intent, or shared decision routing.',
   );
 
   assert(
@@ -316,9 +315,9 @@ function assertFreshBootstrap(target) {
     'Runtime SDD workflows lost their deployed shared authoring contract.',
   );
   assert(
-    executeLoop.includes('only when both are proved')
-      && executeLoop.includes('affects product-wide planning')
-      && executeLoop.includes('`none` preserves revision and reviews')
+    executeLoop.includes('only when durable planning semantics changed')
+      && executeLoop.includes('with product-wide impact')
+      && executeLoop.includes('`none` preserves revision/reviews')
       && executeLoop.includes('`bounded` preserves revision')
       && specRedesign.includes('Do not use revision mismatch as impact proof')
       && specRedesign.includes('Preserve task lifecycle, completed evidence')
@@ -345,16 +344,14 @@ function assertFreshBootstrap(target) {
       && multiagentic.includes('multiagents_with_judge.md#judge-session-and-consultation')
       && multiagentic.includes('#autonomous-with-judge')
       && multiagentic.includes('#autopilot-with-judge')
-      && judgeOverlay.includes('launch exactly one `ROLE: JUDGE`')
-      && judgeOverlay.includes('owns and reuses that subagent')
-      && judgeOverlay.includes('does no routine discovery')
-      && !judgeOverlay.includes('Launch a fresh `ROLE: JUDGE`')
-      && judgeOverlay.includes('At `/multiagentic` or `/multipilot` start')
-      && judgeRole.includes('one `/multiagentic`')
-      && judgeRole.includes('or `/multipilot` run')
+      && judgeOverlay.includes('optional DSH assignment')
+      && judgeOverlay.includes('No fixed model')
+      && judgeOverlay.includes('Disabled Judge adds no gate or report')
+      && judgeRole.includes('SUPPORT|REDIRECT|ESCALATE_OPERATOR')
+      && judgeRole.includes('Judge is read-only')
       && judgeOverlay.includes('## autonomous with judge')
       && judgeOverlay.includes('## autopilot with judge')
-      && judgeOverlay.includes('whenever the operator explicitly requests consultation')
+      && /common\s+decision flow/.test(judgeOverlay)
       && !autonomous.includes('multiagents_with_judge')
       && !autopilot.includes('multiagents_with_judge'),
     'Runtime multiagentic overlay is incomplete or leaked into a base skill.',
@@ -379,7 +376,7 @@ function assertFreshBootstrap(target) {
       && reviewTasksPlan.includes('blocks review')
       && autopilot.includes('makes only that')
       && exe.includes('only the selected feature')
-      && autonomyPolicy.includes('only that feature is withheld')
+      && executeLoop.includes('names only\naffected features')
       && !autopilot.includes('every previous product task-plan approval is stale')
       && !exe.includes('every previous product task-plan approval is stale')
       && !autonomyPolicy.includes('makes every product task-plan approval stale'),
@@ -393,15 +390,31 @@ function assertFreshBootstrap(target) {
       && verify.includes('preserving the evidence-required functional')
       && autonomous.includes("doctor's handoff in existing run state")
       && autopilot.includes('persist its handoff')
-      && autonomyPolicy.includes('semantic finding through `/feature-doctor FT-<NNN>` before repair')
-      && executeLoop.includes('reported feature-related semantic findings'),
+      && executeLoop.includes('`/feature-doctor`\ncan triage unclear semantic ownership'),
     'Runtime feature-doctor triage or autonomous recommendation contract is incomplete.',
+  );
+  assert(
+    autonomyPolicy.includes('The host owns queue selection')
+      && autonomyPolicy.includes('Under the autonomous decision policy, the model makes the semantic decision')
+      && autonomyPolicy.includes('shared compact structured flow feedback')
+      && autonomyPolicy.includes('command phase ownership does not reset the decision policy')
+      && autonomyPolicy.includes('feedback is not due\nafter each tool call')
+      && autonomyPolicy.includes('Manual red, Pause, Stop, DSH permissions')
+      && autonomyPolicy.includes('`skipped`, never `PASS`')
+      && autonomyPolicy.includes('Disabling\nlater work does not erase findings')
+      && autonomyPolicy.includes('Resume the first\nactually unfinished selected operation'),
+    'Shared Nav policy lost host ownership, decision, skip, failure, or recovery semantics.',
   );
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');
   assert(!existsSync(targetPath(target, 'scripts')), 'Fresh bootstrap exposed runtime scripts in visible scripts/.');
   ['orchestrator', 'general', 'architect', 'explorer', 'implementer', 'reviewer', 'judge'].forEach((role) => {
-    assert(existsSync(targetPath(target, `.memory-bank/roles/${role}.md`)), `Role is missing: ${role}`);
+    const deployedRole = readTarget(target, `.memory-bank/roles/${role}.md`);
+    assert(
+      deployedRole.replace('<!-- Generated by DevRails 26 init-mb.js. Safe to overwrite with init-mb.js --sync. -->\n', '')
+        === read(join(referenceRoot, 'roles', `${role}.md`)),
+      `Deployed role differs from canonical source: ${role}`,
+    );
   });
 
   const rows = installedSkillRows(readTarget(target, '.memory-bank/skills/index.md'));

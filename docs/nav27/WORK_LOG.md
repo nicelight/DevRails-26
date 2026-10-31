@@ -39,7 +39,7 @@
 ## Этапы
 
 1. **Завершён:** полная инвентаризация семантики, переходов и необходимых изменений.
-2. **В работе:** последовательная адаптация; сначала общий контракт и entry/decision instructions.
+2. **В работе:** общий контракт/entry завершены; следующий пакет — planning и reviews.
 3. Ожидает: независимая проверка семантики и изолированного deployment; исправления.
 4. Ожидает завершения этапов 1–3: архитектура Nav/DSH.
 
@@ -79,3 +79,24 @@ functional verify; отдельная настройка локальных chec
 Остальные reviews сохраняют полезные исходные defaults, оставаясь отключаемыми.
 Полученный FAIL сохраняется; repair/продолжение является явным решением по уже
 согласованной политике обычного или autonomous режима, не подменой verdict.
+
+### Пакет 1 — завершён
+
+Исполнитель: `/root/semantics_base`, Astra medium. 29 runtime/package источников,
+связанные install-sync assertions и `SEMANTIC_BASE_RESULT.md`. Общий контракт
+находится в уже доставляемом `workflows/autonomy-policy.md`; fixed models,
+fanout и механический scheduler из этого scope удалены.
+
+Проверки исполнителя: syntax, полный install-sync, отдельные install-only/bootstrap,
+deployed parity/references/anchors, 0 generated shared-*; diff-check. Полный
+doctor regression и conditional evidence matrix остаются пакету 3.
+
+Интеграционный просмотр выявил и исправил формулировку, делавшую общий feedback
+необязательным. Он обязан быть единым коротким структурированным интерфейсом;
+точные поля/transport отложены до архитектуры. Уточнено сохранение autonomous
+decision policy во всём run, включая legacy handoff в autopilot. После локального
+исправления проверены затронутые assertions, syntax и diff-check.
+
+Следующий исполнитель адаптирует planning/review commands, shared agent prompts
+и связанные references. Исполняемые validators пока сохраняют известные старые
+ограничения; готовность всей миграции не заявляется.

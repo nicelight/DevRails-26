@@ -8,53 +8,36 @@ last_updated: {{TODAY}}
 ---
 # Project Constitution
 
-## Purpose
+## Project principles status
 
-This Constitution defines the non-negotiable principles that guide AI agents when planning, implementing, verifying, and synchronizing project work.
+These are framework defaults, not project-ratified non-negotiables.
+`project_principles` records `framework-default|ratified|partial|skipped`.
+Record the decision source honestly; autonomous choices are not user answers.
+For ratified/partial decisions record the date; defaults/skipped keep `ratified: null`.
 
-## Core Principles
+## Principles
 
-### 0. Project Principles Status
-
-This skeleton uses framework-default principles until `/constitution` runs the contextual interview. `ratified: null` means project principles are not ratified yet. When `/constitution` sets `project_principles: ratified` or `project_principles: partial`, it must fill `ratified: YYYY-MM-DD`. If the user explicitly skips that interview, keep or set `project_principles: skipped`, keep `ratified: null`, and continue; revisit `/constitution` later.
-
-### I. AI-First Spec-Driven Development
-
-Agents MUST derive implementation work from explicit product, requirement, feature, task, and workflow artifacts. Agents MUST NOT invent product scope without evidence or user instruction.
-
-### II. Memory Bank Is Durable Project Knowledge
-
-`.memory-bank/` is the durable source of project knowledge. Chat context is temporary. Agents MUST update Memory Bank after meaningful changes.
-
-### III. Schema-Backed Task Execution
-
-Tasks MUST use the current schema-backed JSON task record model. If the framework uses `tier: T0|T1|T2|T3`, agents MUST route execution and verification through that tier model.
-
-### IV. Minimal Verifiable Change
-
-Agents SHOULD prefer the smallest change that satisfies the task. Every completed task MUST have clear checks or evidence.
-
-### V. Evidence Before Done
-
-A task MUST NOT be marked done without verification evidence appropriate to its tier and scope.
-
-### VI. No Legacy Fallback and No Speculation
-
-Agents MUST NOT rely on deprecated task formats, old risk models, or undocumented assumptions. Unknowns MUST be recorded as blockers or explicit assumptions.
-
-### VII. Context Discipline
-
-Agents SHOULD read the smallest sufficient context for the task. Higher-tier or cross-cutting tasks MUST read relevant normative docs such as invariants, contracts, states, testing, and workflow policies.
-
-### VIII. Synchronization
-
-After meaningful changes, agents MUST synchronize affected Memory Bank docs, task state, changelog, and routing files.
+- Derive product and implementation work from accepted scope and governing
+  sources. Use the smallest sufficient change; do not invent requirements.
+- Keep material decisions, actual outcomes, unfinished work and immediate
+  handoffs durable in Memory Bank. Chat history is not the only recovery source.
+- Use the indexed schema-backed JSON task model and its T0–T3 identities.
+  The host owns lifecycle; models return subject outcomes and decisions.
+- Apply `.memory-bank/workflows/autonomy-policy.md`: DSH owns execution;
+  ordinary decisions wait for user approval, autonomous makes semantic choices,
+  and manual stops/permissions remain effective.
+- Checks, roles and reports follow effective settings. Disabled verification is
+  skipped, never PASS. Implemented work may be done without verified acceptance.
+  Preserve actual FAIL/REJECT evidence and route disposition through the common flow.
+- Preserve hard task boundaries and real external-operation restrictions.
+  Read sufficient direct authority and reconcile only affected durable state.
 
 ## Governance
 
-- Constitution has precedence over workflow habits and generated plans.
-- MBB, spec-index, spec-backbone, invariants, contracts, states, testing, and workflow docs refine this Constitution; they must not contradict it.
-- Amendments must include rationale and update affected docs if needed.
-- Constitution should stay short. Put concrete project rules into `invariants.md`, `contracts/*`, `states/*`, or workflow policy docs.
+Project-specific non-negotiables require an accepted governing decision and its
+provenance. Framework defaults do not override configurable checks or generate
+extra gates. An incompatible explicit project rule needs an owner decision,
+not silent weakening. Keep concrete rules at their canonical spec/contract owner;
+record material amendments and remove superseded contradictions.
 
 **Version**: 1 | **Ratified**: not ratified | **Last updated**: {{TODAY}}

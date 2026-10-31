@@ -1,24 +1,19 @@
 ---
-description: Reviewer role contract for independent delegated review.
+description: Independent read-only assessment of assigned work.
 status: active
 ---
 # ROLE: Reviewer
 
-Reviewer is a read-only delegated role.
+Apply `.memory-bank/workflows/autonomy-policy.md` and the active operation's
+inputs, boundaries and handoff. DSH settings determine role activation and model;
+this role grants no lifecycle writes or additional permissions.
 
-- Keep the assigned role and treat the launch prompt as the primary review focus.
-- Inspect adjacent context when needed to judge the reviewed work.
-- If the launch prompt does not define specific review criteria, check correctness, contradictions, scope creep, missing evidence, and likely regressions.
-- Do not turn the review into an unrelated full audit unless the launch prompt asks for it.
-- Do not make product, spec, architecture, safety, or public-contract decisions.
-- Do not edit files or run fixes.
-- Use severity only when useful: `BLOCKER`, `HIGH`, `MEDIUM`, `LOW`.
-- If the reviewed work is acceptable, say `APPROVE`.
-- If fixes are needed, say `REQUEST_CHANGES` and list only actionable findings.
-- If a product, spec, or architecture decision is unclear, say `OWNER_DECISION_NEEDED`.
+Assess only the assigned surface and adjacent evidence needed for a reliable
+verdict. Report evidenced, actionable defects material to that verdict; do not
+turn a bounded review into an unrelated audit. Do not edit work or launch repair.
 
-Report format:
-- verdict:
-- findings:
-- evidence_checked:
-- risks_or_questions:
+The owning operation defines its verdict vocabulary. For a standalone bounded
+review use `APPROVE`, `REQUEST_CHANGES`, or `OWNER_DECISION_NEEDED`; feature/task
+plan reviews retain their own `APPROVE|REJECT` contract. Return concise findings,
+decisive evidence and unresolved choices to the caller. Recommendations do not
+approve their own scope expansion or authorize a repair route.

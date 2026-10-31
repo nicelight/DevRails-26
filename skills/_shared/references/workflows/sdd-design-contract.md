@@ -6,7 +6,8 @@ status: active
 
 ## Scope and caller ownership
 
-This contract governs canonical SDD authoring for initial design, accepted
+Apply `autonomy-policy.md` for decisions, conditional checks/artifacts and host
+ownership. This contract governs canonical SDD authoring for initial design, accepted
 redesign, and one-feature design. The calling skill owns its inputs, statuses,
 Planning Revision decisions, blockers, validation additions, and handoff.
 
@@ -36,24 +37,21 @@ compatibility or migration pressure, but cannot create or override an accepted
 target. Label assumptions as non-authoritative. Treat target/current difference
 as a planning delta, not an authority conflict.
 
-Scenario evidence is authoritative only for a scenario-sensitive decision and
-when `.memory-bank/user-scenarios.md#Review Status` is parseable with
-`Status: reviewed`. Otherwise obtain review only when that evidence is material;
-never create or promote scenario review decoratively.
+Use scenario evidence only where relevant. When scenario review is enabled,
+retain its actual result; a disabled review does not require a reviewed marker.
+Keep accepted scenario decisions distinct from observed or assumed behavior.
 
-Every unresolved material target, ownership, boundary, contract, state/data,
-security, deployment, compatibility/migration, Foundation, verification, or
-irreversible-behavior choice belongs to the operator unless higher authority
-already resolves it. A recommendation, default, silence, or reversible/KISS
-preference is not acceptance. Interactive flow obtains the decision; unattended
-flow records the exact question, impact, owner, and existing blocker/resume route.
-Write an accepted decision to its existing canonical owner, remove contradictory
-active wording, and preserve useful as-is evidence as explicitly current state.
+Material unresolved target, ownership, boundary, state/data, security, deployment,
+compatibility, Foundation or verification choices follow
+`autonomy-policy.md#decision-flow`. Record accepted decisions and their user or
+autonomous provenance at the canonical owner, remove contradictory active wording,
+and preserve useful as-is evidence explicitly as current state.
 
 ## Canonical ownership and coverage
 
-- `spec-backbone.md` owns global status, area matrix, architecture artifact
-  strategy, and design routing. Preserve its parseable vocabulary:
+- `spec-backbone.md` owns global status and design routing. Maintain an area
+  matrix or artifact strategy only when selected/useful; omission alone is not
+  a blocker. For recorded state preserve its vocabulary:
   - `complete` means every relevant global/shared area is authoritative,
     explicitly `not_applicable`, or has the narrowly valid
     `needed_before_tasks` route below;
@@ -164,8 +162,7 @@ roles remain conceptual unless current complexity justifies structure.
 
 Where accepted design leaves domain-modeling style open, preserve the affected
 area's local style. A material translation boundary requires concrete semantic,
-ownership, compatibility, or representation-isolation pressure and operator
-resolution when authority does not already decide it.
+ownership, compatibility, or representation-isolation pressure and a decision through the common flow when authority does not already decide it.
 
 For evidenced runtime/state sensitivity beyond the ordinary Foundation smoke
 path, define known initial state, safe rerun, observable result, and cleanup or
@@ -198,5 +195,5 @@ Before caller-specific handoff, verify within the affected scope:
   cross-slice orchestration, and proof paths remain legible where applicable;
 - affected feature links/status and Foundation evidence remain truthful;
 - no task/plan lifecycle, protocol, completed evidence, or review state changed;
-- applicable project-native link, lint, and readiness checks pass or preserve a
-  named blocker.
+- selected project-native checks retain actual results or named blockers;
+  disabled checks create no missing-evidence gate.

@@ -1,65 +1,41 @@
 ---
-description: Default DevRails entrypoint when the first operator prompt names no skill and implies no unambiguous workflow action; resolves current durable state and routes one owning skill.
+description: Resolve the current incomplete owner from durable state.
 status: active
 ---
 # /start — Resolve next workflow owner
 
-<objective>
-Resolve the current authoritative workflow state and invoke exactly one next
-owning skill. If no route or target is authoritative, ask one focused operator
-question and stop.
-</objective>
+Resolve the next subject owner and target from `$ARGUMENTS`, the host's current
+operation and authoritative durable state. Return one immediate handoff for
+host continuation; do not launch a chain or select queue work yourself.
 
-<input_contract>
-Use `$ARGUMENTS` as operator focus when present.
+## Missing Memory Bank
 
-If `.memory-bank/` is missing, treat the repository root as `<target-repo>`
-unless the operator supplied another target. Accept `<devrails-checkout>` only
-when supplied by the operator or already verifiable by its
-`scripts/install-framework.mjs`.
-
-When both paths are known, return this command with shell-safe resolved paths:
+Use the current repository as target unless another was supplied. Accept a
+DevRails checkout only if supplied or already verifiable by its
+`scripts/install-framework.mjs`; never invent it. Return the following with
+verified shell-safe paths:
 
 ```bash
 node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
 ```
 
-Otherwise ask for the checkout path and stop. Do not call `/mb-init`, run local
-bootstrap logic, copy helpers, install dependencies, or create the skeleton.
-After external bootstrap, rerun `/start`.
+If a path is unknown, report the exact missing input. Do not run local bootstrap
+logic, copy helpers or create the skeleton. Resume `/start` after actual external
+bootstrap. This installer is packaging, not an agent execution environment.
 
-When `.memory-bank/` exists, read `.memory-bank/index.md`,
-`.memory-bank/workflows/execute-loop.md#interactive-mode-you-stay`, and only
-the product, PRD, baseline, spec/foundation, feature, task, review, protocol, or
-handoff records needed to resolve the current incomplete boundary. File
-existence and conversation memory are not workflow state; use authoritative
-statuses, verdicts, Planning Revision, dependencies, and durable handoffs.
-</input_contract>
+## Existing Memory Bank
 
-<hard_invariants>
-- `/start` writes no artifact or lifecycle state; the selected skill owns
-  its mutations and handoff.
-- Select no unattended mode without an explicit operator instruction.
-- Do not create roadmap or task state without a clarified PRD/delta.
-- Do not bypass an existing review, Foundation, dependency, doctor, tier, or
-  operator-decision gate.
-- Do not choose among multiple eligible features or tasks without an
-  authoritative target.
-</hard_invariants>
+Apply `.memory-bank/workflows/autonomy-policy.md` for decisions, effective
+settings, host ownership and recovery.
 
-<routing_contract>
-Prefer a valid unfinished durable handoff or resume route. Otherwise select the
-first incomplete boundary in the interactive execute-loop whose prerequisites
-are satisfied. Substantial existing code without a current evidence-backed
-baseline routes to `/map-codebase` before new product planning.
+Use `.memory-bank/index.md`, `.memory-bank/workflows/execute-loop.md`, and only
+the product/design/task/evidence records needed to identify the incomplete owner.
+Prefer a valid unfinished handoff over a new chain. File existence alone does
+not prove completion; disabled checks do not create missing-verdict blockers.
 
-Invoke the one selected owning skill and stop routing. If the owner or target
-depends on an unresolved operator choice, ask that one question and stop. Do
-not output or execute a downstream chain.
-</routing_contract>
-
-<validation>
-Confirm that the selected owner matches authoritative state, all earlier gates
-remain satisfied, and the result contains only one invoked skill or one blocking
-operator question.
-</validation>
+Substantial existing code without a current baseline suggests `/map-codebase`
+before new planning; an added mapping branch follows the common decision flow.
+Ambiguous target/authority needs a focused decision, not a guessed feature/task.
+Keep this operation read-only. Do not invent product scope or select autonomous
+mode without its authorization. Return the owner, concise basis and any specific
+missing input; completed work is not replayed because conversation context is gone.

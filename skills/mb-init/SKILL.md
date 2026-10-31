@@ -1,44 +1,13 @@
 ---
 name: mb-init
-description: Route Memory Bank bootstrap or coherent framework sync through an available external DevRails checkout.
+description: Route external Memory Bank bootstrap or coherent framework sync.
 ---
+# mb-init package entrypoint
 
-# mb-init — External bootstrap router
+Apply `references/shared-commands-mb-init.md` for the verified checkout/target,
+bootstrap-only versus coherent sync action, collision safety and immediate
+handoff. This package does not create a skeleton, copy helpers or launch agents.
 
-This package does not create or sync Memory Bank files. Bootstrap is owned only
-by `scripts/install-framework.mjs` in an available DevRails checkout.
-
-## Route
-
-- Verify the target repository path.
-- Use a DevRails checkout path only when the operator supplied it or the
-  checkout and its installer are already verifiable. Never guess or invent the
-  checkout path.
-- For a target without `.memory-bank/`, return:
-
-  ```bash
-  node <devrails-checkout>/scripts/install-framework.mjs --bootstrap-only --target <target-repo> --yes
-  ```
-
-- For an explicit framework sync of an existing target, update runtime command
-  skills and Memory Bank managed assets from the same prepared source copy:
-
-  ```bash
-  node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --sync --target <target-repo> --yes
-  ```
-
-  `--bootstrap-only --sync` repairs only Memory Bank managed assets and does not
-  update runtime command skills. Do not present it as a full framework sync.
-
-Replace both placeholders with verified, shell-safe paths. If the checkout is
-unknown or unavailable, ask the operator to provide one or run the external
-installer action, then rerun `/mb-init`; never present a placeholder as an
-executable command.
-
-Do not run local bootstrap logic, copy a helper into the target, install a
-dependency, or create the skeleton manually. When `.memory-bank/` already
-exists and no sync was requested, make no changes. Hand off to `/start`
-only when its `SKILL.md` exists in the active `.agents/skills/` or
-`.claude/skills/` runtime surface. Otherwise report that the skeleton is ready
-and stop; do not claim `/start` is available. Runtime command installation
-remains an explicit external installer action.
+The external installer owns packaging; DSH owns runtime models, subagents and
+tools. After actual bootstrap/sync confirm the target and return to `/start`
+only if DSH exposes it. Do not infer runtime availability from package folders.

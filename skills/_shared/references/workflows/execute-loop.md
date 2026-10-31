@@ -1,200 +1,98 @@
 ---
-description: Workflow: PRD → FT → TASK loop (interactive or autonomous).
+description: Product, design, tasking, and execution ownership and immediate handoffs.
 status: active
 ---
 # Execute loop (PRD → Feature → Tasks)
 
+Apply `autonomy-policy.md` for decisions, effective settings, host ownership,
+and recovery. These are semantic routes; the host selects and launches the
+next applicable operation without requiring every station or artifact.
+
 ## Principle: no task explosion
-- `/prd-to-features` creates L1–L3 only (product/requirements/epics/features) and does not
-  write testing documentation.
-- `/write-prd` owns PRD-level decisions. `/feature-doctor` validates and routes
-  reported feature-related semantic findings.
-- Acceptance closure applies when an observable edge/failure outcome or
-  non-functional quality can itself block acceptance or realize a significant
-  accepted risk: it closes through an accepted REQ/feature AC or a sourced
-  authoritative out-of-scope disposition, then exact task mapping, planned
-  proof, and verified evidence. Missing product targets/scope decisions remain
-  `/write-prd` blockers; agents do not invent them.
-- `/spec-init` creates lightweight pre-PRD framing state in `.memory-bank/spec-backbone.md` after `/write-prd` and before `/prd-to-features`, while `.memory-bank/spec-index.md` remains a pure spec registry/index.
-- `/spec-design` is the mandatory initial post-`/prd-to-features` backbone and
-  Foundation decision gate. Changes to an already accepted positive-revision
-  backbone belong to `/spec-redesign`.
-- Global Backbone `Planning Revision` starts at `0`, becomes `1` on the first
-  successful `/spec-design`, and changes later only under
-  `#planning-redesign-boundary`. Product task-plan `APPROVE` is valid only for
-  the current revision.
-- `/foundation-to-tasks` creates normal `FT-000` foundation JSON tasks and the final foundation gate when foundation is required; execute/verify that queue before product feature tasking.
-- `/feature-to-tasks FT-<NNN>` closes applicable canonical concern coverage and
-  creates the implementation plan plus complete JSON task records with direct
-  relevant spec links. Discovery, concern-lens order, and slicing tactics are
-  agent-selected inside the command contract.
-- Simple material-quality methods stay in REQ/AC/task records; a subject spec
-  owns only non-trivial reproducible measurement detail. Tasks proving a
-  material NFR carry concrete `verification_targets` and `evidence_required`
-  at every tier; compact T0/T1 protocol does not waive that evidence.
-- Newly created or reconciled `planned|ready` T2/T3 cards map only task-owned
-  outcomes and integration delta. Dependency proof is not inherited;
-  `evidence_required` stays minimal while required probe method remains in the
-  task package. `/review-tasks-plan` rejects missing and excess proof without a
-  new workflow stage.
-- Rerun `/feature-to-tasks FT-<NNN>` to reconcile subject-based canonical specs, task cards,
-  and plans.
-- After the current feature task set is decomposed, run
-  `/review-tasks-plan FT-<NNN>` in a fresh-context reviewer / separate fresh
-  session. Then run `/mb-doctor` at the feature/task-queue boundary when the
-  queue has T3 work, autonomous/autopilot handoff, or complex
-  T2/foundation/dependency/stale-doc/risky-link conditions. Simple manual
-  T0/T1 queues do not require `/mb-doctor` by default.
+
+- Raw or uncertain ideas: `/grill-me` produces the durable brief, then
+  `/constitution` if principles remain unresolved, otherwise `/write-prd`.
+  A clear authoritative source can enter at Constitution/PRD directly.
+- Brownfield: `/map-codebase` records as-is evidence and returns to the supplied
+  PRD/delta owner. It does not invent a roadmap or re-request supplied input.
+- `/constitution` owns governing principles; `/write-prd` owns product targets,
+  scope, observable acceptance and material NFRs. No downstream artifact invents
+  a missing product target. New PRD → `/spec-init`; updated PRD → `/prd-to-features`.
+- `/spec-init` owns lightweight domain/scenario framing. `/prd-to-features`
+  owns REQ/EP/FT decomposition and stable ACs, not tasks or testing documentation.
+  Enabled `/review-feat-plan` assesses that decomposition; otherwise continue
+  with its review skipped, not a fabricated APPROVE.
+- `/spec-design` owns the initial shared backbone and Foundation decision;
+  accepted backbone changes belong to `/spec-redesign`. Use only applicable
+  canonical artifacts under `sdd-design-contract.md`.
+- `/foundation-to-tasks` owns the minimal FT-000 executable baseline when needed.
+  Brownfield proof can establish that no Foundation queue is required.
+
+Material acceptance follows accepted REQ/AC or a sourced out-of-scope decision,
+exact task ownership, and the selected proof path. Record observed proof when
+performed and absence when skipped; implementation completion alone does not
+establish verified product acceptance. Simple quality criteria stay in REQ/AC;
+subject specs own only non-trivial reproducible measurement detail.
 
 ## Planning Redesign Boundary
 
-- `/spec-redesign` changes an already accepted positive-revision backbone or
-  shared contract and returns one impact verdict: `none|bounded|global`.
-- Planning Revision increments exactly once only when both are proved: durable
-  planning semantics changed, and the change affects product-wide planning.
-  Durable semantics are architecture units or ownership, accepted boundaries,
-  feature acceptance, task slicing, dependencies, tiers, compatibility or
-  rollout, verification obligations, or the Foundation path. Shared location,
-  broad wording, schema/API/config text, or implementation detail alone is not
-  proof of global impact.
-- `none` preserves revision and reviews. `bounded` preserves revision and names
-  only affected product features. `global` increments revision and affects all
-  task-linked product features. Uncertain impact blocks for evidence; it does
-  not default to `global`.
-- For `bounded`, `/spec-redesign` writes the exact body marker
-  `PLANNING_RECONCILIATION_REQUIRED` only in affected task-linked feature docs
-  whose planning needs repair. It changes neither Global Backbone Status nor
-  Planning Revision.
-- Reconcile affected product features sequentially through
-  `#fresh-feature-tasking-boundary`. Foundation planning is revisited only when
-  its decision or executable baseline contract changed. Preserve task statuses,
-  completed evidence, and unaffected approvals.
-- Promotion, selection, and execution exclude only features with that marker or
-  without a current-revision task-plan `APPROVE`; independent eligible features
-  continue. Add no revision history, registry, lifecycle, schema, or parallel
-  freshness system.
+`/spec-redesign` returns `none|bounded|global` from evidenced planning impact.
+`none` preserves revision/reviews. `bounded` preserves revision and names only
+affected features, marking their planning `PLANNING_RECONCILIATION_REQUIRED`
+where repair is needed. `global` increments the positive Planning Revision once
+only when durable planning semantics changed with product-wide impact.
+Initial accepted design establishes revision 1 from 0. Uncertain impact needs
+evidence, not an automatic global reset.
+
+Affected tasking returns to `/feature-to-tasks`; Foundation is revisited only
+if its baseline contract changed. Preserve task identity, statuses, completed
+evidence, and unaffected work. Enabled task-plan reviews bind to current
+`REVIEWED_PLANNING_REVISION`; disabled reviews do not require APPROVE. Status,
+evidence-only closure, and equivalent locator repair do not invalidate review.
 
 ## Fresh Feature Tasking Boundary
 
-- When feature design is due, run `/spec-auto FT-<NNN>` first in its own
-  isolated one-feature Architect context; its successful handoff names the
-  feature's tasking context.
-- One fresh context owns exactly one `/feature-to-tasks FT-<NNN>` and ends at its
-  durable handoff. Multi-feature owners process features sequentially, including
-  during experimental-parallel execution.
-- Before launch, the owner resumes its recorded current feature or selects one
-  remaining, then records that feature and the exact next action in its existing
-  orchestration plan.
-- Unattended tasking uses an isolated `ROLE: ARCHITECT` child with only the target
-  command and durable project state, not parent or previous-feature conversation.
-  Success sets a separate fresh `ROLE: Reviewer` `/review-tasks-plan FT-<NNN>`
-  child as the next action.
-- `REJECT` invokes its named repair owner; only `/feature-to-tasks` repair uses a
-  new isolated Architect child. Current-revision `APPROVE` clears the current
-  feature; other halts preserve their owner and route.
-- An unattended caller without isolated child contexts returns
-  `HALT_POLICY_VIOLATION` with fresh tasking, review, and parent-resume routes for
-  the current feature; it never tasks in the parent context. Add no tasking
-  status or registry.
+One `/feature-to-tasks FT-<NNN>` invocation owns one product feature, canonical
+concern reconciliation and complete indexed task cards. `/spec-auto` can provide
+feature design when needed. Separate Architect/reviewer contexts are conditional
+DSH assignments, not prerequisites merely because the run is autonomous.
+
+Handoff is enabled `/review-tasks-plan FT-<NNN>` or the prepared task queue when
+review is skipped. A performed REJECT proposes its actual repair owner through
+the decision flow; repair preserves unaffected work and returns to the enabled
+review of changed claims. Missing context goes to its evidence/decision owner.
 
 ## Execution-Cohesive Task Boundary
 
-A task owns one material implementation/change result that can complete and be
-proved independently. Proof is completion evidence, not a task boundary; later
-work may compose or depend on the result without completing it.
+A task owns one independently completable material change result. Tests, probes,
+rollback checks and UAT belong with that result; files, layers, AC count and
+artifacts do not create a separate task boundary. Keep production-only remainder
+explicit. Dependencies retain their outcomes and proof; downstream tasks do not
+inherit their claims merely through links.
 
-Split only independent implementation/change results. Keep tests, probes,
-failure/retry/rollout/rollback checks, and UAT with their implementation task;
-group production-only configuration and checks in at most one final task per
-feature. Files, layers, artifacts, tests, AC count, commands, and modules do not
-create a boundary without a distinct implementation result.
+The indexed JSON card is the task-scoped handoff with purpose, outcome, direct
+canonical inputs and real boundaries. `touched_files` is advisory. Tier and
+identity changes use the planning owner, not in-place ID mutation.
 
-## Interactive mode (you stay)
-1) `/grill-me -> /constitution` when raw or uncertain product discovery is needed; a clear authoritative product source may start at `/constitution` or `/write-prd` according to Constitution state
-2) `/constitution` for contextual governing principles when `.memory-bank/constitution.md` is missing or `project_principles` is framework-default|skipped|missing; if principles are already ratified/partial, continue to `/write-prd`; if explicitly skipped, continue with framework-default/skipped principles
-3) `/write-prd` (creates clarified .memory-bank/prd.md)
-4) `/spec-init` (updates .memory-bank/spec-backbone.md framing and .memory-bank/spec-index.md registry)
-5) `/prd-to-features` (fills L1–L3)
-6) `/review-feat-plan` for high-risk, large, or autonomous-boundary work; optional/recommended for small manual flows
-7) `/spec-design` (mandatory; minimal is valid for local/simple feature-set pressure)
-8) If foundation is required, run `/foundation-to-tasks`, `/mb-doctor --strict`, then execute/verify `FT-000` tasks until the final foundation gate is `done`
-9) Pick one top feature; use `/feature-doctor FT-001` for an explicit feature
-   blocker or a semantic finding reported by planning or verification
-10) `/feature-to-tasks FT-001` (resolves feature design concerns through subject-based canonical specs and creates IMPL plan + complete `TASK-NNN-TN-FT-NNN-WN` records for this feature)
-11) Run `/review-tasks-plan FT-001`, then run `/mb-doctor` at the
-feature/task-queue boundary only when T3, autonomous/autopilot handoff, or
-complex T2/foundation/dependency/stale-doc/risky-link conditions apply;
-use `/mb-doctor --strict` before autonomous handoff
-12) Execute tasks from `.memory-bank/tasks/index.json` and indexed `*.task.json` records one-by-one:
-   - run `/exe TASK`, then the verification, semantic, closure, and sync route
-     in `tier-policy.md#tier-obligations` and
-     `tier-policy.md#closure-authority`; `/exe` owns its detailed
-     start/attempt/resume contract
-   - start `/exe` only after the current feature task set has been decomposed and any required/conditional feature/task-queue doctor gate has passed
-   - `/exe` reads the indexed task card and direct task-linked canonical specs; structural single-card readiness is owned by `/mb-doctor`, while semantic contradictions remain implementer blockers
-   - a required higher tier follows
-     `tier-policy.md#tier-classification-and-escalation`
-13) Rerun `/review-tasks-plan FT-<NNN>` after a wave only when execution changed
-verdict-relevant specs/claims, task outcome/slicing/proof obligations,
-dependencies, tier, scope, or unresolved plan assumptions. A current `APPROVE`
-survives status/evidence-only closure and mechanically equivalent
-locator/traceability corrections that preserve the canonical owner and claim
-and pass applicable deterministic checks.
-14) Apply `/spec-redesign` and `#planning-redesign-boundary` to accepted
-backbone/contract changes after initial design.
+## Execution and continuation
 
-## Autonomous end-to-end mode (start and leave)
-1) `/autonomous`
-2) after Product/Design and applicable Foundation planning, it applies
-`#fresh-feature-tasking-boundary`
-3) `/autonomous` directly owns the bounded FT-000 phase through the existing
-`/foundation-to-tasks -> /mb-doctor --strict -> /exe + /verify -> /mb-sync`
-workflow until the final gate is `done`; it never invokes `/autopilot` for
-Foundation and never mutates product tasks in that phase
-4) Foundation resume uses the outer run plan plus authoritative FT-000 task
-records/protocols; `/autopilot` scheduler stages begin only at product handoff
-5) after Foundation completion, delegate the reviewed strict-ready product queue
-to canonical `/autopilot`; `/autonomous` does not copy its product-queue
-recovery, selection, task-stage, wave-boundary, or no-ready algorithm
-6) `/autopilot` owns product promotion, selection, final lifecycle decisions,
-and queue recovery; selected-task `/exe` owns protocol preparation and
-`ready -> in_progress`; `tier-policy.md` owns tier gates and closure authority;
-`autonomy-policy.md` owns scheduler failure/retry semantics, the durable
-checkpoint, budgets, hard stops, and terminal vocabulary; `mb-sync.md` owns
-boundary reconciliation only
-7) `/autonomous` preserves any scheduler halt unchanged and reports final
-end-to-end `SUCCESS` only after the product queue and all outer gates pass
+The host supplies one selected task to `/exe`, then selects enabled verification
+and closure operations under `tier-policy.md`. Models return implementation,
+check and decision outcomes; the host records lifecycle. All-off verify is
+skipped and may close implemented work without PASS. Actual negative results
+remain evidence and need a disposition through the decision flow.
 
-## Autonomous executor only
-If JSON task records already exist and `/review-tasks-plan FT-<NNN>` already
-approved every task-linked product feature for the current positive Planning
-Revision, and the Foundation gate is already
-`not_required` or its named gate task is `done`, use:
-- `/autopilot`
-
-`/autopilot` must run the strict doctor before task selection and
-after the wave-boundary `/mb-sync` before promotion.
-
-## Parallel vs sequential
-- Canonical execution is sequential: finish one task's execute/verify/closure
-  decision before selecting the next task.
-- `touched_files` is advisory and must not be used to prove task independence.
-- Experimental parallel execution is available only through explicit
-  `--experimental-parallel`, pairwise-disjoint hard
-  `runtime_context.write_boundary`, isolated worktrees/sandboxes, and the
-  remaining autonomy-policy exclusions. If any proof is missing, fall back to
-  sequential execution.
-- Each task records its authoritative closure/evidence immediately; full
-  `/mb-sync` remains a wave boundary unless TASK-B requires reconciled durable
-  state or the owner requests an early sync.
+`/autonomous` covers end-to-end work including applicable FT-000; `/autopilot`
+handles the prepared product queue. Neither prompt owns a mechanical scheduler.
+`/mb-sync` reconciles already recorded outcomes at useful durable boundaries;
+missing disabled reports are not sync gaps. Enabled checks apply to the changed
+boundary, without automatic replay of the entire chain.
 
 ## Operator-decision boundary
-- Interactive task planning/execution asks the operator whenever a new material
-  product/design/contract/state/data/security/task-boundary/tier/dependency/
-  verification branch is not already settled by authoritative evidence.
-- Unattended execution does not choose for the operator. It records the exact
-  question and stops with the existing clarification/blocking terminal state
-  and the owning interactive resume skill.
-- A recommendation/default is not an accepted decision. Resume only after the
-  answer is durably applied to the existing owning artifact and applicable
-  review/readiness gates pass.
+
+Product questions return to `/write-prd`; local feature/task meaning returns to
+its planning owner; shared contracts return to `/spec-redesign`; implementation
+correction stays in the task when its meaning is unchanged. `/feature-doctor`
+can triage unclear semantic ownership. Every nonstandard route and main-path
+consultation follows `autonomy-policy.md#decision-flow`, including autonomous
+semantic choices and preservation of manual stops.

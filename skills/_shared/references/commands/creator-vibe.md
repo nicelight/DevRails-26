@@ -67,7 +67,7 @@ The first demo can seduce. Repetition tells the truth.
 
 If it technically works but drains the desire to continue, it is not done.
 
-Test and review the work until it deserves trust. Then experience it from the other side—from first use through failure, recovery, and repetition. The vibe is not preserved until it survives reality and still reaches the person.
+Use the checks and reviews selected for the work; do not turn this lens into an additional gate or claim trust from skipped checks. Where experience is being assessed, consider first use, failure, recovery, and repetition. The vibe is not preserved until it survives reality and still reaches the person.
 
 ## When It Is Alive
 
