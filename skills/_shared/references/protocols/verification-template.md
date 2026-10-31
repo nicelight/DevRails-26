@@ -4,6 +4,12 @@ status: active
 ---
 # Verification — <TASK_ID>
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## What was verified
 - Task outcome: ...
 - Feature: ...
@@ -16,7 +22,7 @@ status: active
 - Verification targets / constraints / invariants: ...
 - Task-scoped AC / REQ basis: ...
 - Required task/spec checks: ...
-- Executor RED/GREEN path: <claim mapping plus evidence locators, accepted not-applicable reason, or legacy not required>
+- Executor RED/GREEN path: <claim mapping plus evidence locators, accepted not-applicable reason, skipped local checks, or legacy not required>
 
 ## Task-scoped checklist
 > Include only outcomes and AC/REQ behavior mapped to this task.
@@ -34,10 +40,9 @@ status: active
 - [ ] Confirmed hard allowed/forbidden scope (if applicable)
 - [ ] Confirmed applicable Architecture/Component/API/Event/Data spec rules
 
-## Quality gates evidence
-- lint/typecheck: ...
-- unit tests: ...
-- integration/e2e: ...
+## Selected checks evidence
+- participant / assigned proof scope:
+- check / result / observed claim:
 
 ## Reused execute evidence
 - receipt locator:
@@ -54,8 +59,8 @@ status: active
 - claim mapping:
 - evidence:
 
-Executor GREEN is supporting evidence only. Record fresh verifier-owned proof
-for the same mapped claims.
+Executor GREEN is supporting evidence only. Record independent proof for the
+selected claims. No hidden main participant or local execution check is required.
 
 ## Verdict
 Replace the placeholder with one exact standalone marker:
@@ -65,7 +70,8 @@ VERDICT: <PASS|FAIL|NEEDS-CLARIFICATION>
 - Recommended owner/action: ...
 - Tier escalation or planning repair: none | ...
 - BUG/follow-up recommendation for scheduler/owner: none | ...
-- Task lifecycle changed by verifier: no | T0/T1 explicit-owner closure
+- Negative result disposition: decision / user-or-autonomous source / reason
+- Task lifecycle: host-owned
 
 ## Notes
 - ...

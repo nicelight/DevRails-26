@@ -4,9 +4,14 @@ status: active
 ---
 # /tech-debt - Advisory technical-debt report
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
+
 <objective>
 Inspect one explicit change surface and create one evidence-backed Markdown
-report of confirmed technical debt. The report is advisory and does not change
+result of confirmed technical debt. A report is selected by effective settings
+or explicit request. The result is advisory and does not change
 project implementation or workflow state.
 </objective>
 
@@ -29,7 +34,8 @@ wave, path, diff, or other explicit scope to repository-wide review.
 </input_contract>
 
 <hard_invariants>
-- Create exactly one new Markdown report under `PAPERCUTS/TECHDEBTS/`.
+- When reporting is selected, create one Markdown report under `PAPERCUTS/TECHDEBTS/`.
+  Otherwise return the concise result without a file; disabled debt review has no report.
 - Never overwrite an existing report. Use a new collision-free filename; add a
   numeric suffix when the preferred filename already exists.
 - Do not write or modify any other project file.
@@ -64,12 +70,13 @@ section empty.
 </required_outputs>
 
 <validation>
-Before handoff, re-read the new report, verify that it names the checked scope
-and evidence locations, and confirm that only the report was created or changed.
+Confirm the result names inspected scope and evidence. If a report was created,
+confirm it is the only changed file. Recovery reuses a completed report for the
+same unchanged boundary instead of duplicating it after a lost session.
 </validation>
 
 <handoff_contract>
-- Successful report -> return the report path and whether material findings
-  were confirmed.
+- Return the result and selected report path with required common feedback.
+  Adopting a remediation is a separate owner decision through the common flow.
 - The report never blocks, repairs, promotes, or routes workflow state.
 </handoff_contract>

@@ -351,58 +351,49 @@ function assertFreshBootstrap(target) {
       && specAuto.includes('feature design never owns revision'),
     'Runtime SDD workflows lost bounded redesign or Planning Revision ownership.',
   );
+  const redVerify = readTarget(target, '.agents/skills/red-verify/SKILL.md');
   assert(
-    autopilot.includes('separate fresh Reviewer')
-      && autopilot.includes('Never reuse or resume the `/verify` child for `/red-verify`'),
-    'Runtime autopilot lost independent functional and semantic reviewer contexts.',
+    verify.includes('independent functional PASS')
+      && redVerify.includes('Use an independent verifier context')
+      && autopilot.includes('secondary-only verification has no mandatory')
+      && autopilot.includes('Red alone can inspect available implementation'),
+    'Selected functional/semantic review lost independence or gained a hidden participant.',
   );
   assert(
     verify.includes('agents/review-code.md')
-      && verify.includes('`Codex Luna` with reasoning effort `xhigh`')
-      && verify.includes('Do not retry or block verification'),
-    'Runtime /verify lost its best-effort code co-review.',
+      && verify.includes('No fixed model/effort, mandatory co-review')
+      && verify.includes('All off means `skipped`')
+      && !/Codex Luna|xhigh/.test(verify),
+    'Runtime /verify lost configurable participation or retained fixed co-review.',
   );
   assert(
-    multiagentic.includes('Load `/autopilot` and its Judge section')
-      && multiagentic.includes('Delegate the queue to the installed')
-      && multiagentic.includes('single Judge session')
-      && multiagentic.includes('existing Judge target')
-      && multiagentic.includes('must not launch or replace it')
-      && multiagentic.includes('multiagents_with_judge.md#judge-session-and-consultation')
-      && multiagentic.includes('#autonomous-with-judge')
-      && multiagentic.includes('#autopilot-with-judge')
+    multiagentic.includes('Apply installed `/autonomous`')
+      && multiagentic.includes('multiagents_with_judge.md')
+      && multiagentic.includes('Only selected/requested consultation runs')
       && judgeOverlay.includes('optional DSH assignment')
       && judgeOverlay.includes('No fixed model')
       && judgeOverlay.includes('Disabled Judge adds no gate or report')
       && judgeRole.includes('SUPPORT|REDIRECT|ESCALATE_OPERATOR')
       && judgeRole.includes('Judge is read-only')
-      && judgeOverlay.includes('## autonomous with judge')
-      && judgeOverlay.includes('## autopilot with judge')
       && /common\s+decision flow/.test(judgeOverlay)
       && !autonomous.includes('multiagents_with_judge')
       && !autopilot.includes('multiagents_with_judge'),
-    'Runtime multiagentic overlay is incomplete or leaked into a base skill.',
+    'Runtime Judge overlay lost conditional consultation or leaked into base skills.',
   );
   assert(
-    multipilot.includes('Run an already reviewed and strict-ready product queue')
-      && multipilot.includes('installed `/autopilot` `SKILL.md`')
-      && multipilot.includes('multiagents_with_judge.md#judge-session-and-consultation')
-      && multipilot.includes('`#autopilot-with-judge`')
-      && multipilot.includes('Delegate the queue to the installed `/autopilot`')
-      && multipilot.includes('existing Judge target')
-      && multipilot.includes('must not launch or replace')
-      && multipilot.includes('Act as `/multipilot`')
-      && !multipilot.includes('#autonomous-with-judge')
+    multipilot.includes('Apply installed `/autopilot`')
+      && multipilot.includes('host retains scheduling')
+      && multipilot.includes('native DSH session')
       && !multipilot.includes('installed `/autonomous`'),
-    'Runtime multipilot lost its standalone autopilot-with-Judge contract.',
+    'Runtime multipilot lost the product base contract or native host ownership.',
   );
   assert(
     executeLoop.includes('PLANNING_RECONCILIATION_REQUIRED')
       && specRedesign.includes('whose planning needs repair')
       && featureToTasks.includes('removes `PLANNING_RECONCILIATION_REQUIRED`')
       && reviewTasksPlan.includes('blocks review')
-      && autopilot.includes('makes only that')
-      && exe.includes('only the selected feature')
+      && autopilot.includes('Preserve reconciliation')
+      && exe.includes('PLANNING_RECONCILIATION_REQUIRED')
       && executeLoop.includes('names only\naffected features')
       && !autopilot.includes('every previous product task-plan approval is stale')
       && !exe.includes('every previous product task-plan approval is stale')
@@ -414,9 +405,9 @@ function assertFreshBootstrap(target) {
       && featureDoctor.includes('Recommend only among options')
       && featureDoctor.includes('`/spec-redesign` owns')
       && reviewTasksPlan.includes('can triage unclear semantic ownership; it is not a mandatory intermediate gate')
-      && verify.includes('preserving the evidence-required functional')
-      && autonomous.includes("doctor's handoff in existing run state")
-      && autopilot.includes('persist its handoff')
+      && verify.includes('Preserve\nactual negative results')
+      && autonomous.includes('actual/partial effects')
+      && autopilot.includes('evidence, owner and resume route')
       && executeLoop.includes('`/feature-doctor`\ncan triage unclear semantic ownership'),
     'Runtime feature-doctor triage or autonomous recommendation contract is incomplete.',
   );
@@ -440,6 +431,30 @@ function assertFreshBootstrap(target) {
     `Planning /${name} lost shared feedback/settings or retained fixed execution policy.`);
     assert(!content.includes('skills/_shared/'), `Planning /${name} exposes a source-only path.`);
   });
+  const executionSkills = ['exe', 'add-tests', 'verify', 'red-verify', 'debug',
+    'technical-premortem', 'tech-debt', 'mb-sync', 'mb-garden', 'mb-doctor',
+    'autonomous', 'autopilot', 'multiagentic', 'multipilot'];
+  for (const name of executionSkills) {
+    const content = readTarget(target, `.agents/skills/${name}/SKILL.md`);
+    assert(content.includes('.memory-bank/workflows/autonomy-policy.md')
+      && content.includes('compact structured flow feedback')
+      && !/Codex Luna|reasoning effort `xhigh`|Unattended mode never answers|single Judge session|writes `ready -> in_progress`/.test(content),
+    `Execution /${name} retained model-owned mechanics or lost the shared feedback contract.`);
+    assert(!content.includes('skills/_shared/'), `Execution /${name} exposes a source-only reference.`);
+  }
+  const tierPolicy = readTarget(target, '.memory-bank/workflows/tier-policy.md');
+  assert(tierPolicy.includes('## Selected Work And Retained Results')
+    && tierPolicy.includes('No protocol bundle is selected by tier alone')
+    && tierPolicy.includes('Legacy records without')
+    && tierPolicy.includes('not a live settings lookup')
+    && exe.includes('independently disableable')
+    && redVerify.includes('all functional\nverification is off'),
+  'Selected work lost durable applicability, independent local checks or red-only semantics.');
+  for (const name of ['compact-run', 'context', 'plan', 'progress', 'handoff', 'verification', 'red-verification']) {
+    const content = readTarget(target, `.memory-bank/templates/protocols/${name}-template.md`);
+    assert(content.includes('Use only when this artifact is selected') && content.includes('Host owns'),
+      `Protocol ${name} reintroduced unconditional files or model lifecycle ownership.`);
+  }
   const featureReview = readTarget(target, '.agents/skills/review-feat-plan/SKILL.md');
   const foundationTasking = readTarget(target, '.agents/skills/foundation-to-tasks/SKILL.md');
   const pack = readTarget(target, '.agents/skills/review-tasks-plan/references/finding-adjudication.md');
@@ -521,7 +536,14 @@ function assertSync(target) {
     ['.memory-bank/tasks/index.json', '{"version":1,"tasks":[]}\n'],
     ['.memory-bank/contracts/boundary-map.md', '# Project boundary map\n'],
     ['.memory-bank/adrs/ADR-000-template.md', '# Project-owned ADR guidance\n'],
-    ['.protocols/TASK-999-T1-FT-999-W1/run.md', '# Task-owned state\n'],
+    ['.protocols/TASK-999-T1-FT-999-W1/run.md', '# Task-owned state\nVERDICT: FAIL\n'],
+    ['.tasks/TASK-999-T1-FT-999-W1/review.md', '# User-owned historical review\nSEMANTIC_VERDICT: semantic-fail\n'],
+    ['.memory-bank/tasks/TASK-999-T1-FT-999-W1.task.json', JSON.stringify({
+      id: 'TASK-999-T1-FT-999-W1', status: 'done', verify: [
+        'Historical failure retained without backfill',
+        { stage: 'workflow', attempt: '1', selected: { design: false, local_checks: false, verify: [], red_verify: false, feature_red_verify: false, protocols: [] }, implementation: 'complete', evidence: ['Actual implementation retained'], local_checks: 'skipped', verification: 'skipped', red_verification: 'skipped' },
+      ],
+    }) + '\n'],
     ['.memory-bank/templates/protocols/project-notes.md', '# Project template\n'],
     ['PAPERCUTS/session.md', '# Session papercut\n'],
     ['scripts/mb-lint.mjs', '#!/usr/bin/env node\n// Legacy copy left for operator cleanup.\n'],

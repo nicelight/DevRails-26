@@ -1,114 +1,53 @@
 ---
-description: Thin adapter that reconciles already-decided task and Memory Bank state at a durable boundary.
+description: Reconcile already-decided task and Memory Bank state at a durable boundary.
 status: active
 ---
-# /mb-sync - Reconcile durable Memory Bank state
+# /mb-sync — Reconcile durable state
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
 <objective>
-Apply `.memory-bank/workflows/mb-sync.md` to reconcile already-written
-authoritative task, requirement, feature/spec, index, evidence, and changelog
-state. `/mb-sync` synchronizes decisions; it does not make them.
+Apply `.memory-bank/workflows/mb-sync.md` to reconcile already-recorded task,
+requirement, feature/spec, index, evidence and changelog state. Synchronize
+decisions; do not invent them.
 </objective>
 
-<input_contract>
-Read and follow `.memory-bank/workflows/mb-sync.md` plus only the changed or
-referenced Memory Bank/task/evidence surfaces needed for this boundary.
+<input_and_boundaries>
+Read the changed/referenced surfaces needed for the selected boundary. Ordinary
+wave sync follows host lifecycle decisions; an explicit request or current-wave
+dependency may require earlier reconciliation. Task-local status/evidence alone
+does not force full sync. The caller owns subsequent selected checks/handoff.
 
-Normal boundary is once at the end of the current wave, after the scheduler or
-explicit owner has written every closure/failure/blocking decision, final task
-status, and evidence link to indexed `.task.json` records. Early sync requires
-a recorded current-wave dependency on reconciled RTM/index/spec/contract/
-changelog state or an explicit owner request; it does not replace the final
-wave-boundary sync.
+Indexed JSON tasks remain authoritative for identity, status, dependencies,
+tier and retained evidence. No closure, promotion, unblock, failure or semantic
+choice may be inferred by sync. Models do not write host-owned lifecycle.
+Preserve task IDs, partial work, historical selected/skipped checks, real
+negative findings and user-owned reports/protocols. Current settings do not
+rewrite historical evidence or demand disabled artifacts.
 
-In manual flow, the invocation or its durable context identifies the explicit
-top-level caller/owner that will own applicable post-sync gates and the next
-handoff.
+Spec-index stays a pure registry. Repair mechanical links/routers and reconcile
+accepted state only. Do not invent a new lifecycle, design bundle, positive
+Planning Revision or verified acceptance from done. Optional behavior specs
+remain examples, not a verification gate.
+</input_and_boundaries>
 
-Do not require full sync for a local manual T0/T1 closure when only task
-`status`, task `verify`, and compact `.protocols/<TASK>/run.md` changed.
-</input_contract>
+<outputs_and_validation>
+Reconcile applicable index/evidence links, RTM, feature/epic state, accepted
+spec/backbone links and canonical boundary-map locators, routers and changelog.
+Keep document status separate from feature lifecycle; retain provenance and
+unverified/skipped acceptance honestly. No backfilled PASS/APPROVE.
 
-<hard_invariants>
-- JSON task records remain authoritative for task status, dependencies, tier,
-  gates, verification targets, and evidence markers.
-- Status/closure/promotion ownership comes from
-  `.memory-bank/workflows/tier-policy.md#tier-obligations`,
-  `.memory-bank/workflows/tier-policy.md#closure-authority`, and
-  `.memory-bank/workflows/mb-sync.md`.
-- `/mb-sync` never infers or writes closure/failure/blocking/promotion,
-  `planned -> ready`, dependent unblock, or dependent block when the explicit
-  owner decision is absent.
-- In scheduler mode, sync only state already written by `/autopilot` or
-  `/autonomous`. In manual mode, require an already-recorded explicit owner
-  decision or a direct instruction for this sync.
-- `spec-index.md` remains a pure registry; no decision bodies, feature status
-  maps, ownership, or reverse usage are added.
-- Do not create a new task/status/boundary/design lifecycle or guess stale
-  product/design state.
-</hard_invariants>
-
-<operator_decisions>
-If authoritative artifacts disagree, or reconciliation exposes a new product,
-design, canonical-path, contract/state/data/storage/security/compatibility,
-task-boundary/tier/dependency/verification, closure, or promotion decision,
-stop with a consistency gap.
-
-Interactive flow asks the operator/explicit owner and requires the answer to be
-written to the existing owning artifact before sync resumes. Unattended flow
-returns the gap to the scheduler for `HALT_CLARIFICATION_REQUIRED`,
-`HALT_BLOCKING_QUESTIONS`, or `HALT_QUALITY_GATES` as applicable. A
-recommendation/default is not an owner decision.
-</operator_decisions>
-
-<agent_discretion>
-Within the canonical sync checklist, the agent chooses inspection order, tools,
-and the minimum changed surfaces needed to prove consistency. It may repair
-mechanical links/routers and reconcile already-decided state, but may not create
-missing product/design/lifecycle decisions.
-</agent_discretion>
-
-<required_outputs>
-As applicable, reconcile:
-- task index/records and evidence links;
-- requirements RTM and REQ lifecycle;
-- epic/feature lifecycle separately from document status;
-- truthful existing spec-backbone, spec-index, feature design links/status, and
-  changed canonical specs without inventing design;
-- accepted `boundary-map.md` links after path/heading changes;
-- behavior-spec links as optional examples only;
-- Memory Bank/root/subfolder routers;
-- `.memory-bank/changelog.md` for the current wave/change.
-
-Report consistency gaps and promotion eligibility without applying
-scheduler-owned promotion or final lifecycle transitions.
-</required_outputs>
-
-<validation>
-Perform only sync-local consistency validation: re-read the links, indexes,
-RTM, lifecycle/spec state, routers, evidence links, and changelog entries this
-sync changed, and confirm that they agree with their already-authoritative
-sources. `/mb-sync` does not run full `node .memory-bank/scripts/mb-lint.mjs` or
-`/mb-doctor`.
-
-In scheduler flow, `/autonomous` or `/autopilot` is the sole owner that runs
-authoritative post-sync lint and then `/mb-doctor --strict` before promotion or
-success. In manual flow, the named explicit top-level caller/owner runs the
-applicable post-sync lint/doctor before its next handoff. A bare skeleton or
-task-local manual T0/T1 closure does not gain a new full sync, lint, or strict
-doctor requirement.
-</validation>
+Re-read changed references and state for consistency with their owners. Full
+lint/doctor belongs to the caller only when selected; this leaf does not launch
+those gates or advisory debt review. Record actual changed files and consistency
+gaps, not a compulsory report bundle.
+</outputs_and_validation>
 
 <handoff_contract>
-- Successful scheduler wave sync -> return to `/autonomous` or `/autopilot`,
-  which alone runs lint then strict doctor before its separate promotion/
-  dependent-blocking pass. `/autopilot` then runs its default `/tech-debt wave
-  <N>` report after the successful wave-boundary gates; `/mb-sync` does not
-  launch it.
-- Successful manual sync -> return to the named explicit top-level caller/
-  owner, which runs applicable post-sync lint/doctor before its next handoff.
-  When this sync closes a feature or wave, include one advisory
-  `/tech-debt <scope>` recommendation in that operator-visible handoff.
-- Missing owner decision or semantic contradiction -> stop and name the owning
-  task/planning/design/closure repair route.
+Return the reconciled result and immediate caller with required common feedback.
+Contradictory authority or missing material closure/design/task decision names
+the first owner and concrete proposal through the common decision flow. A
+selected boundary may recommend optional `/tech-debt <scope>`; it adds no gate.
 </handoff_contract>

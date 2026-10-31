@@ -129,6 +129,7 @@ const TASK_SCHEMA = {
       },
     },
     verify: {
+      description: 'Retained evidence; new Nav work uses the workflow selection/result object defined in tier-policy, without replacing historical entries.',
       type: 'array',
       items: {
         anyOf: [
@@ -332,8 +333,8 @@ ${installedSkillsBlock()}
 - Scenario routing: start
 - Creative intent: /creator-vibe before narrower skills when success materially depends on taste, voice, human experience, or unstated choices
 - Discovery: /grill-me clarifies raw or uncertain ideas and keeps analysis/brief.md durable; clear authoritative product sources may continue without grilling
-- Project principles: /constitution after /grill-me or existing authoritative product/PRD context, before /write-prd only when project_principles is not ratified|partial
-- PRD → MB: /write-prd, lightweight /spec-init, /prd-to-features, initial /spec-design, /foundation-to-tasks when required, then one-feature /spec-auto and /feature-to-tasks
+- Project principles: /constitution when governance work is selected or a real principle needs resolution
+- Product → tasks: accepted PRD/delta, decomposition, selected design/reviews, needed Foundation, then one-feature tasking; disabled operations require no artifact bundle
 - SDD design: /spec-design creates the initial backbone/Foundation decision; /spec-redesign changes accepted backbone contracts with evidence-bounded impact; feature design/tasking remains one feature per context
 - Delegated context routing: /context-manifest when broad discovery is more expensive than direct reads
 - Map codebase: /map-codebase
@@ -793,11 +794,11 @@ status: active
    consumers, or reuse, not by file length alone.
 4. Duo docs remain valid: \`architecture/\` (WHAT/WHY) + \`guides/\` (HOW), cross-link both ways for concepts that use the classic pair model.
 5. C4 layering: L1 product → L2 epics → L3 features → L4 plans/tasks.
-6. Docs First: update MB immediately after finishing a task.
-7. Refactor MB every 5–10 updates (split, merge, archive).
+6. Retain actual work, decisions, selected/skipped checks and remaining handoff for recovery.
+7. Maintenance follows observed drift and accepted scope; no periodic archive/merge requirement.
 8. Separate facts from interpretations: mark hypotheses explicitly ("предположительно", "требует проверки").
 9. After merge/rebase conflicts: re-check MB consistency.
-10. MB-SYNC after each wave/significant change (see \`workflows/mb-sync.md\`).
+10. Reconcile already-decided state at selected boundaries (see \`workflows/mb-sync.md\`).
 11. When present, \`constitution.md\`, \`spec-backbone.md\`, \`spec-index.md\`, \`glossary.md\`, \`invariants.md\`, \`contracts/*\`, \`states/*\`, \`runbooks/*\`, and \`testing/*\` act as an explicit normative layer and should be linked from relevant docs.
 12. Features compose product behavior and exact canonical spec links. New design
     specs use subject-based paths without \`FT-<NNN>\` names or feature ownership.
@@ -912,11 +913,11 @@ status: active
 ## Handoff To /prd-to-features
 - Ready: no
 - Required reads: .memory-bank/prd.md, .memory-bank/spec-index.md, this file, and linked pre-PRD specs.
-- Stop conditions: Pre-PRD Spec Status is missing, stale, or blocked.
+- Stop conditions: a material accepted-input gap for the selected decomposition remains unresolved.
 
 ## Handoff To /spec-design
-- Global Backbone Status: intentionally pending until /spec-design
-- Downstream readiness: /feature-to-tasks, /autopilot, and autonomous scheduler mode must wait for /spec-design.
+- Global Backbone Status: pending if design is selected; absence does not enable design
+- Downstream readiness: selected design requires sufficient accepted inputs; disabled design requires no positive Planning Revision or full bundle.
 - Backbone areas to revisit: all
 - Candidate specs: see .memory-bank/spec-index.md Planned Specs.
 
@@ -927,7 +928,7 @@ status: active
 - Architecture artifact strategy: pending
 - Not applicable areas:
   - TBD
-- Notes: /spec-design has not completed the global architecture scaffold yet.
+- Notes: no accepted global design is recorded. Effective selection determines whether it is due.
 `);
 
 writeFile(`${MB}/constitution.md`, constitutionSkeleton());
@@ -1125,15 +1126,16 @@ status: active
   owns dynamic checks for a single head, no branches, and intact ancestry.
   A feature migration test owns only its revision, direct \`down_revision\`,
   upgrade/downgrade, schema transition, and data preservation.
-- A new revision reruns the project-level contract; it does not require literal
+- A new revision uses the selected project-level contract check; it does not require literal
   current-head consumers or historical feature-test updates. Resolve current
   head at execution preflight when needed and keep its ID out of durable testing
   specs, feature plans, and task cards.
 
 ## Evidence and ownership
-- T2/T3 tasks require an executable verification path. T0/T1 may use compact
-  evidence or a documented no-runnable-check route when no meaningful check exists.
-- Store commands, results, logs, screenshots, and verdicts in the task-selected
+- Only selected checks require proof. Local execution checks and verify participants
+  are independently configurable; skipped work never becomes PASS. Tiers inform
+  proof depth without enabling a check or requiring a report.
+- Retain concise actual results in existing task.verify; use only selected reports in the
   \`.protocols/<TASK_ID>/\` and \`.tasks/<TASK_ID>/\` paths, not in this policy.
 - Keep product quality targets in requirements/features and simple verification
   methods in feature AC/task records. Use a subject spec only for a non-trivial

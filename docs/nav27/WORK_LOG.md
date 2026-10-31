@@ -39,8 +39,8 @@
 ## Этапы
 
 1. **Завершён:** полная инвентаризация семантики, переходов и необходимых изменений.
-2. **В работе:** общий контракт и planning/reviews завершены; execution/validators далее.
-3. Ожидает: независимая проверка семантики и изолированного deployment; исправления.
+2. **Завершён:** shared/entry, planning/reviews, execution/validators.
+3. **В работе:** итоговые docs и независимая проверка всей семантики; исправления.
 4. Ожидает завершения этапов 1–3: архитектура Nav/DSH.
 
 ## Записи
@@ -123,3 +123,32 @@ implementation evidence, явно отмечая отсутствие functional
 checks имеют отдельную настройку и включены по умолчанию. Это рабочие defaults,
 не новое явное решение пользователя и не запрет их отключить. Общая авторизация
 адаптации позволяет продолжить; дальнейший ответ пользователя имеет приоритет.
+
+### Пакет 3 — завершён
+
+Исполнитель: `/root/semantics_execution`, Astra medium. 14 commands, 7 protocol
+templates, skeletons и validators/tests; результат `SEMANTIC_EXECUTION_RESULT.md`.
+DSH runtime не создавался.
+
+Минимальное data-решение: existing `task.verify` entry `stage: workflow` хранит
+attempt, выбранные проверки/участников/design/protocols и фактические results.
+Protocols default пуст; inline evidence допустим; disabled design не требует
+пустого backbone. Старые записи читаются по историческим правилам, без backfill.
+Feature/Foundation используют existing registry, `Gate Task: not_required`
+допускается при выбранной реализации без отдельного proof gate.
+
+Важная межпакетная находка: code-only reviewer возвращает candidate findings,
+не functional verdict. Исправлены verify/doctor/matrix: main-off не создаёт
+hidden main или synthetic PASS. Negative findings/verdict сохраняют disposition.
+
+Пройдены syntax, full doctor matrix, install-sync, отдельные install-only/bootstrap/
+sync в `/tmp/nav27-execution.lELVGm`, 62 deployed references и source-only check.
+Deployed strict doctor принимает T2 done/all-off без reports (0 errors/warnings).
+Matrix включает all-off T0–T3, secondary/code-only, red-alone, local checks,
+negative disposition/failure→skip rejection, interrupted work, disabled design,
+optional Foundation, malformed identity/dependency и сохранение истории при sync.
+
+Контекст исполнителя оборвался после сохранения результата; передача восстановлена
+из result-файла и краткой сводки оркестратора. Незавершённого follow-up нет.
+Независимый следующий проход проверяет согласованность всех пакетов и обновляет
+общие описания. Только после его verdict начинается архитектура.

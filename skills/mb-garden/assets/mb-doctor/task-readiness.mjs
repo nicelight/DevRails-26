@@ -23,7 +23,6 @@ const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
 const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
-const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
 
 export function createTaskReadinessChecks(context) {
   const ROOT = context.root;
@@ -49,6 +48,9 @@ export function createTaskReadinessChecks(context) {
     checkFailedTaskClosure,
     checkFullProtocolTask,
     checkTerminalEvidence,
+    checkWorkflowEvidence,
+    featureSemanticResult,
+    workflowContract,
   } = context.terminal;
   let featureClarificationCache;
 
@@ -92,6 +94,7 @@ export function createTaskReadinessChecks(context) {
     for (const record of orderedRecords) {
       checkFoundationWave(record);
       checkReadyDependencies(record, records);
+      checkWorkflowEvidence(record);
       checkInProgressProtocol(record);
       checkFullProtocolTask(record);
       checkCompactDoneProtocol(record);
@@ -220,6 +223,7 @@ export function createTaskReadinessChecks(context) {
   function checkInProgressProtocol(record) {
     const { id, rel, task } = record;
     if (task.status !== 'in_progress') return;
+    if (workflowContract(task)) return;
     if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
     const runRel = normalizeRel(joinRelative('.protocols', id, 'run.md'));
     if (isFile(absolute(runRel))) return;
@@ -285,6 +289,7 @@ export function createTaskReadinessChecks(context) {
   
   function checkSddSpecLinkage(record) {
     const { id, rel, task } = record;
+    if (workflowContract(task)?.selected.design === false) return;
     if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
   
     const taskSpecLinks = sddSpecLinkStatusFromTask(task);
@@ -325,6 +330,7 @@ export function createTaskReadinessChecks(context) {
   
   function checkArchitectureReferencePresence(record) {
     const { id, rel, task } = record;
+    if (workflowContract(task)?.selected.design === false) return;
     if (!options.strict) return;
     if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
     if (hasArchitectureContractAdrReference(task)) return;
@@ -346,7 +352,13 @@ export function createTaskReadinessChecks(context) {
     if (!nonEmptyString(task.success_outcome)) issues.push('success_outcome must be a non-empty string');
   
     const taskSpecLinks = sddSpecLinkStatusFromTask(task);
-    if (!taskSpecLinks.existing.length) {
+    const workflow = workflowContract(task);
+    if (workflow?.selected.design === false) {
+      const directInputs = [task.source_artifacts, task.normative_inputs].filter(Array.isArray).flat();
+      if (!directInputs.some(isConcreteHandoffValue)) {
+        issues.push('direct accepted task/REQ/feature inputs are required when design is disabled');
+      }
+    } else if (!taskSpecLinks.existing.length) {
       issues.push('at least one existing direct task-linked canonical SDD spec path is required');
     }
   
@@ -367,7 +379,8 @@ export function createTaskReadinessChecks(context) {
     const hasVerificationTarget =
       Array.isArray(task.verification_targets)
       && task.verification_targets.some((value) => isConcreteHandoffValue(value));
-    if (!hasGateCommand && !hasVerificationTarget) {
+    const proofSelected = !workflow || workflow.selected.local_checks || workflow.selected.verify.length > 0;
+    if (proofSelected && !hasGateCommand && !hasVerificationTarget) {
       issues.push('a gate with a real command or a non-empty verification_target is required');
     }
   
@@ -504,7 +517,12 @@ export function createTaskReadinessChecks(context) {
       const implementationRecords = group.records.filter((record) => !isProductionAcceptanceTask(record));
       if (!implementationRecords.every((record) => DONE_STATUSES.has(record.task.status))) continue;
   
-      const passFiles = featureSemanticPassFiles(group.featureId);
+      const retainedFeatureResult = featureSemanticResult(implementationRecords, group.featureId);
+      if (retainedFeatureResult === true) continue;
+      const featureNegative = featureSemanticFiles(group.featureId, false).length > 0;
+      if (retainedFeatureResult === undefined && !featureNegative
+        && implementationRecords.every((record) => workflowContract(record.task)?.selected.feature_red_verify === false)) continue;
+      const passFiles = retainedFeatureResult === false || featureNegative ? [] : featureSemanticFiles(group.featureId, true);
       if (passFiles.length) continue;
   
       addFinding(
@@ -746,12 +764,14 @@ export function createTaskReadinessChecks(context) {
     return base === featureId || base.startsWith(`${featureId}-`) || base.startsWith(`${featureId}_`);
   }
   
-  function featureSemanticPassFiles(featureId) {
+  function featureSemanticFiles(featureId, passing) {
     return featureMarkdownFiles()
       .filter((file) => featureFileMatches(file, featureId))
       .filter((file) => {
         try {
-          return RED_VERIFY_PASS_RE.test(readText(file));
+          const markers = [...readText(file).matchAll(/^\s*SEMANTIC_VERDICT: (semantic-pass|semantic-concern|semantic-fail)\s*$/gim)];
+          const verdict = markers.at(-1)?.[1];
+          return passing ? verdict === 'semantic-pass' : Boolean(verdict && verdict !== 'semantic-pass');
         } catch {
           return false;
         }

@@ -4,6 +4,12 @@ status: active
 ---
 # Plan — <TASK_ID>
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## Goal
 
 ## Non-goals
@@ -46,14 +52,14 @@ status: active
 - `forbidden_scope` / stop-condition check: clear | blocked
 
 ## Applicable quality gates
-List only evidence-backed project-native checks required by the task record,
-linked specs/PRD, or repository configuration.
+List only selected task-relevant checks. Disabled local checks are independent
+of verify settings; explicit non-negotiables need owner resolution if incompatible.
 
 - [ ] `<check name>`: `<cmd>` — proves `<task outcome or concrete risk>`
 - No meaningful runnable check: `<not applicable | rationale>`
 
 ## Claim-linked RED / GREEN (T2/T3)
-- applicability: applicable | not applicable
+- applicability: selected | skipped | accepted not applicable
 - accepted claim locator(s): <AC / REQ / exact canonical spec anchor>
 - planned test/probe and environment:
 - observable RED:
@@ -61,28 +67,15 @@ linked specs/PRD, or repository configuration.
 - accepted not-applicable reason and alternative proof:
 - T3 isolation, safe rerun, cleanup, and permission boundary:
 
-## Fan-out plan (if needed)
-- Delegated agent A: scope ...
-- Delegated agent B: scope ...
+## Handoff
+- existing task.verify workflow selection / attempt:
+- completed / partial effects:
+- remaining selected work:
+- affected Memory Bank references needing reconciliation:
+- immediate owner / decision needed:
 
-## MB-SYNC handoff / owner
-Scheduler or explicit standalone owner performs sync after verification/status
-decision. `/exe` only records handoff notes.
-
-An `explicit standalone owner` exists only when the user directly asked the
-current top-level agent to close the task, or when the top-level
-agent/orchestrator explicitly runs a manual workflow for one TASK and records
-that it owns closure. Subagent prompts do not silently become closure
-owners.
-
-Checklist:
-- [ ] Owner identified: scheduler | explicit standalone owner | human | none
-- [ ] Explicit standalone owner basis recorded if manual closure is expected: user direct instruction | top-level manual workflow ownership | n/a
-- [ ] `.memory-bank/` docs needing update (WHY/WHERE, no pseudocode): ...
-- [ ] `.memory-bank/index.md` router update needed: yes | no
-- [ ] RTM update in `.memory-bank/requirements.md` needed: yes | no
-- [ ] Task registry/status update owner: ...
-- [ ] Changelog update owner: ...
+Host owns task status and launches. A protocol plan does not authorize additional
+participants or force sync, review or verification.
 
 ## Definition of done
 - ...

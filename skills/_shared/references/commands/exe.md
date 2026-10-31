@@ -1,370 +1,127 @@
 ---
-description: Execute one indexed JSON task within its semantic and hard runtime boundaries, then produce tier-routed evidence and handoff.
+description: Implement one selected indexed task and retain actual work and selected local evidence.
 status: active
 ---
-# /exe - Execute one TASK
+# /exe — Implement one task
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
 <objective>
-Execute one selected `TASK-NNN-TN-FT-NNN-WN` and leave reproducible
-protocol/evidence for verification and the lifecycle owner. `/exe` is not a
-scheduler.
+Deliver the selected task's accepted outcome inside its semantic and hard
+boundaries. Return implementation evidence and the next owner; the host selects
+tasks, prepares the attempt, and writes lifecycle in every mode.
 </objective>
 
 <input_contract>
-Expected `$ARGUMENTS`: one concrete `TASK-NNN-TN-FT-NNN-WN`.
+Require one `TASK-NNN-TN-FT-NNN-WN` resolving through
+`.memory-bank/tasks/index.json`, its schema-valid task card, and
+`.memory-bank/workflows/tier-policy.md`. Use purpose, success_outcome, anti_goals,
+REQ/AC, direct normative inputs, constraints, invariants, dependencies,
+runtime_context, actual changes, and retained evidence relevant to this outcome.
+T2/T3 require concrete direct canonical inputs sufficient for the selected work;
+accepted task/REQ/feature meaning may supply them when design is disabled.
+Registry-only links or invented specs are not a substitute for actual meaning.
 
-The caller has already selected this task. `/exe` never scans the queue or
-chooses another task.
+Confirm ID/tier/feature/wave consistency, valid gates and evidence fields, and
+that dependencies exist and are `done|done_for_prod`. Dependency outcomes are
+prerequisites; their proof remains with their owning tasks. Confirm an observable
+outcome, selected proof path, scope and tier, and no unresolved applicable
+blocker. An existing `PLANNING_RECONCILIATION_REQUIRED` remains a planning gap.
+When global design/review is selected, apply its recorded freshness/revision
+contract; disabled design/review requires neither a positive Planning Revision
+nor fabricated APPROVE or full design bundle.
 
-Require and resolve:
-- `.memory-bank/tasks/index.json` and exactly one matching indexed task record;
-- `.memory-bank/workflows/tier-policy.md#tier-obligations`;
-- `#task-claim-and-dependency-ownership`;
-- `#tier-classification-and-escalation` only when observed scope may require a
-  higher tier, `#closure-authority` only for manual T0/T1 closure,
-  `#hard-write-boundary` only when a boundary/alias is non-empty,
-  `#task-scoped-acceptance-evidence` when its fields are populated, and
-  `#claim-linked-red--green-for-t2t3` only for T2/T3;
-- the task's direct feature/REQ context needed to interpret its outcome;
-- direct task-linked canonical SDD specs and executable constraints;
-- current `boundary-map.md` module, dependency-graph, and contract blocks when
-  the task changes or crosses a registered module boundary;
-- behavior specs only when linked in `source_artifacts` and useful as
-  non-authoritative examples.
-
-For a product task whose feature is not `FT-000`, also require a positive Global
-Backbone `Planning Revision` and the latest feature-specific
-`/review-tasks-plan` `APPROVE` report with exact standalone
-`REVIEWED_PLANNING_REVISION: <N>` equal to it. FT-000 keeps its dedicated
-Foundation gate and does not use product task-plan review.
-
-Use task `purpose`, `success_outcome`, `anti_goals`, `source_artifacts`,
-`normative_inputs`, `constraints`, `invariants`, `verification_targets`,
-`evidence_required`, and `runtime_context` when present. For T0/T1, do not load
-broad global planning docs by default. For T2/T3, direct task-linked applicable
-canonical specs are mandatory; feature links and `spec-index.md` alone are not
-execution context.
-
-Point-of-use preflight must confirm:
-- index/file/ID resolution and matching ID tier/feature/wave segments;
-- valid `tier: T0|T1|T2|T3` and executable lifecycle state;
-- every dependency exists and is `done|done_for_prod`;
-- dependency outcomes are authoritative prerequisites; execute only the
-  selected task's owned outcome and integration delta;
-- no recorded blocker or unresolved required gate in the resolved task context;
-- success is observable from AC/REQ/spec/gates/verification targets;
-- the selected task, its direct feature/REQ context, and direct task-linked
-  canonical specs are mutually consistent;
-- for a product task, its feature lacks `PLANNING_RECONCILIATION_REQUIRED` and
-  its reviewed and current Planning Revision are equal;
-- T2/T3 direct canonical coverage is applicable and concrete enough to avoid
-  guessing shape, rules, errors, and verification;
-- every current accepted `planned|ready` T2/T3 task satisfies the prospective
-  proof-path contract in tier policy;
-- actual work fits the semantic outcome/AC/REQ/spec boundary, tier, deliberate
-  hard allowed/forbidden scopes, and stop conditions;
-- when linked rules define architecture boundaries, the tactic keeps state
-  changes and cross-module orchestration with their accepted owners, uses
-  required public boundaries, preserves source-of-truth and dependency
-  direction, creates no unaccepted cross-module contract or forbidden
-  command/write bypass, and honors linked orchestration-placement rules;
-- for a task that changes a provider, current graph traversal covers every
-  affected consumer until a compatible contract stops propagation; uncovered
-  consumers make the feature tasking surface stale;
-- within an open domain-modeling choice, prefer the affected area's local style;
-  material boundary or ownership changes use the existing operator-decision
-  routes;
-- before creating, moving, or renaming a project-authored source file, resolve
-  its applicable ownership, reuse, or tooling boundary; inspect the nearest
-  relevant local pattern and governing manifests, configuration, resolution,
-  or registration; preserve framework placement, required or reserved filename
-  parts, import/module identity, public path, package export, route, and build
-  target; apply `AGENTS.md#source-path-semantics` when choosing its filename and
-  complete path;
-- for an Alembic migration under an accepted linear topology, preflight may
-  resolve the current head transiently to set or verify the new revision's
-  direct `down_revision`; do not propagate it as a repository-current-head
-  assertion or update historical feature tests, and run the existing
-  project-level graph contract unchanged;
-- the tier-required existing protocol is coherent, or every missing protocol
-  file can be initialized from its framework-owned template before task start.
-
-Stop before implementation if the task is missing/malformed, already
-`blocked|failed|done`, has unmet dependencies, lacks required T2/T3 context, is
-objectively contradictory, is unverifiable, lacks the required T2/T3
-prospective proof path, or is materially under-tiered.
-
-Missing/invalid Global Planning Revision stops all product execution and routes
-`/spec-design`. A reconciliation marker or missing/mismatched approval stops
-only the selected feature and routes `/feature-to-tasks FT-<NNN>`, then
-`/review-tasks-plan FT-<NNN>` and the applicable doctor gate. Preserve all task
-statuses and other feature approvals.
-
-If the current revision has local graph drift affecting this task, preserve all
-statuses and route `/feature-to-tasks FT-<NNN>`, then
-`/review-tasks-plan FT-<NNN>` and the applicable doctor gate; other feature
-approvals remain valid. An absent required edge stops execution. Route accepted
-global architecture repair to `/spec-redesign`.
-
-For a selected `planned` task, write `planned -> ready` only when this preflight
-proves it runnable; otherwise leave it `planned` and stop. A selected `ready`
-task may start. A selected `in_progress` task is resume-only: reconcile its
-current Execution Attempt, protocol, handoff, verdicts, and observable work
-before acting. If the `/exe` handoff is already complete, do not replay
-execution; return the existing next handoff. If a possibly completed
-unsafe or non-idempotent side effect cannot be reconciled, stop rather than
-replay it.
+The host supplies a runnable selected task and durable attempt before probes,
+implementation, or effects. `in_progress` means resume the actual attempt;
+`done_for_prod` permits only the recorded production-acceptance remainder under
+actual permissions. Do not execute a missing, malformed, blocked, failed, or
+already done task. Completed implementation returns its retained handoff without
+replay. Ambiguous possibly completed unsafe effects require reconciliation.
 </input_contract>
 
 <hard_invariants>
-- Authoritative routing and status ownership come from the tier policy sections
-  named in the input contract; never use legacy `risk` fields.
-- `/exe` owns `ready|done_for_prod -> in_progress` for the task selected by its
-  caller. For `done_for_prod`, it executes only the recorded production-acceptance
-  remainder. It never selects queue work, promotes dependents, or makes final
-  `done|failed|blocked` decisions in scheduler mode.
-- Scheduler flow selects the task and durably checkpoints
-  `current stage: execute` plus `next action: /exe <TASK_ID>` before invocation;
-  it does not write `ready -> in_progress` itself.
-- Manual T0/T1 fast-lane closure follows tier policy `#closure-authority` when
-  applicable; `/exe` never closes T2/T3. Compact protocol still satisfies
-  `#task-scoped-acceptance-evidence`; otherwise leave lifecycle unchanged for
-  `/verify`, the scheduler, or explicit owner.
-- `touched_files` is advisory and non-exhaustive. Confirm and record the actual
-  change surface; extra files are allowed only for the same outcome/spec/tier
-  and inside hard scopes.
-- A non-empty `runtime_context.write_boundary` is hard. Never touch
-  `forbidden_scope`; any needed widening or accidental violation stops work.
-- Limit architecture checks to direct task links and the actual change surface;
-  do not turn task execution into a broad repository architecture audit. A
-  tactic that needs or introduces a departure from an applicable linked rule
-  stops work.
-- Treat the canonical dependency graph as closed-world: an absent edge grants
-  no implementation authority, and task execution never creates, removes, or
-  redirects a semantic edge.
-- Do not rerun or reconstruct dependency proof. Applicable regression checks
-  support the selected task outcome and do not adopt dependency claims.
-- Preserve unrelated user changes and do not edit generated package-local
-  `skills/*/{agents,references,scripts}/shared-*` files.
-- Do not opportunistically rename brownfield source. A move or rename must be
-  required by the selected outcome, remain inside semantic and hard scopes, and
-  preserve applicable imports, module declarations, references, exports,
-  manifests/resolution, registration, routing, build targets, and
-  case-sensitive compatibility.
-- Do not change tier in place; tier is embedded in task identity, file path,
-  index, and dependencies.
-- Selecting or starting a task does not grant an unapproved production,
-  destructive, privileged, secret-reading, or other external side effect.
-- T2/T3 production implementation follows
-  `.memory-bank/workflows/tier-policy.md#claim-linked-red--green-for-t2t3`; it
-  grants no broader permission or lifecycle authority.
+- Task identity/tier is not rewritten in place. Escalation proposes controlled
+  rebuild/split through `/feature-to-tasks`, preserving partial work and evidence.
+- `touched_files` is advisory; non-empty `runtime_context.write_boundary`, its
+  deprecated read alias, forbidden_scope, and stop_conditions are hard under
+  tier policy. Needed widening or an accidental violation stops affected work.
+- Applicable accepted architecture keeps state changes and orchestration with
+  their owners, public boundaries and source of truth intact. For registered
+  inter-module changes use accepted `Consumer -> Provider` contracts; an absent
+  edge grants no authority. Inspect affected consumers until compatibility stops
+  propagation. Do not invent graph edges during implementation.
+- Resolve source placement, reuse, tooling, imports/exports, routing and build
+  identity before creating/moving/renaming source. Preserve applicable local
+  naming and `AGENTS.md#source-path-semantics`; no opportunistic renames.
+- Under an accepted linear Alembic topology, resolve a head only transiently
+  for the new down_revision; preserve historical tests and the graph contract.
+- Preserve unrelated changes and task-owned evidence. No generated package-local
+  shared-* edits. Selecting a task grants no production, destructive, privileged,
+  secret-reading, or external permission.
+- Models do not write task lifecycle or promote dependents. Implementation,
+  local checks, functional verification, and semantic review are distinct work.
 </hard_invariants>
 
-<operator_decisions>
-If preflight or implementation uncovers a new material product behavior,
-acceptance, architecture, component/API/event/data/state/storage/security/
-compatibility, task-boundary, tier, dependency, or verification branch, stop
-before choosing or widening work.
+<execution_evidence>
+Local execution checks, including T2/T3 RED/GREEN, have their own effective
+setting, enabled by default and independently disableable from `/verify` and
+`/red-verify`. When off, record absence without running a hidden proof gate or
+claiming GREEN/PASS. Explicit project non-negotiables still require owner
+resolution if incompatible with that setting.
 
-- Record the exact decision, alternatives/effect, safe partial changes, and
-  affected artifacts in the task protocol/handoff.
-- Interactive/manual flow asks the operator; recommendation/default/silence is
-  not acceptance. Resume only after the owning PRD/feature/spec/task plan is
-  durably updated and revalidated.
-- Feature/task repair or tier rebuild routes to
-  `/feature-to-tasks FT-<NNN>`; shared/global design routes to `/spec-redesign`;
-  product clarification routes to `/feature-doctor FT-<NNN>`.
-- Current implementation drift that the task can handle inside its accepted
-  target and semantic boundary is evidence, not a new design choice. If work
-  requires changing accepted write authority, public boundary, source of truth,
-  orchestration owner, or dependency direction, route it to `/spec-redesign`.
-- Unattended/scheduler flow returns a blocker without choosing, keeps the task
-  non-closed, and tells the scheduler to use
-  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` with the exact
-  interactive resume route.
+When selected, perform task-relevant gates and the cheapest sufficient local
+checks. Do not fill test categories. Apply tier-policy claim-linked RED/GREEN
+only to task-owned claims: initial genuine claim absence before production
+change, then equivalent GREEN; preserve pre-implementation GREEN without an
+artificial break. Setup/syntax/unrelated failure is not RED. An accepted
+not-applicable reason names the alternative proof and unsafe conditions.
+Retries retain original RED and the correction basis, then fresh equivalent
+GREEN for corrected claims; never fabricate historical RED. T3 harmful probes
+need authorized isolated/disposable state, safe rerun and cleanup.
 
-Do not stop for an ordinary local implementation tactic already inside the
-authoritative task/spec boundary.
-</operator_decisions>
+Retain actual changed files (including none), partial effects, hard-scope
+compliance, task-owned claim mapping, commands/results, selected/skipped checks,
+remaining work, and immediate handoff in the existing task/protocol/evidence
+surfaces. Material NFR evidence states the observed result, conditions and
+comparison with its accepted target; expert evidence states criterion and
+reviewer type. Local results support, but do not constitute, independent PASS.
 
-<agent_discretion>
-Within the selected outcome, applicable specs, tier, and hard scopes, the agent
-chooses exploration order, tools, implementation tactic, local decomposition,
-actual file set, claim-equivalent test/probe shape, and the cheapest sufficient
-project-native checks. No fixed code-reading order or test-category checklist
-is required.
-</agent_discretion>
+Reports and protocol files are conditional. Use selected shapes from
+`.memory-bank/templates/protocols/`; initialize only absent selected files and
+never replace task-owned state. Compact run or context/progress/handoff may
+hold the necessary recovery facts without a compulsory five-file bundle.
+Create `.tasks/<TASK_ID>/` only for substantive artifacts actually produced.
 
-<required_outputs>
-Create `.tasks/<TASK_ID>/` for substantive evidence/reports.
+Optional reuse candidates remain self-attested supporting evidence. Offer only
+a known local deterministic gate with a conservatively bounded read surface,
+unchanged relevant inputs, and no external/flaky/background-dependent state.
+A receipt records attempt, receipt_status (`current|superseded|supporting-only`),
+claim, exact redacted command, cwd, exit_code, input_state_basis captured before
+the command, completed_at, and evidence (artifact checksum when available).
+Source basis covers relevant tracked/untracked/deleted, config/dependency,
+generated/runtime and redacted toolchain/environment inputs. Elapsed time or
+advisory touched_files never proves input coverage. Complete the receipt after
+the command and link it from the handoff. Retain older receipts as superseded
+or supporting-only. `/add-tests` evidence is supporting-only; only a later
+executor-owned final gate may be offered for reuse. Raw output cannot introduce
+standalone workflow verdict markers.
+</execution_evidence>
 
-Protocol by tier:
-- T0/T1: `.protocols/<TASK_ID>/run.md` with task/tier, goal/non-goals,
-  context, preflight-confirmed change surface, changes, checks, evidence,
-  `VERDICT: PASS|FAIL|BLOCKED`, closure owner/decision, and handoff notes.
-- T2/T3: `.protocols/<TASK_ID>/{context,plan,progress,verification,handoff}.md`
-  where `/exe` fills execution context/progress and leaves final
-  verification to `/verify`.
+<decisions_and_handoff>
+Ordinary local tactics stay with the implementer. Material product, scope,
+contract, tier or verification choices use the common decision flow: product
+meaning to `/write-prd` or bounded `/feature-doctor` triage, feature/task repair
+to `/feature-to-tasks`, shared canonical changes to `/spec-redesign`, unclear
+failure cause optionally to `/debug`. Report affected work and the first owner;
+do not launch the repair from this leaf.
 
-Initialize only missing protocol files from these framework-owned shapes:
-- T0/T1 `run.md` ->
-  `.memory-bank/templates/protocols/compact-run-template.md`;
-- T2/T3 `context.md` -> `.memory-bank/templates/protocols/context-template.md`;
-- T2/T3 `plan.md` -> `.memory-bank/templates/protocols/plan-template.md`;
-- T2/T3 `progress.md` -> `.memory-bank/templates/protocols/progress-template.md`;
-- T2/T3 `verification.md` ->
-  `.memory-bank/templates/protocols/verification-template.md`;
-- T2/T3 `handoff.md` -> `.memory-bank/templates/protocols/handoff-template.md`.
-
-Existing `.protocols/<TASK_ID>/` files are task-owned resume state: update them
-in place and never recopy or sync a template over them. Templates define the
-initial shape only; this command and tier policy own lifecycle/status rules.
-If a required template is absent before file creation, stop and request
-framework bootstrap/sync instead of inventing a shape.
-
-Before the first prospective T2/T3 probe, implementation, or external side
-effect:
-1. complete preflight and, when applicable, durably write the selected task's
-   `planned -> ready` transition;
-2. initialize or reconcile the tier protocol;
-3. in `run.md` for T0/T1 or `context.md` for T2/T3, create or reuse one neutral
-   `## Execution Attempt` block with `attempt` and `started`;
-4. durably write `ready -> in_progress`. Protocol/evidence bookkeeping may
-   precede this transition; the prospective probe, implementation, and external
-   side effects may not.
-
-Re-entry with `ready` plus a prepared attempt reuses that attempt. Re-entry with
-`in_progress` plus an unfinished coherent attempt resumes it. A completed
-`/exe` handoff routes forward without replay. After an eligible same-task retry
-decision, create a new attempt and mark older same-claim receipt blocks
-`superseded` or `supporting-only`. Do not add owner, invocation-basis, or mode
-metadata to the attempt. A legacy `in_progress` protocol without the block may
-add it only when durable work/handoff evidence unambiguously identifies the
-unfinished attempt and replay is safe; otherwise stop.
-
-For a current T2/T3 task governed by a prospective path, apply the tier-policy
-Claim-Linked RED/GREEN contract:
-- resolve only the selected task's owned claim mapping and choose the smallest
-  credible claim-scoped probe;
-- on the initial attempt, a mapped claim receives honest claim-specific RED
-  before its first production change. Setup, syntax, unrelated, or artificial
-  failure does not qualify. Pre-implementation GREEN preserves the evidence and
-  avoids production changes for that claim; complete any remaining accepted
-  task outcome instead of routing early merely because no claim remains RED;
-- on retry, retain the original durable RED when one exists, bind the new
-  attempt to the failed gate evidence and correction, and obtain fresh
-  claim-equivalent GREEN for corrected applicable claims. Every required
-  verification gate remains due after handoff; the original probe need not
-  become RED again;
-- an accepted not-applicable path uses its planned alternative proof; T3 uses
-  only its authorized isolated/disposable evidence surface;
-- after changing production behavior, require claim-equivalent GREEN. Probe
-  changes remain equally strong and are explained.
-
-Record the claim mapping, attempt, applicability/reason, RED source and result,
-retry correction basis when applicable, GREEN result, probe changes, and
-artifact paths in `progress.md`; link them from `handoff.md`. These labels are
-execution evidence, not `VERDICT` or `SEMANTIC_VERDICT` markers. GREEN may
-separately qualify as a reuse candidate; RED never replaces final gate evidence
-or gets backfilled for historical `done|done_for_prod|failed` tasks.
-
-Execution evidence must record:
-- actual changed files, including none, and any advisory `touched_files`
-  deviation rationale;
-- hard allowed-write compliance and whether forbidden scope was touched;
-- task/spec outcome compliance;
-- exact commands, results, concise output/evidence paths, and unavailable-gate
-  blockers;
-- linked boundary/spec rules followed, including write owner, public boundary,
-  accepted graph/contract path when applicable, and any drift discovered;
-- next verification targets and recommended owner.
-
-For a material NFR, record the observed value or qualitative result, decisive
-conditions, comparison with the accepted target/criterion, and required
-artifact. Human/expert review records the planned rubric/criterion and qualified
-reviewer result as evidence.
-
-Run task gates, applicable linked-spec verification targets, and the cheapest
-credible project-native lint/typecheck/test/integration checks for touched
-behavior. Do not run categories merely to fill a template. T0 docs-only work
-may use inspected-diff evidence; T1 should use one cheap relevant check when
-available or record why none is meaningful.
-
-Reusable execute evidence is optional. When `/exe` proposes one of its
-results for reuse by `/verify`, record one complete receipt in the existing
-protocol: normally `run.md` for T0/T1 or `progress.md` for T2/T3. The receipt is
-a self-attested `reuse candidate`, not independent, cryptographic, or
-harness-generated proof that the command ran as reported.
-
-Offer a candidate only for a well-known local deterministic gate whose actual
-read surface can be conservatively and unambiguously bounded. Do not offer
-reuse when inputs are implicit, broad, or unknown; when relevant untracked,
-generated, runtime, toolchain, or environment state cannot be covered; when
-the command is flaky or external-state-dependent; when it changes a relevant
-input; or when uncontrolled background mutation is observed. Do not treat
-`touched_files`, the task change surface, elapsed time, or a claim to cover the
-whole applicable project as a substitute for the command read surface.
-
-For each candidate, record one logically connected block containing:
-- `attempt` and `receipt_status: current|superseded|supporting-only`;
-- `claim`: exact task outcome, AC/REQ, gate, verification target, or concrete
-  spec rule the result is offered to support; `tests passed` is insufficient;
-- `command`: exact command, filters, and arguments, with secrets redacted;
-- `cwd`;
-- `exit_code`;
-- `input_state_basis`: the declared pre-command input snapshot, including the
-  repository revision or equivalent source basis, relevant tracked/staged/
-  unstaged/untracked/deleted deviations, relevant generated/runtime inputs,
-  and only necessary redacted environment/toolchain qualifiers;
-- `completed_at`;
-- `evidence`: concise observable output or artifact/report path plus checksum
-  when a preserved artifact exists.
-
-Capture the declared snapshot immediately before the command and complete the
-receipt immediately afterward. This ordering remains executor self-attestation;
-do not describe it as independently proven. Do not persist unredacted secrets
-or standalone `VERDICT:` / `SEMANTIC_VERDICT:` lines as raw command output that
-could be mistaken for workflow closure evidence.
-
-The `/exe` handoff must point to the exact current-attempt receipt
-location and mark older same-claim receipts from previous execution/retry
-attempts `superseded` or supporting-only. Evidence produced directly by
-`/add-tests` is supporting-only; after all relevant changes, only a final gate
-run owned and recorded by `/exe` may become a reuse candidate.
-</required_outputs>
-
-<validation>
-Before handoff, confirm:
-- no prospective T2/T3 probe, implementation write, or external side effect
-  occurred before durable `in_progress`, and the current task status agrees
-  with its tier protocol and Execution Attempt;
-- the completed task outcome respects all
-  authoritative specs, constraints, invariants, anti-goals, and hard scopes;
-- actual files and local evidence are reproducible and recorded;
-- every proposed reuse candidate satisfies the bounded-input rules, is linked
-  from the current handoff, and does not claim independent provenance;
-- every applicable T2/T3 path satisfies the tier-policy RED/GREEN contract and
-  its current handoff links the evidence;
-- no unresolved material branch was silently decided;
-- tier did not need escalation.
-
-Tier escalation handoff records original/required tier, trigger, partial
-changes/evidence, and split recommendation; then routes the original task ID to
-`/feature-to-tasks FT-<NNN>` for controlled rebuild/split, followed by
-`/review-tasks-plan`, applicable doctor gate, and `/exe <replacement-id>`.
-</validation>
-
-<handoff_contract>
-- Scheduler mode -> return `/exe` evidence to the scheduler for
-  tier-routed `/verify`; do not mutate final lifecycle.
-- Manual T0/T1 with valid explicit-owner fast lane -> compact closure may be
-  recorded under tier policy; otherwise `/verify` or explicit owner closes.
-- T2/T3 -> `/verify <TASK_ID>`; T3 then routes to per-task `/red-verify` after
-  functional PASS.
-- Blocker/tier/design expansion -> the named planning/design repair owner.
-- A difficult failure without an evidence-backed cause may recommend a separate
-  fresh `/debug <TASK_ID>`; `/exe` never invokes `/debug`.
-
-Do not run `/verify`, `/red-verify`, full `/mb-sync`, or dependent promotion
-inside this command.
-</handoff_contract>
+Return completed/partial implementation, actual evidence, skipped local checks,
+blockers and next selected verification or closure recommendation. All verify
+off permits host closure without PASS; enabled red-verify may independently
+follow implementation. Actual negative evidence remains negative and needs
+explicit repair/continue disposition. Do not invoke verification, sync, or
+promotion here. Recovery must reuse completed implementation and selected
+results, including skipped operations, without replaying effects.
+</decisions_and_handoff>

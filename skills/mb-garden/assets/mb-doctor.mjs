@@ -43,9 +43,10 @@ const context = {
 };
 context.readers = createReaders(context.root);
 
-const foundation = createFoundationBackboneChecks(context);
-const acceptance = createAcceptanceTraceChecks(context);
 const terminal = createTerminalCompatibilityChecks(context);
+const selectionContext = { ...context, workflowContract: terminal.workflowContract };
+const foundation = createFoundationBackboneChecks(selectionContext);
+const acceptance = createAcceptanceTraceChecks(selectionContext);
 const taskReadiness = createTaskReadinessChecks({
   ...context,
   foundation,

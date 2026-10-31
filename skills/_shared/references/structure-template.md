@@ -21,7 +21,8 @@ Create symlinks (or copies if symlink not supported):
 
 ### Native runtime command skills
 
-The installer creates full command skills so commands work natively across tools:
+The current installer preserves these legacy packaging surfaces. Nav execution
+uses native DSH for every model; this packaging is not a DSH runtime adapter:
 
 | Directory | Runtime |
 |-----------|---------|
@@ -49,8 +50,8 @@ the target project gets self-contained runtime skills.
 
 Bootstrap/sync copies every canonical
 `skills/_shared/references/protocols/*.md` file to the stable target path
-`.memory-bank/templates/protocols/`. Runtime commands load only the shape needed
-to initialize a missing task protocol file. Filled `.protocols/<TASK_ID>/`
+`.memory-bank/templates/protocols/`. Runtime commands load only selected shapes to initialize absent artifacts;
+no tier creates an obligatory protocol bundle. Filled `.protocols/<TASK_ID>/`
 files are task-owned resume state and are never overwritten from templates.
 
 ---
@@ -135,11 +136,11 @@ status: active
    consumers, or reuse, not by file length alone.
 4. Duo docs remain valid: `architecture/` (WHAT/WHY) + `guides/` (HOW), cross-link both ways for concepts that use the classic pair model.
 5. C4 layering: L1 product → L2 epics → L3 features → L4 plans/tasks.
-6. Docs First: update MB immediately after finishing a task.
-7. Refactor MB every 5–10 updates (split, merge, archive).
+6. Retain actual work, decisions, selected/skipped checks and remaining handoff for recovery.
+7. Maintenance follows observed drift and accepted scope; no periodic archive/merge requirement.
 8. Separate facts from interpretations: mark hypotheses explicitly ("предположительно", "требует проверки").
 9. After merge/rebase conflicts: re-check MB consistency.
-10. MB-SYNC after each wave/significant change (see `workflows/mb-sync.md`).
+10. Reconcile already-decided state at selected boundaries (see `workflows/mb-sync.md`).
 11. When present, `constitution.md`, `spec-backbone.md`, `spec-index.md`, `glossary.md`, `invariants.md`, `contracts/*`, `states/*`, `runbooks/*`, and `testing/*` act as an explicit normative layer and should be linked from relevant docs.
 12. Features compose product behavior and exact canonical spec links. New design
     specs use subject-based paths without `FT-<NNN>` names or feature ownership.
@@ -264,7 +265,7 @@ status: active
 ## Handoff To /prd-to-features
 - Ready: no
 - Required reads: .memory-bank/prd.md, .memory-bank/spec-index.md, this file, and linked pre-PRD specs.
-- Stop conditions: Pre-PRD Spec Status is missing, stale, or blocked.
+- Stop conditions: a material accepted-input gap for the selected decomposition remains unresolved.
 
 ## Handoff To /spec-design
 - Backbone areas to revisit: all
@@ -277,7 +278,7 @@ status: active
 - Architecture artifact strategy: pending
 - Not applicable areas:
   - TBD
-- Notes: /spec-design has not completed the global architecture scaffold yet.
+- Notes: no accepted global design is recorded. Effective selection determines whether it is due.
 ```
 
 ---
@@ -520,6 +521,7 @@ status: draft
       }
     },
     "verify": {
+      "description": "Retained evidence; new Nav work uses the workflow selection/result object defined in tier-policy, without replacing historical entries.",
       "type": "array",
       "items": {
         "anyOf": [
@@ -588,7 +590,19 @@ status: draft
 
 ## 6b) Example task record template
 
-The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`; the `T<N>`, `FT-<NNN>`, and `W<N>` ID segments must match the task record `tier`, `feature`, and `wave` fields. `/foundation-to-tasks` creates normal `FT-000` foundation `.task.json` records only when `.memory-bank/foundation.md` says foundation is required. `/feature-to-tasks FT-<NNN>` first resolves feature design concerns through subject-based canonical specs, then creates real product feature `.memory-bank/tasks/TASK-*.task.json` records with direct task-relevant spec links when the feature is ready and any required final foundation gate task is `done`, or marks design blocked and stops. Fresh bootstrap does not create `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable task records.
+The skeleton creates no runnable records, Foundation task, REQ-000 or FT-000.
+Concrete task IDs use `TASK-NNN-TN-FT-NNN-WN`; tier/feature/wave segments match
+the indexed card. Foundation remains ordinary FT-000 work. Its integrated proof
+gate is optional; real accepted dependencies remain. Product tasking uses
+accepted inputs and selected design/reviews, not an obligatory full bundle.
+
+Before new Nav task readiness the host retains the effective selection in the
+existing `verify` array under
+`.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
+That compact record can exist without backbone/spec files, and selected results
+may stay inline without reports. Legacy `verify` entries are preserved; sync
+does not invent current choices for historical work. The structural example
+below leaves selection to the actual task invocation.
 
 ```json
 {
@@ -622,14 +636,14 @@ The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>
 }
 ```
 
-Optional (but recommended) plans folder:
+Optional plans folder:
 - `.memory-bank/tasks/plans/` — IMPL plans like `IMPL-FT-XXX.md`
 
 Optional runtime context rules:
 - `gates` starts empty. Add only evidence-backed project-native checks that are
   applicable to the task outcome; do not add a test level merely to fill a
-  category. T0/T1 may keep it empty when compact evidence or a documented
-  no-meaningful-runnable-check route is valid under tier policy.
+  category. Disabled checks leave no gate/report requirement; enabled checks
+  use the selected path under tier policy.
 - `purpose`, `success_outcome`, `anti_goals`, and `runtime_context` are optional; existing tasks without them remain valid.
 - `touched_files` is an advisory, expected, non-exhaustive change surface. It
   guides preflight and review but does not prohibit another file needed for the
@@ -717,15 +731,16 @@ status: active
   owns dynamic checks for a single head, no branches, and intact ancestry.
   A feature migration test owns only its revision, direct `down_revision`,
   upgrade/downgrade, schema transition, and data preservation.
-- A new revision reruns the project-level contract; it does not require literal
+- A new revision uses the selected project-level contract check; it does not require literal
   current-head consumers or historical feature-test updates. Resolve current
   head at execution preflight when needed and keep its ID out of durable testing
   specs, feature plans, and task cards.
 
 ## Evidence and ownership
-- T2/T3 require an executable verification path; T0/T1 may use compact evidence
-  or a documented no-runnable-check route when meaningful checks do not exist.
-- Store execution evidence in `.protocols/<TASK_ID>/` and `.tasks/<TASK_ID>/`.
+- Only selected checks require proof. Local execution checks and verify participants
+  are independently configurable; skipped work never becomes PASS. Tiers inform
+  proof depth without enabling a check or requiring a report.
+- Retain concise results in task.verify; selected reports may use `.protocols/<TASK_ID>/` and `.tasks/<TASK_ID>/`.
 - Keep product quality targets in requirements/features and simple verification
   methods in feature AC/task records. Use a subject spec only for a non-trivial
   reproducible measurement method or expert rubric; it never supplies a missing

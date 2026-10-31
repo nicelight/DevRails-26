@@ -4,14 +4,18 @@ status: active
 ---
 # Compact Run
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## Metadata
 - task: TASK-NNN-TN-FT-NNN-WN
 - tier: T0 | T1
-- finished:
-- local evidence verdict: <PASS|FAIL|BLOCKED>
-- closure owner: scheduler | explicit standalone owner | human | none
-- manual /exe decision: <status unchanged|status: done|status: done_for_prod>
-- scheduler decision: <none|status: done|status: done_for_prod|status: failed|status: blocked>
+- selected work / attempt: task.verify workflow record
+- implementation: partial | complete
+- remaining work / partial effects:
 
 ## Execution Attempt
 - attempt:
@@ -48,40 +52,22 @@ status: active
 - completed_at:
 - evidence: <concise redacted output or artifact path/checksum; no standalone workflow verdict markers>
 
-## Evidence Verdict
-This marker records local evidence only. It is not task closure and does not set
-final task status.
+## Selected checks and results
+- local checks: skipped | actual result/evidence
+- verification: skipped | actual participant verdicts/evidence
+- red-verify: skipped | actual semantic verdict/evidence
+- negative result disposition: decision, user/autonomous provenance, reason
 
-Replace the placeholder with one exact marker:
-VERDICT: PASS
-VERDICT: FAIL
-VERDICT: BLOCKED
+Only a performed functional verification emits `VERDICT: PASS|FAIL|NEEDS-CLARIFICATION`.
+Local checks do not become functional PASS; skipped checks have no verdict.
 
-## Closure Decision
-Record task closure separately from the evidence verdict.
-
-### Manual `/exe`
-
-- explicit standalone owner present: yes | no
-- owner basis: user direct instruction | top-level manual workflow ownership | none
-- decision: status unchanged | `status: done` | `status: done_for_prod`
-- compact PASS and every fast-lane condition satisfied: yes | no
-- task record evidence updated in `verify`: yes | no
-
-Manual `/exe` may set `status` to `done|done_for_prod` only after exact compact
-PASS and every tier-policy fast-lane condition. `VERDICT: FAIL|BLOCKED` is evidence,
-not manual lifecycle authority; leave status unchanged and hand off.
-
-### Scheduler
-
-- decision: none | `status: done` | `status: done_for_prod` | `status: failed` | `status: blocked`
-- reason/evidence link:
-
-Only the scheduler records this branch under tier policy. If no authorized
-closure owner acted, leave task status unchanged and hand off the recommendation.
+## Host closure / handoff
+- recorded host decision or pending recommendation:
+- actual evidence:
+- remaining selected operation:
 
 ## MB-SYNC Handoff
-- owner: scheduler | explicit standalone owner | human | none
+- owner: host / named caller
 - reason:
 - files/docs likely needing sync:
   - ...

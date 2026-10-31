@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -139,7 +140,7 @@ ${criteria.map(({ id, req = 'REQ-001' }) => `### ${id} — Fixture outcome
 ${semanticPass ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}`;
 }
 
-function createFixture(name, { foundation, tasks = [], directories = [], files = [] }) {
+function createFixture(name, { foundation, tasks = [], directories = [], files = [], omit = [], realLint = false }) {
   const root = join(tempRoot, name);
   mkdirSync(root, { recursive: true });
 
@@ -171,14 +172,15 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
     writeJsonFixture(root, `.memory-bank/tasks/${record.id}.task.json`, record);
     if (/^FT-[0-9]{3,}$/.test(record.feature)) featureIds.add(record.feature);
 
-    if (DONE_STATUSES.has(record.status) && (record.tier === 'T0' || record.tier === 'T1')) {
+    const nav = record.verify.some((entry) => entry?.stage === 'workflow');
+    if (!nav && DONE_STATUSES.has(record.status) && (record.tier === 'T0' || record.tier === 'T1')) {
       writeFixture(
         root,
         `.protocols/${record.id}/run.md`,
         '# Compact run\n\n- Evidence: fixture result\n\nVERDICT: PASS\n',
       );
     }
-    if (DONE_STATUSES.has(record.status) && (record.tier === 'T2' || record.tier === 'T3')) {
+    if (!nav && DONE_STATUSES.has(record.status) && (record.tier === 'T2' || record.tier === 'T3')) {
       const acId = record.source_artifacts
         .join('\n')
         .match(/FT-[0-9]{3,}-AC-[0-9]{3,}/)?.[0];
@@ -210,6 +212,7 @@ VERDICT: PASS
     const hasCompletedT2 = tasks.some((record) => (
       record.feature === featureId
       && record.tier === 'T2'
+      && !record.verify.some((entry) => entry?.stage === 'workflow')
       && DONE_STATUSES.has(record.status)
     ));
     writeFixture(root, `.memory-bank/features/${featureId}-${slug}.md`, `---
@@ -245,6 +248,27 @@ ${hasCompletedT2 ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}
     writeFixture(root, rel, content);
   });
 
+  if (realLint) {
+    for (const rel of ['mbb/index.md', 'changelog.md', 'workflows/mb-sync.md', 'testing/index.md', 'skills/index.md']) {
+      writeFixture(root, `.memory-bank/${rel}`, '# Fixture managed resource\n');
+    }
+    writeJsonFixture(root, '.memory-bank/schemas/task.schema.json', {});
+    writeFixture(root, '.memory-bank/scripts/mb-lint.mjs', readFileSync(join(repoRoot, 'skills/mb-garden/assets/mb-lint.mjs'), 'utf8'));
+    const addFrontmatter = (dir) => {
+      for (const item of readdirSync(dir, { withFileTypes: true })) {
+        const abs = join(dir, item.name);
+        if (item.isDirectory()) addFrontmatter(abs);
+        else if (item.name.endsWith('.md')) {
+          let text = readFileSync(abs, 'utf8');
+          if (!text.startsWith('---\n')) text = `---\ndescription: Nav fixture.\nstatus: draft\n---\n${text}`;
+          else if (!/^status:/m.test(text)) text = text.replace('---\n', '---\nstatus: draft\n');
+          writeFileSync(abs, text);
+        }
+      }
+    };
+    addFrontmatter(join(root, '.memory-bank'));
+  }
+  for (const rel of omit) rmSync(join(root, rel), { recursive: true, force: true });
   return root;
 }
 
@@ -449,6 +473,10 @@ Flags:
     emptyDefault,
   );
 
+  const unselectedDesign = runCase('empty-unselected-design', { files: [{ rel: '.memory-bank/spec-backbone.md', content: '# Spec Backbone\n\n## Global Backbone Status\n- Status: blocked\n- Planning Revision: 0\n' }] });
+  expectPass(unselectedDesign, 'fresh skeleton without selected design');
+  expectNoFinding(unselectedDesign, 'SPEC_BACKBONE_NOT_READY');
+
   const emptyStrict = runCase('empty-strict', {}, ['--strict']);
   expectFinding(emptyStrict, 'TASK_INDEX_EMPTY', 'error');
 
@@ -459,8 +487,14 @@ Flags:
   const noFoundationStrict = runCase('no-foundation-strict', noFoundationFixture, ['--strict']);
   expectFinding(noFoundationStrict, 'FOUNDATION_ANCHORS_INVALID', 'error');
 
-  const invalidAnchors = runCase('invalid-anchors', {
+  const optionalProof = runCase('optional-foundation-proof', {
     foundation: foundationMarkdown(true, 'not_required'),
+    tasks: [task(FOUNDATION_GATE)],
+  }, ['--strict']);
+  expectPass(optionalProof, 'Foundation implementation without a selected integrated proof gate');
+
+  const invalidAnchors = runCase('invalid-anchors', {
+    foundation: foundationMarkdown(true, 'unrecognized_gate'),
     tasks: [task(PRODUCT_FIRST)],
   }, ['--strict']);
   expectFinding(invalidAnchors, 'FOUNDATION_ANCHORS_INVALID', 'error');
@@ -992,6 +1026,135 @@ VERDICT: PASS
     }],
   }, ['--strict']);
   expectFinding(incompleteOwnerAcceptance, 'TASK_RED_VERIFY_VERDICT_MISSING', 'error');
+
+
+  // Nav retains the selection with its actual result; no implicit protocol bundle.
+  function navWorkflow(selected = {}, results = {}) {
+    return {
+      stage: 'workflow', attempt: '1',
+      selected: { design: false, local_checks: false, verify: [], red_verify: false, feature_red_verify: false, protocols: [], ...selected },
+      implementation: 'complete',
+      evidence: ['FT-001-AC-001: implementation diff retained; no unresolved effects'],
+      local_checks: 'skipped', verification: 'skipped', red_verification: 'skipped',
+      ...results,
+    };
+  }
+  function navTask(id = PRODUCT_T2, workflow = navWorkflow(), overrides = {}) {
+    return task(id, {
+      status: 'done', verify: [workflow],
+      sourceArtifacts: ['.memory-bank/features/FT-001-fixture.md#FT-001-AC-001'],
+      verificationTargets: [], evidenceRequired: [], ...overrides,
+    });
+  }
+  const probe = (participant, verdict = 'PASS', disposition) => ({
+    participant, verdict, evidence: ['FT-001-AC-001: independent outcome probe observed fixture behavior'],
+    ...(disposition ? { disposition } : {}),
+  });
+  const continuation = { decision: 'continue', source: 'user', reason: 'Accept the recorded fixture limitation within this task.' };
+  const navRun = (name, record, extra = {}) => runCase(name, { tasks: [record], ...extra }, ['--strict']);
+
+  for (const id of [PRODUCT_FIRST, PRODUCTION_ACCEPTANCE, PRODUCT_T2, PRODUCT_T3]) {
+    const record = navTask(id, navWorkflow());
+    expectPass(navRun(`nav-all-off-${id}`, record), `all checks off ${id}`);
+    const root = join(tempRoot, `nav-all-off-${id}`);
+    assert(!existsSync(join(root, '.protocols', id)), 'All-off closure created or required a protocol report.');
+    assert(!JSON.stringify(record.verify).includes('PASS'), 'All-off closure invented PASS.');
+  }
+  const secondaryOnly = navWorkflow({ verify: ['secondary'] }, { verification: [probe('secondary')] });
+  const selectedTask = navTask(PRODUCT_T3, secondaryOnly, {
+    verificationTargets: ['FT-001-AC-001: independently observe the outcome'],
+    evidenceRequired: ['FT-001-AC-001: outcome probe result'],
+  });
+  expectPass(navRun('nav-main-off-secondary-on-red-off', selectedTask), 'secondary-only verification without main or local checks');
+  assert(!existsSync(join(tempRoot, 'nav-main-off-secondary-on-red-off', '.protocols')), 'Inline selected verification unexpectedly generated reports.');
+
+  const codeOnly = navWorkflow({ verify: ['code-review'] }, {
+    verification: [{ participant: 'code-review', candidate_findings: 'none', evidence: ['src/fixture.mjs inspected for task-scoped code quality'] }],
+  });
+  const codeOnlyTask = navTask(PRODUCT_T3, codeOnly, { verificationTargets: ['Review the actual task diff'] });
+  expectPass(navRun('nav-main-off-code-review-only', codeOnlyTask), 'code-only review without functional PASS');
+  expectPass(navRun('nav-code-only-planned', { ...codeOnlyTask, status: 'ready' }), 'planned code-only review without hidden functional proof');
+  assert(!JSON.stringify(codeOnlyTask.verify).includes('PASS'), 'Candidate-only completion invented functional PASS.');
+  codeOnly.verification[0].candidate_findings = ['src/fixture.mjs: material boundary bypass on the supported path'];
+  expectFinding(navRun('nav-code-finding-needs-disposition', codeOnlyTask), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  codeOnly.verification[0].disposition = continuation;
+  expectPass(navRun('nav-code-finding-disposed', codeOnlyTask), 'material code finding retains explicit disposition');
+
+  const redAlone = navWorkflow({ red_verify: true }, {
+    red_verification: { verdict: 'semantic-pass', evidence: ['FT-001-AC-001: hostile path inspected; functional proof absent'] },
+  });
+  expectPass(navRun('nav-red-alone', navTask(PRODUCT_T3, redAlone)), 'red alone without functional PASS');
+  const localOn = navWorkflow({ local_checks: true }, {
+    local_checks: { result: 'passed', evidence: ['FT-001-AC-001 RED: absent before change; GREEN: observed after change'] },
+  });
+  expectPass(navRun('nav-local-on-verify-off', navTask(PRODUCT_T2, localOn, {
+    verificationTargets: ['FT-001-AC-001: outcome probe'],
+    evidenceRequired: ['FT-001-AC-001 RED: absent before change', 'FT-001-AC-001 GREEN: observed after change'],
+  })), 'local checks independently enabled');
+
+  const failed = navWorkflow({ verify: ['secondary'] }, { verification: [probe('secondary', 'FAIL')] });
+  expectFinding(navRun('nav-negative-without-disposition', navTask(PRODUCT_T3, failed, {
+    verificationTargets: ['FT-001-AC-001: outcome probe'], evidenceRequired: ['FT-001-AC-001: observed failure'],
+  })), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  for (const source of ['user', 'autonomous']) {
+    const accepted = structuredClone(failed);
+    accepted.verification[0].disposition = { ...continuation, source };
+    expectPass(navRun(`nav-negative-disposition-${source}`, navTask(PRODUCT_T3, accepted, {
+      verificationTargets: ['FT-001-AC-001: outcome probe'], evidenceRequired: ['FT-001-AC-001: observed failure'],
+    })), `actual FAIL with ${source} disposition`);
+    assert(accepted.verification[0].verdict === 'FAIL', 'Disposition changed the actual FAIL.');
+  }
+  const historyTask = navTask(PRODUCT_T3, navWorkflow());
+  historyTask.verify = [structuredClone(failed), navWorkflow({}, { attempt: '2' })];
+  expectFinding(navRun('nav-later-skip-does-not-hide-fail', historyTask), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  historyTask.verify[0].verification[0].disposition = { ...continuation, decision: 'repair' };
+  expectFinding(navRun('nav-skipped-repair-is-not-success', historyTask), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  historyTask.verify[0].verification[0].disposition = continuation;
+  expectPass(navRun('nav-history-preserved-with-disposition', historyTask), 'historical negative explicitly disposed before later skip');
+  historyTask.verify[0].verification[0].disposition = { ...continuation, decision: 'repair' };
+  historyTask.verify[1] = navWorkflow({ verify: ['secondary'] }, { attempt: '2', verification: [probe('secondary')] });
+  historyTask.verification_targets = ['FT-001-AC-001: outcome probe'];
+  expectPass(navRun('nav-repair-then-proof', historyTask), 'repair with later actual selected PASS');
+
+  for (const [name, workflow] of [
+    ['after-implementation', navWorkflow({}, { verification: undefined, red_verification: undefined })],
+    ['after-review', secondaryOnly],
+    ['partial-effects', navWorkflow({}, { implementation: 'partial', evidence: ['partial source edit retained; deployment not attempted'], local_checks: undefined, verification: undefined, red_verification: undefined })],
+  ]) {
+    const record = navTask(PRODUCT_T3, workflow, { status: 'in_progress', verificationTargets: ['FT-001-AC-001: outcome'] });
+    const root = createFixture(`nav-recovery-${name}`, { tasks: [record] });
+    const path = join(root, `.memory-bank/tasks/${record.id}.task.json`);
+    const before = readFileSync(path, 'utf8');
+    expectPass(JSON.parse(runDoctor(root, ['--strict', '--json']).stdout), `recovery ${name}`);
+    assert(readFileSync(path, 'utf8') === before && !existsSync(join(root, '.protocols')), 'Read-only recovery diagnostic replayed or rewrote evidence.');
+  }
+
+  expectFinding(navRun('nav-missing-selected-result', navTask(PRODUCT_T3, navWorkflow({ verify: ['main'] }))), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  expectFinding(navRun('nav-invalid-selection', navTask(PRODUCT_T3, navWorkflow({ verify: ['main', 'main'] }))), 'TASK_WORKFLOW_EVIDENCE_INVALID', 'error');
+  expectFinding(navRun('nav-missing-selected-report', navTask(PRODUCT_T3, navWorkflow({ protocols: ['handoff.md'] }))), 'TASK_SELECTED_PROTOCOL_MISSING', 'error');
+  expectFinding(navRun('nav-incomplete-implementation', navTask(PRODUCT_T3, navWorkflow({}, { implementation: 'partial' }))), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+
+  const noDesign = navTask(PRODUCT_T2, navWorkflow());
+  const absentDesign = ['.memory-bank/spec-backbone.md', '.memory-bank/spec-index.md', '.memory-bank/contracts/fixture.md'];
+  expectPass(navRun('nav-no-design-bundle-real-lint', noDesign, { omit: absentDesign, realLint: true }), 'disabled design without backbone/revision/spec bundle under real lint');
+  const badIdentity = structuredClone(noDesign); badIdentity.tier = 'T3';
+  const badIdentityReport = navRun('nav-skips-do-not-fix-identity', badIdentity, { omit: absentDesign, realLint: true });
+  expectFinding(badIdentityReport, 'MB_LINT_FAILED', 'error');
+  assert(JSON.stringify(badIdentityReport).includes('tier'), 'Malformed identity failed for an unrelated reason.');
+  const badDependency = structuredClone(noDesign); badDependency.depends_on = [PRODUCT_SECOND];
+  const dependencyReport = navRun('nav-skips-do-not-fix-dependency', badDependency, { omit: absentDesign, realLint: true });
+  expectFinding(dependencyReport, 'MB_LINT_FAILED', 'error');
+  assert(JSON.stringify(dependencyReport).includes('unknown task'), 'Missing dependency failed for an unrelated reason.');
+
+  const featureReview = navTask(PRODUCT_T2, navWorkflow({ feature_red_verify: true }));
+  expectFinding(navRun('nav-feature-red-selected-missing', featureReview), 'FEATURE_RED_VERIFY_VERDICT_MISSING', 'error');
+  featureReview.verify.push({ stage: 'feature_red_verify', feature: 'FT-001', verdict: 'semantic-pass', evidence: ['Feature outcome and integration inspected'] });
+  expectPass(navRun('nav-feature-red-inline', featureReview), 'selected feature review with inline evidence');
+  featureReview.verify[0].selected.feature_red_verify = false;
+  featureReview.verify[1].verdict = 'semantic-fail';
+  expectFinding(navRun('nav-feature-fail-not-hidden-by-disable', featureReview), 'FEATURE_RED_VERIFY_VERDICT_MISSING', 'error');
+  featureReview.verify[1].disposition = continuation;
+  expectPass(navRun('nav-feature-negative-disposition', featureReview), 'feature negative retained with explicit disposition');
 
   console.log('mb-doctor readiness, brownfield, and acceptance-trace regression passed');
 } finally {

@@ -1,294 +1,81 @@
 ---
-description: Run the complete unattended DevRails workflow from authoritative product input to a terminal sequential JSON task queue.
+description: Carry accepted product input through selected planning and execution with autonomous semantic decisions.
 status: active
 ---
-# /autonomous - End-to-end unattended run
+# /autonomous — End-to-end autonomous work
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
 <objective>
-Orchestrate the existing Product/Design, tasking, review, readiness, and queue
-execution contracts to one explicit end-to-end terminal state. This command
-owns Product/Design phase sequencing, review budgets, and the outer run result.
-It owns the bounded FT-000 Foundation execution phase, then delegates the
-prepared product task scheduler and queue recovery to canonical `/autopilot`;
-every child skill owns its outcome and local tactics.
+Reach the accepted product outcome from a brief, PRD/delta or clarified project
+state. Product/Design and applicable Foundation work lead to `/autopilot` for
+the prepared product queue. The host owns sequencing and lifecycle; models own
+subject work and semantic decisions within accepted scope.
 </objective>
 
 <input_contract>
-Use when an explicit Product Brief, PRD/delta, or existing clarified project
-state authorizes unattended work. Use `/autopilot` instead when the reviewed
-product JSON queue already exists and the Foundation gate is already closed or
-truthfully `not_required`.
-
-Preflight:
-- `.memory-bank/` exists, otherwise route `/mb-init`;
-- authoritative PRD/brief/delta input exists;
-- `.memory-bank/workflows/{autonomy-policy,tier-policy,execute-loop,mb-sync}.md`
-  exist;
-- an executor capable of isolated child contexts is available;
-- repository safety policy permits code edits but no unapproved marketplace
-  install, deployment, production write, secret read, or out-of-repo
-  infrastructure change.
-
-If a required workflow is missing, return `HALT_POLICY_VIOLATION` in the command
-response only, before creating/reusing the run protocol or making any other
-durable write. Name every missing path in the reason and state that no run
-protocol was started or changed; leave any existing
-`.protocols/AUTONOMOUS-RUN/*` untouched. The repair owner is the external
-DevRails installer: from an available DevRails checkout run
-`node scripts/install-framework.mjs --bootstrap --target <project-path> --yes --sync`,
-then resume `/autonomous`. Do not copy missing workflow rules inline.
-
-If isolated child contexts are unavailable, return `HALT_POLICY_VIOLATION` with
-the next feature's fresh tasking, review, and `/autonomous` resume route. Do not
-create or change the run protocol or run tasking in the parent context.
-
-If substantial code already exists, require/update the brownfield baseline via
-`/map-codebase` before applying the PRD delta.
-
-Create/reuse:
-- `.protocols/AUTONOMOUS-RUN/plan.md`;
-- `.protocols/AUTONOMOUS-RUN/status.md` using the durable run checkpoint
-  contract in
-  `.memory-bank/workflows/autonomy-policy.md#durable-run-checkpoint`;
-- `.protocols/AUTONOMOUS-RUN/decision-log.md`;
-- `.tasks/TASK-AUTONOMOUS/`.
-
-Record run metadata, scheduler mode, review coverage, blocking decisions,
-applied authoritative policies, queue summary linked to JSON records, failure
-budget, and terminal state/reason. The run protocol is resumable orchestration
-state, not a second task registry.
+Use authoritative supplied input without repeating settled interviews. Existing
+code is as-is evidence from `/map-codebase` when needed, not authority for a new
+target. Required deployed workflows are autonomy-policy, tier-policy,
+execute-loop and mb-sync. Missing Memory Bank routes to `/mb-init`; missing
+managed references require coherent installer sync from a verified checkout.
+Preserve existing state and name unavailable capabilities; never simulate a
+required operation or external fact.
 </input_contract>
 
-<hard_invariants>
-- Follow tier policy `#tier-obligations` and `#closure-authority`; load
-  `#hard-write-boundary` only for a task/parallel boundary and
-  `#tier-classification-and-escalation` only for a tier gap. Follow autonomy
-  policy `#phase-ownership`, `#experimental-parallel-execution` when opted in,
-  `#durable-run-checkpoint`, `#required-gates`, `#failure-budgets`,
-  `#scheduler-failure-handling`, `#terminal-fallback`, `#run-state`, and
-  `#terminal-states`, plus execute-loop
-  `#planning-redesign-boundary`, `#fresh-feature-tasking-boundary`, and the
-  applicable mb-sync contract.
-- Canonical queue execution is sequential.
-- `--experimental-parallel` remains opt-in and uses only existing autonomy-policy
-  isolation rules. Never infer independence from advisory `touched_files`.
-- Queue/task metadata comes only from indexed JSON task records. Preserve task
-  schema, IDs, lifecycle `planned|ready|in_progress|blocked|done|done_for_prod|failed`, tier,
-  waves, Foundation dependencies, and hard runtime scopes.
-- During the Foundation phase, `/autonomous` owns promotion, selection, and
-  final lifecycle decisions only for indexed `feature: "FT-000"` records. After
-  the Foundation gate is `done`, `/autopilot` owns those scheduler decisions
-  only for product records. `/exe` owns `ready -> in_progress` for the concrete
-  task selected by either scheduler. Neither phase may adopt or mutate the other
-  phase's tasks.
-- `/autonomous` must not restage `/autopilot`'s product-queue algorithm or
-  reinterpret its task transitions. `/exe`, `/verify`, `/red-verify`, and
-  `/mb-sync` keep the ownership defined by tier policy `#closure-authority`.
-- The active scheduler writes every task closure/failure/blocking decision,
-  status, and evidence link to the authoritative `.task.json` before any sync
-  boundary.
-- `/mb-sync` reconciles already-written state once per wave unless an explicit
-  current-wave durable-state dependency requires an early sync; it never
-  chooses closure or promotion.
-- Required reviews, lint, doctor, and
-  `tier-policy.md#tier-obligations` gates are not bypassed.
-- Preserve failure budgets and all existing terminal states; do not add a
-  scheduler, status, lifecycle, or assumption registry.
-</hard_invariants>
+<subject_boundaries>
+Apply the selected Product/Design owners: discovery only for unresolved intent,
+Constitution for project principles, `/write-prd` for product meaning,
+`/prd-to-features` for decomposition, selected feature/design reviews and
+`/spec-design` or `/spec-auto` for needed design. Reuse current authoritative
+results. Disabled operations do not require their artifacts, verdicts, positive
+Planning Revision, fresh sessions or a substitute gate.
 
-<operator_decisions>
-Unattended mode never answers a material operator branch. It may apply a
-material target decision only when it is already fixed by Constitution, an
-explicit accepted operator decision or policy, an active accepted ADR, an
-authoritative canonical spec, or clarified product sources.
+One-feature tasking follows execute-loop. Preserve schema, task identity,
+REQ/FT/AC mapping, hard boundaries, dependencies, unaffected work and evidence.
+Foundation is `FT-000` in the same registry; `/foundation-to-tasks` owns its
+accepted scope. The host executes applicable Foundation tasks under `/exe`
+and selected checks before dependent product work. An integrated Foundation
+proof task exists only when selected/required by accepted work; absence of that
+optional gate does not invent a blocker. Existing real dependencies remain.
 
-Runtime observations, production code, and mapped baseline may establish
-current behavior, constraints, and compatibility or migration evidence; they do
-not authorize a new target architecture, contract, data ownership, or migration
-route. Indexed task cards and workflow state remain authoritative for their
-existing task, lifecycle, scheduler, and verification fields; they are not
-independent sources of a new product or architecture target.
+Prepared product work hands off to `/autopilot`; do not duplicate its contract
+or introduce a second registry. A product-phase Foundation extension uses the
+common decision flow to return to its owner with product state retained.
 
-A difference between current state and an accepted target is a reconciliation
-delta, not an authority conflict. If the accepted target and applicable
-constraints yield one unambiguous route, record it in the existing owning
-artifact and continue without re-asking. Conflicting target authorities or an
-unresolved material compatibility, migration, or irreversible-behavior branch
-must halt through the existing route below.
+Autonomous policy applies to semantic decisions across the whole run, including
+repairs, consultations and the product handoff. Record autonomous provenance,
+not a fictitious user answer. Accepted requirements and manual red/Pause/Stop,
+DSH permissions and missing external input remain constraints.
 
-For a product-feature semantic finding, apply autonomy policy through
-`/feature-doctor FT-<NNN>` instead of choosing its repair route. Preserve the
-doctor's handoff in existing run state.
+Negative review/check results remain durable. A model proposes the justified
+repair or continuation disposition; the host applies it within configured
+budgets. Disabled reviews require no APPROVE/report or hidden reviewer. Review
+repair budgets are configurable; recovery retains consumed attempts and real
+results instead of resetting counters. Semantic findings do not authorize new
+requirements or scope by themselves.
+</subject_boundaries>
 
-For every other operator decision:
-- record the exact question, affected scope/tasks, current evidence, and owner
-  in the existing run status/decision log and owning blocker artifact;
-- do not infer acceptance;
-- stop before affected writes or promotion with
-  `HALT_CLARIFICATION_REQUIRED` for product/feature clarification or
-  `HALT_BLOCKING_QUESTIONS` for design/contract/operator decisions;
-- name its existing owning resume skill.
+<recovery_and_handoff>
+Memory Bank, task cards and existing run/protocol surfaces retain material
+choices, actual/partial effects, selected and skipped work, negative evidence,
+remaining work and immediate owner. No compulsory run-file bundle is required.
+The host reconciles durable state with observed work and resumes the first
+actually unfinished selected operation. No replay of completed implementation,
+checks or reports solely because a session ended. No automatic enabling of a
+skipped operation on recovery; ambiguous unsafe effects need reconciliation.
 
-After the operator answer is durably applied by the owning skill and its gates
-pass, resume from the recorded boundary without replaying completed work.
-Implementation tactics already inside authoritative scope remain agent choices,
-not operator branches.
-</operator_decisions>
+Return actual coverage, unresolved facts/permissions/manual stops, decisions and
+the next owner with the required common feedback. `/autopilot` retains the same
+autonomous policy and its specific halt reason. End-to-end SUCCESS requires
+completed accepted work, satisfied selected checks or explicit disposition,
+truthful skipped evidence and no unresolved blocker. It does not imply verified
+acceptance when verification was off. Keep production remainder explicit.
 
-<agent_discretion>
-The orchestrator chooses efficient local tooling, context refreshes, and retry
-tactics within budgets. It does not restage child-skill algorithms. Each child
-skill chooses its own evidence-grounded local tactics within its input/output
-contract.
-</agent_discretion>
-
-<required_outputs>
-## Contract sequence
-
-Run the canonical gates in this order, skipping a child only when its own input
-contract proves it already complete:
-
-1. Pre-queue health: `node .memory-bank/scripts/mb-lint.mjs`, then plain `/mb-doctor`.
-   Strict doctor is not used before a real executable queue.
-2. Product/design:
-   - if the input names tools/skills/CLIs, run `/find-skills`, auto-use only
-     already installed project skills, and record missing ones as recommendations
-     without installing them;
-   - inspect Constitution: use `ratified|partial` principles or an explicitly
-     accepted `skipped|framework-default` decision; otherwise do not start an
-     unattended Constitution interview and let the owning Product/Design gate
-     halt on the unresolved governance decision;
-   - `/write-prd` when PRD is not complete/current;
-   - `/spec-auto --init`;
-   - `/prd-to-features`;
-   - `/review-feat-plan` until `APPROVE`, within review budget;
-   - `/spec-design`;
-   - required Foundation route below;
-3. Foundation when `Foundation Required: true`:
-   - `/foundation-to-tasks`;
-   - lint plus `/mb-doctor --strict` for the FT-000 queue;
-   - execute the bounded FT-000 phase under `## Foundation execution and
-     resume` below; do not invoke `/autopilot` and do not select or mutate a
-     product task;
-   - continue only when every required FT-000 task, including the named final
-     gate task, is `done` and the post-boundary gates pass.
-   When Foundation is not required, require truthful `not_required` anchors and
-   create no FT-000 queue.
-4. Product tasking:
-   - apply execute-loop `#fresh-feature-tasking-boundary` to every product
-     feature except `FT-000`; it runs `/spec-auto FT-<NNN>` when design is due,
-     then tasking and review, until each has current-revision `APPROVE`, within
-     the review budget;
-   - lint plus `/mb-doctor --strict` after the real product queue exists.
-5. Delegate the strict-ready product queue to default full-queue `/autopilot`.
-
-### Review repair cycles
-
-Apply one bounded loop independently to the `feature-plan` surface and each
-actually reviewed `task-plan:FT-<NNN>` surface. The maximum is exactly `5`
-completed `repair -> re-review` cycles per surface.
-
-- The initial review starts at `0` completed cycles and is not a repair attempt.
-- A cycle is one repair followed by re-review of the same surface. Increment its
-  counter exactly once, after that re-review returns its verdict.
-- Keep compact counters only for surfaces actually reviewed in the existing
-  `## Review gates` section of `.protocols/AUTONOMOUS-RUN/status.md`; do not add
-  a file, template, schema, policy field, or registry.
-- `APPROVE` continues the recorded flow. On `REJECT` with fewer than `5`
-  completed cycles, follow its named repair route, then re-review.
-- When that route is `/feature-doctor FT-<NNN>`, run its bounded triage first.
-  A doctor halt consumes no repair cycle. If no operator decision is required,
-  follow its repair owner and count the cycle only after the subsequent
-  re-review.
-- On `REJECT` after completed cycle `5`, record existing
-  `HALT_REVIEW_REJECT`, the latest findings, and the named repair owner. Do not
-  enter another automatic repair cycle.
-- On resume, read the recorded counter; never reset it. A surface at `5` stays
-  exhausted. Operator-directed repair returns to the same review with that
-  counter preserved, and only `APPROVE` continues the recorded flow.
-
-Missing/failing lint or doctor uses `HALT_QUALITY_GATES`.
-
-## Foundation execution and resume
-
-`/autonomous` directly owns only indexed FT-000 records in this phase. Follow
-`/foundation-to-tasks`, tier policy, autonomy policy, and the existing
-`/mb-sync` boundary; never invoke `/autopilot` or mutate a product task.
-
-Before new work, reconcile every FT-000 `in_progress` task from its
-authoritative record and current-attempt protocol/handoff/verdict. Resume the
-first incomplete required child action without replaying a possibly completed
-unsafe side effect; ambiguity or conflicting product-task ownership uses the
-existing exact halt contract.
-
-With no unresolved FT-000 task and a current strict-doctor pass, execute the
-remaining FT-000 dependency order sequentially under tier policy until the
-named final gate is `done`. Before each selected task, record exact next action
-`/exe <TASK_ID>` in the existing outer run plan/status; `/exe` prepares the tier
-protocol and writes `ready -> in_progress`. Foundation resume uses that outer
-run state plus task protocols; the `/autopilot` checkpoint remains inactive and
-outer `STATE` remains `RUNNING` until product handoff.
-
-## Product scheduler delegation and resume
-
-After the Foundation gate is `done`, delegate the reviewed, strict-ready product
-queue to installed `/autopilot`, the only detailed product scheduler. Reuse the
-existing run state and durable evidence without resetting counters, attempts,
-or blockers. Initialize `/autopilot`'s checkpoint only at this handoff; do not
-add Product/Design/Foundation values to its stage vocabulary.
-
-`/autopilot` runs the default `/tech-debt wave <N>` report after each successful
-product wave boundary. `/autonomous` preserves that report handoff and does not
-launch a second report for the same boundary. The report remains advisory and
-does not alter the outer run state or terminal result.
-
-Any `/autopilot` `HALT_*` stops `/autonomous` with the same state, reason,
-evidence, owner, and exact resume route. Do not replace it with a generic halt.
-Product-queue `SUCCESS` proceeds to the final end-to-end validation below.
-</required_outputs>
-
-<validation>
-Respect these existing budgets from autonomy policy/run plan:
-- `max_retries_per_task`;
-- `max_consecutive_failures`;
-- `max_open_blockers`;
-- `max_files_changed_per_task` when configured in the run plan;
-- any explicit file, token, time, or run budget.
-
-Use `HALT_FAILURE_BUDGET` or `HALT_BUDGET_EXCEEDED` when exceeded.
-
-`SUCCESS` requires:
-- no `ready|in_progress` tasks and no unresolved blocking work;
-- required REQ/AC lifecycle verified;
-- every task and feature satisfies `tier-policy.md#tier-obligations`, including
-  any exact human checkpoint required for closure;
-- every task-linked product feature has latest task-plan `APPROVE`;
-- every such approval records the current positive Global Backbone Planning
-  Revision;
-- latest lint and `/mb-doctor --strict` pass;
-- run protocol and authoritative task records agree.
-
-Allowed terminal states remain exactly:
-- `SUCCESS`;
-- `HALT_BLOCKING_QUESTIONS`;
-- `HALT_CLARIFICATION_REQUIRED`;
-- `HALT_REVIEW_REJECT`;
-- `HALT_FAILURE_BUDGET`;
-- `HALT_DEPENDENCY_DEADLOCK`;
-- `HALT_POLICY_VIOLATION`;
-- `HALT_QUALITY_GATES`;
-- `HALT_BUDGET_EXCEEDED`.
-</validation>
-
-<handoff_contract>
-After required-workflow preflight passes and the run protocol exists, record the
-terminal result in `.protocols/AUTONOMOUS-RUN/status.md`:
-- on halt, write the state, reason, evidence paths, any unresolved operator
-  questions, and exact resume command; do not claim partial coverage as
-  completion;
-- on success, write `SUCCESS` and report the closed queue and final gate
-  evidence.
-
-The missing-workflow branch above is response-only because that invocation
-neither creates, reuses, nor changes a run protocol.
-</handoff_contract>
+The host records run/lifecycle state. Existing terminal reasons remain
+`SUCCESS|HALT_BLOCKING_QUESTIONS|HALT_CLARIFICATION_REQUIRED|HALT_REVIEW_REJECT|HALT_FAILURE_BUDGET|HALT_DEPENDENCY_DEADLOCK|HALT_POLICY_VIOLATION|HALT_QUALITY_GATES|HALT_BUDGET_EXCEEDED`;
+retain exact evidence/owner/resume route without replacing every halt with a
+generic error or deadlock.
+</recovery_and_handoff>

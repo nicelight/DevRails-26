@@ -4,6 +4,12 @@ status: active
 ---
 # Context — <TASK_ID>
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## Purpose
 This file captures the **minimal reproducible context** so a fresh session can resume work safely.
 
@@ -26,10 +32,10 @@ This file captures the **minimal reproducible context** so a fresh session can r
 ## Fallback basis (if richer inputs were absent)
 - Classic feature doc: ...
 - Requirements / RTM: ...
-- Duo docs: ...
+- Other accepted direct inputs (when applicable): ...
 
 ## Loaded context set (what was read)
-Keep this list short (2–8 items). Prefer SSOT pointers.
+Keep only useful canonical pointers.
 - `AGENTS.md`
 - `.memory-bank/index.md`
 - ...
@@ -45,5 +51,5 @@ Keep this list short (2–8 items). Prefer SSOT pointers.
 - ...
 
 ## Next session
-- Start by reading: `context.md`, `plan.md`, `progress.md`
+- Retained state / partial effects / selected and skipped operations:
 - Next action (one concrete step): ...

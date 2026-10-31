@@ -194,6 +194,15 @@ export function createAcceptanceTraceChecks(context) {
       }
   
       if (record.task.status !== 'done') continue;
+      const workflow = context.workflowContract(record.task);
+      if (workflow) {
+        const missing = criteria.filter((criterion) => !hasSelectedAcceptanceEvidence(workflow, criterion.id)).map((criterion) => criterion.id);
+        if (missing.length) addFinding(severity, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', `${record.rel}: selected checks lack retained claim-linked evidence.`, {
+          path: record.rel, task_id: record.id, details: { acceptance: missing },
+          suggested_fix: 'Retain actual claim-linked observations inline or by selected artifact; do not create proof for disabled checks.',
+        });
+        continue;
+      }
       const governed = proof.filter((entry) => entry.hasContract && entry.valid);
       if (!governed.length) continue;
   
@@ -287,8 +296,13 @@ export function createAcceptanceTraceChecks(context) {
       || /\bRED_NOT_APPLICABLE\s*:/i.test(value)
     ));
     const issues = [];
-    if (!targetLinked) issues.push('verification_target_missing');
-    if (!((red && green) || notApplicable)) {
+    const workflow = context.workflowContract(task);
+    const localSelected = !workflow || workflow.selected.local_checks;
+    // With local proof off, a selected participant may be candidate-only code
+    // review. The card's selected check path is checked by task-readiness; do
+    // not manufacture a functional AC proof contract from participant presence.
+    if (localSelected && !targetLinked) issues.push('verification_target_missing');
+    if (localSelected && !((red && green) || notApplicable)) {
       issues.push('RED_and_GREEN_or_not_applicable_alternative_missing');
     }
   
@@ -300,6 +314,16 @@ export function createAcceptanceTraceChecks(context) {
     };
   }
   
+  function hasSelectedAcceptanceEvidence(workflow, acId) {
+    const containsClaim = (result) => Array.isArray(result?.evidence)
+      && result.evidence.some((value) => typeof value === 'string' && includesExactId(value, acId));
+    if (workflow.selected.local_checks && !containsClaim(workflow.local_checks)) return false;
+    const functional = Array.isArray(workflow.verification)
+      ? workflow.verification.filter((result) => typeof result?.verdict === 'string') : [];
+    if (functional.length && !functional.some(containsClaim)) return false;
+    return true;
+  }
+
   function hasAcceptanceExecutionEvidence(taskId, acId, notApplicable) {
     const progressRel = normalizeRel(joinRelative('.protocols', taskId, 'progress.md'));
     const verificationRel = normalizeRel(joinRelative('.protocols', taskId, 'verification.md'));

@@ -1,44 +1,38 @@
 ---
-description: Run the current autonomous and product-scheduler contracts with phased Judge supervision.
+description: Apply selected Judge consultation to end-to-end work.
 status: active
 ---
-# /multiagentic - Current autonomous workflow with Judge
+# /multiagentic — End-to-end work with selected Judge
+
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
 <objective>
-Run the complete unattended workflow through the installed `/autonomous`, then
-delegate product execution to the installed `/autopilot`, applying
-`.memory-bank/workflows/multiagents_with_judge.md` with one Judge for the whole
-run. Keep both base contracts in their installed canonical files.
+Apply installed `/autonomous` and
+`.memory-bank/workflows/multiagents_with_judge.md` to end-to-end work.
+The base contract retains scope and handoffs; the host retains scheduling,
+launch, lifecycle, configuration and recovery ownership.
 </objective>
 
 <contract>
-1. Establish and retain the single Judge session required by
-   `multiagents_with_judge.md#judge-session-and-consultation`.
-2. For Product/Design, Foundation, and product tasking, read the installed
-   `/autonomous` `SKILL.md` from the active runtime surface and apply
-   `multiagents_with_judge.md#judge-session-and-consultation` and
-   `#autonomous-with-judge`. Act as `/multiagentic`.
-3. Load `/autopilot` and its Judge section when the base autonomous contract
-   reaches its strict-ready product handoff. Delegate the queue to the installed
-   `/autopilot`; its launch prompt requires the active-runtime `SKILL.md`,
-   `multiagents_with_judge.md#judge-session-and-consultation`,
-   `#autopilot-with-judge`, and the existing Judge target. The delegated
-   scheduler must use it and must not launch or replace it. Resume an active
-   product-scheduler phase with the same Judge session.
-4. The base contracts own lifecycle, ownership, gates, budgets, recovery,
-   terminal states, and handoffs. The overlay owns Judge consultation and route
-   reaction.
-5. If the operator explicitly requests Judge consultation, consult Judge at
-   the next safe durable boundary in the active phase.
+Judge is an enabled-by-default option, not a required persona, model or permanent
+session. Only selected/requested consultation runs. Its absence when disabled
+requires no verdict, report, replacement or halt. Host recovery can supply a new
+native DSH session with retained Memory Bank context.
 
-Use only the matching active runtime copy (`.agents/skills/` or
-`.claude/skills/`). If a required base contract, overlay, or Judge role is
-unavailable, use the base `HALT_POLICY_VIOLATION` route and resume after the
-installed contract is restored.
+Enabled Judge returns read-only route assessment with evidence. SUPPORT does not
+grant permission; REDIRECT is a proposal; disagreement/ESCALATE_OPERATOR uses
+the common decision flow. Consultations on the main path wait for the ordinary
+user decision or the active autonomous decision policy. Manual stops remain.
+
+If a selected contract/capability is unavailable, report the concrete gap and
+repair/change proposal. Do not substitute an external runtime, invent a Judge
+result, or automatically disable an already failed check.
 </contract>
 
 <handoff_contract>
-Preserve the run protocol and terminal result required by the active base
-contract. `/multiagentic` reports success only when the base end-to-end success
-conditions and every due Judge reaction are resolved.
+Return the base subject result plus required common feedback, selected Judge
+findings, actual decisions and immediate owner. Preserve base recovery evidence
+and specific terminal reason. No additional run files or lifecycle are created.
 </handoff_contract>

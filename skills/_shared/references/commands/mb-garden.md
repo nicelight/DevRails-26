@@ -1,113 +1,55 @@
 ---
-description: Регулярное обслуживание Memory Bank: линт, чистка, архивация, устранение drift.
+description: Repair unambiguous Memory Bank links, indexes and routers within selected maintenance.
 status: active
 ---
 # /mb-garden — Memory Bank maintenance
 
-Для выбранного независимого MB review доступен `agents/mb-reviewer.md`;
-для recovery proposal — `references/recovery-plan.md` внутри этого skill.
-Их наличие не включает review и не разрешает автоматический rebuild.
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
 <objective>
-Находить Memory Bank drift и безопасно исправлять только однозначные
-mechanical links, indexes и routers. Semantic, destructive и owner-owned
-решения возвращать ответственному owner/operator.
+Find relevant Memory Bank drift and repair only unambiguous mechanical links,
+indexes and routers. Material semantic/destructive choices remain with their
+owners through the common decision flow.
 </objective>
 
-<process>
+<input_and_scope>
+Use actual Memory Bank/router/spec/task evidence for the requested scope.
+Selected independent review can use installed `agents/mb-reviewer.md`; recovery
+proposals can use `references/recovery-plan.md`. Availability does not enable
+review or authorize rebuild. Framework-owned missing/stale resources need
+coherent installer sync; user-owned skills are preserved.
 
-## 1) Read-only scan и classification
+Inspect relevant Constitution references, canonical spec registry/link ownership,
+task/index routes and installed skill inventory. Keep TODO/gaps as findings,
+not automatic tasks. Optional behavior examples matter only when their broken
+links invalidate a real source. Choose inspection order and sufficient depth;
+no mandatory scan sequence or invented write-set artifact.
+</input_and_scope>
 
-- Сначала проведи read-only scan. До классификации findings ничего не меняй.
-- Пункты scan ниже являются coverage criteria, а не обязательным порядком.
-  Выбери порядок, инструменты и глубину проверки по фактическому состоянию
-  Memory Bank, но покрой каждую применимую surface до классификации её finding.
-- Пробеги `.memory-bank/index.md` и роутеры в подпапках.
-- Прочитай `.memory-bank/spec-index.md` и проверь, что active specs используют
-  `Type | Path | Status | Scope | Change route`, один active canonical path на
-  concern и direct feature/task links без `used_by`/file-owner metadata.
-- Если есть `.memory-bank/constitution.md`, проверь ссылки и упоминания Constitution в MBB, spec-backbone, spec-index, workflows, AGENTS.md и generated plans.
-- Найди stale или contradictory Constitution references: старые пути, alias-команды, legacy task/risk routing, или правила, противоречащие текущей Constitution.
-- Найди `Known gaps / TBD / TODO`, но не закрывай их и не превращай в задачи от
-  имени garden.
-- Для linked `.memory-bank/behavior-specs/*.behavior.json` проверь feature links
-  и task `source_artifacts`. Stale examples классифицируй как notes в findings,
-  если обычный AC/spec/verification source не сломан.
-- Сверь `.memory-bank/skills/index.md` с реально установленными
-  `.agents/skills/*/SKILL.md` и `.claude/skills/*/SKILL.md`. Реестр должен
-  использовать canonical runtime command names без второй alias/package surface.
-- Если есть `.memory-bank/scripts/mb-lint.mjs`, initial lint можно использовать как
-  read-only источник findings. Он не заменяет final lint после edits.
-- Раздели findings на две группы:
-  - automatic: только stale/broken links и несогласованные index/router entries,
-    для которых существует один однозначный target и не требуется менять смысл;
-  - blockers: archive/delete/merge, выбор между competing canonical material,
-    TODO/gap-to-task conversion и любые material canonical, task, lifecycle,
-    product, design, contract, security или governance decisions.
+<mutation_boundary>
+Before each repair establish one unambiguous mechanical target and bounded
+changed files. Preserve meaning and existing user work. Archive/delete/merge,
+competing canonical interpretations, TODO-to-task conversion, governance,
+product/design/task or lifecycle changes need the common owner decision; do not
+perform them under garden's mechanical authority.
 
-## 2) Bounded mechanical write set
+Governance goes to `/constitution`; accepted shared design to `/spec-redesign`;
+feature/task meaning to `/feature-to-tasks`; broader already-decided durable
+reconciliation to `/mb-sync`. Return a concrete proposal and affected paths,
+without launching the branch. Preserve any completed garden edits in handoff.
+</mutation_boundary>
 
-- После classification поддерживай в текущем transient working context
-  минимальный явный write set только для files с automatic findings. Он не
-  фиксируется заранее и может уточняться по мере discovery. Не создавай для
-  этого artifact, write-set file, ownership matrix, lifecycle, protocol или
-  registry.
-- Перед edit убедись, что file входит в текущий write set, finding остаётся
-  однозначно mechanical, а target доказан. Агент сам выбирает, как группировать
-  и обновлять transient write set; отдельное объявление каждого path перед
-  каждым edit не требуется.
-- Автоматически меняй только files из текущего write set и только их
-  однозначные mechanical links, indexes и routers. Фактически changed files
-  зафиксируй в handoff.
-- Не архивируй, не удаляй и не объединяй документы; не выбирай canonical
-  трактовку; не создавай tasks и не меняй material meaning.
-- Для blocker назови finding, затронутые files, отсутствующее owner decision и
-  existing handoff: operator для destructive/canonical choice,
-  `/constitution` для governance amendment, `/spec-redesign` или
-  `/feature-to-tasks FT-<NNN>` для принадлежащего им design/task решения.
-- Obsolete generated runtime skill entry не удаляй автоматически: верни
-  recommendation использовать installer sync. User-owned skills не меняй.
+<validation_and_handoff>
+Validate repaired links/indexes against actual final state. Lint and doctor run
+only when selected/requested; if selected but unavailable, state the gap.
+An earlier scan is not evidence for later edits. A disabled validator/review
+requires no report or substitute gate. Doctor owns readiness diagnostics.
 
-## 3) Agent discretion
-
-- Внутри read-only-first, automatic-only и bounded-write ограничений агент
-  выбирает search/read order, инструменты, inspection depth, способ grouping
-  findings, batch или последовательную mechanical mutation и минимальный набор
-  достаточных проверок до final lint.
-- Не выполняй scan, edit или validation только ради заполнения процесса.
-  Останавливайся, когда automatic findings исчерпаны, а оставшиеся findings
-  требуют owner decision или другого owning workflow.
-
-## 4) Broader reconciliation boundary
-
-- Cosmetic или mechanical garden cleanup сам по себе не запускает `/mb-sync`.
-- Если finding требует broader durable-state reconciliation уже принятого owner
-  decision, останови дальнейшую garden mutation и верни handoff существующему
-  `/mb-sync` как отдельному owner. Не вызывай и не пересказывай его contract.
-- Если до такого handoff garden уже сделал mechanical edits, всё равно выполни
-  final lint по итоговому garden-owned state.
-
-## 5) Final validation
-
-- После любого фактического garden edit запусти final
-  `node .memory-bank/scripts/mb-lint.mjs` по полностью изменённому final state, если script
-  доступен. Если он недоступен, явно укажи это в handoff. Initial lint не
-  считается final validation.
-- `mb-doctor` запускай только на уже существующей readiness/risk boundary:
-  default mode как health check, когда он релевантен; `--strict` — только после
-  появления реальной executable queue и перед scheduler/autopilot execution.
-  Readiness findings принадлежат doctor; не дублируй его checks и не создавай
-  applicability matrix.
-- Не запускай review по расписанию или только из-за garden run. Concrete
-  planning/spec/task drift направляй существующему `/review-feat-plan` или
-  `/review-tasks-plan`, когда finding принадлежит их review scope.
-
-## 6) Handoff
-
-- Перечисли только фактически changed files, реально updated links/indexes/
-  routers и выполненные validations с результатами.
-- Отдельно перечисли unresolved blockers и точный owner/resume route.
-- Невыполненные archive/move/delete/merge items являются blockers, а не
-  reported changes.
-- Для чисто cosmetic/mechanical cleanup явно укажи, что `/mb-sync` не нужен.
-</process>
+Return only actual changes, performed/skipped checks, unresolved material
+findings and exact owner/resume route with required common feedback. Mechanical
+cleanup alone does not require mb-sync. Memory Bank recovery preserves useful
+facts, task identity, partial effects and selected/skipped outcomes; a lost
+session does not authorize destructive reconstruction or whole-workflow replay.
+</validation_and_handoff>

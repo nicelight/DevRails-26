@@ -31,10 +31,21 @@ export function createFoundationBackboneChecks(context) {
     readText,
   } = context.readers;
 
+  function designDisabledForQueue() {
+    const index = readJson(TASK_INDEX_REL);
+    if (!index.ok || !Array.isArray(index.value?.tasks) || !index.value.tasks.length) return false;
+    return index.value.tasks.every((entry) => {
+      if (!TASK_ID_RE.test(entry?.id ?? '') || entry.file !== `${entry.id}.task.json`) return false;
+      const record = readJson(normalizeRel(joinRelative('.memory-bank/tasks', entry.file)));
+      return record.ok && context.workflowContract(record.value)?.selected.design === false;
+    });
+  }
+
   function checkConstitutionStructure() {
     if (!options.strict) return;
   
     const issues = [];
+    const designDisabled = designDisabledForQueue();
     const constitutionAbs = absolute(CONSTITUTION_REL);
     const indexAbs = absolute(MB_INDEX_REL);
     const specIndexAbs = absolute(SPEC_INDEX_REL);
@@ -51,14 +62,14 @@ export function createFoundationBackboneChecks(context) {
       if (!text.includes('constitution.md')) issues.push(`${MB_INDEX_REL} does not mention constitution.md`);
     }
   
-    if (!isFile(specIndexAbs)) {
+    if (!isFile(specIndexAbs) && !designDisabled) {
       issues.push(`${SPEC_INDEX_REL} missing`);
-    } else {
+    } else if (isFile(specIndexAbs)) {
       const text = readText(specIndexAbs);
       if (!text.includes('constitution.md')) issues.push(`${SPEC_INDEX_REL} does not mention constitution.md`);
     }
   
-    if (!isFile(specBackboneAbs)) {
+    if (!isFile(specBackboneAbs) && !designDisabled) {
       issues.push(`${SPEC_BACKBONE_REL} missing`);
     }
   
@@ -77,6 +88,9 @@ export function createFoundationBackboneChecks(context) {
     const severity = options.strict ? 'error' : 'warning';
   
     checkSpecIndexPurity(specIndexAbs, specBackboneAbs, severity);
+    const index = readJson(TASK_INDEX_REL);
+    if (index.ok && Array.isArray(index.value?.tasks) && index.value.tasks.length === 0) return;
+    if (designDisabledForQueue()) return;
   
     if (!isFile(specBackboneAbs)) {
       let migrationHint = undefined;
@@ -353,6 +367,8 @@ export function createFoundationBackboneChecks(context) {
     const severity = options.strict ? 'error' : 'warning';
   
     if (!isFile(foundationAbs)) {
+      if (orderedRecords.every((record) => context.workflowContract(record.task))
+        && orderedRecords.every((record) => record.task.feature !== 'FT-000')) return;
       addFinding(severity, 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: a non-empty indexed task queue requires an explicit Foundation decision.`, {
         path: FOUNDATION_REL,
         details: { issue: 'foundation_file_missing' },
@@ -397,6 +413,10 @@ export function createFoundationBackboneChecks(context) {
       return;
     }
   
+    // Foundation implementation can exist without an optional integrated proof task.
+    // Real dependencies still pass through ordinary task/identity/cycle checks.
+    if (anchors.required && anchors.gateTask === 'not_required') return;
+
     if (anchors.gateTask === FOUNDATION_GATE_PENDING) {
       addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: required Foundation still has a pending final gate.`, {
         path: FOUNDATION_REL,
@@ -516,8 +536,8 @@ export function createFoundationBackboneChecks(context) {
     }
   
     if (anchors.required === true) {
-      if (anchors.gateTask !== FOUNDATION_GATE_PENDING && !FOUNDATION_TASK_ID_RE.test(anchors.gateTask ?? '')) {
-        issues.push(`Foundation Gate Task must be ${FOUNDATION_GATE_PENDING} or ${FOUNDATION_TASK_ID_FORMAT} when foundation is required`);
+      if (anchors.gateTask !== 'not_required' && anchors.gateTask !== FOUNDATION_GATE_PENDING && !FOUNDATION_TASK_ID_RE.test(anchors.gateTask ?? '')) {
+        issues.push(`Foundation Gate Task must be ${FOUNDATION_GATE_PENDING} or ${FOUNDATION_TASK_ID_FORMAT}, or not_required when integrated proof is not selected`);
       }
     } else if (anchors.required === false && anchors.gateTask !== 'not_required') {
       issues.push('Foundation Gate Task must be not_required when foundation is not required');

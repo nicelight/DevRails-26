@@ -325,8 +325,22 @@ function checkAnalysisStructure() {
   }
 }
 
+function navDesignDisabledForQueue() {
+  try {
+    const index = JSON.parse(readText(path.join(MB, 'tasks/index.json')));
+    return Array.isArray(index.tasks) && index.tasks.length > 0 && index.tasks.every((entry) => {
+      if (!TASK_ID_RE.test(entry?.id ?? '') || entry.file !== `${entry.id}.task.json`) return false;
+      const task = JSON.parse(readText(path.join(MB, 'tasks', entry.file)));
+      const selection = Array.isArray(task.verify) ? task.verify.filter((item) => item?.stage === 'workflow').at(-1) : null;
+      return task.id === entry.id && selection?.selected?.design === false;
+    });
+  } catch { return false; }
+}
+
 function checkRequiredFiles() {
+  const designDisabled = navDesignDisabledForQueue();
   for (const rel of REQUIRED) {
+    if (rel === BOUNDARY_MAP_REL && designDisabled) continue;
     const p = path.join(ROOT, rel);
     if (!fs.existsSync(p)) errors.push(`Missing required file: ${rel}`);
   }

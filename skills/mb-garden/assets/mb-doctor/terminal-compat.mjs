@@ -4,7 +4,7 @@
  * Preserve terminal gap suppression and aggregate finding order exactly.
  */
 
-import { isPlainObject, normalizeRel } from './readers.mjs';
+import { isPlainObject, nonEmptyString, normalizeRel } from './readers.mjs';
 
 const TASK_INDEX_REL = '.memory-bank/tasks/index.json';
 const COMPACT_TIERS = new Set(['T0', 'T1']);
@@ -25,6 +25,76 @@ const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
 const PATH_MARKER_RE =
   /(?:^|[\s"`'])(?:\.{1,2}\/|\/|[A-Za-z]:\\)[^\s"`']+|\b[A-Za-z0-9_.-]+\/[A-Za-z0-9_.\/-]+\b|\b[\w.-]+\.(?:md|txt|log|json|xml|html|htm|png|jpg|jpeg|webm|mp4)\b/i;
 
+// A typed entry distinguishes Nav evidence from historical protocol contracts.
+const NAV_PROTOCOLS = new Set(['run.md', 'context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md', 'red-verification.md']);
+const FUNCTIONAL_VERDICTS = new Set(['PASS', 'FAIL', 'NEEDS-CLARIFICATION']);
+const SEMANTIC_VERDICTS = new Set(['semantic-pass', 'semantic-concern', 'semantic-fail']);
+
+function workflowEntries(task) {
+  return Array.isArray(task?.verify) ? task.verify.filter((entry) => entry?.stage === 'workflow') : [];
+}
+
+function selectionIssues(entry) {
+  const issues = [];
+  if (!nonEmptyString(entry?.attempt)) issues.push('attempt must be a non-empty string');
+  const selected = entry?.selected;
+  if (!isPlainObject(selected)) return [...issues, 'selected must be an object'];
+  for (const key of ['design', 'local_checks', 'red_verify', 'feature_red_verify']) {
+    if (typeof selected[key] !== 'boolean') issues.push(`selected.${key} must be boolean`);
+  }
+  for (const key of ['verify', 'protocols']) {
+    const values = selected[key];
+    if (!Array.isArray(values) || !values.every(nonEmptyString) || new Set(values).size !== values.length) {
+      issues.push(`selected.${key} must contain unique non-empty strings`);
+    }
+  }
+  if (Array.isArray(selected.protocols) && selected.protocols.some((name) => !NAV_PROTOCOLS.has(name))) {
+    issues.push('selected.protocols contains an unknown protocol filename');
+  }
+  return issues;
+}
+
+// Narrow applicability callback supplied to other owners by the entrypoint.
+export function workflowContract(task) {
+  const entry = workflowEntries(task).at(-1);
+  return entry && !selectionIssues(entry).length ? entry : null;
+}
+
+function concreteEvidence(value) {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => (
+    nonEmptyString(item) && !/^(?:tbd|todo|none|n\/a|\.\.\.|<[^>]+>)$/i.test(item.trim())
+  ));
+}
+
+function validDisposition(result, decision) {
+  return result?.disposition?.decision === decision
+    && ['user', 'autonomous'].includes(result.disposition.source)
+    && concreteEvidence([result.disposition.reason]);
+}
+
+function resultChecks(entry) {
+  const checks = [];
+  if (isPlainObject(entry.local_checks)) checks.push(['local_checks', entry.local_checks, 'passed']);
+  if (Array.isArray(entry.verification)) {
+    for (const result of entry.verification) checks.push([`verify:${result?.participant}`, result, Object.hasOwn(result ?? {}, 'candidate_findings') ? 'reviewed' : 'PASS']);
+  }
+  if (isPlainObject(entry.red_verification)) checks.push(['red_verify', entry.red_verification, 'semantic-pass']);
+  return checks;
+}
+
+function resultValue(result) {
+  if (Object.hasOwn(result ?? {}, 'candidate_findings')) return result.candidate_findings === 'none' ? 'reviewed' : 'findings';
+  return result?.verdict ?? result?.result;
+}
+
+function validParticipantResult(result) {
+  if (!isPlainObject(result) || !concreteEvidence(result.evidence)) return false;
+  const candidateOnly = Object.hasOwn(result, 'candidate_findings');
+  if (!candidateOnly) return FUNCTIONAL_VERDICTS.has(result.verdict);
+  return !Object.hasOwn(result, 'verdict') && (result.candidate_findings === 'none'
+    || concreteEvidence(result.candidate_findings));
+}
+
 export function createTerminalCompatibilityChecks(context) {
   const ROOT = context.root;
   const { options, addFinding } = context;
@@ -39,8 +109,98 @@ export function createTerminalCompatibilityChecks(context) {
   } = context.readers;
   const legacyTerminalGaps = new Map();
 
+  function checkWorkflowEvidence(record) {
+    const { id, rel, task } = record;
+    const entries = workflowEntries(task);
+    if (!entries.length) return;
+    const severity = options.strict ? 'error' : 'warning';
+    const issues = entries.flatMap((entry, index) => selectionIssues(entry).map((issue) => `entry ${index}: ${issue}`));
+    if (new Set(entries.map((entry) => entry.attempt)).size !== entries.length) issues.push('attempt identifiers must be unique');
+    if (issues.length) {
+      addFinding('error', 'TASK_WORKFLOW_EVIDENCE_INVALID', `${rel}: invalid retained workflow selection.`, {
+        path: rel, task_id: id, details: { issues },
+        suggested_fix: 'Repair the existing evidence record from actual selected work; do not infer a replacement from current settings.',
+      });
+      return;
+    }
+    const entry = entries.at(-1);
+    const selected = entry.selected;
+    if (!DONE_STATUSES.has(task.status) && task.status !== 'failed') return;
+
+    const missingProtocols = selected.protocols.filter((file) => !isFile(absolute('.protocols', id, file)));
+    if (missingProtocols.length) {
+      addFinding(severity, 'TASK_SELECTED_PROTOCOL_MISSING', `${rel}: selected terminal protocol artifacts are missing.`, {
+        path: rel, task_id: id, details: { missing: missingProtocols },
+        suggested_fix: 'Restore only selected artifacts from actual retained evidence; do not fabricate reports for skipped work.',
+      });
+    }
+    if (task.status === 'failed') {
+      if (!concreteEvidence(entry.evidence)) {
+        addFinding(severity, 'TASK_FAILED_EVIDENCE_MISSING', `${rel}: failed task has no retained actual outcome evidence.`, { path: rel, task_id: id });
+      }
+      return;
+    }
+    const resultIssues = [];
+    if (entry.implementation !== 'complete' || !concreteEvidence(entry.evidence)) {
+      resultIssues.push('completed implementation and actual evidence are required');
+    }
+    if (selected.local_checks) {
+      if (!isPlainObject(entry.local_checks) || !['passed', 'failed'].includes(entry.local_checks.result) || !concreteEvidence(entry.local_checks.evidence)) {
+        resultIssues.push('selected local checks need their actual result and evidence');
+      }
+    } else if (entry.local_checks !== 'skipped') resultIssues.push('disabled local checks must be recorded as skipped');
+
+    if (!selected.verify.length) {
+      if (entry.verification !== 'skipped') resultIssues.push('all verify participants off requires skipped, not PASS');
+    } else {
+      const results = entry.verification;
+      if (!Array.isArray(results)
+        || results.length !== selected.verify.length
+        || new Set(results.map((result) => result?.participant)).size !== selected.verify.length
+        || results.some((result) => !selected.verify.includes(result?.participant)
+          || !validParticipantResult(result))) {
+        resultIssues.push('each selected verify participant needs exactly one actual scoped result and evidence');
+      }
+    }
+    if (selected.red_verify) {
+      if (!isPlainObject(entry.red_verification) || !SEMANTIC_VERDICTS.has(entry.red_verification.verdict) || !concreteEvidence(entry.red_verification.evidence)) {
+        resultIssues.push('selected red-verify needs its actual semantic verdict and evidence');
+      }
+    } else if (entry.red_verification !== 'skipped') resultIssues.push('disabled red-verify must be recorded as skipped');
+
+    // A later skipped operation cannot erase a prior negative result.
+    entries.forEach((prior, index) => {
+      for (const [key, result, success] of resultChecks(prior)) {
+        if (resultValue(result) === success) continue;
+        const laterSuccess = entries.slice(index + 1).some((later) => resultChecks(later).some(([laterKey, laterResult]) => (
+          laterKey === key && resultValue(laterResult) === success && concreteEvidence(laterResult.evidence)
+        )));
+        if (validDisposition(result, 'continue') || (validDisposition(result, 'repair') && laterSuccess)) continue;
+        resultIssues.push(`attempt ${prior.attempt} ${key}: negative evidence needs explicit continue disposition or a completed selected repair`);
+      }
+    });
+    if (resultIssues.length) {
+      addFinding(severity, 'TASK_WORKFLOW_RESULT_INCOMPLETE', `${rel}: closure is not supported by retained selected-work results.`, {
+        path: rel, task_id: id, details: { issues: resultIssues },
+        suggested_fix: 'Reconcile actual implementation, selected/skipped checks and negative-result disposition without changing historical selections.',
+      });
+    }
+  }
+
+  function hasWorkflowMarker(task) { return workflowEntries(task).length > 0; }
+
+  function featureSemanticResult(records, feature) {
+    const results = records.flatMap((record) => Array.isArray(record.task.verify) ? record.task.verify : [])
+      .filter((entry) => entry?.stage === 'feature_red_verify' && entry.feature === feature);
+    if (!results.length) return undefined;
+    return results.every((result, index) => SEMANTIC_VERDICTS.has(result.verdict) && concreteEvidence(result.evidence)
+      && (result.verdict === 'semantic-pass' || validDisposition(result, 'continue')
+        || (validDisposition(result, 'repair') && results.slice(index + 1).some((later) => later.verdict === 'semantic-pass' && concreteEvidence(later.evidence)))));
+  }
+
   function checkFullProtocolTask(record) {
     const { id, rel, task } = record;
+    if (hasWorkflowMarker(task)) return;
     if (!FULL_PROTOCOL_TIERS.has(task.tier)) return;
     if (!FULL_PROTOCOL_STATUSES.has(task.status)) return;
   
@@ -108,6 +268,7 @@ export function createTerminalCompatibilityChecks(context) {
   
   function checkCompactDoneProtocol(record) {
     const { id, rel, task } = record;
+    if (hasWorkflowMarker(task)) return;
     if (!DONE_STATUSES.has(task.status) || !COMPACT_TIERS.has(task.tier)) return;
   
     const runRel = normalizeRel(joinRelative('.protocols', id, 'run.md'));
@@ -156,6 +317,7 @@ export function createTerminalCompatibilityChecks(context) {
   
   function checkTerminalEvidence(record) {
     const { id, rel, task } = record;
+    if (hasWorkflowMarker(task)) return;
     if (!DONE_STATUSES.has(task.status) && task.status !== 'failed') return;
     if (DONE_STATUSES.has(task.status) && COMPACT_TIERS.has(task.tier)) return;
     if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
@@ -173,7 +335,7 @@ export function createTerminalCompatibilityChecks(context) {
   }
   
   function checkFailedTaskClosure(records) {
-    const failedRecords = records.filter((record) => record.task.status === 'failed');
+    const failedRecords = records.filter((record) => record.task.status === 'failed' && !hasWorkflowMarker(record.task));
     if (!failedRecords.length) return;
   
     for (const failed of failedRecords) {
@@ -419,5 +581,8 @@ export function createTerminalCompatibilityChecks(context) {
     checkFailedTaskClosure,
     checkFullProtocolTask,
     checkTerminalEvidence,
+    checkWorkflowEvidence,
+    featureSemanticResult,
+    workflowContract,
   };
 }

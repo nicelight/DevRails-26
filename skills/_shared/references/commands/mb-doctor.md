@@ -1,306 +1,90 @@
 ---
-description: Deterministic Memory Bank readiness gate over mb-lint for autonomous/autopilot execution.
+description: Report deterministic Memory Bank structure and selected-work evidence gaps.
 status: active
 ---
-# /mb-doctor — Memory Bank readiness doctor
+# /mb-doctor — Memory Bank readiness diagnostics
 
-## Objective
-Answer one question:
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
 
-```text
-Can autonomous/autopilot execution continue safely from the current Memory Bank state?
-```
+<objective>
+Diagnose structural readiness and retained evidence under the selected work
+contract. This read-only check does not make semantic, lifecycle, repair or
+permission decisions. Run only when selected/requested; a disabled doctor is
+not silently restored as an unconditional scheduler gate.
+</objective>
 
-`mb-doctor` is a readiness gate over `mb-lint`. It does not replace `/review-feat-plan`, `/review-tasks-plan`, `/verify`, or `/red-verify`.
-
-## Command
-Use the repository-provided script:
+<invocation>
+Use the deployed script or its documented wrapper:
 
 ```bash
 node .memory-bank/scripts/mb-doctor.mjs
-node .memory-bank/scripts/mb-doctor.mjs --strict
-node .memory-bank/scripts/mb-doctor.mjs --json
 node .memory-bank/scripts/mb-doctor.mjs --strict --json
 ```
 
-If the repository exposes another documented wrapper for the same script, use that wrapper.
+Only `--strict`, `--json`, `--help` and `-h` are accepted. Unsupported arguments
+produce CLI_INVALID_ARGUMENT before checks; help exits without checks. Default
+mode reports incomplete readiness as warnings where applicable and accepts an
+empty skeleton; strict mode makes relevant gaps errors and requires a non-empty
+queue. JSON preserves `status`, `summary` and `findings`; verdict/exit status is
+a diagnostic result, not permission or task lifecycle.
+</invocation>
 
-Any argument other than `--strict`, `--json`, `--help`, or `-h` produces the
-`CLI_INVALID_ARGUMENT` error before readiness checks run. When `--help` or `-h`
-is present, the script prints help and exits without running readiness checks.
+<checks>
+The script runs mb-lint and validates indexed records, schema/ID/tier/feature/wave
+consistency, REQ/FT/AC links, dependency existence/cycles/readiness, clarification
+metadata, accepted task inputs and actual evidence. Skipped operations do not
+excuse malformed identity, invalid scope paths, missing dependencies or cycles.
+Stable AC identity, governing REQ and exact task coverage remain enforced;
+semantic applicability and proof quality belong to the selected subject review.
 
-## Modes
-- Default mode: health report for humans and interactive work. A fresh skeleton with an empty `.memory-bank/tasks/index.json` is valid and reports `TASK_INDEX_EMPTY` as `info`.
-- Strict mode: post-queue executable-readiness gate for every `FT-000`
-  foundation queue and for autonomous/autopilot product queues. Empty
-  `.memory-bank/tasks/index.json` is an error because there is no executable task queue.
-- JSON mode: machine-readable report for schedulers and agents.
+New Nav cards are identified by the existing task.verify `stage: workflow`
+record defined in `.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
+The latest attempt carries its retained effective selection, never current live
+settings. Invalid selection is TASK_WORKFLOW_EVIDENCE_INVALID. Closure needs
+actual implementation evidence and results for selected checks, or explicit
+skipped values for disabled checks. Missing/mismatched results and unresolved
+negative dispositions are TASK_WORKFLOW_RESULT_INCOMPLETE. Only selected
+terminal protocol files are due (TASK_SELECTED_PROTOCOL_MISSING); sufficient
+inline results require no separate reports.
 
-Default mode may emit warnings for incomplete scheduler readiness evidence that should be fixed before unattended execution. These warnings do not invalidate KISS manual closure. Strict mode promotes those readiness gaps to errors where autonomous/autopilot progression would be unsafe.
-Every non-empty indexed queue requires the current `.memory-bank/foundation.md`
-decision; a missing or incomplete decision is a warning in default mode and an
-error in `--strict`. Empty-index behavior is unchanged.
+All verify off permits done without PASS and without a verification report.
+Main-off/secondary-on needs exactly the selected participants' own results; no
+main fallback. Candidate-only code review does not imply functional PASS. Local execution checks and red-verify are independent selections.
+Red alone may return semantic evidence without functional PASS. A retained
+negative result needs a scoped continue disposition or explicit repair followed
+by successful selected proof; a later skip does not resolve it. These checks
+validate the recorded decision, not its semantic adequacy or real permissions.
 
-After `/spec-init` PASS, `.memory-bank/spec-backbone.md` may correctly have `Pre-PRD Spec Status: ready_for_prd` while Global Backbone Status is still absent, `blocked`, or otherwise incomplete. In default mode, report this as "prepared for `/prd-to-features`; Global Backbone Status intentionally pending until `/spec-design`" rather than a fix-now problem. The machine-readable finding code may remain `SPEC_BACKBONE_NOT_READY`; the meaning is downstream task/autonomous readiness, not failure of `/spec-init`.
+Disabled design is read from the existing task record and needs no fabricated
+backbone, positive revision or full SDD bundle. Concrete accepted task/REQ/feature
+inputs, purpose, outcome and scope remain required. Selected proof needs a
+planned path; RED/GREEN applies only when local checks are selected. A missing
+Foundation document is not a new mandatory artifact for a Nav product queue
+without FT-000 work. Existing Foundation anchors remain validated; required
+Foundation implementation may use `Foundation Gate Task: not_required` when
+its integrated proof gate is not selected. Real dependency identity and closure
+are still checked. A named gate cannot disappear merely by changing settings.
 
-Use `--strict` after `/foundation-to-tasks` before the `/autonomous`-owned
-`FT-000` phase, before the product-only `/autopilot`, before each applicable
-task-selection pass, and after each `/mb-sync` before promoting dependents or
-declaring success. When the last task of a T2 product feature closes, the
-scheduler must run feature-level `/red-verify --feature FT-<ID>` and record
-semantic-pass before that wave-boundary sync/strict-doctor gate.
+Selected feature semantic review uses the matching feature result; disabled
+feature review has no required report. Actual negative results are retained
+with explicit disposition. Task completion does not imply verified feature/REQ
+acceptance when proof was skipped.
 
-In manual greenfield, `/mb-doctor` is conditional readiness checking, not a
-default gate for simple `T0` / `T1` execution. Skip it by default for local
-manual `T0` / `T1` work. Run it for `T3`, autonomous/autopilot or handoff
-freshness, and complex `T2`/foundation/dependency/stale-doc/risky-link
-cases.
+Records without the Nav marker retain historical compact/full protocol and
+PASS/semantic evidence checks; this compatibility reader is not the contract
+for new Nav work. Deprecated terminal allowed_write_scope records retain their
+historical gap summary without fabricated backfill. Sync must not append an
+invented Nav selection to reclassify old evidence. Existing report shape, finding
+codes for unchanged checks, severity rules and CLI behavior remain stable.
+</checks>
 
-Read `.memory-bank/workflows/tier-policy.md#tier-obligations` and
-`#closure-authority` for the authoritative protocol, verdict, closure, and sync
-rules that these mechanical checks enforce. `/mb-doctor` neither starts tasks
-nor makes lifecycle decisions.
-
-## Required checks
-`mb-doctor` must check only readiness-critical conditions:
-
-- `mb-lint` passes first. A lint error is a doctor error.
-- In `--strict`, `.memory-bank/constitution.md`, `.memory-bank/index.md`,
-  `.memory-bank/spec-index.md`, and `.memory-bank/spec-backbone.md` exist, and
-  both index files mention `constitution.md`. Any missing file or missing
-  router mention is a `CONSTITUTION_STRUCTURE_INVALID` error.
-- Feature docs under `.memory-bank/features/FT-*.md` may have optional clarification metadata: `clarification_status`, `last_clarified`, and `clarification_questions`. Absent optional clarification fields are allowed; missing feature frontmatter or invalid present metadata is not.
-- A task-linked current product feature uses unique
-  `FT-<NNN>-AC-<NNN>` headings under `## Acceptance Criteria`; each ID matches
-  its feature and names an existing governing `REQ-*`. Historical terminal-only
-  features without stable AC headings do not require backfill.
-- Explicit `clarification_status: pending|blocked` is not allowed for autonomous/autopilot readiness or task-linked features.
-- Indexed task records do not exist for features that are pending, missing, or otherwise not clarified.
-- `.memory-bank/tasks/index.json` is valid JSON and has a valid task list.
-- Every indexed `.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` exists and is valid JSON.
-- Every indexed task record has `tier: T0|T1|T2|T3`.
-- Authoritative routing uses only `task.tier`; legacy `risk` / `risk.level` is invalid.
-- `FT-000` is the only allowed pseudo-feature for project foundation. It is not
-  a product feature and does not participate in product feature-completion
-  semantics.
-- `W0` is valid only for tasks with `feature: "FT-000"`. Non-`FT-000` product
-  tasks must not use `W0`.
-- Every non-empty indexed queue has `.memory-bank/foundation.md` with a
-  parseable current `## Gate Anchors` contract:
-  - `Foundation Required: true|false`
-  - `Foundation Requirement: REQ-000`
-  - `Foundation Pseudo-Feature: FT-000`
-  - `Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required`
-- `Foundation Required: true` is not executable-ready while the gate anchor is
-  `pending_foundation_to_tasks`; a concrete gate exists, is indexed, has
-  `feature: "FT-000"`, and is not `failed`.
-- A foundation-only queue may pass with an open concrete final gate when the
-  normal queue/status checks permit continued FT-000 execution.
-- Once product records exist, the concrete final gate is `done`, no other
-  `FT-000` record remains `planned|ready|in_progress|blocked`, and every product
-  task depends on the gate directly or transitively.
-- `Foundation Required: false` uses `Foundation Gate Task: not_required` and has
-  no indexed `FT-000` records.
-- Task dependencies reference known task IDs and do not create cycles or execution deadlock.
-- Task status, dependency, and tier policy allow safe scheduler decisions.
-- `in_progress` `T0` / `T1` tasks have compact
-  `.protocols/<TASK_ID>/run.md`.
-- `T2` / `T3` `planned` / `ready` tasks do not require protocol files yet.
-- `T2` / `T3` `in_progress` tasks have full protocol files: `context.md`, `plan.md`, `progress.md`, `verification.md`, and `handoff.md`.
-- `T0` / `T1` `done|done_for_prod` tasks have compact `.protocols/<TASK_ID>/run.md` evidence appropriate for their tier.
-- In `--strict`, `T2` `done|done_for_prod` tasks have full protocol files and `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts; per-task red-verify evidence is not required.
-- When every indexed task for a non-`FT-000` feature with at least one `T2`
-  task is `done|done_for_prod`, the matching feature doc records an exact
-  standalone `SEMANTIC_VERDICT: semantic-pass` line from `/red-verify --feature FT-<ID>`.
-  Until it does, `FEATURE_RED_VERIFY_VERDICT_MISSING` is a warning in default
-  mode and an error in `--strict`.
-- In `--strict`, `T3` `done|done_for_prod` tasks have full protocol files, `PASS` verification evidence/verdict in `task.verify` or protocol/artifacts, and closure-eligible per-task red-verify evidence with `SEMANTIC_VERDICT: semantic-pass`.
-- A terminal `done|failed` task that still carries deprecated
-  `runtime_context.allowed_write_scope` is a legacy terminal record. Missing
-  historical `TASK_DONE_EVIDENCE_MISSING`, `TASK_RED_VERIFY_EVIDENCE_MISSING`,
-  or `TASK_RED_VERIFY_VERDICT_MISSING` evidence is
-  preserved without backfill and reported only through aggregate
-  `TASK_LEGACY_TERMINAL_COMPATIBILITY` info. All other findings retain their
-  normal severity; non-terminal and current `write_boundary` records receive no
-  compatibility exemption.
-- A `done|done_for_prod` T3 record with a non-pass red-verify verdict satisfies the mechanical
-  closure-verdict check only when `task.verify` already contains an explicit
-  `owner_lifecycle_closure` / `manual_explicit_owner` / `decision: done` record,
-  `gate_summary.red_verification` starts with `OWNER-ACCEPTED`, and both
-  `accepted_evidence` and `accepted_residual_risk` are non-empty. This preserves
-  a durable owner decision; `/mb-doctor` does not infer, create, or recommend
-  it.
-- `T2` / `T3` `failed` tasks have full protocol files and `FAIL` / `error` evidence/verdict in `task.verify` or protocol/artifacts.
-- In `--strict`, `.memory-bank/spec-backbone.md` records mandatory `/spec-design` status `complete`, or `minimal` with explicit `not_applicable` areas. `blocked`, `unknown`, or missing backbone status is not autonomous-ready.
-- For `complete`, every `## Backbone Area Matrix` row in `.memory-bank/spec-backbone.md` has status `authoritative` or `not_applicable`; missing, `blocked`, `needed_before_tasks`, `unknown`, `planned`, `candidate`, or any other status is not product autonomous-ready.
-- In `--strict`, a foundation-only task queue whose indexed records are all `feature: "FT-000"` may pass with product contract rows still `needed_before_tasks`. This exception exists only for the foundation/task-queue gate before product `/feature-to-tasks`; product task queues must resolve those rows first.
-- For `minimal`, at least one real child item under `## Global Backbone Status` → `- Not applicable areas:` has `not_applicable` plus rationale. Other `not_applicable` text elsewhere does not satisfy readiness.
-- If `.memory-bank/spec-backbone.md` is missing but an old `.memory-bank/spec-index.md` contains `## Global backbone status`, report a migration hint instead of treating the old index shape as ready.
-- If `.memory-bank/spec-backbone.md` exists, `.memory-bank/spec-index.md` remains a pure registry and does not contain old non-index sections: `Feature Design Status Map`, `Global backbone status` / `Global Backbone Status`, or `Backbone Area Matrix`.
-- Other `done` / `done_for_prod` / `failed` tasks have the minimum evidence/protocol basis required by their tier and mode.
-- `failed` tasks have either a bug doc in `.memory-bank/bugs/` mentioning the task id or an indexed follow-up task depending on/referencing the failed task.
-- Direct dependents of failed tasks are marked `blocked`.
-- `T1` / `T2` / `T3` tasks have concrete `REQ-*` and `FT-*` linkage. Placeholder values such as `REQ-XXX` and `FT-XXX` do not count.
-- `T2` / `T3` tasks have direct task-relevant canonical SDD spec links in
-  `source_artifacts`, `normative_inputs`, `constraints`, `invariants`, or
-  `verification_targets`; feature links or `spec-index.md` alone do not count.
-- `guides/*` may count as linked SDD specs when the guide is the normative source for frontend component behavior or operating procedure; guides alone do not replace required T2/T3 architecture/contract/domain/state/testing specs when those concerns are in scope.
-- Default mode reports missing T2/T3 SDD spec links as warnings; `--strict` reports readiness errors.
-- T2/T3 single-card handoff completeness is checked mechanically: non-empty
-  `purpose` and scalar `success_outcome`, at least one existing direct task-linked canonical SDD
-  spec path, non-empty `touched_files` and/or `runtime_context.write_boundary`,
-  and at least one verification path through a real gate command and/or
-  non-empty `verification_target`.
-- Every stable feature AC is covered by an exact locator in its owning task's
-  `source_artifacts`. Linked T1/T2/T3 task REQs agree with the AC's governing
-  REQs.
-- A `planned|ready` T2/T3 AC-linked path repeats the AC ID in a concrete
-  `verification_target` and `evidence_required` RED/GREEN observations, or in a
-  concrete `RED_NOT_APPLICABLE` reason plus alternative proof.
-- A `done` T2/T3 task governed by that prospective path retains the same AC ID
-  and filled RED/GREEN or not-applicable evidence in `progress.md`, plus the AC
-  ID and `VERDICT: PASS` in `verification.md`. Historical terminal tasks without
-  the prospective contract remain exempt.
-- Schema/index/ID/REQ/dependency existence and cycle checks remain covered by
-  `mb-lint` and the normal doctor checks. `TASK_HANDOFF_INCOMPLETE` reports only
-  missing structural/presence evidence.
-- `/mb-doctor` does not judge whether a linked spec is semantically applicable,
-  whether its concrete block is sufficient, or whether `success_outcome` is a
-  good independent outcome. Fresh-context `/review-tasks-plan` owns those
-  judgments.
-- `/mb-doctor` checks scope-field presence only; `touched_files` remains advisory.
-- In `--strict`, T2/T3 tasks with no architecture/contract/ADR reference in
-  richer task fields may report `TASK_ARCH_SPINE_LINK_ABSENT` as a warning. It
-  is advisory: add relevant Architecture Spine, boundary-map, contract, or ADR
-  links when the task touches shared boundaries; no action is required for
-  feature-level tasks where no such link is relevant.
-- When `.memory-bank/requirements.md` exists, referenced `REQ-*` IDs appear in it.
-- When `.memory-bank/features/` contains markdown files, referenced `FT-*` IDs have a matching `.memory-bank/features/FT-<NNN>*.md` file.
-- Obsolete `.memory-bank/tasks/backlog.md` is absent. If present, report `TASK_BACKLOG_MD_PRESENT` as an error.
-
-## Findings
-Errors block autonomous/autopilot progression:
-
-- `CLI_INVALID_ARGUMENT` for any unsupported CLI argument
-- `MB_LINT_SCRIPT_MISSING` in `--strict`
-- `MB_LINT_FAILED`
-- `CONSTITUTION_STRUCTURE_INVALID` in `--strict` when the Constitution,
-  Memory Bank index, spec index, or spec backbone is missing, or either index
-  does not mention `constitution.md`
-- `FEATURE_CLARIFICATION_METADATA_MISSING` in `--strict` when feature frontmatter is missing or present clarification metadata is invalid
-- `FEATURE_CLARIFICATION_PENDING` in `--strict`
-- `TASKS_FROM_UNCLARIFIED_FEATURE` in `--strict`
-- `TASK_INDEX_INVALID`
-- `TASK_INDEX_EMPTY` in `--strict`
-- `TASK_RECORD_MISSING`
-- `TASK_RECORD_INVALID`
-- `TASK_W0_NON_FOUNDATION`
-- `FOUNDATION_ANCHORS_INVALID`
-- `FOUNDATION_GATE_TASK_INVALID`
-- `FOUNDATION_GATE_DEP_MISSING`
-- `TASK_READY_DEP_NOT_DONE`
-- `TASK_QUEUE_DEADLOCK` in `--strict`
-- `TASK_IN_PROGRESS_WITHOUT_PROTOCOL` in `--strict`
-- `TASK_FULL_PROTOCOL_MISSING` in `--strict`
-- `TASK_COMPACT_ONLY_PROTOCOL` in `--strict`
-- `TASK_COMPACT_RUN_MISSING` for `T1` in default mode and for `T0` / `T1` in `--strict`
-- `TASK_COMPACT_RUN_UNREADABLE`
-- `TASK_COMPACT_VERDICT_MISSING` in `--strict`
-- `TASK_COMPACT_EVIDENCE_MISSING` in `--strict`
-- `TASK_DONE_EVIDENCE_MISSING` in `--strict`
-- `TASK_FAILED_EVIDENCE_MISSING` in `--strict`
-- `TASK_RED_VERIFY_EVIDENCE_MISSING` in `--strict`
-- `TASK_RED_VERIFY_VERDICT_MISSING` in `--strict`
-- `FEATURE_RED_VERIFY_VERDICT_MISSING` in `--strict`
-- `FAILED_BUG_OR_FOLLOWUP_MISSING` in `--strict`
-- `TASK_FAILED_DEPENDENTS_NOT_BLOCKED`
-- `TASK_FEATURE_LINK_MISSING` in `--strict`
-- `TASK_REQUIREMENT_LINK_MISSING` in `--strict`
-- `TASK_REQUIREMENT_NOT_FOUND` in `--strict`
-- `TASK_FEATURE_FILE_MISSING` in `--strict`
-- `FEATURE_ACCEPTANCE_INVALID` in `--strict`
-- `FEATURE_ACCEPTANCE_DUPLICATE` in `--strict`
-- `FEATURE_ACCEPTANCE_UNCOVERED` in `--strict`
-- `TASK_ACCEPTANCE_LINK_INVALID` in `--strict`
-- `TASK_ACCEPTANCE_PROOF_MISSING` in `--strict`
-- `TASK_ACCEPTANCE_EVIDENCE_MISSING` in `--strict`
-- `TASK_SDD_SPEC_LINK_MISSING` in `--strict`
-- `TASK_SDD_SPEC_GUIDE_ONLY` in `--strict`
-- `TASK_HANDOFF_INCOMPLETE` in `--strict`
-- `TASK_BACKLOG_MD_PRESENT`
-- `SPEC_BACKBONE_NOT_READY` in `--strict`
-- `SPEC_BACKBONE_MATRIX_NOT_READY` in `--strict`
-- `SPEC_INDEX_NOT_PURE` in `--strict`
-
-Structural lint details such as invalid legacy `risk`, dependency cycles, and schema-level task field violations are surfaced through `MB_LINT_FAILED` with captured `mb-lint` output.
-
-Warnings identify non-blocking quality risks in default mode:
-
-- `MB_LINT_SCRIPT_MISSING`
-- `FEATURE_CLARIFICATION_METADATA_MISSING` when feature frontmatter is missing or present clarification metadata is invalid
-- `FEATURE_CLARIFICATION_PENDING`
-- `TASKS_FROM_UNCLARIFIED_FEATURE`
-- `TASK_W0_NON_FOUNDATION`
-- `FOUNDATION_ANCHORS_INVALID`
-- `FOUNDATION_GATE_TASK_INVALID`
-- `FOUNDATION_GATE_DEP_MISSING`
-- `TASK_IN_PROGRESS_WITHOUT_PROTOCOL`
-- `TASK_FULL_PROTOCOL_MISSING`
-- `TASK_COMPACT_ONLY_PROTOCOL`
-- `TASK_COMPACT_RUN_MISSING` for `T0`
-- `TASK_COMPACT_EVIDENCE_MISSING`
-- `TASK_DONE_EVIDENCE_MISSING`
-- `TASK_FAILED_EVIDENCE_MISSING`
-- `TASK_RED_VERIFY_EVIDENCE_MISSING`
-- `TASK_RED_VERIFY_VERDICT_MISSING`
-- `FEATURE_RED_VERIFY_VERDICT_MISSING`
-- `FAILED_BUG_OR_FOLLOWUP_MISSING`
-- `TASK_FEATURE_LINK_MISSING`
-- `TASK_REQUIREMENT_LINK_MISSING`
-- `TASK_REQUIREMENT_NOT_FOUND`
-- `TASK_FEATURE_FILE_MISSING`
-- `FEATURE_ACCEPTANCE_INVALID`
-- `FEATURE_ACCEPTANCE_DUPLICATE`
-- `FEATURE_ACCEPTANCE_UNCOVERED`
-- `TASK_ACCEPTANCE_LINK_INVALID`
-- `TASK_ACCEPTANCE_PROOF_MISSING`
-- `TASK_ACCEPTANCE_EVIDENCE_MISSING`
-- `TASK_SDD_SPEC_LINK_MISSING`
-- `TASK_SDD_SPEC_GUIDE_ONLY`
-- `TASK_ARCH_SPINE_LINK_ABSENT`
-- `TASK_HANDOFF_INCOMPLETE`
-- `SPEC_BACKBONE_NOT_READY`
-- `SPEC_BACKBONE_MATRIX_NOT_READY`
-- `SPEC_INDEX_NOT_PURE`
-- `TASK_PLANNED_READY_CANDIDATE`
-- `TASK_BLOCKED_BY_UPSTREAM`
-- `TASK_QUEUE_NO_EXECUTABLE_READY`
-
-Info findings may include `MB_LINT_PASSED`, fresh-skeleton state such as
-`TASK_INDEX_EMPTY` in default mode, `TASK_LEGACY_TERMINAL_COMPATIBILITY`, and
-`TASK_QUEUE_SUMMARY`.
-
-## JSON Output
-JSON mode preserves this stable top-level shape:
-
-```json
-{
-  "status": "pass",
-  "summary": {
-    "errors": 0,
-    "warnings": 0,
-    "infos": 0
-  },
-  "findings": []
-}
-```
-
-Implementations may include extra metadata such as `version`, `tool`, `strict`, or legacy count fields, but schedulers should rely on `status`, `summary`, and `findings`.
-
-## Out of scope
-- No LLM semantic review.
-- No markdown task-card parsing.
-- No migration from old task models.
-- No fallback to `.memory-bank/tasks/backlog.md`.
-- No replacement for `/review-feat-plan`, `/review-tasks-plan`, `/verify`, or `/red-verify`.
-- No semantic judgment of AC quality, probe credibility, or RED/GREEN honesty.
+<handoff_contract>
+Return the diagnostic result, material finding paths and their actual owner with
+the required common feedback. Mechanical repair may go to garden; meaning,
+identity, design or evidence gaps go to the respective owner through the common
+decision flow. Missing managed scripts require coherent installer sync. Do not
+repair, create reports for disabled work, rewrite historical evidence, or
+perform lifecycle transitions from this command.
+</handoff_contract>

@@ -4,6 +4,12 @@ status: active
 ---
 # Handoff — <TASK_ID>
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## Summary
 - what changed
 - why it changed
@@ -15,8 +21,8 @@ status: active
   - ...
 - hard write-boundary compliance: yes | no | not set
 
-## How to run / verify
-- gates:
+## Selected remaining work and retained evidence
+- selected checks (or skipped):
   - ...
 - claim-linked RED/GREEN evidence:
   - <claim locator plus progress/artifact paths, accepted not-applicable reason, or none>
@@ -30,3 +36,9 @@ status: active
 
 ## Follow-ups
 - ...
+
+## Recovery
+- current attempt / completed operations:
+- partial effects / safe continuation:
+- negative evidence and explicit disposition:
+- immediate next owner:

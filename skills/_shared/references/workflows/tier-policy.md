@@ -128,3 +128,53 @@ is used only when production acceptance remains; it neither proves production
 success nor authorizes external effects. `/mb-sync` reconciles the already
 recorded decision and never grants closure authority. A manual stop or unresolved
 operation restriction remains effective even if all checks are disabled.
+
+## Selected Work And Retained Results
+
+New Nav task cards use one `stage: "workflow"` object in existing `task.verify`
+for the current planned/execution attempt. No new task status or top-level field
+is introduced. Its `attempt` is a non-empty stable identifier. `selected` records
+booleans `design`, `local_checks`, `red_verify`, `feature_red_verify`, the unique
+enabled participant names in `verify`, and selected protocol filenames in
+`protocols` (empty is valid). These are the effective choices for that work,
+not a live settings lookup. No protocol bundle is selected by tier alone.
+
+Before execution the host freezes these choices; a new attempt appends its own
+record and preserves prior results. Configuration changes affect future work,
+not interpretation of completed or skipped operations. Legacy records without
+this marker retain their historical evidence rules; do not fabricate a Nav
+snapshot or proof for them during sync.
+
+The same object retains actual results as work completes:
+- `implementation: partial|complete` and concise `evidence` string array for
+  actual changes/partial effects and handoff;
+- `local_checks: "skipped"` when off, otherwise an object with
+  `result: passed|failed` and `evidence`;
+- `verification: "skipped"` when no participant is selected, otherwise an array
+  of selected participants' own results: `{ participant, verdict, evidence }`
+  for functional proof (`PASS|FAIL|NEEDS-CLARIFICATION`), or
+  `{ participant, candidate_findings, evidence }` for code co-review
+  (`candidate_findings: "none"` or non-empty finding strings). Candidate-only
+  completion cannot imply functional PASS and requires no replacement main;
+- `red_verification: "skipped"` when off, otherwise `{ verdict, evidence }`
+  with the existing semantic verdict vocabulary.
+
+Fields for unfinished operations remain absent; interruption is not skip.
+A selected check can retain sufficient inline evidence without a report file.
+Evidence strings identify observations or existing artifacts; placeholders do
+not establish a result. Each negative result or unresolved material candidate retains its actual result and, before
+closure/continuation, a scoped `disposition` with `decision: continue|repair`,
+`source: user|autonomous` and a concrete `reason`. Repair does not claim closure
+until a later applicable result completes the selected work. Manual stops and
+external restrictions remain independently effective.
+
+Selected feature semantic review retains its verdict in the feature's Semantic
+Verification section. For inline result/disposition without a report, existing
+`task.verify` may carry `{ stage: "feature_red_verify", feature, verdict,
+evidence, disposition? }` on one task in that feature; it describes the feature
+result, not a second task lifecycle. Disabled feature review needs no record.
+
+These records retain applicability and evidence for mechanical diagnostics and
+recovery only. They do not define DSH feedback fields, transport, scheduling,
+session management or a configuration API. The host owns their state writes;
+models return the corresponding subject facts.

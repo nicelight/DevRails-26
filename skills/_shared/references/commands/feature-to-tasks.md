@@ -370,3 +370,9 @@ Return the common structured feedback with:
 Selected doctor checks and execution are host handoffs, not actions performed
 by this command. Disabled task review requires no APPROVE or report.
 </handoff_contract>
+
+For new Nav task readiness, supply the selected-work facts for the host's
+existing task.verify workflow record under
+`.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
+It records effective applicability without creating a design file or mandatory
+report bundle; historical records and actual verdicts remain intact.

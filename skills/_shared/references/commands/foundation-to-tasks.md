@@ -235,3 +235,9 @@ No Foundation work needed -> `/feature-to-tasks FT-<NNN>`.
 New baseline/design meaning -> propose `/spec-redesign` (or initial
 `/spec-design`) and resume the affected planning after disposition.
 </handoff_contract>
+
+For new Nav task readiness, supply the selected-work facts for the host's
+existing task.verify workflow record under
+`.memory-bank/workflows/tier-policy.md#selected-work-and-retained-results`.
+It records effective applicability without creating a design file or mandatory
+report bundle; historical records and actual verdicts remain intact.

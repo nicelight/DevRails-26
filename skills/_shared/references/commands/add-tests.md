@@ -4,6 +4,10 @@ status: active
 ---
 # /add-tests - Improve task-scoped coverage
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
+
 <objective>
 Add useful tests that prove the selected task outcome and catch meaningful
 regressions without widening its product/spec boundary or creating a testing
@@ -36,16 +40,10 @@ configuration needed for the chosen check.
 </hard_invariants>
 
 <operator_decisions>
-If useful coverage requires a new product behavior, contract, state/data,
-security/compatibility rule, task-boundary/tier change, external dependency, or
-verification-policy choice not already settled, stop and surface the exact
-decision.
-
-Interactive flow asks the operator and resumes only after the owning
-feature/spec/task plan is durably repaired. Unattended flow returns the blocker
-to the scheduler without choosing and names `/feature-to-tasks FT-<NNN>`,
-`/spec-redesign`, or `/feature-doctor FT-<NNN>` as the applicable resume route.
-A recommendation is not an accepted decision.
+New product, contract, state/data, security/compatibility, scope/tier, external
+dependency or verification-policy choices use the common decision flow. Name
+scope/evidence and the applicable `/feature-to-tasks`, `/spec-redesign` or
+product owner; do not encode an unresolved choice into a regression test.
 </operator_decisions>
 
 <agent_discretion>
@@ -58,18 +56,17 @@ category or put browser/e2e first.
 
 <required_outputs>
 - scoped test changes;
-- exact commands/results and substantive artifacts in the existing task's
-  tier-selected paths:
-  - T0/T1 -> `.protocols/<TASK_ID>/run.md`;
-  - T2/T3 -> full protocol state plus `.tasks/<TASK_ID>/` evidence;
+- actual commands/results in existing task evidence; selected protocol/artifacts
+  only, without requiring a full bundle or enabling unrelated checks;
 - recorded actual test files, advisory deviations, hard-scope compliance,
   flakiness evidence when relevant, and remaining blockers.
 </required_outputs>
 
 <validation>
-Confirm the added tests fail for the meaningful regression they target when
+When test execution is selected or explicitly requested, confirm the added tests fail for the meaningful regression they target when
 practical, pass against the implementation, prove the task-scoped outcome, and
-do not authorize or encode an unresolved product/design decision.
+do not authorize or encode an unresolved product/design decision. When execution
+is off, state that the tests were added but not run; no PASS is inferred.
 </validation>
 
 <handoff_contract>

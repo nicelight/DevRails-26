@@ -4,6 +4,10 @@ status: active
 ---
 # /debug - Diagnose one TASK failure
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
+
 <objective>
 Trace one observed failure for a concrete indexed task to its confirmed root
 cause and first violated invariant, or report the exact evidence gap. When
@@ -29,7 +33,7 @@ the mechanism. Keep missing history explicit.
 <hard_invariants>
 - Diagnosis is read-only over implementation, tests, specs, task records,
   protocols, scheduler state, and external systems. The only allowed write is
-  this command's report under `.tasks/<TASK_ID>/`.
+  this command's selected report under `.tasks/<TASK_ID>/`.
 - Do not change status, tier, dependencies, scope, Execution Attempt, retry
   budget, or permissions.
 - Do not issue functional/semantic verdicts, accept product/spec/architecture
@@ -56,17 +60,18 @@ failing test is required.
 </agent_discretion>
 
 <required_outputs>
-Write exactly:
+When a report is selected, write:
 
 ```text
 .tasks/<TASK_ID>/<TASK_ID>-S-DEBUG-final-report-docs-01.md
 ```
 
-Include:
+Otherwise return concise diagnostic evidence for the host to retain in existing
+task state. The result includes only applicable facts:
 - symptom and reproduction, or the exact evidence gap;
 - current Execution Attempt and actual change surface;
 - confirmed root cause plus first violated invariant, or `inconclusive`;
-- experiments and only materially useful rejected hypotheses;
+- experiments and confirmed supporting evidence; omit speculative candidates;
 - minimum recommended correction;
 - suitable regression check;
 - recurrence: `repeated_confirmed|no_prior_evidence|unclassified`, with inspected
@@ -90,8 +95,8 @@ DIAGNOSIS: CONFIRMED|INCONCLUSIVE
 cause and first violated invariant. This marker is supporting classification,
 not a verdict or task status.
 
-If a complete report already binds the same current attempt and unchanged
-failure/change surface, reuse it instead of repeating diagnosis. A report for
+If a complete retained result/report already binds the same current attempt and unchanged
+failure/change surface, reuse it instead of repeating diagnosis. A result for
 an older attempt does not satisfy the current-attempt output.
 </required_outputs>
 
@@ -104,12 +109,11 @@ architecture authority was exercised.
 </validation>
 
 <handoff_contract>
-Return the report path, diagnosis, recurrence, and prevention owner/route when
-present. In manual flow, when the report supports a concrete non-trivial or
-multi-surface correction inside the accepted task boundary, recommend
-`/technical-premortem <TASK_ID>` as the next step instead of `/exe`; its handoff
-returns the later advisory route back to execution. Recommend a separate
-`/exe <TASK_ID>` only for a contained correction that does not need that
-pre-mortem. Otherwise name the existing planning, canonical-change,
-clarification, or evidence owner. `/debug` does not invoke the next command.
+Return diagnosis, evidence, recurrence and any justified prevention owner with
+required common feedback. An accepted same-task correction returns to `/exe`;
+non-trivial correction may propose optional `/technical-premortem`. Changed
+meaning goes to its planning/design owner. Every nonstandard repair/consultation
+uses the common decision flow. Diagnosis does not invoke that route, add an
+attempt, extend budgets, or replace functional/semantic verification. A selected
+completed result for unchanged current work is reused after interruption.
 </handoff_contract>

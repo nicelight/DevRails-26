@@ -4,8 +4,16 @@ status: active
 ---
 # Progress — <TASK_ID>
 
+Use only when this artifact is selected. Keep only applicable sections; its
+presence creates no check, role or lifecycle requirement. Existing task-owned
+state is updated in place, never replaced from this template. Host owns
+lifecycle; retain actual and skipped work under tier-policy, not inferred PASS.
+
+
 ## Current status
-- state: planning | implementing | verifying | blocked | done
+- actual work: prepared | partial | complete
+- host task status: see indexed task record
+- selected / skipped operations: see retained task.verify workflow record
 - last update: YYYY-MM-DD
 
 ## What was done
@@ -16,7 +24,7 @@ status: active
 
 ## Claim-linked RED / GREEN (T2/T3)
 - attempt:
-- applicability: applicable | not applicable
+- applicability: selected | skipped | accepted not applicable
 - accepted claim locator(s):
 - accepted not-applicable reason and alternative proof:
 - RED command/probe:
@@ -44,7 +52,7 @@ avoids artificial RED and unnecessary production changes for that claim.
 ## Evidence links
 - `.tasks/<TASK_ID>/...`
 
-## Open issues / risks
+## Material issues / unresolved decisions
 - ...
 
 ## Next step (single concrete action)

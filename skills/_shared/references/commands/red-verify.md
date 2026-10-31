@@ -4,8 +4,12 @@ status: active
 ---
 # /red-verify - Adversarial semantic verification
 
+Apply `.memory-bank/workflows/autonomy-policy.md` for DSH runtime ownership,
+effective settings, the required compact structured flow feedback, decisions,
+and recovery; subject results remain separate from that feedback.
+
 <objective>
-Challenge a formally passing implementation for substantive correctness. Find
+Challenge the available implementation for substantive correctness. Find
 false success, hidden assumptions, cross-boundary harm, semantic drift, unsafe
 state/data behavior, operational risk, or unjustified maintenance cost that
 ordinary functional `/verify` may miss.
@@ -20,8 +24,7 @@ Expected `$ARGUMENTS`:
 - `TASK-NNN-TN-FT-NNN-WN`: per-task semantic verification;
 - `--feature FT-<ID>`: T2 feature-completion semantic verification.
 
-Reject `--feature FT-000`. Foundation closes through normal FT-000 tasks and
-the final gate.
+Reject `--feature FT-000`. Foundation uses normal FT-000 tasks and any selected integrated proof gate.
 
 Load `.memory-bank/workflows/tier-policy.md#tier-obligations` and
 `#closure-authority` for permitted modes, required gates, and lifecycle
@@ -29,15 +32,17 @@ ownership. Apparent scope growth also loads
 `#tier-classification-and-escalation` and routes through tier rebuild before
 semantic verification.
 
-Require indexed task/feature identity, tier policy, task/feature intent and
-mapped REQ/AC, successful functional verification evidence, actual diff/change
-surface, tests/runtime artifacts, tier-selected protocol, direct task-linked
-canonical SDD specs for T2/T3, and only the additional provenance-linked
-context needed to assess system impact.
+Run only when selected/requested. Disabled red-verify is skipped without a
+report or semantic verdict. Require indexed identity, accepted task/feature
+intent and mapped REQ/AC, actual change surface and available implementation
+and runtime evidence. Use concrete direct normative inputs, including accepted
+task/REQ/feature meaning when design is disabled; do not invent a full SDD or
+protocol bundle. A material input gap remains a concern.
 
-For per-task T2/T3, feature links and `spec-index.md` alone do not replace
-direct task links. Missing direct applicable coverage is a blocker, not a basis
-for semantic-pass.
+Enabled red-verify may independently inspect implementation when all functional
+verification is off. Record absent functional proof explicitly; do not launch
+verify, infer PASS, or present semantic-pass as functional acceptance. Existing
+functional FAIL remains evidence requiring disposition, not an automatic skip.
 </input_contract>
 
 <hard_invariants>
@@ -47,38 +52,21 @@ for semantic-pass.
   or `VERDICT: PASS` as proof of semantic correctness.
 - Route only by task tier and the loaded tier-policy sections; never use legacy
   `risk`.
-- Scheduler mode: `/red-verify` never closes/fails/blocks/reopens tasks,
-  promotes dependents, or writes scheduler status. It returns verdict/evidence
-  and a recommended owner action.
-- Manual lifecycle or BUG/follow-up mutation is allowed only under explicit
-  standalone ownership and canonical tier policy.
-- T3 semantic-pass does not replace functional PASS.
-- T2 feature semantic-pass must be recorded in the matching feature document;
-  per-task evidence is not a substitute.
+- Host owns lifecycle in every mode. Return semantic evidence and an owner
+  recommendation; do not close/fail/block/reopen, promote, or create follow-ups.
+- Semantic-pass never replaces functional PASS. T2 feature evidence belongs to
+  the matching feature; per-task evidence does not replace it when selected.
 - Do not invent a separate failure artifact, status, task schema, or lifecycle.
 </hard_invariants>
 
 <operator_decisions>
-If the semantic verdict depends on an ambiguous product/spec interpretation,
-canonical identity, acceptance meaning, architecture/contract/state/data/
-storage/security/compatibility decision, task boundary, tier, dependency, or
-verification policy, the verifier does not pick a favorable reading.
-
-- Return `semantic-concern` when an unresolved operator-owned decision is
-  necessary to judge the accepted outcome or a proved realistic material risk.
-- Return `semantic-fail` only when evidence proves a material break of an
-  unambiguous accepted outcome.
-- State the exact operator question, competing interpretations, affected
-  closure/dependents, and repair owner.
-- Do not manufacture an operator question from a speculative, unreachable, or
-  immaterial candidate.
-- Interactive flow asks the operator; recommendation/default/silence is not an
-  accepted decision. The answer must be durably applied by
-  `/feature-doctor`, `/feature-to-tasks`, or `/spec-redesign`, then functional and
-  semantic gates rerun as applicable.
-- Unattended flow returns the blocker to the scheduler for
-  `HALT_CLARIFICATION_REQUIRED` or `HALT_BLOCKING_QUESTIONS` and names the exact
-  resume route.
+Return semantic-concern for a material unresolved interpretation or evidenced
+realistic risk requiring a decision; semantic-fail only for a proved material
+break of an unambiguous accepted outcome. Name affected claims, evidence and
+first owner. Use the common decision flow for product/spec clarification,
+repair and continuation. Autonomous policy may decide with its provenance;
+missing facts, manual stops and permissions remain constraints. Do not turn
+speculative or immaterial candidates into questions.
 </operator_decisions>
 
 <finding_admission>
@@ -154,60 +142,34 @@ command's existing evidence and verdict contracts govern either path.
 </agent_discretion>
 
 <required_outputs>
-Per-task mode writes:
-- `.protocols/<TASK_ID>/red-verification.md`, initialized only when absent from
-  `.memory-bank/templates/protocols/red-verification-template.md`;
-- `.tasks/<TASK_ID>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`.
+Retain accepted intent, inspected evidence/coverage, admitted material findings,
+necessary questions and owner/handoff with exactly one
+`SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
+A zero-finding semantic-pass needs no invented risk list or counterproposal.
 
-An existing `red-verification.md` is task-owned resume state: update it in
-place and never recopy the framework template over it. The template defines
-shape, not lifecycle authority. If it is absent when initialization is needed,
-stop and request framework bootstrap/sync instead of inventing a shape.
-
-Feature mode writes:
-- `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`;
-- a durable `## Semantic Verification` section in the matching feature doc
-  with one exact standalone marker and report link.
-
-The report remains concise and records only:
-- accepted intent plus sufficient inspected evidence and adversarial coverage
-  to support the verdict;
-- admitted material findings with their reachable path and impact, if any;
-- exact operator-owned questions required for `semantic-concern`, if any;
-- the existing owner action or escalation route;
-- exactly one standalone marker:
-  `SEMANTIC_VERDICT: semantic-pass|semantic-concern|semantic-fail`.
-
-Do not report private hypotheses, admission reasoning, rejected candidates, or
-optional improvements. `semantic-pass` requires no finding, risk list, or
-counterproposal.
-
-When blocked or failed, use the existing report's `## Failure / Blocker` shape
-with status, where, expected/observed, likely category, next action, and whether
-replan is required.
+When reports are selected, use existing per-task
+`.protocols/<TASK_ID>/red-verification.md` and/or
+`.tasks/<TASK_ID>/<TASK_ID>-S-RED-VERIFY-final-report-docs-01.md`; feature reports
+use `.tasks/FT-<ID>/FT-<ID>-S-RED-VERIFY-final-report-docs-01.md`. Initialize a
+selected protocol only when absent from
+`.memory-bank/templates/protocols/red-verification-template.md`, preserving
+existing task-owned state. Reports off retains the concise result in task.verify
+or the feature's Semantic Verification section, with evidence and disposition.
+No report is required for a disabled operation. Never fabricate missing
+functional proof or overwrite actual failure with skipped.
 </required_outputs>
 
 <validation>
-- `semantic-pass`: sufficient adversarial coverage produced no admitted
-  material finding or required operator decision; closure/completion
-  eligibility follows the loaded tier-policy sections, applicable human
-  checkpoint, and required durable verdict location.
-- `semantic-concern`: a proved realistic material risk or accepted-outcome
-  ambiguity requires an operator-owned decision before normal closure; affected
-  task/feature/dependents remain pending or blocked by the lifecycle owner until
-  an accepted decision/fix and subsequent semantic-pass.
-- `semantic-fail`: evidence proves a material break of an unambiguous accepted
-  outcome; recommend failure and BUG/follow-up handling to the active lifecycle
-  owner.
-
-Before reporting, confirm the verdict is supported by inspected evidence, no
-unresolved branch was silently resolved, and the skill did not mutate
-scheduler-owned state.
+Semantic-pass requires sufficient inspected coverage without admitted material
+failure or unresolved decision. Semantic-concern records the real question;
+semantic-fail records the proved accepted-outcome break. Preserve negatives
+until explicit repair/continue disposition through the common decision flow;
+after changed work, only selected rechecks are due. Confirm evidence supports
+the verdict and no lifecycle authority was exercised.
 </validation>
 
 <handoff_contract>
-Return the semantic verdict, evidence paths, and recommended scheduler/explicit
-owner action. A lifecycle owner records closure/failure/blocking and any
-follow-up task before wave-boundary `/mb-sync`. On ambiguity or design/task gap,
-handoff to the named interactive repair route instead of continuing the wave.
+Return semantic verdict, evidence and next owner with required common feedback.
+Host records closure/disposition and selected boundary work. No automatic repair,
+follow-up creation, sync or next command from this leaf.
 </handoff_contract>
