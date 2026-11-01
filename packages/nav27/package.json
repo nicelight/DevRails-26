@@ -2,7 +2,7 @@
   "name": "devrails-nav27",
   "version": "0.1.0",
   "type": "module",
-  "description": "DevRails native DSH single-task execution slice",
+  "description": "DevRails native DSH workflow controller, schematic navigation and Side consultations",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
@@ -38,7 +38,7 @@
   "dsh": {
     "client": {
       "inject": [
-        "uiWorkspace"
+        "@deepseek-ai/dsh-client-ui-workspace"
       ],
       "platform": "web",
       "immediately": true
@@ -76,6 +76,7 @@
     "@deepseek-ai/dsh-agent-loop-testkit": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-api-gateway": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-api-remote-access": "0.2.2-alpha.2",
+    "@deepseek-ai/dsh-api-remotes": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-api-session-controller": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-bash-local": "0.2.2-alpha.2",
     "@deepseek-ai/dsh-client-connection": "0.2.2-alpha.2",

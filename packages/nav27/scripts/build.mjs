@@ -13,7 +13,13 @@ rmSync(resolve(root, 'lib'), { recursive: true, force: true });
 execFileSync(process.execPath, [fileURLToPath(import.meta.resolve('typescript/bin/tsc')), '-p', 'tsconfig.host.json'], { stdio: 'inherit' });
 await build({ entry: { index: 'src/index.ts', role: 'src/role.ts', types: 'src/types.ts' }, outDir: 'lib', clean: false, dts: false, format: 'esm', fixedExtension: false, target: 'es2024', platform: 'node', plugins: [decoratorPlugin()] });
 generateRemote(root);
-await build({ entry: { client: 'src/client.ts' }, outDir: 'lib', clean: false, dts: false, format: 'esm', fixedExtension: false, target: 'es2022', platform: 'browser', deps: { alwaysBundle: [/.*/], onlyBundle: false } });
+// Native dynamic clients are registered factory scripts, not standalone ESM.
+await build({ entry: { client: 'src/client.ts' }, outDir: 'lib', clean: false, dts: false, format: 'cjs', fixedExtension: false, target: 'es2022', platform: 'browser', deps: { alwaysBundle: [/.*/], onlyBundle: false }, outputOptions: {
+  entryFileNames: 'client.js',
+  banner: 'window.__ModuleLoader__.load({ id: "devrails-nav27", factory: (require) => {',
+  intro: 'var module = { exports: {} }; var exports = module.exports;',
+  footer: 'return module.exports; } });',
+} });
 await build({ entry: { app: 'src/web.ts' }, alias: Object.fromEntries(['@deepseek-ai/dsh-client-connection/client', '@deepseek-ai/dsh-api-gateway/client', '@deepseek-ai/dsh-typert-registry/client', '@deepseek-ai/dsh-api-session-controller/client'].map(name => [name, fileURLToPath(import.meta.resolve(name)).replace(/dsh-api-session-controller\/lib\/client\.js$/, 'dsh-api-session-controller/lib/types/client/transport.js')])), outDir: 'lib/web', clean: true, dts: false, format: 'esm', fixedExtension: false, target: 'es2022', platform: 'browser', deps: { alwaysBundle: [/.*/], onlyBundle: false }, plugins: [{
   name: 'svelte', transform: { filter: { id: /\.svelte$/ }, handler(code, id) {
     const result = compile(code, { filename: id, generate: 'client', css: 'injected' });

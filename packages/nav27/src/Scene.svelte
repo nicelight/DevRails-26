@@ -14,10 +14,10 @@
   function fit() { zoom = Math.min(width / worldWidth, height / worldHeight); x = (width - worldWidth * zoom) / 2; y = (height - worldHeight * zoom) / 2; }
   function changeZoom(factor: number, px = width / 2, py = height / 2) { const next = Math.max(.15, Math.min(2, zoom * factor)); x = px - (px - x) * next / zoom; y = py - (py - y) * next / zoom; zoom = next; }
   function wheel(event: WheelEvent) { event.preventDefault(); const r = viewport.getBoundingClientRect(); changeZoom(Math.exp(-event.deltaY * .0015), event.clientX - r.left, event.clientY - r.top); }
-  function down(event: PointerEvent) { if ((event.target as Element).closest('[data-action]')) return; moved = false; dragging = { px: event.clientX, py: event.clientY, x, y }; (event.currentTarget as SVGElement).setPointerCapture(event.pointerId); }
+  function down(event: PointerEvent) { moved = false; if ((event.target as Element).closest('[data-action]')) return; dragging = { px: event.clientX, py: event.clientY, x, y }; (event.currentTarget as SVGElement).setPointerCapture(event.pointerId); }
   function move(event: PointerEvent) { if (!dragging) return; const dx = event.clientX - dragging.px, dy = event.clientY - dragging.py; moved ||= Math.abs(dx) + Math.abs(dy) > 4; x = dragging.x + dx; y = dragging.y + dy; }
   function newSide() { if (busy || moved) return; const count = view.sides.filter(side => Math.abs(side.anchor.x - trainX) < 80).length; createSide({ x: trainX, y: 490 + count * 70 }); }
-  function activate(event: KeyboardEvent, action: () => void) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action(); } }
+  function activate(event: KeyboardEvent, action: () => void) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); moved = false; action(); } }
   let previousTarget: string | null = null;
   $effect(() => {
     const target = view.proposedTarget;

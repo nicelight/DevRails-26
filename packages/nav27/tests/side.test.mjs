@@ -132,13 +132,14 @@ test('standalone Side uses native authenticated catalog, event stream, prompt an
   await client.plugin(Typert); await client.plugin(Gateway); await client.remote.$mount(remote);
   const catalog = await client.remote.session.modelCatalog(); assert.equal(catalog.ok, true); assert.ok(catalog.value.groups[0].models.some(model => model.id === 'side'));
   const id = (await create(f)).sides[0].id;
-  const changes = [], errors = [];
-  const journal = new SessionEventStream(client.remote, { kind: 'session', sessionId: id }, { publish: change => changes.push(change), failed: error => errors.push(error) });
+  const changes = [], errors = [], carrierErrors = [];
+  const journal = new SessionEventStream(client.remote, { kind: 'session', sessionId: id }, { publish: change => changes.push(change), carrierFailed: error => carrierErrors.push(error), failed: error => errors.push(error) });
   try {
     await journal.open({ maxMessages: 30 });
     const sent = await client.remote.session.prompt({ sessionId: id, requestId: randomUUID(), mode: 'queue', content: [{ type: 'text', text: 'Explain this Side.' }] }); assert.equal(sent.ok, true);
     await waitFor(() => changes, values => values.some(change => change.type === 'append' && change.entry.event.type === 'assistant/message'), 'native Side streamed settlement');
     assert.deepEqual(errors, []);
+    assert.deepEqual(carrierErrors, [], 'native event source keeps the browser carrier ready');
     assert.ok(changes.some(change => change.type === 'assistant-stream'), 'native live frames delivered');
     const stopped = await client.remote.session.cancel({ sessionId: id }); assert.equal(stopped.ok, true);
   } finally { await journal.dispose(); await client.fiber.dispose(); }

@@ -11,9 +11,11 @@ Main остаётся в штатном DSH chat. Клик по машинист
 передаёт session ID в native root, addon проверяет его и убирает навигационный
 fragment; это не обещание существующего upstream deep-link API.
 
-Тот же addon показывает pending question/action из [feedback](feedback.md)
-в native conversation/tool view и Nav Stop для workflow. Он не создаёт второй
-composer, permission UI или журнал. Открытие main не создаёт fork и не останавливает
+Pending question/action из [feedback](feedback.md) читается в обычном native
+`nav_feedback` tool output; ответ пользователя обрабатывается в main conversation.
+Workflow controls, включая Nav Stop, находятся на карте; native DSH Stop сохраняет
+свой обычный session смысл. Addon отвечает только за navigation, без второго
+composer, permission UI или журнала. Открытие main не создаёт fork и не останавливает
 работу. При cold resume guards устанавливаются до первого turn независимо от
 того, открыта ли карта.
 

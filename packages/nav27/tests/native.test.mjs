@@ -43,6 +43,27 @@ test('authenticated HTTP page and generated typed Remote work from external deli
   assert.equal(page.status, 200);
   assert.match(await page.text(), /app.js/);
   assert.equal((await fetch(origin + '/nav27/app.js', { headers: { cookie } })).status, 200);
+  const { runInNewContext } = await import('node:vm');
+  let registration, changed, disposed;
+  const location = { hash: `#nav27-main=${(await f.ctx.nav27.snapshot()).mainSession}`, pathname: '/', search: '' };
+  const window = { __ModuleLoader__: { load: value => registration = value }, addEventListener() {}, removeEventListener() {} };
+  runInNewContext(await readFile(join(f.installed, 'lib/client.js'), 'utf8'), { window, location, history: { replaceState() { location.hash = ''; } } });
+  assert.equal(registration.id, 'devrails-nav27', 'packed addon uses native script registration');
+  const manifest = JSON.parse(await readFile(join(f.installed, 'package.json'), 'utf8'));
+  assert.deepEqual(manifest.dsh.client.inject, ['@deepseek-ai/dsh-client-ui-workspace'], 'client graph edges name packages, not Cordis service keys');
+  const addon = registration.factory(() => { throw new Error('Unexpected external dependency'); });
+  assert.equal(typeof addon.apply, 'function');
+  assert.equal(addon.inject.join(','), 'uiWorkspace,sessions');
+  let baseline = { phase: 'loading', byId: {} };
+  const opened = [];
+  addon.apply({ sessions: { list: { getSnapshot: () => baseline, subscribe: callback => { changed = callback; return () => changed = undefined; } } }, uiWorkspace: { openSession: id => { opened.push(id); changed(); } }, effect: setup => disposed = setup() });
+  assert.equal(opened.length, 0, 'cold navigation waits for the native session baseline');
+  const mainId = (await f.ctx.nav27.snapshot()).mainSession;
+  baseline = { phase: 'ready', byId: { [mainId]: {} } }; changed(); changed();
+  assert.deepEqual(opened, [mainId]); assert.equal(location.hash, '');
+  disposed(); assert.equal(changed, undefined);
+
+
   const client = new Context();
   t.after(() => client.fiber.dispose());
   const { installConnection } = await import('@deepseek-ai/dsh-client-connection/client');
@@ -590,4 +611,17 @@ test('no-target current-owner question consumes actual facts and resumes only un
   assert.equal((await readRun(f)).decision.action, 'consult');
   assert.match(resumedInput, /English/);
   assert.equal(final.taskId, taskId);
+});
+
+test('combined manual holds release independently without admitting work early', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', completed, 'exe')]);
+  for (const action of ['red', 'stop', 'pause']) await control(f, action);
+  assert.equal((await control(f, 'green')).hold, 'stop');
+  assert.equal((await f.ctx.nav27.snapshot()).hold, 'stop');
+  assert.deepEqual(JSON.parse(await readFile(join(f.project, '.memory-bank/nav27/run.json'))).holds, ['stop']);
+  assert.equal(f.provider.requests.length, 0, 'partial release cannot launch a leg');
+  await control(f, 'play', { taskId });
+  const final = await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'departure after independent releases');
+  assert.equal(final.hold, null);
+  assert.equal((await f.readTask()).verify.length, 1);
 });

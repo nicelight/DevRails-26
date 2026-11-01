@@ -9,14 +9,14 @@
   let { remote, native }: { remote: any; native: any } = $props();
   let view = $state<View | null>(null), draft = $state<Settings | null>(null), catalog = $state<ModelCatalog | null>(null);
   let task = $state(''), command = $state('start'), source = $state(''), sourceRef = $state(''), feature = $state('');
-  let error = $state(''), catalogError = $state(''), busy = $state(false), openedSide = $state<string | null>(null);
+  let error = $state(''), connectionError = $state(''), catalogError = $state(''), busy = $state(false), openedSide = $state<string | null>(null);
   const root = new URL('../', location.href);
   const nativeLink = (id: string | null) => `${root.href}${id ? `#nav27-main=${id}` : ''}`;
   const side = $derived(view?.sides.find(side => side.id === openedSide));
   function accept(next: View) { if (!view || next.runId !== view.runId || next.revision >= view.revision) view = next; }
   async function refresh() {
-    try { const result = await remote.snapshot(); if (result.ok) accept(result.value); else { view = null; error = result.error.message; } }
-    catch (e) { view = null; error = (e as Error).message; }
+    try { const result = await remote.snapshot(); if (result.ok) { accept(result.value); connectionError = ''; } else { view = null; connectionError = result.error.message; } }
+    catch (e) { view = null; connectionError = (e as Error).message; }
   }
   async function mutate(action: () => Promise<any>) {
     if (!view || busy) return false;
@@ -51,12 +51,12 @@
   }
   function editSettings() {
     if (!view) return;
-    draft = structuredClone(view.settings);
+    draft = structuredClone($state.snapshot(view.settings));
     draft.planning ??= { featureReview: false, taskReview: false, doctor: false, premortem: false };
     draft.driverColor ??= 'blue';
     for (const role of ['main', 'exe', 'verify_main', 'verify_secondary', 'verify_code', 'red', 'judge', 'side']) draft.routes[role] ??= { provider: '', model: '' };
     draft.judgeSlot ??= 0;
-    draft.judgeSlots ??= Array.from({ length: 3 }, () => structuredClone(draft!.routes.judge.provider ? draft!.routes.judge : draft!.routes.main));
+    draft.judgeSlots ??= Array.from({ length: 3 }, () => structuredClone($state.snapshot(draft!.routes.judge.provider ? draft!.routes.judge : draft!.routes.main)));
     void loadCatalog();
   }
   async function saveSettings() {
@@ -83,7 +83,7 @@
     {#if view?.mainSession}<a href={nativeLink(view.mainSession)}>Main chat ↗</a>{/if}
     <button class="quiet" onclick={refresh} disabled={busy}>Refresh</button>
   </nav>
-  {#if error}<p class="notice negative" role="alert">{error}</p>{/if}
+  {#if error || connectionError}<p class="notice negative" role="alert">{connectionError || error}</p>{/if}
   {#if view}
     <section class="run-summary" aria-live="polite">
       <strong>{view.phase}{view.hold ? ` · ${view.hold}` : ''}</strong><span>/{view.verification}</span><span>{view.taskId ?? 'No task selected'}</span>

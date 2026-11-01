@@ -192,7 +192,8 @@ export class Controller {
         throw new Error(this.run.blocker ?? 'Pending decision');
       }
       const holds = this.run.holds.filter(item => !(request.action === 'green' ? ['red', 'pause'] : ['pause', 'stop']).includes(item));
-      if (holds.length) throw new Error(`Remaining hold: ${holds.join(', ')}`);
+      if (holds.length !== this.run.holds.length) { this.run.holds = holds; await this.save(); }
+      if (holds.length) return this.snapshot();
       if (this.run.phase === 'interrupted' && request.action !== 'resume') throw new Error('Use Resume to inspect and continue actual partial effects');
       this.run.holds = holds;
       if (this.run.phase === 'interrupted') {

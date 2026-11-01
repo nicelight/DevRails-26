@@ -461,3 +461,29 @@ Login URL в /tmp/nav27-preview.log, temporary project /tmp/nav27-native-D77cVp/
 не реальная модель и не полная native DSH chat shell. Последняя отдельно
 требует full host. Следующий один агент: browser acceptance + только
 подтверждённые исправления и проверяемая инструкция установки/запуска.
+
+### Итоговая независимая приёмка — PASS базового flow
+
+`ui_qa` проверил Chromium desktop1440/narrow390 и полный published DSH web
+0.2.2-alpha.2 на локальном Node24.22.2 в изолированном профиле. Подтверждены
+нативная установка tar через plugin manager, /nav27/, dynamic addon и cold
+переход в сохранённую main session без modifications upstream/provider calls.
+Исправлены material defects: Svelte proxy clone settings, pan→Side drag latch,
+combined Red/Stop/Pause deadlock, reconnect banner, native event source fixture,
+client factory format/dependency package IDs и session baseline navigation.
+
+Cost-cut: отдельные native-chat pending/Stop widgets исключены как дублирование
+карты. Вопрос/action уже видны в native tool text, main consent сохраняется.
+Spec sessions-ui приведена к этой границе. Нет своего transport/sandbox/loop.
+
+Final build/typecheck PASS; 41/41 native tests PASS; diff-check PASS; shared-*0.
+ACCEPTANCE.md содержит browser evidence и limitations; QUICKSTART.md —
+проверенную установку и использование. Provider calls/качество моделей, все
+37 routes E2E, proxy и настоящий reviewer confinement backend не проверены.
+Selected reviewers последовательны; draft geometry не утверждена пользователем.
+Это работающая базовая версия, не обещание полной alpha/provider совместимости.
+
+Оставлен один fresh fixture preview PID2067685: http://127.0.0.1:41903/nav27/.
+Login URL в /tmp/nav27-preview.log. Полный временный host и browser QA остановлены.
+Все четыре implementation slices и acceptance завершены последовательно
+Astra medium; дальнейшая декоративная детализация не добавлялась.

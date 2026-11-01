@@ -9,9 +9,10 @@ For semantic scope and acceptance, use `docs/nav27/SEMANTIC_INVENTORY.md`,
 
 This branch contains adapted workflow semantics and deterministic validators.
 All models/subagents are specified to use DSH; host code owns scheduling,
-launches, lifecycle, budgets and recovery sequencing. **The DSH plugin/controller
-and UI are not implemented.** Current `.agents/.claude` generation is legacy
-packaging used to validate delivery, not a DSH adapter.
+launches, lifecycle, budgets and recovery sequencing. `packages/nav27` implements the external DSH plugin/controller and schematic UI.
+See `docs/nav27/QUICKSTART.md` for installation and `docs/nav27/ACCEPTANCE.md`
+for verified boundaries. `.agents/.claude` generation remains legacy packaging,
+not the DSH adapter.
 
 ## Source-Only Packaging
 
@@ -42,6 +43,7 @@ recognition; it is not the current product display name.
 | Product entry docs | `README.md`, `howItWorks.md`, `GREENFIELD_WORKFLOW.md` |
 | User decisions / preliminary proposal | `DEVRAILS_NAV_27.md`; proposal is not implemented architecture |
 | Migration evidence | `docs/nav27/`; historical package results retain their original time/scope |
+| DSH plugin | `packages/nav27/`: native controller, roles, typed Remote, schematic UI/addon; build packs canonical command resources |
 | Installer | `scripts/install-framework.mjs`: temporary preparation, command/resource generation, collisions and coherent sync |
 | Temporary package vendoring | `scripts/vendor-shared.mjs`: flattened copies into three package entrypoints |
 | Runtime commands | `skills/_shared/references/commands/*.md`: all 37 subject contracts |

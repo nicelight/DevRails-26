@@ -21,6 +21,7 @@ import RemoteAccess from '@deepseek-ai/dsh-api-remote-access';
 import Subprocess from '@deepseek-ai/dsh-subprocess-local';
 import BashLocal from '@deepseek-ai/dsh-bash-local';
 import Gateway from '@deepseek-ai/dsh-api-gateway';
+import * as ApiRemotes from '@deepseek-ai/dsh-api-remotes';
 import SessionQueryEngine from '@deepseek-ai/dsh-session-query';
 import Storage from '@deepseek-ai/dsh-storage';
 import * as StorageJson from '@deepseek-ai/dsh-storage-json';
@@ -100,7 +101,7 @@ export async function fixture(t, script, options = {}) {
   let credentials;
   ctx.provide('credentials', { readRecord: async () => credentials, modifyRecord: async (_key, mutate) => credentials = await mutate(credentials), deleteRecord: async () => { credentials = undefined; } });
   await ctx.plugin(Connection);
-  await ctx.plugin(Typert); await ctx.plugin(RemoteAccess); await ctx.plugin(Gateway);
+  await ctx.plugin(Typert); await ctx.plugin(RemoteAccess); await ctx.plugin(Gateway); await ctx.plugin(ApiRemotes);
   await ctx.plugin(AgentDefaultModel, { provider: 'fixture', model: 'main' });
   // Text-only intake mirrors the upstream Session Remote test assembly. Session
   // prompt, history, stream, cancellation and archive gates remain native.
