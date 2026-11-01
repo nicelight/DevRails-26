@@ -3,7 +3,7 @@
 Основание: [ARCHITECTURE.md](ARCHITECTURE.md), принятая
 [семантика](SEMANTIC_ACCEPTANCE.md), [routes](TRANSITIONS.md).
 Этот документ планирует будущий код; ничего ниже не выдано за уже работающий
-plugin/UI. Semantic baseline — `f757db1` (live selection correction); DSH integration baseline —
+plugin/UI. Semantic baseline — [station settings correction](SEMANTIC_STATION_SETTINGS_RESULT.md); DSH integration baseline —
 `ce7073d51254c26cd63b22a60835b8f948deb447` (remote HEAD сверён 2026-11-01).
 
 Порядок даёт сначала один настоящий headless workflow, затем управление и UI.
@@ -11,19 +11,15 @@ plugin/UI. Semantic baseline — `f757db1` (live selection correction); DSH inte
 workflow engine и параллельные mutating task branches не нужны. Результат каждого
 шага — исполняемый срез с указанными проверками, а не следующая спецификация.
 
-## 1. DSH integration spike и минимальные upstream seams
+## 1. Отдельный plugin bundle и integration spike
 
 Создать Nav Cordis package skeleton, host service, generated Typert Remote и
-малую standalone Svelte страницу с текстовым status. Подключить его к isolated
-DSH checkout/build на pinned baseline; сохранить используемый SHA/package lock.
-Использовать existing webServer/Connection/Gateway, а не собственный HTTP/WS
-protocol. До дальнейшей разработки собрать browser bundle без React shell.
-
-Добавить узкий scoped model-selection admission до `AgentModel.select` append,
-учитывающий actual activity, и session-controller cancel owner hook для Nav main.
-Default DSH без Nav остаётся прежним. Никакой реализации scheduler внутри DSH.
-Если настоящая сборка обнаружит иной sufficient existing hook, использовать его
-и уточнить architecture source evidence; не поддерживать два механизма.
+малую standalone Svelte страницу с текстовым status. Установить bundle штатным plugin manager/profile config в isolated DSH на pinned
+baseline, без изменения DSH source/web-entry/build roster; сохранить SHA/lock.
+Использовать existing webServer/Connection/Gateway. Собрать standalone Svelte
+без React shell и Nav Remote через package-mode Typert generator в Nav repo.
+Native addon с `dsh.client`, `./client` и declared dependencies доставляется
+динамически existing client modules; его bundle формат соответствует DSH.
 
 Проверяемый outcome:
 
@@ -33,13 +29,10 @@ Default DSH без Nav остаётся прежним. Никакой реал�
   даёт current snapshot. Отключение страницы закрывает её streams.
 - Browser dependency graph не включает `AppWebEntry`/React shell. Generated
   `/remote` descriptors реально mount-ятся, не только проходят type checking.
-- Model switch через native DSH UI и Nav проходит один admission: running,
-  draining, maintenance и paused-with-active-call отклоняются **до записи**;
-  stopped/quiescent принимается. Другие native sessions не меняют поведение.
-- Native main Stop ставит Nav stopped до child launch; Nav Stop не вызывает
-  рекурсивный cancel hook. При idle main + active children existing header
-  utilities slot показывает Nav Stop, вызывающий тот же controller; обычный
-  composer/shortcut в этом состоянии не считается доступным Stop.
+- Отдельный installed package активирует host и native client addon без rebuild
+  DSH. Native card/link/Nav Stop подключаются через existing extension points.
+- Native model selection и Stop сохраняют DSH session semantics: не являются
+  глобальным settings gate или workflow Stop. Nav controls проверяет controller.
 
 ## 2. Delivery и роли до первого turn
 
@@ -77,8 +70,8 @@ host closure → next task, затем Product/Design/Foundation entry paths.
 Проверяемый outcome:
 
 - Host, а не model conversation, выбирает runnable task, пишет lifecycle,
-  сохраняет stable attempt в existing `task.verify`, обновляет pending selected
-  и фиксирует выбор каждой операции/участника при launch/skip вместе с results.
+  сохраняет stable attempt в existing `task.verify`; на station admission фиксирует
+  весь перегон, включая unstarted peers и local checks, затем сохраняет results.
 - All-off даёт skipped/no reports/done без PASS; code-only/main-off сохраняет
   candidates без hidden verifier; red-alone не создаёт functional proof;
   local checks независимо on/off. Использовать existing doctor regression
@@ -122,35 +115,35 @@ host closure → next task, затем Product/Design/Foundation entry paths.
 - Потеря main DSH session восстанавливает meaningful context из Memory Bank,
   не replay provider request log. Нет второго persistent controller store.
 
-## 5. Runtime controls и dynamic configuration
+## 5. Station controls и settings
 
-Завершить Play/Pause/Stop/red reducer, prompt ownership, stale completion routing
-и config CAS. Подключить actual registry provider/model/reasoning options;
-snapshot каждого launch/skip сохраняется в existing attempt; pending selection
-остаётся изменяемым планом.
+Завершить existing Play/Pause/Stop/red reducer, prompt ownership и config CAS.
+Подключить actual model catalog; один snapshot на admitted перегон передаётся
+ролям через launch context. Новые settings messages/LLM confirmations не нужны.
 
 Проверяемый outcome:
 
-- Stop одновременно с launch/completion не пропускает новый work. Pending
-  Nav prompt удалён по ID, пользовательский chat input сохранён. Late result
-  остаётся evidence старой operation и не двигает новую.
-- Main свободно обсуждает во время workflow hold, но actual tool execution
-  не может менять проект/запускать работу. `whenIdle` не используется как
-  completion receipt отдельного prompt и не создаёт deadlock listener.
-- Pause допускает завершение active work, не admission следующего child;
-  future red запрещает вход, active-edge red отменяет operation. Play не
-  подтверждает proposal/не снимает red, green не снимает Pause/Stop.
-- Во время exe отключение ещё не начатого verify/red применяется в той же
-  attempt без approval/repeated exe; embedded local checks сохраняются. All-off
-  записывает skipped без PASS/reports. Model/effort берутся при каждом launch.
-- После запуска одного reviewer ещё не запущенный peer можно отключить;
-  started participant, его selection/evidence и active snapshot сохраняются.
-  Negative→off не стирает FAIL или обязательный disposition; закрытые attempts
-  и записанные skips не переоцениваются новыми settings.
-- Два settings editor: stale revision rejected, принят один patch; current и
-  pending choice показаны честно. Native main model select проходит §1 hook.
+- Initial ready/stopped station допускает settings write; движение отклоняет
+  models/options/enablement/report edits. Без red auto admission следующего
+  перегона не открывает edit window. Два editor: stale revision rejected.
+- Red/Pause во время exe допускает весь текущий перегон до результатов и
+  останавливает перед следующим. Partial/blocked/failed/needs-decision outcomes
+  сохраняют реальный смысл и existing blocker/consent, не дают fake success.
+- На остановке после exe toggle будущего verify/red применяется в той же attempt
+  без repeated exe. Green фиксирует весь следующий verify group; ещё не
+  запущенного peer после этого отключить нельзя. Local checks frozen с exe.
+- Negative→off не стирает FAIL/disposition; completed/skipped results и closed
+  attempts не переоцениваются. All-off даёт skipped без PASS/reports.
+- Nav Stop запрещает next admission и запрашивает best-effort cancel owned work;
+  late results сохраняются с исходным ID. Нет rollback/atomic drain guarantee.
+  Pending Nav prompt удалён по ID, человеческий input сохранён. Editing/resume
+  ждёт reconciliation actual outcomes, а не одного main idle.
+- Play не подтверждает pending proposal и не снимает red; green не снимает
+  независимый Pause/Stop. Autonomous также сохраняет manual holds.
+- Main может обсуждать hold со своими read/feedback tools; `whenIdle` не receipt
+  отдельного prompt и не awaited в блокирующем driver listener.
 - Failure budget считает completed unsuccessful attempts, не debug/clarification/
-  interrupted continuation. Budget exhaustion не выдаёт скрытую extra try.
+  interrupted continuation. Budget exhaustion не выдаёт extra try.
 
 ## 6. Side sessions и native main navigation
 
@@ -192,7 +185,8 @@ proposed tunnel exits, H base/slots, Side anchors и semantic zoom. Соглас
 - Pending proposed tunnel/red существует до consent; animation только после
   host admission. Manual holds/скipped/candidates/failure визуально различимы.
 - H имеет три configuration slots, а не три обязательных Judge. Pilot/model
-  change применяется между консультациями, не посреди actual call.
+  change доступен только на stopped station. Вызов H в движении доступен;
+  timing инспекции остаётся открытой деталью (§5 архитектуры).
 - Context — приблизительный native meter каждой session, unknown = `—`;
   compaction count только successful own events, скрыт при нуле. Модельная
   смена не превращает старый meter в обещание точного остатка.
@@ -213,7 +207,8 @@ Acceptance outcomes:
   отсутствуют в runtime context. Controller действительно владеет scheduler.
 - Минимум: ordinary normal; main consultation; PRD reroute с сохранением partial
   work; same-task repair; autonomous + manual Stop; all-off/code-only/red-alone;
-  process restart; native UI model/Stop bypass attempts; independent Side.
+  process restart; station snapshot всего verify group; native session controls
+  отдельно от Nav workflow controls; independent Side в движении.
 - No leaked activations после любого outcome; нет silent skip/error/PASS
   подмены, duplicate decision execution или replay uncertain effect.
 - Native main chat/card/link, standalone authenticated transport и agreed map

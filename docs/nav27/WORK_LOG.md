@@ -257,3 +257,48 @@ DSH plugin/hooks/UI ещё не реализованы. Следующий те�
 integration spike по `IMPLEMENTATION_PLAN.md`; перед полной картой требуется
 согласовать визуальное расположение маршрутов. Papercut logs остаются локальными
 пользовательскими workflow-записями и в продуктовый commit не включаются.
+
+### Уточнение пользователя — plugin-only и настройки на станциях
+
+Пользователь запретил модификации DSH и выбрал KISS-управление. Предыдущие
+предложения двух upstream hooks отменены. Последовательный source review
+`nav_plugin_only` подтвердил внешние bundles, dynamic `dsh.client` modules,
+existing webServer/Connection и package-mode Remote generation: собственная
+сборка плагина допустима, правки core/web-entry DSH не нужны. Native Stop
+сохраняет session semantics; Nav управляет своими запусками и отменой через
+existing handles. Полную осведомлённость Main/Side и контроль ручных изменений
+исходников пользователь исключил из задач проекта.
+
+Следующее явное решение: во время перегона модели/options/enablement не меняются.
+Можно поставить red после следующей станции; после результатов всего перегона
+становится доступна настройка, green фиксирует весь следующий перегон. Без red
+поезд продолжает автоматически, без кратковременного окна редактирования.
+Side и helicopter consultation остаются доступными в движении.
+
+`nav_station_boundaries` сначала завершил только semantic correction:
+autonomy/tier policy, актуальные semantic/entry docs и doctor regression.
+Exe/verify/red остаются отдельными legs, поэтому future toggle на станции
+не требует новой task attempt. Partial/blocked/failed/decision-needed outcomes
+не требуют синтетического success. Results/schema/lifecycle сохранены.
+Syntax, full doctor/install-sync и isolated delivery/deployed doctor прошли;
+source shared-* =0. Результат — `SEMANTIC_STATION_SETTINGS_RESULT.md`.
+
+Только после этого `nav_plugin_only` актуализирует архитектуру/план. Read-only
+helicopter consultation с разбором рекомендаций на станции — рабочее предложение,
+а не отдельное принятое пользовательское требование. Основной выигрыш station
+boundary — меньше settings/race/UI cases; native lifecycle, карта, Side и
+actual-state recovery остаются. Процент экономии без реализации не оцениваем.
+
+`nav_plugin_only` завершил последовательную актуализацию architecture/plan/entry
+docs. Удалены upstream hooks и их проверки, live peer updates, global native
+Stop interception и отдельная защита host files. Внешняя package/client delivery
+описана по существующему plugin manager, dynamic modules и package-mode Remote.
+Station snapshot един для всей группы, Pause/red удерживают следующий admission;
+Nav Stop best-effort, native Stop сохраняет штатный session scope.
+
+Документационная source-проверка: 37 локальных и 37 pinned DSH links существуют,
+diff-check проходит, source shared-* =0. Runtime не создавался и не запускался;
+архитектурный verdict явно RUNTIME_UNVERIFIED. Timing helicopter остаётся
+открытой деталью: рекомендована инспекция ближайшей станции, без навязывания
+новой реализации. Для ответа пользователю оценка качественная: сильное
+упрощение settings/admission и тестов, умеренное сокращение проекта в целом.

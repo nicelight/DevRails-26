@@ -237,10 +237,15 @@ configurable/default on. Это не ответы пользователя на 
 
 Новые task attempts сохраняют selected work в existing `task.verify` с
 `stage: workflow`; protocols default `[]`. Recovery/diagnostics используют
-выбор соответствующей работы, не live settings для переоценки evidence. Пока
-операция/участник не запущены и skip не записан, host обновляет их план в той же
-attempt без повторного exe/approval. Запуск фиксирует только соответствующую
-работу: local checks входят в exe, будущие verify/red остаются изменяемыми.
+выбор соответствующей работы, не live settings для переоценки evidence.
+Настройки меняются только на initial/stopped-ready станции после принятого
+итога всех selected participants. Green фиксирует snapshot всего перегона,
+включая ещё не запущенных участников. Local checks входят в exe; verify/red —
+следующие перегоны. На остановке после exe будущий verify/red можно изменить
+в той же attempt без повторного exe; departure требует green. Manual red/Pause
+останавливает после ближайшей станции, не отменяет текущую работу. Без red
+проезд станции автоматический и не открывает редактирование.
+Исторические результаты и закрытые attempts неизменны.
 Disabled global design не требует revision;
 если shared delta меняется без recorded revision, reconcile только affected
 features существующим marker. Optional Foundation proof не отменяет actual

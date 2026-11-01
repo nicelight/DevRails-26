@@ -121,11 +121,14 @@ registry, lifecycle or durable context object.
 New Nav applicability/results use existing `task.verify`, `stage: workflow`,
 with stable attempt and `selected`: design/local_checks/task red/feature
 red booleans, verify participants and protocol filenames. `protocols: []` is
-valid. Unstarted choices remain editable within the attempt; each operation or
-participant retains its choices at launch/skip. Embedded local checks inherit
-`/exe`; future verify/red remain configurable. Diagnostics use retained choices,
-never live configuration to reinterpret evidence. New attempts preserve history;
-inline evidence can satisfy selected work.
+valid. Settings change only at initial/stopped-ready stations after the accepted
+result of all selected participants. Green freezes the whole leg, including
+unstarted participants. Local checks belong to exe; verify/red are later legs
+and can change at a permitted stop without a new attempt or repeated exe.
+Manual red/Pause stops next admission after the current leg; passing a station
+without a stop does not enable editing. Diagnostics use retained choices,
+never live configuration to reinterpret evidence. Results remain immutable;
+new attempts preserve history and inline evidence can satisfy selected work.
 Code candidates and functional verdicts remain distinct. Negative repair needs
 later applicable selected success, or an explicit scoped continuation decision.
 

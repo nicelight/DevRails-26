@@ -170,10 +170,14 @@ Read-only review не исполняет repair; handoff не является m
 | install-framework/vendor-shared | Source-only compatibility packaging; labels/metadata Nav 27, bin/paths/ownership markers сохранены. |
 
 Новые Nav snapshot entries используют `stage: workflow` в existing `task.verify`.
-`selected` до запуска соответствующей операции/участника — изменяемый план
-текущей attempt; при запуске/skip её выбор фиксируется. Local checks входят в
-snapshot exe, будущие verify/red — нет. Diagnostics используют retained choices
-выполненной работы, не live config; закрытые attempts и evidence неизменны.
+Настройки меняются только на initial/stopped-ready станции после принятого
+итога всех selected participants. Green фиксирует snapshot всего перегона,
+включая ещё не запущенных участников. Local checks входят в exe; verify/red —
+следующие перегоны. На остановке после exe будущий verify/red можно изменить
+в той же attempt без повторного exe; departure требует green. Manual red/Pause
+останавливает после ближайшей станции, не отменяет текущую работу. Без red
+проезд станции автоматический и не открывает редактирование.
+Исторические результаты и закрытые attempts неизменны.
 Это не DSH API/transport, не новый registry или lifecycle. Старым records snapshot
 не дописывается для обхода historical checks.
 

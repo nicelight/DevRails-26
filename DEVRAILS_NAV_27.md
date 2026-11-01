@@ -34,8 +34,11 @@
 - Основной чат остаётся в штатном интерфейсе DSH; клик по машинисту должен
   открывать сессию оркестратора. Клик по корпусу поезда создаёт отдельный Side Chat,
   закреплённый ниже текущего положения на карте до удаления через DEL в чате.
-- Смена оркестратора доступна, когда поезд остановлен. Настройки остальных
-  исполнителей можно менять во время движения для следующих запусков.
+- Модели и остальные настройки меняются только на остановке после отчёта
+  всех участников перегона. Green фиксирует весь следующий перегон. В движении
+  доступны красный после следующей станции, Side Chat и вызов вертолёта;
+  красный не отменяет текущую работу. Initial ready также допускает настройки.
+- Реализация — только плагин DSH, без core/upstream modifications.
 - Memory Bank остаётся долговременным контекстом, позволяющим продолжить
   работу в новой сессии после обрыва.
 - KISS важнее сохранения прежней строгости или полной совместимости с DevRails 26.
@@ -52,10 +55,10 @@ Legacy installer delivery не означает готовое подключе�
 
 ## Архитектура и реализация
 
-Единое актуальное решение: [ARCHITECTURE.md](docs/nav27/ARCHITECTURE.md).
+Предыдущий проект, ожидающий согласования с решениями выше: [ARCHITECTURE.md](docs/nav27/ARCHITECTURE.md).
 Последовательный build plan с проверяемыми outcomes:
 [IMPLEMENTATION_PLAN.md](docs/nav27/IMPLEMENTATION_PLAN.md).
-Независимая source-приёмка: [ARCHITECTURE_ACCEPTANCE.md](docs/nav27/ARCHITECTURE_ACCEPTANCE.md).
+Актуальная source-проверка проекта реализации: [ARCHITECTURE_ACCEPTANCE.md](docs/nav27/ARCHITECTURE_ACCEPTANCE.md).
 Они заменяют ранние архитектурные эскизы этого документа; принятые решения
 выше и визуальный контракт ниже сохраняются.
 
@@ -65,11 +68,13 @@ main chat и отображения ожидающего решения. Host в
 модели — предметными результатами и semantic proposals. Один compact feedback,
 один pending decision и existing task.verify сохраняют общий workflow contract.
 
-Source inspection подтверждает необходимые native primitives и два места для
-малых DSH admission hooks: model selection должен проверять остановку/отсутствие
-activity, native main Stop должен остановить host-owned workflow. Plugin/UI и
-эти изменения ещё не реализованы; запуском интеграция не проверена. Подробные
-ограничения и pinned source links находятся в архитектуре.
+Архитектура согласована с plugin-only и station boundary:
+[SEMANTIC_STATION_SETTINGS_RESULT.md](docs/nav27/SEMANTIC_STATION_SETTINGS_RESULT.md).
+Nav устанавливается отдельным bundle; native addon подключается динамически.
+DSH core и web-entry не меняются. Native Stop отменяет turn своей session;
+workflow контролируется Nav. Nav Stop — best-effort, без rollback/atomic drain.
+Main/settings controls ограничены Nav UI; native model selection сохраняет
+штатный смысл выбора для следующего запроса. Runtime ещё не проверен.
 
 ## Визуальный контракт
 
@@ -118,9 +123,9 @@ imagegen; [исходный prompt](docs/nav27/railway-reference-01.prompt.txt).
 Для первой версии выбрана схематичная SVG-карта. Этот референс остаётся
 ориентиром последующего оформления; точная схема путей ещё согласуется.
 
-## Основание архитектурного этапа
+## Основание архитектурного решения
 
-Семантический baseline DevRails: `f757db1` (включая live selection correction).
+Текущая семантика: [station settings correction](docs/nav27/SEMANTIC_STATION_SETTINGS_RESULT.md).
 DSH: `ce7073d51254c26cd63b22a60835b8f948deb447`; remote HEAD совпал при
 проверке 2026-11-01. Исследованы реальные host/client/session/subagent/tools/
 provider/transport исходники. Точные source anchors, distinction proposed vs

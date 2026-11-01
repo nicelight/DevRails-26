@@ -1,13 +1,13 @@
 # DevRails Nav 27 — архитектура DSH-плагина
 
 Статус: **проект реализации**, 2026-11-01. Семантика принята отдельно:
-[SEMANTIC_ACCEPTANCE.md](SEMANTIC_ACCEPTANCE.md), baseline DevRails
-`f757db120edf346b6db8d3b40d08571eb1807234` (включая
-[live selection correction](SEMANTIC_LIVE_SELECTION_RESULT.md)). Здесь не изменяются task schema, statuses, verdicts или canonical
-runtime contracts. Плагин, transport adapter и UI ещё не реализованы.
+[SEMANTIC_ACCEPTANCE.md](SEMANTIC_ACCEPTANCE.md) и
+[station settings correction](SEMANTIC_STATION_SETTINGS_RESULT.md). Здесь не
+изменяются task schema, statuses, verdicts или canonical runtime contracts.
+Плагин, transport adapter и UI ещё не реализованы.
 
 DSH исследован по исходникам `ce7073d51254c26cd63b22a60835b8f948deb447`;
-`git ls-remote origin HEAD` при этом проходе вернул тот же SHA. Сохранённый
+`git ls-remote origin HEAD` при исходном исследовании вернул тот же SHA. Сохранённый
 research checkout не изменялся. Ссылки ниже закреплены на этом commit.
 Source inspection подтверждает точки интеграции, но не заменяет запуск
 собранного плагина. Build order и проверки: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
@@ -65,7 +65,7 @@ PRD/spec/code остаются у соответствующих предмет�
 | Main feedback / guards | [`tools.restrict`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/tools/src/index.ts#L149-L226), [`tools.guard`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/tools/src/index.ts#L377-L402), [`concludeTurn`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/tools/src/contracts.ts#L243-L260). Restrictions относятся к global capabilities; guard нужен также для scoped/inherited tools. |
 | Inbox / stop | [`send/followup/steer`, `cancel`, `whenIdle`, inbox remove](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/agent/src/runtime-types.ts#L74-L116), [activity semantics](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/agent/src/runtime-types.ts#L189-L259). `whenIdle` следует за всей активностью, не квитанция одного prompt; `cancel` сам не запрещает будущие wakeups. |
 | Fork | [`session.fork`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/session-controller/src/commands.ts#L207-L295) использует `buildForkSeed` и preset источника. Без `atSeq` берётся completed turn; explicit seq допускает текущий committed log prefix. Для Side нужна собственная create/setup composition. |
-| Model selection | [`AgentModel.select`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/agent/src/model-selection.ts#L98-L128) просто пишет событие; [`session.selectModel`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/session-controller/src/commands.ts#L144-L181) проверяет модель, но не Nav train state. Нужен admission hook (§8), disabled dropdown недостаточен. |
+| Model selection | [`AgentModel.select`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/agent/src/model-selection.ts#L98-L128) просто пишет событие; [`session.selectModel`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/session-controller/src/commands.ts#L144-L181) проверяет модель, но не Nav train state. Nav ограничивает свои controls (§5); native выбор сохраняет штатный смысл следующего запроса DSH. |
 | Model capabilities | [`buildModelCatalog`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/session-controller/src/catalog.ts#L20-L74): registry providers/models, actual reasoning efforts/default, отдельные provider failures. Нет универсального списка reasoning. |
 | Web delivery / auth | [`webServer.register`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/host/webserver/src/index.ts#L48-L83), [`connection.admit`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/connection/src/rpc-host.ts#L128-L139), [root token → cookie](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/connection/src/browser-auth.ts#L279-L339). Nav route автоматически не получает auth только от регистрации. |
 | Headless browser transport | [`installConnection`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/connection/src/client/index.ts#L122-L231), [`gateway/client`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/gateway/src/client/index.ts#L137-L238): Cordis services без React shell; HTTP RPC + WS mux. |
@@ -75,6 +75,18 @@ PRD/spec/code остаются у соответствующих предмет�
 | Archive | [`workspace archive`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/workspace/workspace/src/index.ts#L97-L143), [`turn cancellation on archive`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/core/agent/src/archive-admission.ts#L17): native archive с stopActivity; это не физическое удаление logs. |
 
 ## 3. Доставка canonical contracts в DSH
+
+Nav поставляется отдельным bundle, устанавливаемым штатным DSH plugin manager
+или profile configuration; DSH исходники и hardcoded web-entry не меняются.
+[Plugin manager](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/boot/plugin-manager/README.md#use-this-package)
+поддерживает внешние package/path/link bundles. Host загружается Cordis Loader.
+Native addon объявляет `dsh.client` (`platform: web`), `./client` и зависимости;
+[client modules](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/modules/README.md#declaring-a-client-plugin)
+обнаруживает его по Loader entry и доставляет динамически. Addon собирается
+в формате DSH client bundles; standalone Svelte имеет собственную Vite-сборку.
+Generated Nav Remote выпускается сборкой Nav через package-mode
+[Typert generator](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/typert/generator/README.md#running-generation-inside-a-tsdown-build);
+требуемые generator workspace configs принадлежат Nav repository.
 
 Существующий installer — проверенная legacy delivery, не готовый DSH adapter.
 Новый пакет собирает resources из `skills/_shared/`, используя существующий
@@ -236,7 +248,7 @@ type RunRecord = {
   operation?: {
     id: string; phase: 'prepared'|'running'|'interrupted';
     attempt?: string;                 // reference existing task.verify attempt
-    selection: OperationSelection;   // launched/skip work; task choices — reference task.verify
+    selection: OperationSelection;   // entire admitted leg; task choices — reference task.verify
     configRevision: number;
     children: { sessionId: string; role: string; configRevision: number }[];
   };
@@ -274,28 +286,34 @@ operation overrides и instance overrides. Precedence: defaults → role → ope
 → selected instance; одинаковые поля перекрываются справа. Дополнительный
 reviewer — instance существующего assignment, а не новый lifecycle.
 
-- Enablement, provider/model/reasoning и reports фиксируются при запуске
-  конкретной операции/участника либо при записи skip. Запуск одного verify
-  participant не фиксирует ещё не запущенных peers.
-- В existing `task.verify` pending `selected` — план текущей attempt. Host
-  обновляет только ещё не начатую и не skipped работу по последним settings;
-  started participants остаются в `selected.verify`. Обычный toggle не требует
-  approval, новой attempt, перезапуска workflow или повторного exe.
-- Embedded local checks сохраняют snapshot активного exe; будущие verify/red
-  и не запущенные peers остаются изменяемыми. Начатая, завершённая, skipped
-  или interrupted работа и её reports/actual evidence не переоцениваются.
-  Closed attempts неизменны; off не стирает FAIL и его scoped disposition.
-- Child, уже работающий в операции, не меняет модель между внутренними steps
-  вслед за live UI; его snapshot действует до окончания activation.
-- `saveSettings(expectedRevision, patch)` проверяет revision и actual model
-  availability; stale edit возвращает conflict с current settings, не затирает
-  чужое изменение. История — принятые deltas и их applied scope; rejected edit
-  достаточно показать caller, не нужна отдельная audit DB.
-- Оркестратор меняется только когда train действительно stopped и main/children
-  не имеют active activity. «Поезд визуально стоит» при продолжающемся model
-  turn не подходит. Applied choice отличается от draft/pending выбора UI.
-- Judge model применяется при следующей consultation; три места на H — три
-  настраиваемых варианта, выбранный слот запускает одного Judge, не fanout=3.
+Станция — принятый результат/feedback операции или handoff; перегон — одна
+операция либо её согласованная группа участников. `/exe`, `/verify` и red —
+отдельные перегоны. Partial/blocked/error/needs-decision также являются outcomes,
+а не успешным завершением; existing blocker/decision flow сохраняется.
+
+- Все flow settings, models/options/enablement/reports меняются только в initial
+  ready или на остановленной станции после результатов всего перегона. Во время
+  движения controls недоступны, host отклоняет settings write. Без red переход
+  автоматический и окна редактирования между перегонами нет.
+- Green/admission фиксирует один snapshot всего следующего перегона: все selected
+  participants, ещё не запущенные peers, модели, reports и embedded local checks.
+  Последовательный launch использует этот snapshot, не перечитывает settings.
+- Red/Pause во время движения ставит остановку сразу за следующей станцией.
+  Участники текущего перегона дорабатывают. На остановке после exe можно изменить
+  будущий verify/red в той же task attempt без повторного exe или approval.
+- В existing `task.verify` host обновляет только будущую работу на разрешённой
+  остановке. Started/skipped/interrupted work сохраняет свой выбор и evidence;
+  closed attempts неизменны, off не стирает FAIL или required disposition.
+- `saveSettings(expectedRevision, patch)` проверяет остановку, revision и model
+  availability; stale edit возвращает conflict. История содержит принятые deltas.
+  Настройки передаются ролям в launch context, без LLM confirmation на toggles.
+- Main model control принадлежит Nav UI. Native DSH model selection остаётся
+  штатным выбором для следующего запроса; глобальная блокировка не обещается.
+- Judge slots на H настраиваются на остановке; три слота не означают fanout.
+  Side create и вызов вертолёта доступны в движении.
+
+Открытая деталь: timing вертолёта; рекомендация — вызов в движении заказывает
+инспекцию на ближайшей станции, без изменения текущего перегона.
 
 Default local checks on и возможность red-alone сохраняются как изменяемые
 рабочие defaults, не новое immutable пользовательское решение. Отсутствующая
@@ -360,8 +378,8 @@ Recovery запускается после открытия проекта, а �
    не повторять из-за потерянной session. Ambiguous non-idempotent effect —
    blocked до evidence/owner решения, а не автоматический replay.
 5. Продолжить первый реально unfinished шаг: started/interrupted work сохраняет
-   свой выбор, pending work использует актуальные settings при launch/skip
-   в той же attempt. Skipped не missing и не включается повторно новым toggle. Closed task не отменяет
+   snapshot всего admitted перегона; будущая работа получает новый snapshot
+   при следующем admission в той же attempt. Skipped не missing и не включается повторно новым toggle. Closed task не отменяет
    незавершённый выбранный wave sync/feature review. Нет runnable — различить
    completed, blocked, missing decision, failure budget и actual dependency deadlock.
 
@@ -375,7 +393,7 @@ operation. Оно сохраняется с её identity, но не двига�
 
 Main создаётся `ctx.agents.create({ sessionId, meta: {cwd, agentPreset}, setup })`
 как root без `parentAgent`, подключается к project workspace. Setup монтирует
-Nav main preset, read/feedback tools, model-selection admission и run context.
+Nav main preset, read/feedback tools и run context.
 MainSessionId хранится в run. Возобновление использует тот же preset/setup;
 открытие cold session из native UI также должно восстановить guard до первого
 turn. Preset не может зависеть только от UI страницы, которая может быть закрыта.
@@ -415,21 +433,21 @@ sequential по умолчанию. Experimental concurrent mutation досту�
 
 ### Один admission reducer
 
-UI command, native command, feedback, child completion, native user-stop и
+Nav UI/command, feedback, child completion и
 settings edit поступают в один короткий сериализованный reducer. Он проверяет
 current operation/decision/config revision и сохраняет намерение. DSH await
 идёт вне reducer; completion возвращается отдельным событием с исходным ID.
-Так Stop не ждёт network request в очереди и не проигрывает launch race.
+Так controls не ждут network request; hold запрещает следующий admission.
 Промежуточное состояние «останавливается» выводится из незавершённых handles.
 
 | Действие | Поведение |
 | --- | --- |
 | Play | Снимает только paused/stopped latch, запускает reconciliation/admission; не подтверждает pending proposal и не снимает manual red. |
-| Pause | Сразу запрещает новые операции/child launches; уже активные доходят до boundary. Пока они работают — pausing, затем paused. |
-| Stop | Сначала persist stopped, отменить controller-owned pending prompts, затем cancel active main semantic call/children и дождаться drain. Partial effects сохраняются; Play продолжит actual state. |
+| Pause | Остановиться сразу за следующей станцией: завершить admitted перегон со всеми selected participants, не допускать следующий. |
+| Nav Stop | Persist hold, убрать pending Nav prompts, запросить best-effort cancel/dispose owned main/children. Нет мгновенной/атомарной остановки или rollback. До editing/resume reconcile actual outcomes; partial effects сохраняются. |
 | Future manual red | Persist запрет конкретного edge. Доехать до границы, не войти; один context notice main, без poll LLM. |
-| Red на текущем edge | Запрет новых действий + cancellation текущей operation, затем interrupted hold. Это не freeze сетевого запроса. |
-| Green | Разрешить конкретный pending request либо снять конкретный manual edge red. Другие red/Pause/Stop остаются. |
+| Red во время перегона | Остановка сразу за следующей станцией; текущий перегон дорабатывает, следующий не допускается. |
+| Green | Разрешить конкретный pending request либо снять конкретный manual edge red. Другие red/Pause/Stop остаются; при разрешённом admission фиксируется весь следующий перегон. |
 | Main chat во время hold | Обсуждение/чтение разрешены; work/delegation tools отсутствуют. Явное «продолжить» может через feedback снять конкретный manual red; Pause/Stop требуют явного Play intent. Неоднозначный ответ ничего не снимает. |
 
 Controller не забивает inbox последовательностью будущих operations. Он держит
@@ -442,30 +460,18 @@ user turn: он останется обсуждением под тем же rea
 
 `whenIdle()` не используется как доказательство ответа конкретного prompt и
 не awaited из `agent/created`/turn listener, который блокирует сам driver.
-Ответ связывается с feedback/child result. Before model switch/drain проверяется
-реальное отсутствие activity, включая maintenance; `status=idle` один этого
-не доказывает (`runMaintenance` сохраняет публичный idle). Admission hook §8
-должен иметь authoritative activity predicate.
+Ответ связывается с feedback/child result. Editing после Stop доступен после
+reconciliation результатов, а не по одному `status=idle` main.
 
-Native main Stop сейчас отменяет только main agent, с keepInbox; он сам не
-ставит Nav latch и не останавливает host children. Чтобы штатная кнопка не
-оставляла поезд едущим, минимальный DSH session-control hook перед native cancel
-передаёт main-owner intent в тот же Nav Stop. Это не model feedback и не
-разрешение, полученное от отменённой модели. Прямой Nav Stop использует low-level
-agent.cancel/activation.dispose и не рекурсирует через native UI command.
+Native DSH Stop отменяет текущий turn одной session и не является Nav Stop:
+он не ставит workflow hold и не обещает остановить host-owned children.
+Управление workflow доступно в Nav; tiny native plugin также показывает
+**Nav Stop** через existing session-scoped
+[`conversation.session.header.utilities`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/ui-conversation/src/client/contract/slots.ts#L252-L257).
+Кнопка вызывает тот же controller, независимо от наличия main turn. Source native
+cancel: [`commands.ts`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/session-controller/src/commands.ts#L464-L477).
 
-Одного server hook недостаточно для доступности кнопки: native
-[`InputBar`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/ui-conversation/src/client/skeleton/InputBar.tsx#L364-L367)
-показывает Stop только при running session, а
-[`Escape shortcut`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/ui-conversation/src/client/stop-shortcut.ts#L44-L53)
-требует open main turn. При idle main и active children tiny native plugin
-показывает **Nav Stop** через existing session-scoped
-[`conversation.session.header.utilities`](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/client/ui-conversation/src/client/contract/slots.ts#L252-L257),
-получая activity из того же Nav watch и вызывая тот же controller Stop.
-Native composer Stop при active main проходит server hook. Новый UI/activity
-owner protocol и искусственный running main turn не нужны.
-
-## 8. Реальные enforcement boundaries и необходимые DSH изменения
+## 8. Роли и штатные DSH permissions
 
 ### Tools и роли
 
@@ -492,58 +498,18 @@ Side guard сохраняется и при cold resume собственного
 наследует preset источника; им **не** создаётся Nav Side. Даже fork main из
 native UI остаётся без mutating/spawn powers; он не становится owner run.
 
-Subject writer/reviewer presets получают лишь возможности своего assignment.
-FS mutation guard проверяет task hard write boundary (literal POSIX segment
-prefix, обе стороны rename) и запрещает непосредственную запись host run/task
-lifecycle; planner отдаёт draft cards host. Scope/permissions не расширяются
-от tier, auto mode или green. Existing DSH permissions продолжают действовать;
-native child inherits delegated policy, включая запрет approval escalation:
+Subject writer/reviewer presets получают возможности своего assignment.
+Task hard write boundaries и lifecycle ownership сохраняются: planner отдаёт
+host drafts, host пишет task lifecycle. Existing DSH permissions продолжают
+действовать; green, tier и autonomous не расширяют scope/permissions.
+Native child inherits delegated policy:
 [child policy](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/subagent/subagent/src/child-agent.ts#L218-L275).
-Если child нужен недостающий доступ, он сообщает restriction main; host не
-выдаёт себе доступ по feedback и не обещает inline human approval внутри child.
+При недостающем доступе child сообщает restriction через existing feedback;
+host не выдаёт себе доступ. Новая security subsystem не вводится.
 
-**Предел доказанного:** DSH `workspace-write` — workspace allow-root, не защита
-от записи конкретного `task.status` из произвольного shell. Его
-[SandboxExecutionPolicy](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/sandbox/sandbox/src/index.ts#L24-L66)
-не содержит protected-path deny. FS guard не доказывает shell confinement.
-Поэтому host-only lifecycle — application ownership плюс закрытые Nav/control
-capabilities; при general writable shell это не заявляется security isolation
-от скомпрометированного executor. Ошибочная внешняя правка host-owned files
-обнаруживается при reconciliation и не молча принимается как controller result.
-Усиленная OS-защита host JSON не добавляется в базовую архитектуру как скрытая
-новая sandbox subsystem. Main/Side/hold read-only enforcement от этой оговорки
-не зависит: у них нет shell или иных write capabilities.
-
-### Model-selection и native stop hooks
-
-На текущем DSH нет достаточного documented Nav gate. Не перехватывать HTTP
-по строкам и не откатывать уже записанный `model/selection` после факта.
-Минимальный upstream patch:
-
-1. Синхронный scoped admission перед изменением `AgentModel.select`, с current
-   agent/session и requested selection, до session append. Default без hook —
-   прежнее поведение DSH. Nav hook отклоняет main switch при любом движении,
-   active work/maintenance и child switch во время frozen activation. Публикация
-   изменения и обновление Nav settings revision сериализуются одним owner;
-   native UI получает понятную refusal. Valid model/effort проверяет существующий
-   DSH caller; Nav также валидирует свои UI edits. После accepted native change
-   Nav отражает choice из authoritative model selection event, без второго select.
-2. Session-controller cancel admission/owner hook для main run, описанный §7.
-   Owner сначала ставит stopped latch; стандартная отмена остаётся DSH-owned.
-   Нужен current activity API для model switch, если наружу пока доступен только
-   running/idle. Проверка должна учитывать maintenance, а не добавлять таймер.
-
-Hook устанавливается в Nav preset и применяется к native main UI и Nav UI.
-Remote access policy не заменяет этот gate: DSH owner principal там разрешён
-[без custom non-owner policy](https://github.com/deepseek-ai/deepseek-harness/blob/ce7073d51254c26cd63b22a60835b8f948deb447/packages/api/remote-access/src/index.ts#L184-L207).
-Existing `agent/pre-step` не перехватывает запись model selection, а
-`agent/status`/turn-end не отличает user Stop от обычного окончания и не
-уведомляет при cancel idle main. Поэтому эти события не заменяют hooks.
-Existing `runMaintenance` умеет атомарно занять настоящий idle, но не является
-синхронным policy gate каждого native `model.select`; проверка quiescence
-должна находиться в proposed admission seam.
-Без этих изменений нельзя считать остановку/смену модели интегрированными.
-Это небольшие DSH extension seams; сам scheduler остаётся в Nav, не в fork DSH.
+Model/settings controls и workflow Stop принадлежат Nav. DSH core, native
+`model.select` и `session.cancel` не модифицируются. Native выбор модели
+отражается из authoritative selection event; повторный select/rollback не нужен.
 
 ## 9. Routes → шесть handler families
 
@@ -795,7 +761,7 @@ host transition. После reconnect позиция восстанавлива�
   фиолетовый, белый, чёрный; имя модели отдельно. Driver click открывает native
   main chat, body click создаёт Side; hit regions не пересекаются.
 - База Judge с H рядом с путём, три model slots; один выбранный pilot/вертолёт.
-  Смена в pending config не изображается как уже применённая. Между calls old
+  Настройки меняются только на остановленной станции. Между calls old
   pilot идёт на базу, new — к вертолёту; полёт только при фактической consultation.
 - Груз соответствующего train/helicopter — собственный session context, не
   суммарные tokens и не progress. Показывать примерно
@@ -817,21 +783,21 @@ host transition. После reconnect позиция восстанавлива�
 
 | Sequence | Исполняемый порядок |
 | --- | --- |
-| Start | Native command/Nav Play → BOOT availability/actual-state → main create/resume + holds → selected role launch snapshot → native child → subject/evidence → ordinary next. Clear PRD не проходит grill повторно; brownfield mapping только по actual need/decision. |
-| Normal | Admission → persist prepared/attempt и выбор запускаемой роли → launch native role → await result/finally dispose → validate/retain subject → record lifecycle/check/skip → next. Disabled operation не запускает LLM и не создаёт report. |
+| Start | Native command/Nav Play → BOOT availability/actual-state → main create/resume + holds → whole-leg snapshot → native child → subject/evidence → ordinary next. Clear PRD не проходит grill повторно; brownfield mapping только по actual need/decision. |
+| Normal | Admission → persist prepared/attempt и snapshot всех participants перегона → launch native role → await result/finally dispose → validate/retain subject → record lifecycle/check/skip → next. Disabled operation не запускает LLM и не создаёт report. |
 | Main-path consultation | Child/main needs_decision → current owner hold → при необходимости small clarification → one pending/question native main + red main edge → answer/green → same unfinished owner → ordinary next. |
-| Reroute/repair | Retain partial/negative → main proposal owner/affected scope → proposed tunnel/red → approve one ID → drain old active work → repair owner → affected selected rechecks/return point. Не reset всего downstream. |
+| Reroute/repair | Retain partial/negative → main proposal owner/affected scope → proposed tunnel/red → approve one ID → reconcile old work at station → repair owner → affected selected rechecks/return point. Не reset всего downstream. |
 | Autonomous | Тот же proposal → model semantic decision → persist autonomous provenance → admission; без вопроса/ожидания user, но с manual/technical holds. |
 | Recovery | Load MB/tasks/native logs → restore stops/pending → actual-state reconciliation → preserved selected work/results → resume unfinished; без blind replay model requests. |
-| Stop race | Serialize stop before next launch → persist latch → remove only Nav pending prompt → cancel/dispose handles → late results retained to old identity → stopped. Play не removes unresolved decision/red. |
+| Stop race | Persist stop before next admission → remove only Nav pending prompt → best-effort cancel/dispose → retain late results → reconcile at station. Play не removes unresolved decision/red. |
 | Side | Body click → observe committed main cut → native create own root/setup → persist anchor → Side native prompt/follow; main продолжает. DEL → archive/drain → remove marker. |
-| Settings race | CAS edit → pending selection в той же attempt → snapshot каждой роли при launch/skip; active activation/evidence immutable. Main native selectModel проходит stopped/activity hook, иначе refusal до event append. |
+| Station settings | Red/Pause during exe → all exe results → stopped station → CAS edit future verify in same attempt → green snapshots whole verify group, including unstarted peers → automatic next unless held. Native model/Stop keep DSH session semantics. |
 
 Source-proven сегодня: перечисленные DSH primitives, отсутствие Nav guards у
 native model selection/cancel, inheritance и формы actual evidence contracts.
 Предлагается реализовать: Nav controller/resources/feedback/run/settings/UI,
-role composition и два небольших admission seams DSH. Не проверены запуском:
+role composition и отдельный подключаемый bundle без DSH core changes. Не проверены запуском:
 сборка standalone browser imports/generated descriptors, реальные model turns,
-интеграция hooks, cold-resume guard composition, cancellation races, native
+external package/client delivery, cold-resume composition, best-effort cancellation, native
 chat card/link, visual layout. Их проверяемые outcomes находятся в плане;
 документ не объявляет их готовыми native features.

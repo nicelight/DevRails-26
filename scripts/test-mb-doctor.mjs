@@ -1060,7 +1060,7 @@ VERDICT: PASS
     assert(!existsSync(join(root, '.protocols', id)), 'All-off closure created or required a protocol report.');
     assert(!JSON.stringify(record.verify).includes('PASS'), 'All-off closure invented PASS.');
   }
-  // Mutate only pending work in one deployed record/attempt while exe is active.
+  // After the exe result reaches a stopped station, change future work in the same attempt.
   const live = navTask(PRODUCT_T2, navWorkflow({
     local_checks: true, verify: ['main', 'secondary'], red_verify: true,
     protocols: ['verification.md', 'red-verification.md'],
@@ -1068,7 +1068,7 @@ VERDICT: PASS
     implementation: 'partial', evidence: ['FT-001-AC-001: source edit retained; exe still running'],
     local_checks: undefined, verification: undefined, red_verification: undefined,
   }), { status: 'in_progress', verificationTargets: ['FT-001-AC-001: observable outcome'] });
-  const liveRoot = createFixture('nav-live-pending-selection', { tasks: [live], realLint: true });
+  const liveRoot = createFixture('nav-station-pending-selection', { tasks: [live], realLint: true });
   const livePath = `.memory-bank/tasks/${live.id}.task.json`;
   const checkLive = (label) => {
     writeJsonFixture(liveRoot, livePath, live);
@@ -1079,28 +1079,33 @@ VERDICT: PASS
   };
   expectPass(checkLive('active exe'), 'active exe with future selected verification');
   const liveEntry = live.verify[0];
-  liveEntry.selected.verify = [];
-  liveEntry.selected.red_verify = false;
-  liveEntry.selected.protocols = [];
-  expectPass(checkLive('future checks off'), 'pending verify/red can turn off during the same exe attempt');
   liveEntry.implementation = 'complete';
   liveEntry.evidence = ['FT-001-AC-001: implementation completed in the original exe attempt'];
   liveEntry.local_checks = { result: 'passed', evidence: ['FT-001-AC-001: embedded local probe passed'] };
+  expectPass(checkLive('exe station'), 'accepted exe result with future verification still selected');
+  const retainedExe = JSON.stringify([liveEntry.implementation, liveEntry.evidence, liveEntry.local_checks]);
+  liveEntry.selected.verify = [];
+  liveEntry.selected.red_verify = false;
+  liveEntry.selected.protocols = [];
+  expectPass(checkLive('future checks off at stop'), 'future verify/red can turn off at the exe station in the same attempt');
+  assert(JSON.stringify([liveEntry.implementation, liveEntry.evidence, liveEntry.local_checks]) === retainedExe, 'Station settings rewrote exe evidence.');
   liveEntry.verification = 'skipped';
   liveEntry.red_verification = 'skipped';
   live.status = 'done';
   expectPass(checkLive('same attempt closure'), 'same attempt closes with retained exe checks and skipped future work');
-  assert(live.verify.length === 1 && liveEntry.attempt === '1', 'Live selection fabricated an attempt.');
-  assert(!existsSync(join(liveRoot, '.protocols')) && !JSON.stringify(live.verify).includes('PASS'), 'Live all-off created a report or functional PASS.');
+  assert(live.verify.length === 1 && liveEntry.attempt === '1', 'Station settings fabricated an attempt.');
+  assert(!existsSync(join(liveRoot, '.protocols')) && !JSON.stringify(live.verify).includes('PASS'), 'Station all-off created a report or functional PASS.');
 
-  // One participant's retained failure is unaffected by disabling an unstarted peer.
+  // A selected group retains all participants; completion cannot hide a peer or an actual FAIL.
   const peer = navTask(PRODUCT_T2, navWorkflow({ verify: ['main', 'secondary'] }, {
     verification: [probe('main', 'FAIL')],
   }), { status: 'in_progress', verificationTargets: ['FT-001-AC-001: observable outcome'] });
-  const peerRoot = createFixture('nav-live-pending-peer', { tasks: [peer], realLint: true });
+  const peerRoot = createFixture('nav-station-selected-group', { tasks: [peer], realLint: true });
   expectPass(JSON.parse(runDoctor(peerRoot, ['--strict', '--json']).stdout), 'pending participant alongside retained main failure');
-  peer.verify[0].selected.verify = ['main'];
   peer.status = 'done';
+  writeJsonFixture(peerRoot, livePath, peer);
+  expectFinding(JSON.parse(runDoctor(peerRoot, ['--strict', '--json']).stdout), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
+  peer.verify[0].verification.push(probe('secondary'));
   writeJsonFixture(peerRoot, livePath, peer);
   expectFinding(JSON.parse(runDoctor(peerRoot, ['--strict', '--json']).stdout), 'TASK_WORKFLOW_RESULT_INCOMPLETE', 'error');
 

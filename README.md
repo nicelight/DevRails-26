@@ -9,10 +9,11 @@ DevRails помогает превратить идею в работающий 
 и проверки Memory Bank. **DSH-плагин, контроллер и интерфейс ещё не реализованы.**
 Итог семантической приёмки — в [SEMANTIC_ACCEPTANCE.md](docs/nav27/SEMANTIC_ACCEPTANCE.md).
 [DEVRAILS_NAV_27.md](DEVRAILS_NAV_27.md) сохраняет решения пользователя и
-визуальный контракт. Актуальное решение — [архитектура](docs/nav27/ARCHITECTURE.md),
-последовательность разработки — [план реализации](docs/nav27/IMPLEMENTATION_PLAN.md).
-[Приёмка архитектуры](docs/nav27/ARCHITECTURE_ACCEPTANCE.md): готова к implementation
-spike; runtime-проверки ещё предстоят.
+визуальный контракт. [Архитектура](docs/nav27/ARCHITECTURE.md),
+[план реализации](docs/nav27/IMPLEMENTATION_PLAN.md) и
+[source-проверка архитектуры](docs/nav27/ARCHITECTURE_ACCEPTANCE.md) согласованы
+с plugin-only и [настройками на станциях](docs/nav27/SEMANTIC_STATION_SETTINGS_RESULT.md).
+Runtime-проверки ещё предстоят.
 
 ## Как устроена работа
 

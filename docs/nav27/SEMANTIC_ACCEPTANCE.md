@@ -3,9 +3,14 @@
 **Verdict: READY_FOR_ARCHITECTURE.** Дерево поверх `45ae29e`, 2026-11-01; blockers отсутствуют. DSH runtime/UI/controller не
 реализованы; legacy packaging не является DSH adapter.
 
-Live-selection correction проверена отдельно: [SEMANTIC_LIVE_SELECTION_RESULT.md](SEMANTIC_LIVE_SELECTION_RESULT.md).
-Freeze всей task attempt устранён; readiness относится к исправленной границе
-каждого launch/skip, а не к прежнему замороженному pipeline.
+Текущая граница настроек: [SEMANTIC_STATION_SETTINGS_RESULT.md](SEMANTIC_STATION_SETTINGS_RESULT.md).
+Предыдущая [live-selection correction](SEMANTIC_LIVE_SELECTION_RESULT.md)
+сохраняется как история. Whole-task freeze не возвращён: green фиксирует один
+перегон, изменения доступны на разрешённой остановке после его результата.
+Plugin-only архитектура и runtime enforcement требуют отдельной реализации.
+Station correction: syntax, полный doctor/install-sync и isolated delivery
+прошли; deployed doctor — 0 errors/warnings. Детали и границы проверки — по
+ссылке на station result выше.
 
 ## Покрытие
 
@@ -52,10 +57,10 @@ Source независимо сверён с policy/handoffs/deployment; coverage
    no-recorded-revision route с spec-redesign: только affected reconciliation.
 5. Общий mb-sync предписывал обновлять feature/epic lifecycle. Уточнено отражение
    host-recorded state без записи transitions моделью.
-6. Tier policy замораживал все будущие checks перед exe. Теперь pending selection
-   обновляется в той же attempt до запуска соответствующей операции/участника;
-   local checks входят в exe snapshot, будущие verify/red — нет. Начатая работа,
-   skip, interruption и закрытые attempts не переписываются.
+6. Tier policy сохраняет future selection в той же attempt, но изменения теперь
+   доступны только на initial/stopped-ready станции. Green фиксирует весь leg,
+   включая unstarted peers. Exe/local checks и последующие verify/red — разные
+   перегоны; прошлые результаты и отрицательные verdicts неизменны.
 
 ## Walkthrough
 
@@ -78,9 +83,11 @@ Local checks default-on и red-alone — рабочие defaults, не отве�
 Nav использует existing `task.verify`, `stage: workflow`, attempt/selected,
 `protocols: []`; pending — план, не evidence. Diagnostics проверяют retained
 choices соответствующей работы, не live config. Toggle будущей работы не требует
-новой attempt, повторного exe или отдельного approval и не отменяет actual FAIL.
+новой attempt или повторного exe и не отменяет actual FAIL. Он доступен только
+на разрешённой остановке; green необходим для отправления. Partial/blocked/error
+используют существующий decision flow без synthetic completion.
 
-## Фактическая validation
+## Предыдущая фактическая validation
 
 - `check:syntax`, `test:mb-doctor`, `test:install-sync` — pass.
 - Изолированные install-only/bootstrap/sync: `/tmp/nav27-acceptance.kBj1a3/`.
@@ -97,7 +104,8 @@ choices соответствующей работы, не live config. Toggle б
 - Live-selection correction: полный doctor/install-sync и syntax — pass;
   isolated delivery `/tmp/nav27-live.syZfDL/`, deployed strict doctor на active →
   pending-off → done одной attempt — pass, без reports/PASS и изменений evidence
-  диагностикой. Отдельный regression сохраняет FAIL при отключении pending peer.
+  диагностикой. Эти historical live-selection сценарии заменены station-boundary
+  сценариями; актуальные проверки — в station result выше.
   Fresh empty skeleton даёт ожидаемый strict `TASK_INDEX_EMPTY`.
 
 Root AGENTS/WORK_LOG, исторические результаты, чужие papercuts сохранены.

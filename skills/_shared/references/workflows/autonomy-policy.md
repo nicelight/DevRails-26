@@ -10,14 +10,30 @@ All models, subagents, tools, and sessions use DSH. Effective settings determine
 available participants, models, reasoning, checks, and reports. A model name
 never selects an external agent CLI or Codex App Server.
 
-Settings changes, including enablement, apply to the next launch of the affected
-operation or participant within the current workflow. Each launch retains its
-own settings; starting one participant does not freeze unstarted participants.
-Embedded local checks share the active `/exe` launch settings. Future `/verify`
-participants and `/red-verify` remain configurable while `/exe` runs. Changing
-unstarted work requires no new attempt, workflow restart, repeated `/exe`, or
-separate approval; existing non-negotiables and negative-result dispositions
-still apply. Started, completed, skipped, or interrupted work is not rewritten.
+A station is the accepted result/feedback of an existing operation or
+handoff; a leg is that operation or its agreed group of native participants.
+Settings (models, options, enablement and reports) are editable only at an
+initial ready station or a stopped station after all selected participants'
+results have been accepted. Green fixes one snapshot for the whole next leg,
+including participants not yet launched. A partial, blocked, failed or decision-needed
+outcome uses the existing decision flow; arrival does not require success or
+fabricated completion. Embedded local checks belong to `/exe`;
+`/verify` and `/red-verify` are subsequent legs, not frozen by starting `/exe`.
+
+During a leg, manual red/Pause arms a stop after the next station: finish the
+current leg and its feedback, but admit no next leg until green. Without red
+or another blocker, the next leg automatically takes its own snapshot from
+effective settings; passing a station does not open editing. Side Chats and a requested Judge/helicopter
+consultation remain available during movement; neither grants route changes or
+consent. Stop is emergency best-effort cancellation, not a ready station:
+editing remains unavailable until actual outcomes/partial effects are reconciled.
+
+At a permitted stop, changing future unstarted work requires no new attempt,
+workflow restart, repeated `/exe`, or separate approval of the toggle; green
+still controls departure. Started, completed, skipped, or interrupted work and
+negative-result dispositions remain intact. These controls belong to the Nav
+DSH plugin and its UI, including main-model selection; they require no global
+DSH hook, core modification, or policing of manual source edits.
 
 The host owns queue selection, dependency scheduling, launches, lifecycle writes,
 check/skip recording, budgets, and recovery sequencing. Models perform the

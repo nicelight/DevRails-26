@@ -141,11 +141,15 @@ risks, не превращая speculative candidates в requirements.
 Новые Nav task cards используют existing `task.verify`, entry `stage: workflow`.
 `attempt` — stable ID; `selected` сохраняет фактические design/local_checks,
 verify participants, task/feature red и protocol filenames. `protocols: []`
-допустим и не заменяется tier bundle. До запуска операции/участника её план
-можно менять в текущей attempt без повторного exe или approval. При запуске
-либо skip фиксируется выбор только этой работы; local checks входят в exe,
-будущие verify/red — нет. Current settings не переписывают начатую работу или
-историю. Новая попытка добавляет запись.
+допустим и не заменяется tier bundle. Настройки меняются только на
+initial/stopped-ready станции после принятого
+итога всех selected participants. Green фиксирует snapshot всего перегона,
+включая ещё не запущенных участников. Local checks входят в exe; verify/red —
+следующие перегоны. На остановке после exe будущий verify/red можно изменить
+в той же attempt без повторного exe; departure требует green. Manual red/Pause
+останавливает после ближайшей станции, не отменяет текущую работу. Без red
+проезд станции автоматический и не открывает редактирование.
+Исторические результаты и закрытые attempts неизменны.
 
 Результаты заполняются по факту: implementation partial/complete, evidence,
 local result, participant verdict/candidates, semantic result. Unfinished поля

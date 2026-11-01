@@ -139,12 +139,12 @@ enabled participant names in `verify`, and selected protocol filenames in
 `protocols` (empty is valid). Unstarted work has planned choices; started or
 skipped work retains its effective choices. No protocol bundle is selected by tier alone.
 
-The host may update only unstarted work's `selected` choices in the current
-attempt under `autonomy-policy.md#runtime-ownership`; pending choices are not
-evidence. Freeze each operation's or participant's choices at its launch, or
-when recording its skip, including its selected reports. Preserve started
-participants in `selected.verify` when updating unstarted participants. Active
-`/exe` retains its local-check choice; it does not freeze future verify/red.
+The host may update only future unstarted work's `selected` choices at a
+permitted stopped station under `autonomy-policy.md#runtime-ownership`;
+pending choices are not evidence. Green fixes the entire leg's choices,
+including unstarted selected participants and reports. Preserve those choices
+through completion or recorded skip. Active `/exe` retains its local-check
+choice; future verify/red may change only at a subsequent permitted stop.
 Closed attempts and recorded results remain immutable; a genuinely new attempt
 appends a record. Diagnostics use retained choices for the corresponding work,
 never current settings to reinterpret evidence. Legacy records without this
