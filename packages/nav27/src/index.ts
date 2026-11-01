@@ -9,7 +9,7 @@ import { DshAdapter } from './adapter.js';
 import { Controller } from './controller.mjs';
 import { commands } from './commands.mjs';
 
-import type { View, Control, SettingsRequest } from './types.js';
+import type { View, Control, SettingsRequest, SideRequest, DeleteSideRequest } from './types.js';
 export interface Config { project: string; main: AgentOptions; exe: AgentOptions; verify_main?: AgentOptions; verify_secondary?: AgentOptions; verify_code?: AgentOptions; red?: AgentOptions; judge?: AgentOptions; attemptLimit?: number }
 declare module '@deepseek-ai/cordis' { interface Context { nav27: NavRemote } }
 declare module '@deepseek-ai/dsh-typert-protocol' { interface RemoteErrorDetailsMap { 'nav27/rejected': { current: View } } }
@@ -17,32 +17,51 @@ declare module '@deepseek-ai/dsh-typert-protocol' { interface RemoteErrorDetails
 /** One project controller, accessed through the existing authenticated Gateway. */
 export class NavRemote extends TypertRemoteService {
   constructor(ctx: Context, private controller: Controller) { super(ctx, 'nav27', { namespace: 'nav27' }); }
-  private view(): View {
+  private async view(): Promise<View> {
     const run = this.controller.snapshot();
-    return { runId: run.id, revision: run.revision, phase: run.phase, hold: run.hold, taskId: run.taskId,
-      mainSession: run.mainSession, childSession: run.operation?.peers?.at(-1)?.session ?? run.operation?.childSession ?? null, blocker: run.blocker,
-      participants: (run.operation?.peers ?? []).map((peer: { role: string; state: string; diagnostic?: string }) => ({ role: peer.role, state: peer.state, diagnostic: peer.diagnostic ?? null })),
+    let evidence;
+    if (run.taskId) { try { const { task } = await this.controller.store.task(run.taskId); evidence = task.verify.filter((entry: { stage: string }) => entry.stage === 'workflow').at(-1); } catch { /* snapshot retains the blocker; absent evidence remains unknown */ } }
+    const proof = evidence ? [
+      `implementation: ${evidence.implementation ?? 'not recorded'}`,
+      `local checks: ${typeof evidence.local_checks === 'string' ? evidence.local_checks : evidence.local_checks?.result ?? 'not recorded'}`,
+      `verify: ${typeof evidence.verification === 'string' ? evidence.verification : evidence.verification?.map((item: { participant: string; verdict?: string; candidate_findings?: unknown[] }) => `${item.participant} ${item.verdict ?? `${Array.isArray(item.candidate_findings) ? item.candidate_findings.length : 0} candidates (no functional verdict)`}`).join(', ') || 'not recorded'}`,
+      `red: ${typeof evidence.red_verification === 'string' ? evidence.red_verification : evidence.red_verification?.verdict ?? 'not recorded'}`,
+    ] : [];
+    const facts = await this.controller.adapter.sessionFacts([run.mainSession, ...(run.operation?.peers ?? []).map((peer: { session: string }) => peer.session), ...run.sides.map((side: { id: string }) => side.id), ...(['running', 'complete'].includes(run.inspection?.state) ? [run.inspection.id] : [])].filter(Boolean));
+    return { proof, facts, judgeSession: ['running', 'complete'].includes(run.inspection?.state) ? run.inspection.id : null, proposedTarget: run.pending?.proposal?.target ?? null, runId: run.id, revision: run.revision, phase: run.phase, hold: run.hold, taskId: run.taskId,
+      sides: run.sides ?? [], mainSession: run.mainSession, childSession: run.operation?.peers?.at(-1)?.session ?? run.operation?.childSession ?? null, blocker: run.blocker,
+      participants: (run.operation?.peers ?? []).map((peer: { role: string; session: string; state: string; diagnostic?: string }) => ({ role: peer.role, session: peer.session, state: peer.state === 'prepared' && facts[peer.session]?.state === 'running' ? 'running' : peer.state, diagnostic: peer.diagnostic ?? null })),
       verification: run.operation?.command ?? 'not started', settings: run.settings, settingsRevision: run.settings.revision,
-      editable: ['ready', 'stopped'].includes(run.phase) && !run.blocker && !run.pending && !run.operation?.unreconciled, pending: run.pending?.message ?? null, requestId: run.pending?.proposal ? run.pending.id : null, autonomous: !!run.autonomous, inspection: run.inspection?.state ?? null, commands: Object.keys(commands).sort(), mainError: run.mainError ?? null,
+      editable: ['ready', 'stopped'].includes(run.phase) && !run.blocker && !run.pending && !run.operation?.unreconciled, pending: run.pending?.message ?? null, requestId: run.pending?.proposal ? run.pending.id : null, autonomous: !!run.autonomous, inspection: run.inspection?.state === 'running' && facts[run.inspection.id]?.state !== 'running' ? 'delivered' : run.inspection?.state ?? null, commands: Object.keys(commands).sort(), mainError: run.mainError ?? null,
     };
   }
   /** Return a replacement snapshot; polling never admits work. */
   @Remote('snapshot')
   async snapshot(): Promise<View> { return this.view(); }
+  @Remote('createSide')
+  async createSide(request: SideRequest): Promise<View> {
+    try { await this.controller.createSide(request); return this.view(); }
+    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: await this.view() }); }
+  }
+  @Remote('deleteSide')
+  async deleteSide(request: DeleteSideRequest): Promise<View> {
+    try { await this.controller.deleteSide(request); return this.view(); }
+    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: await this.view() }); }
+  }
   @Remote('settings')
   async settings(request: SettingsRequest): Promise<View> {
     try { await this.controller.settings(request); return this.view(); }
-    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: this.view() }); }
+    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: await this.view() }); }
   }
   /** Apply a control only to the current run revision. */
   @Remote('control')
   async control(request: Control): Promise<View> {
     try { await this.controller.control(request); return this.view(); }
-    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: this.view() }); }
+    catch (error) { throw new RemoteError('nav27/rejected', (error as Error).message, { current: await this.view() }); }
   }
 }
 export const name = 'devrails-nav27';
-export const inject = ['llm', 'agents', 'subagents', 'agentPresets', 'tools', 'connection', 'webServer'];
+export const inject = ['llm', 'agents', 'subagents', 'agentPresets', 'tools', 'connection', 'webServer', 'sessionQuery', 'workspaceRegistry', 'sessions'];
 export async function apply(ctx: Context, config: Config) {
   if (!config.project || !config.main?.provider || !config.main.model || !config.exe?.provider || !config.exe.model) throw new Error('Nav requires project and explicit main/exe provider/model routes');
   if (ctx.get('shell') && !ctx.get('shellEnv')) await ctx.plugin(ShellEnv);

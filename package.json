@@ -22,7 +22,8 @@
     "test:install-sync": "node scripts/test-install-sync.mjs",
     "test:mb-doctor": "node scripts/test-mb-doctor.mjs",
     "build:nav27": "npm run build --workspace devrails-nav27",
-    "test:nav27": "npm test --workspace devrails-nav27"
+    "test:nav27": "npm test --workspace devrails-nav27",
+    "preview:nav27": "npm run preview --workspace devrails-nav27"
   },
   "workspaces": [
     "packages/nav27"

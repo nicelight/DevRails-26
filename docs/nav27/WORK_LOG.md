@@ -440,3 +440,24 @@ Semantic/routing принят: последняя Stop правка прошла
 product/planning/execution, owning repair, bootstrap и subject recovery.
 Следующий агент делает Side и schematic SVG UI с semantic zoom, сохраняя
 штатный main chat. Визуальная детализация остаётся отдельно от принятия flow.
+
+### Side и schematic UI приняты к браузерной проверке
+
+`nav_side_map` завершил native Side fork/read-only/model override/DEL/recovery,
+метрики own context/compactions и Svelte SVG map/Side chat на native transport.
+Full regression 40/40 PASS; после candidate display fix rebuild/typecheck и
+targeted 3/3 PASS; diff-check PASS, shared-* =0. Handoff обновлён после context
+reset; ошибочный ответ о чистом дереве относился к default original26, root
+вернул исполнителя в Nav27, где все изменения сохранились.
+
+Эскиз nav27-map-reference.svg показан, async feedback пока без ответа. Пользователь
+ранее разрешил schematic implementation: layout остаётся рабочим draft, а не
+утверждённым дизайном. Actual reviewers отображаются ниже карты; backend сейчас
+последовательно запускает selected peers, что UI показывает честно.
+
+Fresh isolated preview: PID2042260, session8417, http://127.0.0.1:32995/nav27/.
+Login URL в /tmp/nav27-preview.log, temporary project /tmp/nav27-native-D77cVp/project.
+Это настоящий controller/native session transport с deterministic provider,
+не реальная модель и не полная native DSH chat shell. Последняя отдельно
+требует full host. Следующий один агент: browser acceptance + только
+подтверждённые исправления и проверяемая инструкция установки/запуска.

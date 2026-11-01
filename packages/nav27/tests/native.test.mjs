@@ -1,100 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { Context } from '@deepseek-ai/cordis';
-import Loader from '@deepseek-ai/cordis-plugin-loader';
-import Include from '@deepseek-ai/cordis-plugin-include';
-import { mountAgentLoopTestDependencies } from '@deepseek-ai/dsh-agent-loop-testkit';
-import AgentLoop from '@deepseek-ai/dsh-agent-loop';
-import AgentPresets from '@deepseek-ai/dsh-agent-preset-registry';
-import Subagents from '@deepseek-ai/dsh-subagent';
-import * as Spawn from '@deepseek-ai/dsh-subagent-spawn-in-process';
-import * as Persistence from '@deepseek-ai/dsh-session-persistence-jsonl';
-import { LlmAdapter, ToolCallId } from '@deepseek-ai/dsh-llm';
-import WebServer from '@deepseek-ai/dsh-host-webserver';
-import * as Connection from '@deepseek-ai/dsh-client-connection';
-import Typert from '@deepseek-ai/dsh-typert-registry';
-import RemoteAccess from '@deepseek-ai/dsh-api-remote-access';
-import Subprocess from '@deepseek-ai/dsh-subprocess-local';
-import BashLocal from '@deepseek-ai/dsh-bash-local';
-import Gateway from '@deepseek-ai/dsh-api-gateway';
+import { fixture, call, waitFor, taskId } from './fixture.mjs';
 
-const packageRoot = fileURLToPath(new URL('../', import.meta.url));
-const taskId = 'TASK-001-T1-FT-001-W1';
-function call(name, args, id) {
-  return [
-    { type: 'block-start', index: 0, blockType: 'tool-call' },
-    { type: 'tool-call-delta', index: 0, id: ToolCallId(id), name, argumentsDelta: JSON.stringify(args) },
-    { type: 'block-end', index: 0, block: { type: 'tool-call', id: ToolCallId(id), name, arguments: JSON.stringify(args) } },
-    { type: 'usage', usage: { inputTokens: 10, outputTokens: 5 } },
-    { type: 'finish', reason: { kind: 'tool-calls' } },
-  ];
-}
-class FixtureProvider extends LlmAdapter {
-  requests = [];
-  constructor(script, models = {}) { super(); this.script = script; this.models = models; }
-  async resolveModel(provider, model) { return { provider, id: model, name: model }; }
-  async *stream(options) {
-    this.requests.push(options);
-    const entry = this.models[options.model]?.shift() ?? (options.model === 'main' ? [{ type: 'finish', reason: { kind: 'stop' } }] : this.script.shift());
-    if (!entry) throw new Error('Fixture script exhausted');
-    const chunks = typeof entry === 'function' ? await entry(options) : entry;
-    yield* chunks;
-  }
-}
-async function waitFor(read, predicate, label) {
-  const until = Date.now() + 15000;
-  while (Date.now() < until) { const value = await read(); if (predicate(value)) return value; await new Promise(r => setTimeout(r, 25)); }
-  throw new Error(`Timed out: ${label}; ${JSON.stringify(await read())}`);
-}
-async function fixture(t, script, options = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'nav27-native-'));
-  const project = join(root, 'project'); const installed = join(root, 'installed');
-  await mkdir(project); await mkdir(installed);
-  const [packed] = JSON.parse(execFileSync('npm', ['pack', '--json', '--pack-destination', root], { cwd: packageRoot, encoding: 'utf8' }));
-  execFileSync('tar', ['-xzf', join(root, packed.filename), '--strip-components=1', '-C', installed]);
-  // Runtime dependencies are the single installed DSH baseline; no Nav source is in this installation.
-  const { symlink } = await import('node:fs/promises');
-  await symlink(resolve(packageRoot, '../../node_modules'), join(installed, 'node_modules'), 'dir');
-  execFileSync(process.execPath, [join(installed, 'resources/skills/_shared/scripts/init-mb.js')], { cwd: project, stdio: 'pipe' });
-  const task = {
-    id: taskId, title: 'Create one greeting module', status: 'ready', wave: 'W1', feature: 'FT-001', tier: 'T1',
-    purpose: 'Expose a reusable greeting', success_outcome: 'src/greeting.js exports greeting equal to Hello',
-    reqs: [], depends_on: [], touched_files: ['src/greeting.js'], gates: [], verify: [], docs: [], evidence_required: [],
-    source_artifacts: [], normative_inputs: [], constraints: [], invariants: [], verification_targets: [],
-    runtime_context: { write_boundary: ['src'] },
-  };
-  await writeFile(join(project, '.memory-bank/tasks/index.json'), JSON.stringify({ version: 1, tasks: [{ id: taskId, file: `${taskId}.task.json` }] }));
-  await writeFile(join(project, `.memory-bank/tasks/${taskId}.task.json`), JSON.stringify(task));
-  const ctx = new Context();
-  t.after(async () => { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }); });
-  ctx.baseUrl = pathToFileURL(installed + '/').href;
-  await ctx.plugin(Loader); ctx.loader.builtins.include = Include;
-  await mountAgentLoopTestDependencies(ctx, { workingDirectory: true });
-  await ctx.plugin(Persistence, { root: join(root, 'sessions'), compression: 'none' });
-  await ctx.plugin(Subagents); await ctx.plugin(Spawn, { providerName: 'spawn' });
-  if (options.shell) { await ctx.plugin(Subprocess); await ctx.plugin(BashLocal, { cwd: project }); }
-  await ctx.plugin(AgentLoop, { agents: [] });
-  await ctx.plugin(AgentPresets, { default: 'nav-unused-default' });
-  const provider = new FixtureProvider(script, options.models); ctx.llm.registerAdapter(['fixture'], provider);
-  await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0 });
-  let credentials;
-  ctx.provide('credentials', { readRecord: async () => credentials, modifyRecord: async (_key, mutate) => credentials = await mutate(credentials), deleteRecord: async () => { credentials = undefined; } });
-  await ctx.plugin(Connection);
-  await ctx.plugin(Typert); await ctx.plugin(RemoteAccess); await ctx.plugin(Gateway);
-  ctx.webServer.register({ kind: 'exact', path: '/', handler(req, res) { if (ctx.connection.authorizeIndex(req, res)) res.writeHead(200).end('Native auth fixture'); } });
-  const row = await ctx.loader.create({ name: pathToFileURL(join(installed, 'lib/index.js')).href, config: { project, attemptLimit: options.attemptLimit, main: { provider: 'fixture', model: 'main' }, exe: { provider: 'fixture', model: 'executor' } } });
-  await ctx.loader.await();
-  await ctx.loader.resolve(row).fiber?.await();
-  assert.ok(ctx.get('nav27'), 'Nav host loaded through the native Loader');
-  const initial = await ctx.nav27.snapshot();
-  await ctx.nav27.settings({ runId: initial.runId, revision: initial.revision, settingsRevision: initial.settingsRevision, settings: { ...initial.settings, selected: { ...initial.settings.selected, local_checks: false, ...(options.selected ?? {}) }, routes: { ...initial.settings.routes, verify_main: { provider: 'fixture', model: 'review-main' }, verify_secondary: { provider: 'fixture', model: 'review-secondary' }, verify_code: { provider: 'fixture', model: 'review-code' }, red: { provider: 'fixture', model: 'red' }, judge: { provider: 'fixture', model: 'judge' } } } });
-  return { ctx, root, project, installed, provider, row, readTask: async () => JSON.parse(await readFile(join(project, `.memory-bank/tasks/${taskId}.task.json`), 'utf8')) };
-}
 const completed = { feedback: { flow: 'continue', message: 'Implementation is complete; selected checks were off.' }, subject: { implementation: 'complete', evidence: ['Created src/greeting.js exporting greeting = Hello; no local checks executed.'] } };
 
 test('external package uses native child lifecycle and retains truthful all-off closure', { timeout: 30000 }, async t => {
@@ -264,7 +176,7 @@ test('candidate-only and red-alone remain distinct evidence without hidden funct
     const final = await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase !== 'running', 'independent review');
     assert.equal(final.phase, 'done', final.blocker ?? '');
     const e = (await f.readTask()).verify[0];
-    if (candidate) { assert.equal(e.verification[0].candidate_findings, 'none'); assert.equal(e.verification[0].verdict, undefined); }
+    if (candidate) { assert.ok(final.proof.includes('verify: code 0 candidates (no functional verdict)')); assert.equal(e.verification[0].candidate_findings, 'none'); assert.equal(e.verification[0].verdict, undefined); }
     else { assert.equal(e.verification, 'skipped'); assert.equal(e.red_verification.verdict, 'semantic-pass'); }
     assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 2);
     await doctorAccepts(f);

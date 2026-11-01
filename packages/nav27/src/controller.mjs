@@ -53,8 +53,17 @@ export class Controller {
           else { this.run.phase = 'interrupted'; this.run.operation.unreconciled = true; this.run.blocker = 'Inspect subject outputs before resuming the unfinished owner'; }
         } else await this.reconcile();
       }
+      this.run.sides ??= [];
+      this.run.settings.routes.side ??= structuredClone(this.run.settings.routes.main);
+      this.adapter.sideSummary = () => this.sideSummary();
       this.semantic.initialize();
       this.run.mainSession = await this.adapter.openMain(this.store.root, this.run.mainSession, this.run.settings.routes.main);
+      for (const side of [...this.run.sides]) {
+        try {
+          if (this.adapter.sideArchived(side.id)) this.run.sides = this.run.sides.filter(item => item.id !== side.id);
+          else { await this.adapter.openSide(this.store.root, side.id, side.route); delete side.error; }
+        } catch (error) { side.error = error.message; }
+      }
       let launch;
       if (this.run.phase === 'stopped' && !this.run.holds.length && !this.run.pending && !this.run.blocker) launch = await this.advance();
       await this.save();
@@ -67,12 +76,51 @@ export class Controller {
   assertRevision(request) {
     if (request.runId !== this.run.id || request.revision !== this.run.revision) throw new Error('Stale run/revision; refresh the snapshot');
   }
+  sideSummary() {
+    const run = this.snapshot();
+    return `Nav now: ${JSON.stringify({ phase: run.phase, hold: run.hold, task: run.taskId, command: run.operation?.command, participants: run.operation?.peers?.map(({ role, state }) => ({ role, state })), pending: run.pending?.message, blocker: run.blocker })}. References: .memory-bank/nav27/run.json, .memory-bank/tasks/index.json${run.taskId ? `, .memory-bank/tasks/${run.taskId}.task.json` : ''}. Fork context is historical; no later main transcript is synchronized.`;
+  }
+  async createSide(request) {
+    return this.serial(async () => {
+      this.assertRevision(request);
+      if (!request.anchor || !Number.isFinite(request.anchor.x) || !Number.isFinite(request.anchor.y)) throw new Error('Side requires a finite world anchor');
+      const route = structuredClone(this.run.settings.routes.side);
+      await this.adapter.validateRoute(route);
+      const id = await this.adapter.createSide(this.store.root, route);
+      try {
+        this.run.sides.push({ id, anchor: request.anchor, route });
+        await this.save();
+      } catch (error) {
+        this.run.sides = this.run.sides.filter(side => side.id !== id);
+        await this.adapter.releaseSide(id);
+        throw error;
+      }
+      return this.snapshot();
+    });
+  }
+  async deleteSide(request) {
+    return this.serial(async () => {
+      this.assertRevision(request);
+      const side = this.run.sides.find(side => side.id === request.sessionId);
+      if (!side) throw new Error('Unknown Side binding');
+      try { await this.adapter.archiveSide(side.id); }
+      catch (error) { side.error = error.message; await this.save(); throw error; }
+      this.run.sides = this.run.sides.filter(item => item.id !== side.id);
+      await this.save(); return this.snapshot();
+    });
+  }
   async settings(request) {
     return this.serial(async () => {
       this.assertRevision(request);
       if (!['ready', 'stopped'].includes(this.run.phase) || this.run.pending || this.run.blocker || this.run.operation?.unreconciled) throw new Error('Settings require an initial or stopped-ready station');
       if (request.settingsRevision !== this.run.settings.revision) throw new Error('Stale settings revision');
       const next = structuredClone(request.settings);
+      if (next.driverColor && !['blue', 'orange', 'purple', 'white', 'black'].includes(next.driverColor)) throw new Error('Unknown driver color');
+      if (next.judgeSlots) {
+        if (next.judgeSlots.length !== 3 || !Number.isInteger(next.judgeSlot) || next.judgeSlot < 0 || next.judgeSlot > 2) throw new Error('Choose one of three Judge model variants');
+        for (const route of next.judgeSlots) await this.adapter.validateRoute(route);
+        next.routes.judge = structuredClone(next.judgeSlots[next.judgeSlot]);
+      }
       const s = next.selected;
       if (!s || ['design', 'local_checks', 'red_verify', 'feature_red_verify'].some(key => typeof s[key] !== 'boolean') || !Array.isArray(s.verify) || new Set(s.verify).size !== s.verify.length || !s.verify.every(id => ['main', 'secondary', 'code'].includes(id))) throw new Error('Invalid selected work');
       if (next.planning && Object.values(next.planning).some(value => typeof value !== 'boolean')) throw new Error('Invalid planning selection');

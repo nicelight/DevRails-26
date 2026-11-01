@@ -3,7 +3,9 @@ import type { AgentHandle, AgentOptions } from '@deepseek-ai/dsh-agent';
 import type { SubagentActivation } from '@deepseek-ai/dsh-subagent';
 import type {} from '@deepseek-ai/dsh-agent-preset-registry';
 import type {} from '@deepseek-ai/dsh-workspace';
-import { SessionId } from '@deepseek-ai/dsh-session';
+import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import type {} from '@deepseek-ai/dsh-session-query';
+import { SessionId, SessionLogOffset, buildForkSeed } from '@deepseek-ai/dsh-session';
 import type { ObjectJsonSchema } from '@deepseek-ai/dsh-tools';
 import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
@@ -13,6 +15,8 @@ import { mountMainFeedback, assignmentMessage } from './main-feedback.js';
 import type { MainHost, MainAssignment } from './main-feedback.js';
 
 export class DshAdapter {
+  private sides = new Map<string, { handle: AgentHandle; remove: () => Promise<void> }>();
+  sideSummary: () => string = () => 'Nav context unavailable';
   private main?: AgentHandle;
   private mainPreset?: () => Promise<void>;
   private active?: SubagentActivation;
@@ -46,6 +50,76 @@ export class DshAdapter {
     const workspaces = this.ctx.get('workspaceRegistry');
     if (workspaces) await (await workspaces.create(project)).attachSession(this.main.agent.id);
     return this.main.agent.id;
+  }
+  async sessionFacts(ids: string[]) {
+    return Object.fromEntries(await Promise.all([...new Set(ids)].map(async id => {
+      try {
+        using source = await this.ctx.sessionQuery.observeSession(SessionId(id));
+        const pressure = (source.projections?.values as Record<string, unknown> | undefined)?.contextPressure as { projectedTokens?: number; pressureTokens?: number; contextWindow?: number } | undefined;
+        const tokens = pressure?.projectedTokens ?? pressure?.pressureTokens;
+        const occupancy = typeof tokens === 'number' && typeof pressure?.contextWindow === 'number' && pressure.contextWindow > 0 ? Math.min(1, tokens / pressure.contextWindow) : null;
+        const compacted = new Set<string>();
+        for (const event of source.events.slice(source.inheritedEventCount)) {
+          const data = event.data as { compactionId?: string; error?: string };
+          if ((event.type as string) === 'compaction/end' && data.error === undefined && data.compactionId) compacted.add(data.compactionId);
+        }
+        return [id, { occupancy, compactions: compacted.size, state: this.ctx.agents.get(SessionId(id))?.status ?? null }];
+      } catch { return [id, { occupancy: null, compactions: null, state: null }]; }
+    })));
+  }
+  sideArchived(id: string) { return this.ctx.workspaceRegistry.archivedSessionIds.includes(SessionId(id)); }
+  private async sideSetup(project: string, route: AgentOptions) {
+    const preset = `nav27-side-${randomUUID()}`;
+    const remove = await this.ctx.agentPresets.register({ id: preset, plugins: [{ name: new URL('./role.js', import.meta.url).href, config: { role: 'side', project } }] });
+    return { preset, remove, setup: async (ctx: Context, agent: AgentHandle['agent']) => {
+      await this.ctx.agentPresets.mount(ctx, preset);
+      // Seed model selection outranks fallback options; overwrite it before publication.
+      agent.model.select({ provider: route.provider!, model: route.model!, ...(route.reasoningEffort ? { reasoningEffort: route.reasoningEffort } : {}) });
+      ctx.on('agent/pre-step', async (_payload, next) => {
+        const decision = await next();
+        if (decision.kind !== 'enter' || !decision.messages.some(message => message.source.kind === 'user')) return decision;
+        const summary = createUserMessage({ source: { kind: 'nav27', assignment: 'side-summary' }, content: [{ type: 'text', text: this.sideSummary() }] });
+        return { ...decision, messages: [...decision.messages, summary] };
+      });
+      ctx.systemPrompt.section({ name: 'nav27-side-context', order: 11, text: this.sideSummary() });
+    } };
+  }
+  async createSide(project: string, route: AgentOptions) {
+    if (!this.main) throw new Error('Main session unavailable');
+    const composition = await this.sideSetup(project, route);
+    let handle: AgentHandle | undefined;
+    try {
+      using source = await this.ctx.sessionQuery.observeSession(this.main.agent.id, { projectionMode: 'none' });
+      const boundary = source.events.at(-1)?.seq;
+      const seed = boundary === undefined ? [] : buildForkSeed(source.events, boundary);
+      const id = SessionId(randomUUID());
+      handle = await this.ctx.agents.create({ sessionId: id, seed,
+        ...(boundary === undefined ? {} : { inheritedEventCount: SessionLogOffset(boundary + 1) }),
+        meta: { cwd: project, agentPreset: composition.preset, ...(boundary === undefined ? {} : { isSeeded: true }) }, agentOptions: route, setup: composition.setup });
+      await (await this.ctx.workspaceRegistry.create(project)).attachSession(id);
+      await this.ctx.sessions.flush(handle.agent.session);
+      this.sides.set(id, { handle, remove: composition.remove });
+      return id;
+    } catch (error) { await handle?.dispose(); await composition.remove(); throw error; }
+  }
+  async openSide(project: string, id: string, route: AgentOptions) {
+    if (this.sides.has(id)) return;
+    const composition = await this.sideSetup(project, route);
+    let handle: AgentHandle | undefined;
+    try {
+      handle = await this.ctx.agents.resume({ resumeSessionId: SessionId(id), agentOptions: route, setup: composition.setup });
+      await (await this.ctx.workspaceRegistry.create(project)).attachSession(SessionId(id));
+      this.sides.set(id, { handle, remove: composition.remove });
+    } catch (error) { await handle?.dispose(); await composition.remove(); throw error; }
+  }
+  async releaseSide(id: string) {
+    const owned = this.sides.get(id);
+    if (owned) { await owned.handle.dispose(); await owned.remove(); this.sides.delete(id); }
+  }
+  async archiveSide(id: string) {
+    await this.ctx.workspaceRegistry.archiveSession(SessionId(id), { stopActivity: true });
+    if (!this.sideArchived(id)) throw new Error('Native archive was not confirmed');
+    await this.releaseSide(id);
   }
   async execute(input: { project: string; operation: { childSession: string; id: string; command: string; role: string; resume?: boolean; inputs?: unknown; selected: unknown; routes: Record<string, AgentOptions> }; task: { runtime_context?: { write_boundary?: string[]; allowed_write_scope?: string[]; forbidden_scope?: string[] } }; contract: string; outputSchema: ObjectJsonSchema }) {
     if (!this.main) throw new Error('Main session unavailable');
@@ -98,5 +172,5 @@ export class DshAdapter {
     }
     await this.active?.dispose(); await this.judge?.dispose();
   }
-  async dispose() { await this.main?.dispose(); await this.mainPreset?.(); }
+  async dispose() { for (const id of this.sides.keys()) await this.releaseSide(id); await this.main?.dispose(); await this.mainPreset?.(); }
 }

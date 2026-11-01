@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760">
+<title>DevRails Nav 27 — schematic route reference</title>
+<desc>Outcomes are stations. Commands occupy connecting rails. Conditional reviews and repair returns preserve host authority.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#56656d"/></marker></defs>
+<style>text{font-family:system-ui,sans-serif;fill:#25343c;font-size:14px}.title{font-size:26px;font-weight:650}.small{font-size:12px;fill:#59676d}.station{fill:#f7f7f3;stroke:#25343c;stroke-width:3}.rail{fill:none;stroke:#60717b;stroke-width:3;marker-end:url(#arrow)}.optional{stroke-dasharray:6 5}.label{font-size:13px;font-weight:600}.box{fill:#fff;stroke:#b4bdc0}.red{stroke:#bd4839;fill:none;stroke-width:2;stroke-dasharray:7 5}</style>
+<rect width="1600" height="760" fill="#f7f7f3"/>
+<text x="36" y="45" class="title">DevRails Nav 27 · technical schematic</text>
+<text x="36" y="72">Stations = accepted artifacts / outcomes · rails = operations · host state moves the train</text>
+<rect x="36" y="94" width="1528" height="48" class="box"/>
+<text x="56" y="124">▶ Play     Ⅱ Pause     ■ Stop     Open native main ↗</text><text x="1050" y="124">Fixed controls · Fit / − / + · settings at stopped-ready</text>
+<path class="rail" d="M70 290H1510"/>
+<g class="station"><circle cx="70" cy="290" r="9"/><circle cx="250" cy="290" r="9"/><circle cx="440" cy="290" r="9"/><circle cx="650" cy="290" r="9"/><circle cx="860" cy="290" r="9"/><circle cx="1080" cy="290" r="9"/><circle cx="1300" cy="290" r="9"/><circle cx="1510" cy="290" r="9"/></g>
+<g text-anchor="middle"><text x="70" y="322">Context</text><text x="250" y="322">Accepted PRD</text><text x="440" y="322">Features</text><text x="650" y="322">Design / baseline</text><text x="860" y="322">Task cards</text><text x="1080" y="322">Implementation</text><text x="1300" y="322">Selected evidence</text><text x="1510" y="322">Synced outcome</text>
+<text x="158" y="268" class="label">grill → constitution</text><text x="158" y="247" class="label">→ write-prd</text><text x="345" y="268" class="label">spec-init → prd-to-features</text><text x="545" y="268" class="label">spec-design / spec-auto</text><text x="755" y="268" class="label">feature / foundation-to-tasks</text><text x="970" y="268" class="label">exe + local checks</text><text x="1190" y="268" class="label">verify → red-verify</text><text x="1405" y="268" class="label">feature red → mb-sync</text></g>
+<path class="rail optional" d="M440 290V190H650V290"/><text x="466" y="181">review-feat-plan (selected)</text>
+<path class="rail optional" d="M860 290V190H1080V290"/><text x="863" y="181">review-tasks-plan / diagnostics</text>
+<path class="rail" d="M1300 340V410H920V300"/><text x="950" y="400">Approved repair → exe · same task / preserved evidence</text>
+<path class="red" d="M1300 290V458H440V335"/><text x="580" y="449" fill="#bd4839">Proposed return tunnel · red until consent · target from host</text>
+<rect x="963" y="281" width="65" height="28" rx="3" fill="#637583"/><rect x="1028" y="275" width="26" height="34" rx="3" fill="#83cbe5"/><text x="968" y="350" class="small">Body → new Side</text><text x="968" y="369" class="small">Driver → native main</text>
+<path d="M990 375V490" stroke="#a0aaad" stroke-dasharray="3 4"/>
+<circle cx="990" cy="506" r="14" fill="#fff" stroke="#60717b"/><text x="1014" y="510">Side ? · anchor persists until DEL</text>
+<rect x="1170" y="480" width="350" height="50" class="box"/><text x="1180" y="500">Reviewers: main running · secondary queued</text><text x="1180" y="520" class="small">code done · actual sequential native activations</text>
+<rect x="36" y="390" width="370" height="132" class="box"/><text x="52" y="416" class="label">H · inspection base</text><text x="52" y="443">Slot 1 / Slot 2 / Slot 3 — model variants</text><text x="52" y="469" class="small">Requested → delivered → actual Judge activation</text><text x="52" y="495" class="small">Own context ? · compaction count only when &gt; 0</text>
+<text x="36" y="566" class="label">Five shared command families</text>
+<text x="36" y="594">bootstrap/context</text><text x="290" y="594">product/planning</text><text x="600" y="594">implementation</text><text x="900" y="594">review/diagnostics</text><text x="1250" y="594">maintenance</text>
+<text x="36" y="617" class="small">start · mb-init · fill · map-codebase</text><text x="290" y="617" class="small">PRD · features · design · tasking</text><text x="600" y="617" class="small">exe · autopilot · autonomous</text><text x="900" y="617" class="small">verify · red · reviews · doctors</text><text x="1250" y="617" class="small">mb-sync · mb-garden · tech-debt</text>
+<path d="M36 642H1564" stroke="#b4bdc0"/><text x="36" y="671">Overview: objects / colors · Tactical: commands / status · Detail: model / settings</text>
+<text x="36" y="699">Skipped ≠ success · partial / error ≠ PASS · unknown context = ? · expanded Side chat stays at screen text size</text>
+<text x="36" y="727" class="small">Schematic reference, not simulated runtime state. Conditional branches are not mandatory gates. Motion never admits work.</text>
+</svg>
