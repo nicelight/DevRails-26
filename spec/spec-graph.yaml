@@ -1,0 +1,27 @@
+# Dependencies between specifications, not runtime routes.
+version: 1
+nodes:
+  - path: spec/README.md
+    role: intent
+  - path: spec/architecture.md
+    role: contract
+  - path: spec/controller.md
+    role: contract
+  - path: spec/feedback.md
+    role: contract
+  - path: spec/evidence.md
+    role: contract
+  - path: spec/sessions-ui.md
+    role: contract
+# from depends on to; cross-links may point back to the owner of a concept.
+edges:
+  - from: spec/architecture.md
+    to: spec/README.md
+  - from: spec/controller.md
+    to: spec/architecture.md
+  - from: spec/feedback.md
+    to: spec/controller.md
+  - from: spec/evidence.md
+    to: spec/feedback.md
+  - from: spec/sessions-ui.md
+    to: spec/evidence.md

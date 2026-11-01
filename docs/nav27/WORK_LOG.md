@@ -302,3 +302,48 @@ diff-check проходит, source shared-* =0. Runtime не создавалс
 открытой деталью: рекомендована инспекция ближайшей станции, без навязывания
 новой реализации. Для ответа пользователю оценка качественная: сильное
 упрощение settings/admission и тестов, умеренное сокращение проекта в целом.
+
+### SDD-спецификации → проверка стоимости → реализация
+
+Пользователь поручил последовательно создать только основные SDD specs с
+акцентом на HOW/WHY, затем проверить острые углы и исключить функции, чья
+ценность существенно ниже стоимости, и при приемлемом результате перейти к
+оркестрации кода. Авторизация реализации уже дана; новый общий permission gate
+не требуется. Сохраняются один Astra medium за раз и стратегическая роль root.
+
+Последнее принятое уточнение Judge: кнопка во время работы отправляет main
+prompt через native `agent.steer`; running агент читает его на ближайшей step
+boundary, idle просыпается. Не нужно ждать станции. Main формулирует задание,
+host запускает Judge с заранее выбранными параметрами; кнопка уже разрешает
+консультацию. Результат не завершает текущий leg и не разрешает смену маршрута.
+Предыдущее предложение station-only inspection отменено.
+
+Автор `nav_core_specs` создаёт spec/README.md, architecture.md, controller.md,
+feedback.md, evidence.md, sessions-ui.md и spec-graph.yaml. Specer используется
+для spec-layer/traceability, явные пользовательские HOW/WHY и KISS важнее
+обязательного анкетирования и универсальных scaffolding-полей skill. Код пока
+не пишется. Следующий агент выполняет независимую consistency/value-cost
+приёмку; далее идут последовательные исполняемые срезы плагина.
+
+### Основные specs и cost/value review — готовы к коду
+
+`nav_core_specs` создал пять основных HOW/WHY контрактов, spec/README.md и
+spec-graph.yaml. `nav_spec_value_review` независимо проверил и исправил пакет;
+итог `spec/REVIEW.md`: READY_FOR_IMPLEMENTATION, runtime ещё unverified.
+
+Материальное уточнение: H steering меняет назначение main ответа только после
+того, как native step действительно принял соответствующее сообщение. Capture
+сохраняет привязку уже выполняющегося tool call; queued steering после
+concludeTurn может продолжить тот же turn. Terminal leg result приходит только
+от child activation. Отдельные inbox scheduler/inspection engine не нужны.
+
+Cost cut: отдельный журнал settings deltas исключён; current settings/revision
+и snapshot каждого leg сохраняют фактически применённые параметры. Основные
+пользовательские функции сохранены, оформление не блокирует headless slice.
+Проверены 26 local links/anchors, DAG 6 nodes, source shared-* =0.
+
+Реализация разрешена пользователем после этой проверки. Первый один агент
+делает external package + isolated native DSH vertical slice; следующие срезы
+последовательно покрывают admission/evidence/recovery, semantic interaction/H,
+Side и согласованную schematic UI. Source-only assets/legacy installer остаются
+проверяемой доставкой framework, а не выдаются за уже готовый DSH adapter.
