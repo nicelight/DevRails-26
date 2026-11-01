@@ -32,7 +32,10 @@ lifecycle и не запускает агентов напрямую. Испол
 задания capabilities, reviewer/Judge/Side — read-only. Composition и guards
 применяются до publication и заново при cold resume; prompt сам по себе не
 является запретом инструментов. Native restrictions плюс scoped guards
-охватывают также inherited tools. DSH permissions продолжают действовать.
+охватывают также inherited tools. Direct file tools защищают host-owned paths;
+executor shell использует штатные DSH sandbox/permissions и протокольный запрет
+записи task/run metadata. Path-level запрет внутри writable project для произвольного
+shell не гарантируется; отдельного Nav sandbox/parser нет. DSH permissions продолжают действовать.
 
 ## Доставка предметных контрактов
 

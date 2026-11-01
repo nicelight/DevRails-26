@@ -395,3 +395,22 @@ Native composition исправлена: allow:[] скрывал preset-owned to
 исполнение и выбранные проверки, станционную конфигурацию и recovery; затем
 semantic interactions/H, общий command routing и Side/map. Полный aggregate
 upstream build не повторять; один опубликованный DSH baseline 0.2.2-alpha.2.
+
+### Execution принят: legs, station settings, actual-state recovery
+
+`nav_execution` завершил расширение indexed-task пути: native bash/local checks,
+verify/red группы, independent roles и frozen routes, station-only edits,
+Pause/red/Stop, Resume прежней attempt, dependency queue, repair budget default 3.
+Conditional reports и partial/skipped/production remainder сохраняют реальные
+результаты; canonical validator принимает записи. 18 сценариев / 22 native tests,
+build/typecheck и diff-check PASS; shared-* =0. Подробный handoff —
+IMPLEMENTATION_EXECUTION_RESULT.md. Real provider/browser/full host не проверены.
+
+Cost decision: собственная shell песочница/deny-list ради запрета записи
+отдельных metadata files внутри writable project не строится. Native DSH
+permissions/sandbox + protocol prohibition; direct file guard сохраняется.
+Main/Judge/Side read-only composition сохраняется. Spec architecture уточнена.
+Это устраняет дорогое ложное обещание, не вводя новый security subsystem.
+
+Следующий последовательный срез: общий model feedback, consent/autonomous,
+command-family routing и H steering/consultation. Side/map — после него.

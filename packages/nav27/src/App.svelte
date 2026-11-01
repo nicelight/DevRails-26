@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { View, Control } from './types.js';
-  let { remote }: { remote: { snapshot(): Promise<any>; control(request: Control): Promise<any> } } = $props();
+  import type { View, Control, Settings, SettingsRequest } from './types.js';
+  let { remote }: { remote: { snapshot(): Promise<any>; control(request: Control): Promise<any>; settings(request: SettingsRequest): Promise<any> } } = $props();
   let view = $state<View | null>(null);
+  let draft = $state<Settings | null>(null);
   let task = $state('');
   let error = $state('');
   let busy = $state(false);
@@ -20,6 +21,19 @@
     else { error = result.error.message; view = result.error.details?.current ?? null; }
     busy = false;
   }
+  async function saveSettings() {
+    if (!view || !draft || busy) return;
+    busy = true;
+    const result = await remote.settings({ runId: view.runId, revision: view.revision, settingsRevision: view.settingsRevision, settings: draft });
+    if (result.ok) { view = result.value; draft = null; error = ''; }
+    else { error = result.error.message; view = result.error.details?.current ?? null; }
+    busy = false;
+  }
+  function editSettings() {
+    if (!view) return;
+    draft = structuredClone(view.settings);
+    for (const role of ['main', 'exe', 'verify_main', 'verify_secondary', 'verify_code', 'red']) draft.routes[role] ??= { provider: '', model: '' };
+  }
   onMount(() => {
     void refresh();
     const timer = setInterval(() => { if (!busy) void refresh(); }, 1500);
@@ -30,20 +44,42 @@
 <main>
   <p class="eyebrow">DevRails Nav 27 · execution slice</p>
   <h1>Project run</h1>
-  <p>One prepared T0/T1 task. Native file tools; local checks, verify and red are off.</p>
+  <p>Indexed task execution with selected local checks, independent reviewers and semantic review.</p>
   {#if view}
     <dl>
       <dt>State</dt><dd>{view.phase}{view.hold ? ` · ${view.hold}` : ''}</dd>
       <dt>Task</dt><dd>{view.taskId ?? 'Not selected'}</dd>
       <dt>Verification</dt><dd>{view.verification}</dd>
+      {#each view.participants as participant}<dt>{participant.role}</dt><dd>{participant.state}{participant.diagnostic ? ` — ${participant.diagnostic}` : ''}</dd>{/each}
       {#if view.blocker}<dt>Blocked</dt><dd>{view.blocker}</dd>{/if}
     </dl>
     {#if !view.taskId}<label>Indexed task ID<input bind:value={task} placeholder="TASK-001-T1-FT-001-W1" /></label>{/if}
     <nav aria-label="Run controls">
-      {#each ['play', 'pause', 'red', 'green', 'stop'] as action}
-        <button disabled={busy || view.phase === 'done'} onclick={() => control(action as Control['action'])}>{action}</button>
+      {#each ['play', 'pause', 'red', 'green', 'stop', 'resume', 'repair'] as action}
+        <button disabled={busy} onclick={() => control(action as Control['action'])}>{action}</button>
       {/each}
     </nav>
+    {#if view.pending}<p>Pending owner decision: {view.pending}</p>{/if}
+    <button disabled={busy || !view.editable} onclick={editSettings}>Edit station settings</button>
+    {#if draft}
+      <fieldset disabled={busy || !view.editable}>
+        <legend>Next unstarted work</legend>
+        <label><input type="checkbox" bind:checked={draft.selected.local_checks} /> Local execution checks</label>
+        <label><input type="checkbox" bind:checked={draft.selected.red_verify} /> Semantic red review</label>
+        {#each ['main', 'secondary', 'code'] as participant}
+          <label><input type="checkbox" value={participant} bind:group={draft.selected.verify} /> Verify: {participant}</label>
+        {/each}
+        {#each ['run.md', 'context.md', 'plan.md', 'progress.md', 'handoff.md', 'verification.md', 'red-verification.md'] as protocol}
+          <label><input type="checkbox" value={protocol} bind:group={draft.selected.protocols} /> Report: {protocol}</label>
+        {/each}
+        {#each ['main', 'exe', 'verify_main', 'verify_secondary', 'verify_code', 'red'] as role}
+          <label>{role} provider<input bind:value={draft.routes[role].provider} /></label>
+          <label>Model<input bind:value={draft.routes[role].model} /></label>
+          <label>Reasoning effort (empty = provider default)<input bind:value={draft.routes[role].reasoningEffort} /></label>
+        {/each}
+        <button onclick={saveSettings}>Save settings</button>
+      </fieldset>
+    {/if}
     {#if view.mainSession}<a href={`${root.href}#nav27-main=${view.mainSession}`}>Open native main chat ↗</a>{/if}
   {:else}<p>Connecting to the authenticated DSH host…</p>{/if}
   {#if error}<p role="alert">{error}</p>{/if}
@@ -56,6 +92,7 @@
   dl { display: grid; grid-template-columns: 120px 1fr; gap: 14px; border-block: 1px solid #bcc6c9; padding: 24px 0; margin: 28px 0; }
   dt { color: #5d6b72; } dd { margin: 0; overflow-wrap: anywhere; }
   label { display: block; } input { display: block; width: 100%; box-sizing: border-box; margin-top: 8px; padding: 12px; font: inherit; }
+  input[type=checkbox] { display: inline; width: auto; } fieldset { margin: 20px 0; }
   nav { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
   button { border: 1px solid #8a9b9f; border-radius: 5px; padding: 9px 18px; font: inherit; background: white; text-transform: capitalize; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; } a { color: #155a72; } [role=alert] { color: #a13028; }

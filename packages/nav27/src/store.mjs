@@ -4,10 +4,11 @@ import { randomUUID } from 'node:crypto';
 import Ajv from 'ajv/dist/2020.js';
 
 export async function json(path) { return JSON.parse(await readFile(path, 'utf8')); }
-export async function atomic(path, value) {
+export async function atomic(path, value) { return atomicText(path, JSON.stringify(value, null, 2) + '\n'); }
+export async function atomicText(path, value) {
   await mkdir(resolve(path, '..'), { recursive: true });
   const temp = `${path}.${randomUUID()}.tmp`;
-  await writeFile(temp, JSON.stringify(value, null, 2) + '\n');
+  await writeFile(temp, value);
   await rename(temp, path);
 }
 export async function projectPath(root, locator, write = false) {
@@ -59,6 +60,34 @@ export class Store {
     const match = /^TASK-\d{3}-(T[0-3])-(FT-\d{3})-(W\d+)$/.exec(id);
     if (!match || task.id !== id || task.tier !== match[1] || task.feature !== match[2] || task.wave !== match[3]) throw new Error('Task identity/tier/feature/wave mismatch');
     return { task, path };
+  }
+  async reports(task, operation) {
+    const evidence = task.verify.find(item => item.stage === 'workflow' && item.attempt === operation.attempt);
+    for (const filename of operation.selected.protocols) {
+      const belongs = filename === 'run.md' || (operation.command === 'verify' ? filename === 'verification.md' : operation.command === 'red-verify' ? filename === 'red-verification.md' : !['verification.md', 'red-verification.md'].includes(filename));
+      if (!belongs) continue;
+      const path = await projectPath(this.root, `.protocols/${task.id}/${filename}`, true);
+      let content = await readFile(path, 'utf8').catch(async error => {
+        if (error.code !== 'ENOENT') throw error;
+        const template = filename === 'run.md' ? 'compact-run-template.md' : filename.replace('.md', '-template.md');
+        return readFile(await projectPath(this.root, `.memory-bank/templates/protocols/${template}`), 'utf8');
+      });
+      const marker = `<!-- nav27:${operation.id} -->`;
+      const endMarker = `<!-- end nav27:${operation.id} -->`;
+      const start = content.indexOf(marker), end = content.indexOf(endMarker);
+      const section = `\n${marker}\n## Retained ${operation.command} result — ${task.id}\n\nAttempt: ${operation.attempt}\n\n\`\`\`json\n${JSON.stringify(evidence, null, 2)}\n\`\`\`\n${endMarker}\n`;
+      content = start >= 0 && end >= start ? content.slice(0, start) + section + content.slice(end + endMarker.length) : content + section;
+      await atomicText(path, content);
+    }
+  }
+  async runnable() {
+    const index = await json(join(this.root, '.memory-bank/tasks/index.json'));
+    const records = await Promise.all(index.tasks.map(row => this.task(row.id)));
+    const stranded = records.find(row => row.task.status === 'in_progress');
+    if (stranded) return stranded;
+    const ready = records.find(row => ['ready', 'planned'].includes(row.task.status) && row.task.depends_on.every(id => records.some(dep => dep.task.id === id && ['done', 'done_for_prod'].includes(dep.task.status))));
+    if (!ready && records.some(row => !['done', 'done_for_prod'].includes(row.task.status))) throw new Error('No runnable task: blocked dependency or task owner decision');
+    return ready;
   }
   saveTask(record) { return atomic(record.path, record.task); }
 }

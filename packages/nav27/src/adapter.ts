@@ -7,6 +7,7 @@ import { SessionId } from '@deepseek-ai/dsh-session';
 import { ToolArgsError, validateJsonSchemaValue } from '@deepseek-ai/dsh-tools';
 import type { ObjectJsonSchema, ToolExecution } from '@deepseek-ai/dsh-tools';
 import { randomUUID } from 'node:crypto';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const mainFeedback: ObjectJsonSchema = {
@@ -25,6 +26,13 @@ export class DshAdapter {
   mainFeedback?: { session: string; value: unknown };
   constructor(private readonly ctx: Context) {}
   commandPath(command: string) { return fileURLToPath(new URL(`../resources/commands/${command}/SKILL.md`, import.meta.url)); }
+  async validateRoute(route: AgentOptions) {
+    if (!route?.provider || !route.model) throw new Error('Explicit provider/model required for every selected role');
+    await this.ctx.llm.resolveCallConfig({ provider: route.provider, model: route.model, ...(route.reasoningEffort ? { reasoningEffort: route.reasoningEffort } : {}) });
+  }
+  selectMain(route: AgentOptions) {
+    this.main?.agent.model.select({ provider: route.provider!, model: route.model!, ...(route.reasoningEffort ? { reasoningEffort: route.reasoningEffort } : {}) });
+  }
   async openMain(project: string, previous: string | null, route: AgentOptions) {
     const preset = `nav27-main-${randomUUID()}`;
     this.mainPreset = await this.ctx.agentPresets.register({ id: preset, plugins: [{ name: new URL('./role.js', import.meta.url).href, config: { role: 'main', project } }] });
@@ -47,8 +55,8 @@ export class DshAdapter {
         this.mainFeedback = { session: String(this.main?.agent.id ?? ''), value };
       });
     };
+    if (previous && this.ctx.get('sessionPersistence') && !await this.ctx.get('sessionPersistence')!.stat(SessionId(previous))) previous = null;
     if (previous) {
-      // A failed resume is a surfaced technical blocker; do not silently replace history.
       this.main = await this.ctx.agents.resume({ resumeSessionId: SessionId(previous), agentOptions: route, setup });
     } else {
       this.main = await this.ctx.agents.create({ sessionId: SessionId(randomUUID()), meta: { cwd: project, agentPreset: preset }, agentOptions: route, setup });
@@ -57,20 +65,20 @@ export class DshAdapter {
     if (workspaces) await (await workspaces.create(project)).attachSession(this.main.agent.id);
     return this.main.agent.id;
   }
-  async execute(input: { project: string; operation: { childSession: string; id: string; routes: { exe: AgentOptions } }; task: { runtime_context?: { write_boundary?: string[]; allowed_write_scope?: string[]; forbidden_scope?: string[] } }; contract: string; outputSchema: ObjectJsonSchema }) {
+  async execute(input: { project: string; operation: { childSession: string; id: string; command: string; role: string; resume?: boolean; selected: unknown; routes: Record<string, AgentOptions> }; task: { runtime_context?: { write_boundary?: string[]; allowed_write_scope?: string[]; forbidden_scope?: string[] } }; contract: string; outputSchema: ObjectJsonSchema }) {
     if (!this.main) throw new Error('Main session unavailable');
     const preset = `nav27-exe-${input.operation.id}`;
     const removePreset = await this.ctx.agentPresets.register({ id: preset, plugins: [{ name: new URL('./role.js', import.meta.url).href, config: {
-      role: 'exe', project: input.project,
+      role: input.operation.command === 'exe' ? 'exe' : 'review', project: input.project, resources: dirname(this.commandPath(input.operation.command)),
       boundary: input.task.runtime_context?.write_boundary ?? input.task.runtime_context?.allowed_write_scope,
       forbidden: input.task.runtime_context?.forbidden_scope,
     } }] });
     this.starting = new AbortController();
     let activation: SubagentActivation | undefined;
     try {
-      activation = await this.ctx.subagents.startActivation({ provider: 'spawn', delivery: 'caller', label: 'DevRails exe', childId: SessionId(input.operation.childSession), signal: this.starting.signal,
-        request: { parent: this.main.agent, cwd: input.project, agentPreset: preset, agentOptions: input.operation.routes.exe, maxDepth: 1, outputSchema: input.outputSchema,
-          prompt: [{ type: 'text', text: `${input.contract}\n\nHOST ASSIGNMENT\nLocal checks, verify, red and reports are OFF for this execution. Return actual implementation evidence; never claim PASS. Read applicable project context.\nTask:\n${JSON.stringify(input.task, null, 2)}` }],
+      activation = await this.ctx.subagents.startActivation({ provider: 'spawn', delivery: 'caller', label: `DevRails ${input.operation.command}/${input.operation.role}`, childId: SessionId(input.operation.childSession), signal: this.starting.signal,
+        request: { parent: this.main.agent, cwd: input.project, agentPreset: preset, agentOptions: input.operation.routes[input.operation.command === 'verify' ? `verify_${input.operation.role}` : input.operation.role], maxDepth: 1, outputSchema: input.outputSchema,
+          prompt: [{ type: 'text', text: `${input.contract}\n\nHOST ASSIGNMENT\nInstalled contract resource root: ${dirname(this.commandPath(input.operation.command))}. Resolve agents/ and references/ below that directory. Role: ${input.operation.role}. Selected work: ${JSON.stringify(input.operation.selected)}. Return only this participant's actual subject result. The host owns lifecycle and subsequent operations. Read applicable project context. ${input.operation.resume ? 'RESUME: inspect existing changes and retained task evidence before continuing the same attempt. Do not replay completed or ambiguous unsafe effects; return needs_decision for unresolved ambiguity.' : ''}\nTask:\n${JSON.stringify(input.task, null, 2)}` }],
         },
       });
       this.active = activation;
