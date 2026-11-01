@@ -1,6 +1,7 @@
 import { readFile, writeFile, rename, mkdir, rm, realpath } from 'node:fs/promises';
 import { join, resolve, relative, isAbsolute } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import Ajv from 'ajv/dist/2020.js';
 
 export async function json(path) { return JSON.parse(await readFile(path, 'utf8')); }
@@ -61,6 +62,48 @@ export class Store {
     if (!match || task.id !== id || task.tier !== match[1] || task.feature !== match[2] || task.wave !== match[3]) throw new Error('Task identity/tier/feature/wave mismatch');
     return { task, path };
   }
+  async importTasks(drafts, feature) {
+    if (!Array.isArray(drafts)) throw new Error('Planning must return task drafts');
+    const indexPath = join(this.root, '.memory-bank/tasks/index.json');
+    const index = await json(indexPath);
+    const schema = await json(join(this.root, '.memory-bank/schemas/task.schema.json'));
+    const validate = new Ajv({ strict: false }).compile(schema);
+    const existing = new Map(await Promise.all(index.tasks.map(async row => [row.id, await this.task(row.id)])));
+    const imported = new Map();
+    for (const draft of drafts) {
+      const task = structuredClone(draft);
+      const match = /^TASK-\d{3}-(T[0-3])-(FT-\d{3})-(W\d+)$/.exec(task.id);
+      if (!match || task.tier !== match[1] || task.feature !== match[2] || task.wave !== match[3] || task.feature !== feature || (feature !== 'FT-000' && task.wave === 'W0') || imported.has(task.id)) throw new Error('Planning task identity/feature/wave conflict');
+      const prior = existing.get(task.id);
+      if (prior) {
+        for (const key of ['status', 'verify']) task[key] = prior.task[key];
+        const protectedFields = ['id', 'feature', 'tier', 'wave', 'purpose', 'success_outcome', 'depends_on', 'reqs', 'constraints', 'invariants'];
+        if (protectedFields.some(key => !isDeepStrictEqual(task[key], prior.task[key]))) throw new Error(`Controlled rebuild required for ${task.id}`);
+        if (!['planned', 'ready'].includes(prior.task.status) && !isDeepStrictEqual(task, prior.task)) throw new Error(`Preserve active/historical planning basis for ${task.id}`);
+      } else { task.status = 'planned'; task.verify = []; }
+      if (!validate(task)) throw new Error(`Invalid planned task: ${JSON.stringify(validate.errors)}`);
+      imported.set(task.id, { task, path: prior?.path ?? await projectPath(this.root, `.memory-bank/tasks/${task.id}.task.json`, true) });
+    }
+    const all = new Map([...existing, ...imported]);
+    const visiting = new Set(), done = new Set();
+    const visit = id => {
+      if (done.has(id)) return;
+      if (visiting.has(id)) throw new Error('Task dependency cycle');
+      const record = all.get(id); if (!record) throw new Error(`Missing task dependency ${id}`);
+      visiting.add(id); for (const dependency of record.task.depends_on) visit(dependency);
+      visiting.delete(id); done.add(id);
+    };
+    for (const id of imported.keys()) visit(id);
+    for (const [id, record] of imported) {
+      if (!existing.has(id)) {
+        record.task.status = record.task.depends_on.every(dep => ['done', 'done_for_prod'].includes(all.get(dep).task.status)) ? 'ready' : 'planned';
+        index.tasks.push({ id, file: `${id}.task.json` });
+      }
+      await this.saveTask(record);
+    }
+    await atomic(indexPath, index);
+    return [...imported.keys()];
+  }
   async reports(task, operation) {
     const evidence = task.verify.find(item => item.stage === 'workflow' && item.attempt === operation.attempt);
     for (const filename of operation.selected.protocols) {
@@ -80,13 +123,14 @@ export class Store {
       await atomicText(path, content);
     }
   }
-  async runnable() {
+  async runnable(feature) {
     const index = await json(join(this.root, '.memory-bank/tasks/index.json'));
     const records = await Promise.all(index.tasks.map(row => this.task(row.id)));
-    const stranded = records.find(row => row.task.status === 'in_progress');
+    const candidates = feature ? records.filter(row => row.task.feature === feature) : records;
+    const stranded = candidates.find(row => row.task.status === 'in_progress');
     if (stranded) return stranded;
-    const ready = records.find(row => ['ready', 'planned'].includes(row.task.status) && row.task.depends_on.every(id => records.some(dep => dep.task.id === id && ['done', 'done_for_prod'].includes(dep.task.status))));
-    if (!ready && records.some(row => !['done', 'done_for_prod'].includes(row.task.status))) throw new Error('No runnable task: blocked dependency or task owner decision');
+    const ready = candidates.find(row => ['ready', 'planned'].includes(row.task.status) && row.task.depends_on.every(id => records.some(dep => dep.task.id === id && ['done', 'done_for_prod'].includes(dep.task.status))));
+    if (!ready && candidates.some(row => !['done', 'done_for_prod'].includes(row.task.status))) throw new Error('No runnable task: blocked dependency or task owner decision');
     return ready;
   }
   saveTask(record) { return atomic(record.path, record.task); }

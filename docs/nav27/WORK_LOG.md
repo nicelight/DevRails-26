@@ -414,3 +414,29 @@ Main/Judge/Side read-only composition сохраняется. Spec architecture 
 
 Следующий последовательный срез: общий model feedback, consent/autonomous,
 command-family routing и H steering/consultation. Side/map — после него.
+
+### Semantic/routing: перед последней приёмкой
+
+`nav_semantic_routing` реализовал native pre-step assignment/capture, один
+nav_feedback, actual-user consent/freshness, native H steer/Judge и families
+37 команд. Representative PRD→planning→task import→exe→feature red→sync и
+REJECT→green→owning repair→re-review прошли. Targeted bootstrap, recovery,
+Stop/Judge и freshness также прошли. Root не принял вырезание no-target
+consultation как unsupported: это явное базовое требование пользователя.
+Минимальная ветка реализована существующим pending: facts→main interpretation
+→unfinished owner same attempt; factual subject.complete исключает повтор
+готового subject. Native test подтверждён; full suite 36/36 PASS.
+
+Последняя локальная правка удерживает automatic semantic delivery при Stop;
+исполнитель повторяет build/test после неё. Его context reset застал эту точку;
+root восстановил статус из сообщений, поскольку IMPLEMENTATION_SEMANTIC_RESULT
+ещё содержал старые checkpoints. Новый функционал не добавляется до final
+handoff. Всё ещё впереди: Side и SVG UI, затем независимая итоговая приёмка.
+
+Semantic/routing принят: последняя Stop правка прошла повторный build/typecheck
+и 36/36 native tests (32 top-level, 46.95 s); diff-check PASS, shared-* =0.
+Финальный handoff обновлён. 37 command IDs имеют shared-family mapping; это
+не индивидуальная end-to-end сертификация всех веток. Проверены representative
+product/planning/execution, owning repair, bootstrap и subject recovery.
+Следующий агент делает Side и schematic SVG UI с semantic zoom, сохраняя
+штатный main chat. Визуальная детализация остаётся отдельно от принятия flow.

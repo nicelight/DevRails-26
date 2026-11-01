@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import Ajv from 'ajv';
 import { Store, projectPath } from './store.mjs';
 import { schemaFor, substantive } from './reply.mjs';
+import { SemanticMain } from './semantic.mjs';
+import { Routing } from './routing.mjs';
 
 const protocols = ['run.md', 'context.md', 'plan.md', 'progress.md', 'verification.md', 'handoff.md', 'red-verification.md'];
 const defaults = { design: false, local_checks: true, red_verify: false, feature_red_verify: false, verify: [], protocols: [] };
@@ -35,7 +37,7 @@ export class Controller {
     if (!Number.isInteger(attemptLimit) || attemptLimit < 1) throw new Error('attemptLimit must be a positive integer');
     this.attemptLimit = attemptLimit;
     this.store = new Store(project); this.adapter = adapter; this.routes = structuredClone(routes);
-    this.queue = Promise.resolve(); this.work = null;
+    this.queue = Promise.resolve(); this.work = null; this.semantic = new SemanticMain(this); this.routing = new Routing(this);
   }
   serial(action) { const pending = this.queue.then(action); this.queue = pending.catch(() => {}); return pending; }
   async open() {
@@ -46,8 +48,12 @@ export class Controller {
       this.run.holds ??= this.run.hold ? [this.run.hold] : [];
       if (this.run.operation) {
         this.run.operation.peers ??= [{ role: 'exe', session: this.run.operation.childSession, state: 'prepared' }];
-        await this.reconcile();
+        if (this.run.operation.kind === 'subject') {
+          if (this.run.operation.peers.every(peer => peer.state === 'complete')) { this.run.phase = this.run.pending ? 'blocked' : 'stopped'; }
+          else { this.run.phase = 'interrupted'; this.run.operation.unreconciled = true; this.run.blocker = 'Inspect subject outputs before resuming the unfinished owner'; }
+        } else await this.reconcile();
       }
+      this.semantic.initialize();
       this.run.mainSession = await this.adapter.openMain(this.store.root, this.run.mainSession, this.run.settings.routes.main);
       let launch;
       if (this.run.phase === 'stopped' && !this.run.holds.length && !this.run.pending && !this.run.blocker) launch = await this.advance();
@@ -69,7 +75,7 @@ export class Controller {
       const next = structuredClone(request.settings);
       const s = next.selected;
       if (!s || ['design', 'local_checks', 'red_verify', 'feature_red_verify'].some(key => typeof s[key] !== 'boolean') || !Array.isArray(s.verify) || new Set(s.verify).size !== s.verify.length || !s.verify.every(id => ['main', 'secondary', 'code'].includes(id))) throw new Error('Invalid selected work');
-      if (s.design || s.feature_red_verify) throw new Error('Planning and feature boundaries are not available in this execution slice');
+      if (next.planning && Object.values(next.planning).some(value => typeof value !== 'boolean')) throw new Error('Invalid planning selection');
       if (!Array.isArray(s.protocols) || new Set(s.protocols).size !== s.protocols.length || s.protocols.some(name => !protocols.includes(name))) throw new Error('Invalid protocol selection');
       for (const role of new Set(['main', 'exe', ...s.verify.map(id => `verify_${id}`), ...(s.red_verify ? ['red'] : []), ...Object.keys(next.routes).filter(role => Object.values(next.routes[role] ?? {}).some(Boolean))])) await this.adapter.validateRoute(next.routes[role]);
       this.adapter.selectMain(next.routes.main);
@@ -90,12 +96,21 @@ export class Controller {
     else { this.run.phase = 'interrupted'; this.run.blocker = 'Inspect actual effects and resume the unfinished work in this attempt'; }
   }
   async control(request) {
+    if (request.action === 'start-command') return this.routing.start(request);
+    if (request.action === 'green' && request.requestId) return this.semantic.approve(request);
+    if (request.action === 'inspect') return this.semantic.inspect(request);
+    if (request.action === 'autonomous') {
+      const view = await this.serial(async () => { this.assertRevision(request); this.run.autonomous = !this.run.autonomous; if (this.run.autonomous && this.run.pending?.proposal && !this.run.pending.proposal.missingFacts.length) await this.semantic.accept(this.run.pending.id, { source: 'autonomous', reason: this.run.pending.proposal.question }); await this.save(); return this.snapshot(); });
+      await this.semantic.depart(); return view;
+    }
     let launch;
     const view = await this.serial(async () => {
       this.assertRevision(request);
       if (['pause', 'red', 'stop'].includes(request.action)) {
         if (!this.run.holds.includes(request.action)) this.run.holds.push(request.action);
         if (this.run.phase === 'ready') this.run.phase = 'stopped';
+        if (request.action === 'stop' && this.run.mainAssignment && !this.run.mainAssignment.captured) this.run.mainAssignment.messageId = null;
+        if (request.action === 'stop' && this.run.inspection?.state === 'requested') this.run.inspection.state = 'interrupted';
         if (request.action === 'stop' && this.run.phase === 'running') this.run.operation.unreconciled = true;
         await this.save();
         if (request.action === 'stop') void this.adapter.stop().catch(error => this.recordTechnicalError(error));
@@ -116,13 +131,16 @@ export class Controller {
         launch = await this.admit(record, evidence, 'exe');
         await this.save(); return this.snapshot();
       }
-      if (this.run.phase === 'blocked' && !this.run.pending && this.run.taskId) {
+      if (this.run.phase === 'blocked' && !this.run.pending && this.run.taskId && this.run.operation?.kind !== 'subject') {
         const { task } = await this.store.task(this.run.taskId);
         if (!negative(task.verify) && this.run.operation.peers?.every(peer => peer.state === 'complete')) { this.run.phase = 'stopped'; this.run.blocker = null; }
       }
       if (this.run.pending || this.run.phase === 'blocked') {
         const holds = this.run.holds.filter(item => !(request.action === 'green' ? ['red', 'pause'] : ['pause', 'stop']).includes(item));
         if (holds.length !== this.run.holds.length) { this.run.holds = holds; await this.save(); }
+        if (!this.run.holds.includes('stop') && this.run.mainAssignment && !this.run.mainAssignment.captured && !this.run.mainAssignment.messageId && (this.run.pending || this.run.decision?.admission === 'consulting')) {
+          this.adapter.sendMain(this.run.mainAssignment); await this.save(); return this.snapshot();
+        }
         throw new Error(this.run.blocker ?? 'Pending decision');
       }
       const holds = this.run.holds.filter(item => !(request.action === 'green' ? ['red', 'pause'] : ['pause', 'stop']).includes(item));
@@ -131,19 +149,20 @@ export class Controller {
       this.run.holds = holds;
       if (this.run.phase === 'interrupted') {
         if (request.action !== 'resume') throw new Error('Use Resume to inspect and continue actual partial effects');
-        const record = await this.store.task(this.run.taskId);
+        const record = this.run.operation.kind === 'subject' ? { task: {} } : await this.store.task(this.run.taskId);
         const op = this.run.operation;
         op.resume = true; op.unreconciled = false;
         for (const peer of op.peers) if (peer.state !== 'complete') { peer.state = 'prepared'; peer.previousSessions = [...(peer.previousSessions ?? []), peer.session]; peer.session = randomUUID(); }
         this.run.blocker = null; this.run.phase = 'running'; launch = { operation: structuredClone(op), task: record.task };
       } else launch = await this.advance(request.taskId);
+      if (this.run.decision?.admission === 'pending') this.run.decision.admission = this.run.operation?.id ?? 'complete';
       await this.save(); return this.snapshot();
     });
     if (launch) this.start(launch);
     return view;
   }
   start(launch) {
-    this.work = this.execute(launch).catch(error => this.recordTechnicalError(error)).finally(() => { this.work = null; });
+    this.work = this.execute(launch).catch(error => this.recordTechnicalError(error)).finally(() => { this.work = null; void this.semantic.depart().catch(error => this.recordTechnicalError(error)); });
   }
   async preflight(task) {
     if (!['ready', 'planned', 'in_progress'].includes(task.status)) throw new Error(`Task is not runnable: ${task.status}`);
@@ -157,11 +176,14 @@ export class Controller {
     if (['T2', 'T3'].includes(task.tier) && !task.normative_inputs.length) throw new Error('T2/T3 require direct canonical inputs');
   }
   async advance(requested) {
+    if (this.run.flow && !this.run.flow.execution) return this.routing.advance();
     let record = this.run.taskId ? await this.store.task(this.run.taskId) : null;
     let evidence = record && currentEvidence(record.task, this.run.operation);
     if (!record || ['done', 'done_for_prod'].includes(record.task.status)) {
-      record = requested ? await this.store.task(requested) : await this.store.runnable();
+      record = requested ? await this.store.task(requested) : await this.store.runnable(this.run.flow?.inputs.feature);
+      if (!record && this.run.flow?.execution) return this.routing.afterExecution();
       if (!record) { this.run.phase = 'done'; this.run.blocker = null; return; }
+      if (this.run.settings.selected.feature_red_verify && (!this.run.flow || this.run.flow.execution && !this.run.flow.inputs.feature)) this.run.flow = { inputs: { ...(this.run.flow?.inputs ?? {}), feature: record.task.feature }, features: [], queue: true, pipeline: false, execution: true, next: null };
       if (record.task.status !== 'in_progress') await this.preflight(record.task);
       const existing = record.task.verify.filter(item => item.stage === 'workflow');
       if (existing.length) {
@@ -215,6 +237,7 @@ export class Controller {
     await readFile(this.adapter.commandPath(command), 'utf8');
     for (const filename of evidence.selected.protocols) await projectPath(this.store.root, `.memory-bank/templates/protocols/${filename === 'run.md' ? 'compact-run-template.md' : filename.replace('.md', '-template.md')}`);
     const operation = { id: randomUUID(), attempt: evidence.attempt, command, routes, selected: structuredClone(evidence.selected), peers: roles.map(role => ({ role, session: randomUUID(), state: 'prepared' })) };
+    if (this.run.decision?.admission === 'pending') this.run.decision.admission = operation.id;
     this.run.operation = operation; this.run.phase = 'running'; this.run.blocker = null;
     await this.store.saveTask(record);
     return { operation: structuredClone(operation), task: record.task };
@@ -222,6 +245,7 @@ export class Controller {
   async execute(launch) {
     let next = launch;
     while (next) {
+      if (next.operation.kind === 'subject') { next = await this.routing.execute(next); continue; }
       const { operation, task } = next;
       for (const peer of operation.peers) {
         if (peer.state === 'complete') continue;
@@ -252,7 +276,7 @@ export class Controller {
             } else evidence.red_verification = subject;
             if (binding) binding.state = operation.command === 'exe' && subject.implementation !== 'complete' ? 'interrupted' : 'complete';
             if (feedback.flow === 'needs_decision' && current) {
-              this.run.pending = { operation: operation.id, participant: peer.role, owner: task.id, message: feedback.message };
+              this.run.pending = { id: randomUUID(), operation: operation.id, participant: peer.role, owner: task.id, message: feedback.message };
               await this.save();
             }
             await this.store.saveTask(record);
@@ -278,13 +302,14 @@ export class Controller {
         } else if (this.run.holds.length) { this.run.phase = 'stopped'; this.run.operation.unreconciled = false; }
         else { const launch = await this.advance(); await this.save(); return launch; }
         await this.save();
+        if (this.run.phase === 'blocked') await this.semantic.requestProposal(this.run.blocker);
       });
     }
   }
   async recordTechnicalError(error) { await this.serial(async () => { this.run.phase = 'interrupted'; this.run.blocker = error.message; await this.save(); }); }
   async dispose() {
     await this.serial(async () => {
-      if (this.run.phase === 'running') { if (!this.run.holds.includes('stop')) this.run.holds.push('stop'); await this.save(); }
+      if (this.run.phase === 'running' || ['requested', 'running'].includes(this.run.inspection?.state)) { if (!this.run.holds.includes('stop')) this.run.holds.push('stop'); await this.save(); }
     });
-    await this.adapter.stop(); await this.work; await this.adapter.dispose(); await this.store.release(); }
+    await this.adapter.stop(); await this.work; await this.semantic.judgeWork; await this.adapter.dispose(); await this.queue; await this.store.release(); }
 }

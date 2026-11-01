@@ -36,11 +36,11 @@ function call(name, args, id) {
 }
 class FixtureProvider extends LlmAdapter {
   requests = [];
-  constructor(script) { super(); this.script = script; }
+  constructor(script, models = {}) { super(); this.script = script; this.models = models; }
   async resolveModel(provider, model) { return { provider, id: model, name: model }; }
   async *stream(options) {
     this.requests.push(options);
-    const entry = this.script.shift();
+    const entry = this.models[options.model]?.shift() ?? (options.model === 'main' ? [{ type: 'finish', reason: { kind: 'stop' } }] : this.script.shift());
     if (!entry) throw new Error('Fixture script exhausted');
     const chunks = typeof entry === 'function' ? await entry(options) : entry;
     yield* chunks;
@@ -80,7 +80,7 @@ async function fixture(t, script, options = {}) {
   if (options.shell) { await ctx.plugin(Subprocess); await ctx.plugin(BashLocal, { cwd: project }); }
   await ctx.plugin(AgentLoop, { agents: [] });
   await ctx.plugin(AgentPresets, { default: 'nav-unused-default' });
-  const provider = new FixtureProvider(script); ctx.llm.registerAdapter(['fixture'], provider);
+  const provider = new FixtureProvider(script, options.models); ctx.llm.registerAdapter(['fixture'], provider);
   await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0 });
   let credentials;
   ctx.provide('credentials', { readRecord: async () => credentials, modifyRecord: async (_key, mutate) => credentials = await mutate(credentials), deleteRecord: async () => { credentials = undefined; } });
@@ -92,7 +92,7 @@ async function fixture(t, script, options = {}) {
   await ctx.loader.resolve(row).fiber?.await();
   assert.ok(ctx.get('nav27'), 'Nav host loaded through the native Loader');
   const initial = await ctx.nav27.snapshot();
-  await ctx.nav27.settings({ runId: initial.runId, revision: initial.revision, settingsRevision: initial.settingsRevision, settings: { ...initial.settings, selected: { ...initial.settings.selected, local_checks: false, ...(options.selected ?? {}) }, routes: { ...initial.settings.routes, verify_main: { provider: 'fixture', model: 'review-main' }, verify_secondary: { provider: 'fixture', model: 'review-secondary' }, verify_code: { provider: 'fixture', model: 'review-code' }, red: { provider: 'fixture', model: 'red' } } } });
+  await ctx.nav27.settings({ runId: initial.runId, revision: initial.revision, settingsRevision: initial.settingsRevision, settings: { ...initial.settings, selected: { ...initial.settings.selected, local_checks: false, ...(options.selected ?? {}) }, routes: { ...initial.settings.routes, verify_main: { provider: 'fixture', model: 'review-main' }, verify_secondary: { provider: 'fixture', model: 'review-secondary' }, verify_code: { provider: 'fixture', model: 'review-code' }, red: { provider: 'fixture', model: 'red' }, judge: { provider: 'fixture', model: 'judge' } } } });
   return { ctx, root, project, installed, provider, row, readTask: async () => JSON.parse(await readFile(join(project, `.memory-bank/tasks/${taskId}.task.json`), 'utf8')) };
 }
 const completed = { feedback: { flow: 'continue', message: 'Implementation is complete; selected checks were off.' }, subject: { implementation: 'complete', evidence: ['Created src/greeting.js exporting greeting = Hello; no local checks executed.'] } };
@@ -111,7 +111,7 @@ test('external package uses native child lifecycle and retains truthful all-off 
   assert.equal(task.verify[0].implementation, 'complete');
   for (const field of ['local_checks', 'verification', 'red_verification']) assert.equal(task.verify[0][field], 'skipped');
   assert.deepEqual(task.verify[0].selected.protocols, []);
-  assert.equal(f.provider.requests.length, 2);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 2);
   assert.deepEqual(f.provider.requests[0].tools.map(tool => tool.name).sort(), ['edit', 'read', 'structured_output', 'write']);
   const main = f.ctx.agents.get(initial.mainSession);
   assert.deepEqual(f.ctx.tools.schemas(main).map(tool => tool.name).sort(), ['nav_feedback', 'read']);
@@ -149,7 +149,7 @@ test('authenticated HTTP page and generated typed Remote work from external deli
   assert.equal(stale.ok, false);
   assert.equal(stale.error.code, 'nav27/rejected');
   assert.match(stale.error.message, /Stale run/);
-  assert.equal(f.provider.requests.length, 0);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 0);
 });
 
 test('executor write boundary rejects effects and retains partial evidence', { timeout: 30000 }, async t => {
@@ -177,12 +177,19 @@ test('required gates reject admission before native execution', { timeout: 30000
   await writeFile(join(f.project, `.memory-bank/tasks/${taskId}.task.json`), JSON.stringify(task));
   const before = await f.ctx.nav27.snapshot();
   await assert.rejects(() => f.ctx.nav27.control({ runId: before.runId, revision: before.revision, action: 'play', taskId }), /Required gates/);
-  assert.equal(f.provider.requests.length, 0);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 0);
   assert.equal((await f.readTask()).status, 'ready');
 });
 
 const reviewed = (verdict, evidence = ['Read src/greeting.js and compared the exported value with the task-owned outcome.']) => ({ feedback: { flow: 'continue', message: 'Assigned inspection completed.' }, subject: { verdict, evidence } });
-async function control(f, action, extra = {}) { const v = await f.ctx.nav27.snapshot(); return f.ctx.nav27.control({ runId: v.runId, revision: v.revision, action, ...extra }); }
+async function control(f, action, extra = {}) {
+  for (let i = 0; i < 10; i++) {
+    const v = await f.ctx.nav27.snapshot();
+    try { return await f.ctx.nav27.control({ runId: v.runId, revision: v.revision, action, ...extra }); }
+    catch (error) { if (!/Stale run\/revision/.test(error.message)) throw error; }
+  }
+  throw new Error('Snapshot never settled');
+}
 async function select(f, update) { const v = await f.ctx.nav27.snapshot(); return f.ctx.nav27.settings({ runId: v.runId, revision: v.revision, settingsRevision: v.settingsRevision, settings: update(structuredClone(v.settings)) }); }
 function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
 
@@ -226,7 +233,7 @@ test('red waits for exe station; future verify/red can be disabled without anoth
   const task = await f.readTask();
   assert.equal(task.status, 'done'); assert.equal(task.verify.length, 1); assert.equal(task.verify[0].attempt, attempt);
   assert.equal(task.verify[0].verification, 'skipped'); assert.equal(task.verify[0].red_verification, 'skipped');
-  assert.equal(f.provider.requests.length, 1);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 1);
 });
 
 test('all selected peers retain the whole-leg model snapshot and packed references are readable', { timeout: 30000 }, async t => {
@@ -259,7 +266,7 @@ test('candidate-only and red-alone remain distinct evidence without hidden funct
     const e = (await f.readTask()).verify[0];
     if (candidate) { assert.equal(e.verification[0].candidate_findings, 'none'); assert.equal(e.verification[0].verdict, undefined); }
     else { assert.equal(e.verification, 'skipped'); assert.equal(e.red_verification.verdict, 'semantic-pass'); }
-    assert.equal(f.provider.requests.length, 2);
+    assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 2);
     await doctorAccepts(f);
   });
 });
@@ -290,7 +297,7 @@ test('recovery catches up task evidence ahead of run and retains a manual hold',
   assert.equal(recovered.phase, 'stopped'); assert.equal(recovered.hold, 'red'); assert.equal(recovered.mainSession, before.mainSession);
   assert.deepEqual(f.ctx.tools.schemas(f.ctx.agents.get(recovered.mainSession)).map(t => t.name).sort(), ['nav_feedback', 'read']);
   await control(f, 'green'); assert.equal((await f.ctx.nav27.snapshot()).phase, 'done');
-  assert.equal(f.provider.requests.length, 1);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 1);
 });
 
 test('Stop persists before native cancellation and Resume inspects partial effects in the same attempt', { timeout: 30000 }, async t => {
@@ -313,7 +320,7 @@ test('Stop persists before native cancellation and Resume inspects partial effec
   assert.equal(final.phase, 'done', final.blocker ?? '');
   const task = await f.readTask(); assert.equal(task.verify.length, 1); assert.equal(task.verify[0].attempt, before.attempt);
   assert.equal(task.verify[0].local_checks, 'skipped');
-  assert.equal(f.provider.requests.length, 3);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 3);
 });
 
 async function doctorAccepts(f) {
@@ -364,7 +371,7 @@ test('configured unsuccessful-attempt budget prevents hidden repair execution', 
   const task = await f.readTask(); task.verify[0].verification[0].disposition = { decision: 'repair', source: 'autonomous', reason: 'Repair the observed mismatch under the accepted task scope.' };
   await writeFile(join(f.project, `.memory-bank/tasks/${taskId}.task.json`), JSON.stringify(task));
   await assert.rejects(control(f, 'repair'), /budget exhausted/);
-  assert.equal(f.provider.requests.length, 2); assert.equal((await f.readTask()).verify.length, 1);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 2); assert.equal((await f.readTask()).verify.length, 1);
 });
 
 test('host advances a ready dependency queue without replaying its completed predecessor', { timeout: 30000 }, async t => {
@@ -377,7 +384,7 @@ test('host advances a ready dependency queue without replaying its completed pre
   assert.equal(final.phase, 'done', final.blocker ?? ''); assert.equal(final.taskId, second.id);
   assert.equal((await f.readTask()).status, 'done');
   assert.equal(JSON.parse(await readFile(join(f.project, `.memory-bank/tasks/${second.id}.task.json`))).status, 'done');
-  assert.equal(f.provider.requests.length, 2);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 2);
 });
 
 test('accepted continue disposition permits closure without erasing the actual FAIL', { timeout: 30000 }, async t => {
@@ -404,7 +411,7 @@ test('a decision-needed peer and an unfinished peer are both accounted without s
   await unload(f); await reload(f);
   assert.match((await f.ctx.nav27.snapshot()).pending, /clarification/);
   await assert.rejects(control(f, 'play'), /clarification/);
-  assert.equal(f.provider.requests.length, 3);
+  assert.equal(f.provider.requests.filter(r => r.model !== 'main').length, 3);
 });
 
 test('partial execution leaves unfinished selected checks absent; production remainder stays explicit', { timeout: 30000 }, async t => {
@@ -419,4 +426,256 @@ test('partial execution leaves unfinished selected checks absent; production rem
     assert.equal((await f.readTask()).status, 'done_for_prod'); assert.match((await f.readTask()).verify[0].production_remainder, /release owner/);
     await doctorAccepts(f);
   });
+});
+
+const mainReply = (detail, flow = 'continue') => ({ feedback: { flow, message: 'Current assigned interpretation is complete.', ...(detail ? { detail } : {}) }, subject: { summary: 'Interpreted the actual current evidence.' } });
+const propose = (overrides = {}) => mainReply({ question: 'Continue this task with the retained result?', action: 'continue', scope: 'current', target: '', missingFacts: [], ...overrides }, 'needs_decision');
+const readRun = async f => JSON.parse(await readFile(join(f.project, '.memory-bank/nav27/run.json'), 'utf8'));
+
+test('native main proposal and green authorize one request and preserve the child result', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', { ...completed, feedback: { flow: 'needs_decision', message: 'Owner must accept the task-local tradeoff.' } }, 'exe')], { models: { main: [call('nav_feedback', propose(), 'proposal')] } });
+  await control(f, 'play', { taskId });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'main proposal');
+  assert.equal((await f.readTask()).status, 'in_progress');
+  await control(f, 'green', { requestId: pending.requestId });
+  await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'approved closure');
+  assert.equal((await readRun(f)).decision.origin, 'green');
+  assert.equal((await f.readTask()).verify.length, 1);
+  await assert.rejects(control(f, 'green', { requestId: pending.requestId }), /Stale pending/);
+  assert.equal(f.provider.requests.filter(r => r.model === 'executor').length, 1);
+});
+
+test('H wakes idle main while child runs, duplicate reuses consultation and Judge cannot close its leg', { timeout: 30000 }, async t => {
+  const child = deferred(); const entered = deferred(); const judge = deferred(); const inspecting = deferred();
+  t.after(() => { child.resolve(); judge.resolve(); });
+  const f = await fixture(t, [async () => { entered.resolve(); await child.promise; return call('structured_output', completed, 'exe'); }], { models: {
+    main: [call('nav_feedback', mainReply({ question: 'Inspect whether my current scope follows the task.', scope: taskId, contextRefs: ['.memory-bank/tasks/index.json'] }), 'inspect'), call('nav_feedback', mainReply(), 'interpreted')],
+    judge: [async () => { inspecting.resolve(); await judge.promise; return call('structured_output', { feedback: { flow: 'continue', message: 'Inspection complete.' }, subject: { summary: 'The assigned scope is consistent.', evidence: ['Read the indexed task and retained assignment.'] } }, 'judge'); }],
+  } });
+  await control(f, 'play', { taskId }); await entered.promise;
+  const operation = (await readRun(f)).operation.id;
+  await control(f, 'inspect'); await inspecting.promise;
+  const first = (await readRun(f)).inspection.id;
+  await control(f, 'inspect'); assert.equal((await readRun(f)).inspection.id, first);
+  assert.equal((await f.readTask()).verify[0].implementation, undefined);
+  judge.resolve(); await waitFor(() => f.ctx.nav27.snapshot(), v => v.inspection === 'complete', 'Judge completion');
+  assert.equal((await readRun(f)).operation.id, operation); assert.equal((await f.ctx.nav27.snapshot()).phase, 'running');
+  child.resolve(); await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'real child completion');
+  assert.equal(f.provider.requests.filter(r => r.model === 'judge').length, 1);
+});
+
+test('H cannot relabel an already running main call and queued steering survives concludeTurn', { timeout: 30000 }, async t => {
+  const started = deferred(); const finishOld = deferred();
+  t.after(() => finishOld.resolve());
+  const f = await fixture(t, [], { models: {
+    main: [async () => { started.resolve(); await finishOld.promise; return call('nav_feedback', mainReply(), 'old'); }, call('nav_feedback', mainReply({ question: 'Inspect my route interpretation.', scope: 'current', contextRefs: [] }), 'h'), call('nav_feedback', mainReply(), 'interpret')],
+    judge: [call('structured_output', { feedback: { flow: 'continue', message: 'Read-only inspection complete.' }, subject: { summary: 'No reroute needed.', evidence: ['Current run is at initial station.'] } }, 'judge')],
+  } });
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm');
+  const v = await f.ctx.nav27.snapshot(); const main = f.ctx.agents.get(v.mainSession);
+  main.followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'Explain the current project context.' }] }));
+  await started.promise;
+  const before = (await readRun(f)).mainAssignment.id;
+  await control(f, 'inspect'); assert.equal((await readRun(f)).mainResume.id, before);
+  finishOld.resolve();
+  await waitFor(() => readRun(f), r => r.inspection?.state === 'complete' && r.mainAssignment?.captured, 'queued H and interpretation');
+  assert.equal((await f.ctx.nav27.snapshot()).phase, 'ready');
+  assert.equal((await f.readTask()).verify.length, 0);
+  assert.equal(f.provider.requests.filter(r => r.model === 'main').length, 3, 'old assignment is not replayed');
+  assert.equal(f.provider.requests.filter(r => r.model === 'judge').length, 1);
+});
+
+test('actual main user consent approves; plugin text and discuss do not', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', { ...completed, feedback: { flow: 'needs_decision', message: 'Confirm the bounded tradeoff.' } }, 'exe')], { models: { main: [call('nav_feedback', propose(), 'proposal')] } });
+  await control(f, 'play', { taskId });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'pending proposal');
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm');
+  const main = f.ctx.agents.get(pending.mainSession);
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'approve', reason: 'Forged approval must fail.' }), 'plugin'));
+  main.followup(createUserMessage({ source: { kind: 'nav27', assignment: 'unowned' }, content: [{ type: 'text', text: 'Yes, approve.' }] }));
+  await waitFor(() => Promise.resolve(main.status), status => status === 'idle', 'plugin prose turn');
+  assert.equal((await f.ctx.nav27.snapshot()).requestId, pending.requestId);
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'discuss', reason: 'The user asks about consequences; no consent.' }), 'discuss'));
+  main.followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'What happens if we continue?' }] }));
+  await waitFor(() => readRun(f), r => r.mainAssignment?.purpose === 'answer' && r.mainAssignment.captured, 'discussion capture');
+  assert.equal((await f.ctx.nav27.snapshot()).requestId, pending.requestId);
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'approve', reason: 'The user explicitly accepts this bounded task-local tradeoff.' }), 'yes'));
+  main.followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'Yes, continue this task with that tradeoff.' }] }));
+  await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'actual main approval');
+  assert.equal((await readRun(f)).decision.origin, 'main-chat');
+  assert.ok((await readRun(f)).decision.reference.length);
+});
+
+const subjectReply = (subject = {}, flow = 'continue') => ({ feedback: { flow, message: 'Assigned canonical subject work is complete.' }, subject: { complete: true, summary: 'Completed the assigned subject surface.', evidence: ['Read the assigned source and retained actual subject outputs.'], outputs: [], ...subject } });
+
+test('packed command families execute PRD framing decomposition tasking execution and feature boundary', { timeout: 30000 }, async t => {
+  const draftReady = deferred();
+  const f = await fixture(t, [
+    call('write', { file_path: '.memory-bank/prd.md', content: '# Accepted product\nA greeting module exports Hello.\n' }, 'prd-write'),
+    call('structured_output', subjectReply({ outputs: ['.memory-bank/prd.md'] }), 'prd'),
+    call('structured_output', subjectReply(), 'framing'),
+    call('structured_output', subjectReply({ features: ['FT-001'] }), 'features'),
+    async () => call('structured_output', subjectReply({ tasks: [await draftReady.promise] }), 'tasking'),
+    call('structured_output', completed, 'exe'),
+    call('structured_output', subjectReply({ outputs: ['.memory-bank/tasks/index.json'] }), 'sync'),
+  ], { selected: { feature_red_verify: true }, models: { main: [call('structured_output', subjectReply({ verdict: 'semantic-pass' }), 'feature-red')] } });
+  const draft = await f.readTask(); draft.id = 'TASK-002-T1-FT-001-W1'; draft.status = 'done'; draft.verify = [{ must_not_survive: true }];
+  draftReady.resolve(draft);
+  await writeFile(join(f.project, '.memory-bank/tasks/index.json'), JSON.stringify({ version: 1, tasks: [] }));
+  const initial = await f.ctx.nav27.snapshot(); assert.equal(initial.commands.length, 37);
+  await control(f, 'start-command', { command: 'write-prd', inputs: { source: 'Implement an exported Hello greeting, accepted by the user.' } });
+  const final = await waitFor(() => f.ctx.nav27.snapshot(), v => ['done', 'blocked', 'interrupted'].includes(v.phase), 'full subject chain');
+  assert.equal(final.phase, 'done', final.blocker ?? '');
+  const index = JSON.parse(await readFile(join(f.project, '.memory-bank/tasks/index.json')));
+  assert.equal(index.tasks.length, 1); assert.equal(index.tasks[0].id, draft.id);
+  const task = JSON.parse(await readFile(join(f.project, `.memory-bank/tasks/${draft.id}.task.json`)));
+  assert.equal(task.status, 'done'); assert.equal(task.verify.length, 2);
+  assert.equal(task.verify[0].stage, 'workflow'); assert.equal(task.verify[1].stage, 'feature_red_verify');
+  assert.equal(task.verify[1].verdict, 'semantic-pass');
+  assert.deepEqual((await readRun(f)).boundaries.map(item => item.command), ['write-prd', 'spec-init', 'prd-to-features', 'feature-to-tasks', 'red-verify', 'mb-sync']);
+  assert.equal(f.provider.requests.filter(r => r.model === 'main').length, 1, 'ordinary transitions need no main semantic call');
+});
+
+test('native review rejection proposes owning repair, then re-reviews the same subject', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', subjectReply({ features: ['FT-001'] }), 'owner-repair')], { models: { main: [
+    call('structured_output', subjectReply({ verdict: 'REJECT' }), 'reject'),
+    async () => { const run = await readRun(f); return call('nav_feedback', propose({ action: 'route', scope: `subject:${run.operation.id}`, target: 'prd-to-features', question: 'Repair the feature decomposition at its owner, then re-review?' }), 'proposal'); },
+    call('structured_output', subjectReply({ verdict: 'APPROVE' }), 'approve'),
+  ] } });
+  // A standalone review has a bounded return, not a newly authorized product pipeline.
+  await control(f, 'start-command', { command: 'review-feat-plan', inputs: { feature: 'FT-001' } });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'review repair proposal');
+  await control(f, 'green', { requestId: pending.requestId });
+  await waitFor(() => readRun(f), run => run.boundaries?.length === 3, 'owner repair and re-review');
+  const run = await readRun(f);
+  assert.deepEqual(run.boundaries.map(b => b.command), ['review-feat-plan', 'prd-to-features', 'review-feat-plan']);
+  assert.equal(run.boundaries[0].verdict, 'REJECT'); assert.equal(run.boundaries[0].disposition.decision, 'repair');
+  assert.equal(run.boundaries[2].verdict, 'APPROVE');
+});
+
+test('a failed native tools/result never commits staged main feedback', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', { ...completed, feedback: { flow: 'needs_decision', message: 'Need a bounded owner decision.' } }, 'exe')], { models: { main: [call('nav_feedback', propose(), 'proposal')] } });
+  const main = f.ctx.agents.get((await f.ctx.nav27.snapshot()).mainSession);
+  main.ctx.on('tools/execute', async (exec, next) => {
+    const result = await next();
+    return exec.name === 'nav_feedback' ? { isError: true, error: { message: 'Fixture native result failure' }, content: [{ type: 'text', text: 'Fixture native result failure' }] } : result;
+  });
+  await control(f, 'play', { taskId });
+  await waitFor(() => readRun(f), r => !!r.mainError, 'missing authoritative capture');
+  assert.equal((await f.ctx.nav27.snapshot()).requestId, null);
+  assert.equal((await readRun(f)).decision, undefined);
+  assert.equal((await readRun(f)).mainAssignment.captured, undefined);
+  assert.equal((await f.readTask()).status, 'in_progress');
+});
+
+test('new actual user input arriving after execute blocks an older approval at native result', { timeout: 30000 }, async t => {
+  const staged = deferred(); const release = deferred(); t.after(() => release.resolve());
+  const f = await fixture(t, [call('structured_output', { ...completed, feedback: { flow: 'needs_decision', message: 'Need bounded consent.' } }, 'exe')], { models: { main: [call('nav_feedback', propose(), 'proposal')] } });
+  await control(f, 'play', { taskId });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'pending');
+  const main = f.ctx.agents.get(pending.mainSession);
+  main.ctx.on('tools/execute', async (exec, next) => {
+    const result = await next();
+    if (exec.name === 'nav_feedback' && exec.arguments.feedback?.detail?.answer === 'approve') { staged.resolve(); await release.promise; }
+    return result;
+  });
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm');
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'approve', reason: 'The earlier message approves.' }), 'old-yes'));
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'reject', reason: 'The newer actual user message cancels permission.' }), 'new-no'));
+  main.followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'Yes, continue.' }] }));
+  await staged.promise;
+  main.steer(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'No, do not continue.' }] }));
+  release.resolve();
+  await waitFor(() => readRun(f), r => !!r.rejected, 'new rejection');
+  assert.equal((await readRun(f)).decision, undefined); assert.equal((await f.readTask()).status, 'in_progress');
+});
+
+test('autonomous scoped negative disposition preserves Pause and actual FAIL', { timeout: 30000 }, async t => {
+  const entered = deferred(); const finish = deferred(); t.after(() => finish.resolve());
+  const f = await fixture(t, [call('structured_output', completed, 'exe'), async () => { entered.resolve(); await finish.promise; return call('structured_output', reviewed('FAIL'), 'fail'); }], { selected: { verify: ['main'] }, models: { main: [call('nav_feedback', propose({ scope: 'verify:main' }), 'proposal')] } });
+  await control(f, 'autonomous'); await control(f, 'play', { taskId }); await entered.promise;
+  await control(f, 'pause'); finish.resolve();
+  await waitFor(() => readRun(f), r => r.decision?.source === 'autonomous', 'autonomous disposition');
+  assert.match((await f.ctx.nav27.snapshot()).hold, /pause/);
+  assert.equal((await f.ctx.nav27.snapshot()).phase, 'stopped');
+  assert.equal((await f.readTask()).status, 'in_progress');
+  assert.equal((await f.readTask()).verify[0].verification[0].verdict, 'FAIL');
+  assert.equal((await f.readTask()).verify[0].verification[0].disposition.source, 'autonomous');
+});
+
+test('H Stop retains the owned late result without waking main or admitting work', { timeout: 30000 }, async t => {
+  const entered = deferred(); const finish = deferred(); t.after(() => finish.resolve());
+  const f = await fixture(t, [], { models: { main: [call('nav_feedback', mainReply({ question: 'Inspect initial route context.', scope: 'current', contextRefs: [] }), 'h')], judge: [async () => { entered.resolve(); await finish.promise; return call('structured_output', { feedback: { flow: 'continue', message: 'Inspection ended.' }, subject: { summary: 'No route change.', evidence: ['Read initial run context.'] } }, 'late'); }] } });
+  await control(f, 'inspect'); await entered.promise; await control(f, 'stop'); finish.resolve();
+  await waitFor(() => readRun(f), r => !!r.inspection?.result, 'owned result after Stop');
+  assert.match((await f.ctx.nav27.snapshot()).hold, /stop/);
+  assert.equal(f.provider.requests.filter(r => r.model === 'main').length, 1);
+  assert.equal((await f.readTask()).verify.length, 0);
+});
+
+test('bundled bootstrap sync restores required resources and start resumes indexed work', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', completed, 'exe')]);
+  await rm(join(f.project, '.memory-bank/workflows/autonomy-policy.md'));
+  await control(f, 'start-command', { command: 'mb-init', inputs: { sync: true } });
+  const final = await waitFor(() => f.ctx.nav27.snapshot(), v => ['done', 'blocked', 'interrupted'].includes(v.phase), 'generator and existing task');
+  assert.equal(final.phase, 'done', final.blocker ?? '');
+  assert.match(await readFile(join(f.project, '.memory-bank/workflows/autonomy-policy.md'), 'utf8'), /DSH/);
+  assert.equal((await f.readTask()).status, 'done');
+  assert.equal((await readRun(f)).boundaries[0].command, 'mb-init');
+});
+
+test('subject Stop/reload/Resume keeps actual outputs and the original operation', { timeout: 30000 }, async t => {
+  const entered = deferred(); const finish = deferred(); t.after(() => finish.resolve());
+  const f = await fixture(t, [
+    call('write', { file_path: '.memory-bank/observed-baseline.md', content: '# Existing baseline\nRetain this partial result.\n' }, 'partial'),
+    async () => { entered.resolve(); await finish.promise; return [{ type: 'finish', reason: { kind: 'stop' } }]; },
+    call('read', { file_path: '.memory-bank/observed-baseline.md' }, 'inspect'),
+    call('structured_output', subjectReply({ outputs: ['.memory-bank/observed-baseline.md'] }), 'resume'),
+  ]);
+  await control(f, 'start-command', { command: 'map-codebase', inputs: { source: 'Map only the current as-is baseline.' } });
+  await entered.promise; const operation = (await readRun(f)).operation.id;
+  await control(f, 'stop'); finish.resolve();
+  await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'interrupted', 'subject interruption');
+  await unload(f); await reload(f);
+  await control(f, 'resume');
+  const final = await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'resumed subject');
+  assert.equal((await readRun(f)).boundaries[0].operation, operation);
+  assert.match(await readFile(join(f.project, '.memory-bank/observed-baseline.md'), 'utf8'), /Retain this partial result/);
+  assert.equal((await f.readTask()).verify.length, 0);
+  assert.equal(final.verification, 'map-codebase');
+});
+
+test('missing facts block green/autonomous and an actual sufficient main answer resolves them once', { timeout: 30000 }, async t => {
+  const f = await fixture(t, [call('structured_output', { ...completed, feedback: { flow: 'needs_decision', message: 'Need the actual accepted greeting language.' } }, 'exe')], { models: { main: [call('nav_feedback', propose({ missingFacts: ['Accepted greeting language'] }), 'proposal')] } });
+  await control(f, 'autonomous'); await control(f, 'play', { taskId });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'missing facts proposal');
+  await assert.rejects(control(f, 'green', { requestId: pending.requestId }), /Missing facts/);
+  assert.equal((await readRun(f)).decision, undefined);
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm');
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'approve', reason: 'The actual user specifies English and explicitly approves the bounded continuation.', resolvedFacts: ['Accepted greeting language'] }), 'facts-and-yes'));
+  f.ctx.agents.get(pending.mainSession).followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'English. Yes, continue this task.' }] }));
+  await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'one sufficient actual answer');
+  assert.equal((await readRun(f)).decision.origin, 'main-chat');
+});
+
+test('no-target current-owner question consumes actual facts and resumes only unfinished task work in the same attempt', { timeout: 30000 }, async t => {
+  let resumedInput;
+  const f = await fixture(t, [
+    call('structured_output', { feedback: { flow: 'needs_decision', message: 'Which accepted greeting language should this task use?' }, subject: { implementation: 'partial', evidence: ['Inspected the task; the accepted language is not specified.'] } }, 'question'),
+    async options => { resumedInput = JSON.stringify(options.messages); return call('structured_output', completed, 'resumed'); },
+  ], { models: { main: [call('nav_feedback', propose({ action: 'consult', question: 'Which greeting language is accepted?', missingFacts: ['Accepted greeting language'] }), 'owner-question')] } });
+  await control(f, 'play', { taskId });
+  const pending = await waitFor(() => f.ctx.nav27.snapshot(), v => !!v.requestId, 'current-owner question');
+  const attempt = (await f.readTask()).verify[0].attempt;
+  await assert.rejects(control(f, 'green', { requestId: pending.requestId }), /Missing facts/);
+  f.provider.models.main.push(call('nav_feedback', mainReply({ requestId: pending.requestId, answer: 'discuss', reason: 'The actual user specifies English; this resolves the current owner question without requesting a new route.', resolvedFacts: ['Accepted greeting language'] }), 'actual-facts'));
+  f.provider.models.main.push(call('nav_feedback', { feedback: { flow: 'continue', message: 'The actual English answer resolves the unfinished task question.' }, subject: { summary: 'Resume the same task using the user-specified English greeting.' } }, 'interpret'));
+  const { createUserMessage } = await import('@deepseek-ai/dsh-llm');
+  f.ctx.agents.get(pending.mainSession).followup(createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'English.' }] }));
+  const final = await waitFor(() => f.ctx.nav27.snapshot(), v => v.phase === 'done', 'same-owner resume');
+  const task = await f.readTask(); assert.equal(task.verify.length, 1); assert.equal(task.verify[0].attempt, attempt);
+  assert.equal(task.verify[0].implementation, 'complete');
+  assert.equal((await readRun(f)).decision.action, 'consult');
+  assert.match(resumedInput, /English/);
+  assert.equal(final.taskId, taskId);
 });

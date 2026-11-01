@@ -7,7 +7,9 @@ const destination = resolve(root, 'packages/nav27/resources');
 rmSync(destination, { recursive: true, force: true });
 mkdirSync(destination, { recursive: true });
 writeFileSync(join(destination, 'package.json'), JSON.stringify({ type: 'commonjs' }));
-for (const spec of resolveCommandSpecs(root)) {
+const specs = resolveCommandSpecs(root);
+writeFileSync(join(destination, 'commands.json'), JSON.stringify(specs.map(spec => ({ name: spec.name, resources: spec.resources.map(resource => resource.targetRel) }))));
+for (const spec of specs) {
   const directory = join(destination, 'commands', spec.name);
   mkdirSync(directory, { recursive: true });
   writeFileSync(join(directory, 'SKILL.md'), spec.content);
