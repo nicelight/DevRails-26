@@ -347,3 +347,51 @@ Cost cut: отдельный журнал settings deltas исключён; curr
 последовательно покрывают admission/evidence/recovery, semantic interaction/H,
 Side и согласованную schematic UI. Source-only assets/legacy installer остаются
 проверяемой доставкой framework, а не выдаются за уже готовый DSH adapter.
+
+### Реализация: foundation slice в работе
+
+Единственный активный исполнитель `nav_implementation_foundation` (Astra medium).
+Specs приняты и отправлены commit `14cd949`; код ещё не принят. Исполнитель
+сохраняет checkpoint в `IMPLEMENTATION_FOUNDATION_RESULT.md`. Уже созданы
+external package/resource build, extracted command inventory, controller/store,
+DSH adapter и role composition. Используются native DSH tool-fs, не собственные
+file tools. Первый путь пока file-only/all-off; более сложные задачи явно
+отклоняются до следующего среза, а не ложно завершаются.
+
+Frozen dependencies upstream установлены. Общий `build:lib:host` сгенерировал
+Typert artifacts, но compiler исчерпал доступную память; остановлены только
+процессы запущенной исполнителем сборки. Остальные процессы не затронуты.
+Продолжение — minimal dependency build и source-resolved native lifecycle tests,
+без повторного aggregate typecheck. Отдельно требуется доказать package build/
+delivery; source-resolved test не объявляется real-provider или полной
+установкой DSH. Upstream source modifications по-прежнему запрещены.
+
+Foundation checkpoint: опубликованный npm DSH `0.2.2-alpha.2` выбран для
+изолированной package сборки вместо aggregate upstream build. Research SHA
+сохраняется как источник анализа, это не утверждение тождества версий. Typert
+package generator потребовал registered workspace protocol; собственный build
+staging с public protocol declarations позволил получить штатные descriptors
+без patches. Package build и own host typecheck PASS, installer smoke PASS.
+Bundle sizes reported: host 23 KB, native addon 1.6 KB, Svelte status 856 KB.
+
+Native Loader уже загружает пакет. Scoped agentPresets mount исправлен; после
+reset контекста root передал точное состояние из reports, повтор native test
+дошёл до draft mismatch task JSON Schema. Исполнитель меняет Ajv на 2020-12.
+Native lifecycle, packed delivery и truthful evidence ещё требуют успешного
+прохода. Reset не является завершением среза; исполнитель продолжает один.
+
+### Foundation принят: package и native task loop
+
+`nav_implementation_foundation` завершил первый срез. Реальный DSH Loader,
+agent loop, tool-fs и child lineage проверены с deterministic provider через
+`npm pack` / изолированное распаковывание. Четыре integration tests, own build/
+host tsc и install-sync PASS; auth, generated Remote и stale revision отказ
+проверены. Source shared-* =0. Реальный provider и browser пока не проверены.
+
+Native composition исправлена: allow:[] скрывал preset-owned tools; запрет
+лишних inherited tools и dispatch guard теперь сохраняют native file tools.
+Подробности и ограничения: IMPLEMENTATION_FOUNDATION_RESULT.md. Это первый
+срез file-only T0/T1/all-off, а не готовый plugin. Следующий агент расширяет
+исполнение и выбранные проверки, станционную конфигурацию и recovery; затем
+semantic interactions/H, общий command routing и Side/map. Полный aggregate
+upstream build не повторять; один опубликованный DSH baseline 0.2.2-alpha.2.

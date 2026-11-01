@@ -1,0 +1,14 @@
+import { Context } from '@deepseek-ai/cordis';
+import { mount } from 'svelte';
+import { installConnection } from '@deepseek-ai/dsh-client-connection/client';
+import * as Gateway from '@deepseek-ai/dsh-api-gateway/client';
+import * as Typert from '@deepseek-ai/dsh-typert-registry/client';
+import remote from '../lib/typert.remote-client.js';
+import App from './App.svelte';
+const ctx = new Context();
+const root = new URL('../', location.href);
+installConnection(ctx, { location, transport: { fetch: (input, init) => fetch(new URL(String(input), root), init), streamBaseUrl: root.href } });
+await ctx.plugin(Typert);
+await ctx.plugin(Gateway);
+await ctx.remote.$mount(remote);
+mount(App, { target: document.getElementById('app')!, props: { remote: ctx.remote.nav27 } });
