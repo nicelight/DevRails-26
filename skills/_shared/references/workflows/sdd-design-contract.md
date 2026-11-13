@@ -37,7 +37,8 @@ Keep each rule or decision at one useful canonical owner and link its consumers:
 - subject specs under `architecture/`, `contracts/`, `domains/`, `states/`,
   `testing/`, `runbooks/`, `guides/`, or `adrs/`: the cohesive technical concern;
 - features: product behavior, stable ACs, and direct `spec_design_links`;
-- `foundation.md`: executable-baseline decision and evidence.
+- `foundation.md`: executable-baseline decision, evidence, and gate-task link;
+  the queue and task statuses stay in indexed task records.
 
 Do not create default feature-owned multi-concern spec hubs or duplicate a graph
 inside plans/tasks. Reuse or extend a useful existing spec before adding another.
@@ -66,6 +67,10 @@ Use durable `AD-*` rules or ADRs when they preserve a non-obvious accepted decis
 Keep IDs stable and retired decisions identifiable. Routine local conventions
 need no ADR or architecture rule. Code roots help discovery; they are not hard
 task write boundaries.
+
+An architecture rule's verification describes how to check the rule. Link to
+task/evidence owners for current implementation or check readiness and results;
+do not turn the rule into an execution log.
 
 ## Verification and evidence
 Keep simple verification methods in feature ACs/task cards. Create a testing or

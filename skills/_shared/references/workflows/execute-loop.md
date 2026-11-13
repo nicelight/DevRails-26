@@ -41,6 +41,16 @@ existing information rather than copying it into several reports. A task records
 its outcome, relevant context, current state, and actual verification results;
 additional protocol files are useful only when they help execution or resumption.
 
+Navigation annotations describe a source's purpose; do not copy its current
+status, revision, or handoff. Keep state in its owning artifact and existing
+registry fields. Specs hold accepted behavior and decisions; task/run records
+hold execution progress and results. Report the run's summary to the operator,
+without copying it into specs or backbone as per-run history.
+
+Keep unresolved questions with the concern they belong to. When a question is
+resolved, retain the decision at its canonical owner and remove stale open or
+deferred markers from the affected documents; preserve relevant history/evidence.
+
 Choose checks that address the requested result and actual risk. Report failed,
 skipped, and unavailable checks honestly; a skipped check is not PASS. Stop only
 affected work for an unresolved decision outside the granted autonomy, a real

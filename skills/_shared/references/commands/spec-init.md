@@ -14,9 +14,10 @@ relevant existing specs. Ask about unclear product meaning when it affects the
 requested decomposition; missing command-history markers alone are not blockers.
 
 ## Framing
-Reconcile material terminology in `.memory-bank/glossary.md`. Capture only
-useful actors, scenarios, entities, ownership/lifecycle hints, constraints,
-non-goals, and risks. Link a sufficient PRD section instead of copying it.
+Reconcile term meanings in `.memory-bank/glossary.md`; keep unresolved design
+questions with their owning concern. Capture useful actors, scenarios, entities,
+ownership/lifecycle hints, constraints, non-goals, and risks in the framing below.
+Link a sufficient PRD section instead of copying it.
 
 Use `.memory-bank/spec-backbone.md` for decomposition inputs, open design
 questions, and handoff. Keep `.memory-bank/spec-index.md` a registry of canonical

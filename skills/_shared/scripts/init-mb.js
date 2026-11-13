@@ -788,7 +788,7 @@ status: active
 
 ## Structure and maintenance
 1. Every \`.memory-bank/**/*.md\` MUST have frontmatter with \`description:\`.
-2. Use annotated links: \`[.memory-bank/path](rel-path): короткое описание\`.
+2. Use annotated links: \`[.memory-bank/path](rel-path): stable source purpose\`.
 3. Atomic docs: one cohesive concern per doc; split by boundary, change cadence,
    consumers, or reuse, not by file length alone.
 4. Duo docs remain valid: \`architecture/\` (WHAT/WHY) + \`guides/\` (HOW), cross-link both ways for concepts that use the classic pair model.
