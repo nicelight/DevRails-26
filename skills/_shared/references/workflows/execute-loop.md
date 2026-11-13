@@ -47,6 +47,9 @@ registry fields. Specs hold accepted behavior and decisions; task/run records
 hold execution progress and results. Report the run's summary to the operator,
 without copying it into specs or backbone as per-run history.
 
+For source changes, apply [Module contracts](#module-contracts) to preserve
+file-local meaning alongside implementation.
+
 Keep unresolved questions with the concern they belong to. When a question is
 resolved, retain the decision at its canonical owner and remove stale open or
 deferred markers from the affected documents; preserve relevant history/evidence.
@@ -56,6 +59,35 @@ skipped, and unavailable checks honestly; a skipped check is not PASS. Stop only
 affected work for an unresolved decision outside the granted autonomy, a real
 missing prerequisite, unsafe replay, or lack of permission. State what is needed
 to continue. Do not turn an optional process recommendation into a blocker.
+
+## Module contracts
+
+Read an existing module header before editing its implementation. For a new or
+materially changed source module with non-obvious responsibility, state ownership,
+side effects, or invariants, keep a short semantic contract near the file start,
+respecting language-required prefixes. Establish its intended meaning before
+implementation; update it first when an authorized change alters that meaning.
+An unchanged contract needs no rewrite. Adopt this on touched modules, without
+backfilling unrelated files or annotating trivial wrappers and generated output.
+
+The header states purpose, owned responsibility/state, relevant observable
+guarantees and invariants, and responsibility boundaries or forbidden effects.
+Include input/output semantics only where signatures do not convey them. Use
+natural language and the project's comment conventions; a `Module contract`
+label is sufficient. Omit empty fields, symbol/import inventories, change logs,
+and implementation recipes. Section comments are useful only for non-obvious
+semantic boundaries; simple functions need no repetitive contracts.
+
+Accepted requirements and specs govern intended behavior; the header captures
+their file-local implications and local invariants. Link existing governing
+specs where useful rather than copying them or creating a spec just for a header.
+Code and tests establish current behavior, not permission to redefine the
+contract. Reconcile discrepancies under Working policy; do not weaken a contract
+to bless a defect or describe an unimplemented guarantee as verified.
+
+Keep header, implementation, and affected canonical specs coherent in the same
+change. Check material guarantees with relevant code/test evidence; header
+presence alone proves nothing. Missing markup alone is not a workflow gate.
 
 ## Principle: no task explosion
 

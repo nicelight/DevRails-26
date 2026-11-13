@@ -23,6 +23,8 @@ Choose checks that credibly address the task-owned outcome, constraints,
 anti-goals, and material regression risk. Dependency results are prerequisites,
 not a reason to re-prove their whole scope. Use direct canonical sources where
 they govern the outcome; optional examples do not become acceptance criteria.
+Check affected module contracts against implementation and governing specs under
+`.memory-bank/workflows/execute-loop.md#module-contracts`.
 
 Inspect actual evidence rather than equating an executor claim with proof.
 Reuse a still-applicable result when its inputs and scope are clear; rerun or

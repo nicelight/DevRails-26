@@ -34,6 +34,8 @@ Reopening `done|failed|blocked` requires an authorized decision and a resolved
 reason, not a silent reset.
 
 Use the smallest sufficient implementation and useful project-native checks.
+Apply `.memory-bank/workflows/execute-loop.md#module-contracts` to affected
+source modules.
 `touched_files` guides discovery; it is not a file allow-list. Respect deliberate
 hard boundaries, actual dependencies, accepted requirements, and user changes.
 Update affected specifications and task context when an authorized decision
