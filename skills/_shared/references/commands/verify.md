@@ -1,308 +1,69 @@
 ---
-description: Independently verify one task outcome against its task-scoped normative basis and reproducible evidence.
+description: Check one task's agreed outcome and record honest functional evidence.
 status: active
 ---
 # /verify - Verify one TASK outcome
 
 <objective>
-Prove or disprove one task's independently verifiable outcome. Record functional
-evidence and exactly one `VERDICT: PASS|FAIL|NEEDS-CLARIFICATION` without
-becoming an implementer, planner, scheduler, or adversarial semantic reviewer.
+Assess one indexed task against its agreed outcome and relevant requirements.
+Return `VERDICT: PASS|FAIL|NEEDS-CLARIFICATION` with evidence. A verification
+request does not authorize implementation or a new product/design decision.
 </objective>
 
 <input_contract>
-Expected `$ARGUMENTS`: one `TASK-NNN-TN-FT-NNN-WN`.
-
-Require:
-- exactly one matching indexed task record plus
-  `.memory-bank/workflows/tier-policy.md#tier-obligations` and
-  `#closure-authority`;
-- `#task-claim-and-dependency-ownership`;
-- `#tier-classification-and-escalation` when scope may be under-tiered,
-  `#hard-write-boundary` when a boundary/alias is non-empty,
-  `#task-scoped-acceptance-evidence` when its fields are populated, and
-  `#claim-linked-red--green-for-t2t3` only for T2/T3;
-- task-linked feature/REQ material needed for this outcome;
-- direct task-linked applicable canonical SDD specs;
-- current accepted graph row and exact contract heading for every task-scoped
-  inter-module interaction;
-- tier-selected execution protocol and `/exe` handoff/evidence:
-  - T0/T1 -> `.protocols/<TASK_ID>/run.md` plus `.tasks/<TASK_ID>/` when present;
-  - T2/T3 -> `context.md`, `plan.md`, `progress.md`, `handoff.md`, existing
-    `verification.md`, and substantive `.tasks/<TASK_ID>/` artifacts.
-
-Normal scheduler input is `in_progress`. Manual re-verification of another state
-requires tier-appropriate execution evidence or an explicit request. Never
-verify a merely `planned|ready` task as executed or silently reinterpret
-`blocked|failed|done`.
-
-Point-of-use preflight confirms index/file/ID and ID-segment consistency, valid
-tier, string-array `reqs`/`depends_on`, valid gate shapes, valid `verify` array,
-and tier-selected execution evidence. This is not another full schema/review
-gate. Missing required input returns `NEEDS-CLARIFICATION`; do not reconstruct
-it from protocol prose.
-
-An execute receipt is optional evidence, not required `/exe` input.
-Its absence or ineligibility routes to a rerun or replacement probe, not by
-itself to `NEEDS-CLARIFICATION`. Missing tier-required protocol, `/exe`
-handoff/evidence, or normative evidence remains a required-input blocker under
-the rule above.
+Read the task, relevant acceptance/spec links, actual changes, and available
+execution evidence. Apply
+`.memory-bank/workflows/execute-loop.md#working-policy` and
+`.memory-bank/workflows/tier-policy.md#closure-authority`.
+The card and current work matter more than a particular protocol shape.
 </input_contract>
 
-<hard_invariants>
-- Before the verdict, load and apply this installed skill's
-  `references/finding-adjudication.md` semantic pack.
-- Before the verdict, attempt one fresh best-effort co-review on model
-  `Codex Luna` with reasoning effort `xhigh`, using this installed skill's
-  `agents/review-code.md`; give it the task target, governing evidence, scope,
-  and actual change surface. Do not retry or block verification if it cannot
-  launch. Treat its output only as candidate findings.
-- Route only by `task.tier`; lifecycle/status ownership is canonical in
-  `.memory-bank/workflows/tier-policy.md#closure-authority`.
-- Verify this task's outcome and mapped AC/REQ subset, not the whole feature or
-  acceptance assigned to other tasks.
-- Treat `done` and `done_for_prod` dependency outcomes as prerequisites, not claims to prove.
-  Applicable regression checks support the current task outcome and do not
-  transfer ownership.
-- Direct task-linked canonical specs outrank secondary task prose for their
-  concerns. For T2/T3, feature links or `spec-index.md` alone are insufficient.
-- Apply only spec families demanded by actual scope. Missing/conflicting/wrong
-  canonical coverage is a planning/design blocker, not an implementation FAIL.
-- Evidence requirements and verification targets state what must be proved;
-  they are not proof. `/exe` local PASS is input, not automatic PASS.
-- Executor claim-path evidence linked by the current attempt is supporting, not
-  an independent observation or replacement for this command's functional
-  proof. Never demand fabricated RED from historical `done|done_for_prod|failed` tasks.
-- An execute receipt is self-attested supporting evidence. It does not prove
-  that its declared snapshot preceded the command or that the reported result
-  occurred, and it is never an independent observation by `/verify`.
-- Advisory `touched_files` deviation is not material expansion by itself; hard
-  allowed/forbidden scopes and semantic task boundaries remain strict.
-- When direct task links define architecture boundaries, `PASS` requires both
-  the functional outcome and the allowed architectural path. Limit this to the
-  actual change surface; do not run a repository-wide architecture audit.
-- Do not edit implementation, specs, AC, dependencies, tier/wave, task scope,
-  BUG records, or follow-up tasks.
-- `/verify` never invokes `/debug`. It may recommend a separate fresh
-  `/debug <TASK_ID>` for an observed failure whose root cause or minimum
-  correction is not evidence-backed; the functional verdict still follows this
-  command's evidence-adequacy rules.
-- Scheduler mode: never close/fail/block/promote tasks or dependents.
-</hard_invariants>
+<verification>
+Choose checks that credibly address the task-owned outcome, constraints,
+anti-goals, and material regression risk. Dependency results are prerequisites,
+not a reason to re-prove their whole scope. Use direct canonical sources where
+they govern the outcome; optional examples do not become acceptance criteria.
 
-<operator_decisions>
-Do not validate a feature-related semantic finding from an apparently
-unambiguous downstream specification alone. When the verdict depends on an
-unresolved interpretation, return `NEEDS-CLARIFICATION` with the exact question,
-affected proof, and evidence. Route it, and any observed semantic violation
-whose repair may change feature planning or canonical design, to
-`/feature-doctor FT-<NNN>` while preserving the evidence-required functional
-verdict. Missing `/exe` evidence and proved implementation-only failures with
-fixed semantics retain their existing owners. Resume after the owning repair;
-unattended flow returns the doctor's exact halt route to the scheduler.
-</operator_decisions>
+Inspect actual evidence rather than equating an executor claim with proof.
+Reuse a still-applicable result when its inputs and scope are clear; rerun or
+probe when needed. TDD history, a fresh context, extra co-reviewers, and a
+separate semantic review are not prerequisites. Independence or specialist
+review may help for a consequential uncertain result; choose it proportionately.
+The optional `references/finding-adjudication.md`, `agents/review-code.md`, and
+`references/web-design-reviewer.md` provide bounded review guidance.
 
-<agent_discretion>
-Within the task-scoped normative basis, the verifier chooses evidence-reading
-order, tools, the smallest credible independent checks, reproducible flows, and
-depth proportional to tier and failure risk. It also chooses whether validating
-a reuse candidate or safely rerunning/replacing its gate is the cheaper credible
-path. Receipt reuse is an optional optimization, not a required verification
-phase. Coverage criteria do not prescribe a fixed checklist order or require
-irrelevant test categories.
-</agent_discretion>
+Keep production/external probes within existing permissions and known safe
+conditions. Missing authority, an unresolved substantive interpretation, or
+inaccessible proof is reported precisely. In manual flow consult the operator;
+with delegated autonomy resolve choices within that authority and reconcile
+memory. Do not silently expand the accepted outcome.
+
+A skipped check is not a passed check. Judge against the current agreed scope,
+including explicit accepted verification limitations. Missing optional
+ceremony alone does not fail the implementation. A real observed violation of
+the agreed outcome remains a failure even when another check passed.
+</verification>
 
 <required_outputs>
-Build the minimum complete verification basis from:
-- direct task-linked canonical SDD rules and verification targets;
-- task purpose/outcome, anti-goals, constraints, invariants, runtime hard scope;
-- mapped feature AC and concrete REQ behavior;
-- gates/evidence requirements;
-- `/exe` handoff, current behavior, actual changes including none, local
-  results, and artifacts.
+Append a concise verdict/evidence summary to task `verify`, linking substantial
+artifacts when useful. If the card is malformed, preserve evidence and identify
+the needed repair. Update an existing useful protocol rather than require a new
+one. Record what was checked, observed results, relevant conditions, and what
+remains unverified.
 
-Before relying on a test, probe, receipt, or artifact in the verdict, confirm
-that its observation materially supports the specific task/spec claim or
-observable outcome it is cited to prove, rather than merely executing code or
-checking an implementation detail. Inadequate evidence is not an implementation
-failure: obtain the smallest credible replacement check/probe when safe, or use
-the existing `NEEDS-CLARIFICATION` semantics when required proof cannot be
-obtained. Treat this as ordinary claim-to-evidence mapping, not a separate
-review phase or checklist.
+- `VERDICT: PASS`: sufficient evidence supports the agreed task-scoped result.
+- `VERDICT: FAIL`: observed behavior violates that result or an applicable check.
+- `VERDICT: NEEDS-CLARIFICATION`: unresolved meaning, authority, or evidence
+  prevents a credible judgment.
 
-For T2/T3 governed by a prospective path, inspect the task's claim mapping and
-current execution evidence before assigning the verdict:
-- an initial applicable path links a stable accepted claim to real
-  pre-implementation RED caused by absence or incorrectness of that claim and
-  claim-equivalent GREEN after implementation;
-- a retry retains the original RED when one exists, links its failed gate
-  evidence and correction, and provides fresh claim-equivalent GREEN for
-  corrected applicable claims plus every required gate;
-- a not-applicable path must retain the concrete reason accepted by planning
-  and its alternative proof;
-- a pre-implementation GREEN claim records that the planned probe passed before
-  its production behavior changed; no artificial RED or speculative production
-  change may follow;
-- T3 evidence must stay inside authorized isolated/disposable state and cover
-  every task-owned harm-driving mapped claim required by accepted requirements
-  or evidenced material risk.
-
-These variants do not change verdict semantics. Independently prove the current
-task outcome. Missing, artificial, unsafe, or contradictory required execution
-evidence uses `VERDICT: NEEDS-CLARIFICATION` when it prevents a credible
-verdict; an observed violation of the normative basis uses `FAIL`. Fresh
-verifier-owned outcome evidence remains required; executor GREEN alone cannot
-satisfy PASS.
-
-Here `unsafe` means that required proof cannot be obtained safely and the
-forbidden probe has not been executed. Evidence that a production/destructive
-probe was already executed without required permission or outside a hard
-allowed/forbidden boundary is an observed normative violation: use
-`VERDICT: FAIL`, never `PASS`, and the existing policy route.
-
-For each applicable linked architecture rule, confirm that accepted owners
-change state and retain cross-module orchestration, required public boundaries
-and registered `Consumer -> Provider` contracts are used, dependency direction
-is preserved, and no forbidden write/bypass, second source of truth, or
-misplaced business responsibility appeared. An observed violation is `FAIL`;
-missing, stale, conflicting, or unregistered canonical coverage is
-`NEEDS-CLARIFICATION`. Unrelated pre-existing drift is evidence unless it
-invalidates the task outcome or proof.
-
-When a linked runtime/state rule requires reproducibility, verify its known
-initial state, safe rerun, observable result, and cleanup/isolation conditions.
-Do not introduce this proof process without task-scoped normative evidence.
-
-The verifier may ignore reuse candidates and immediately run a safe gate or
-replacement probe. Prefer that direct path when the gate is cheap, receipt
-eligibility is unclear, or validating the candidate would not be meaningfully
-cheaper than rerunning it. Do not inventory or assess every receipt merely
-because it exists.
-
-When the verifier elects to reuse a specific current-attempt candidate, assess
-that candidate before any probe or evidence write that may change its relevant
-inputs. Use the `/exe` handoff locator, or the current `run.md` receipt
-block for T0/T1, and ignore receipts marked `superseded` or supporting-only by
-a later attempt. For each candidate actually considered for reuse:
-
-- require one unambiguous block with `attempt`, `receipt_status`, `claim`,
-  `command`, `cwd`, `exit_code`, `input_state_basis`, `completed_at`, and
-  `evidence`;
-- require a well-known local deterministic gate with an explicitly and
-  conservatively bounded command read surface;
-- independently inspect current source/diff and recompute the relevant source,
-  config, dependency, generated/runtime, and redacted environment/toolchain
-  state needed to compare with `input_state_basis`;
-- accept elapsed time alone as non-invalidating for deterministic current-state
-  evidence, unless an authoritative project/task/spec/gate freshness policy or
-  volatile input requires a fresh observation;
-- reject reuse for missing/ambiguous fields, state drift, incomplete input
-  coverage, implicit/broad read surface, flaky/nondeterministic behavior,
-  external state, a command that changed its relevant inputs, observed
-  background mutation, or conflicting evidence.
-
-An eligible candidate may satisfy the need to repeat that exact execute gate,
-but remains supporting evidence. If a candidate is absent or rejected, rerun
-the safe gate or perform a replacement probe. Return
-`NEEDS-CLARIFICATION` only when required proof cannot be safely obtained or
-reproduced from the available state; do not turn an unusable receipt into an
-implementation `FAIL`.
-
-Cover every task-scoped outcome, mapped AC/REQ item, applicable concrete spec
-rule, gate, verification target, and evidence requirement, or record the exact
-blocker. Verify observable behavior, non-goals, actual change scope, hard scope,
-contract/state/data consistency, and real persistence proof when applicable.
-
-Tier-specific independence remains:
-- T0/T1 retain the existing compact/manual fast lane and scheduler evidence
-  rules from tier policy;
-- T2 may reuse eligible supporting or expensive execute gates, but PASS
-  requires at least one new verifier-owned outcome-level probe and independent
-  grounding for every required task-scoped claim. One probe may cover multiple
-  claims only when the report maps it to the complete affected claim set; no
-  required claim may rely only on a receipt;
-- T3 never permits reuse-only PASS. New verifier-owned functional evidence must
-  cover every task-owned harm-driving claim required by accepted requirements
-  or evidenced material risk; one probe is sufficient only when it demonstrably
-  covers that set. `/red-verify` remains the separate hostile semantic review
-  and is not duplicated here.
-
-For UI/browser scope, use the smallest reproducible project-native automation,
-record runtime/base URL and relevant viewport/device plus redacted artifacts,
-and return `NEEDS-CLARIFICATION` when required behavior cannot be credibly
-proved. When a running UI, relevant route, browser capability, and safe test
-state are already accessible, the verifier may load this installed skill's
-`references/web-design-reviewer.md` as an optional rendered-evidence lens.
-Otherwise ordinary verification continues unchanged. Verdict scope remains
-defined by the existing task/spec obligations.
-
-Write:
-- T0/T1 -> `.protocols/<TASK_ID>/run.md`;
-- T2/T3 -> `.protocols/<TASK_ID>/verification.md`;
-- substantive artifacts -> `.tasks/<TASK_ID>/`.
-
-The canonical initialization shape for the required existing T2/T3
-`verification.md` is
-`.memory-bank/templates/protocols/verification-template.md`. The task copy is
-task-owned resume state: update it in place and never recopy the framework
-template over it. Command and tier policy rules outrank template placeholders.
-
-Separate the verification evidence into:
-- `executor claim path`: mapped claims, RED/GREEN, pre-GREEN, or accepted
-  not-applicable reason, and exact execution evidence locators;
-- `reused execute evidence`: accepted candidates, supported claims, state and
-  freshness basis, and exact receipt locations;
-- `repeated checks`: reruns or replacement checks and the concise reason for
-  choosing that path; no rejected-candidate inventory is required;
-- `new targeted probes`: verifier-owned observations and their claim mapping.
-
-Keep full receipts in their existing protocol/artifact locations. Append only
-a concise verdict/evidence summary and links to task `verify`. Raw receipt
-output containing a standalone workflow verdict marker is not itself closure
-evidence.
-
-Use exactly one verdict:
-- `VERDICT: PASS`: every required task-scoped check passed with credible
-  evidence;
-- `VERDICT: FAIL`: the observed task outcome violates the task-scoped normative
-  basis or a required functional check;
-- `VERDICT: NEEDS-CLARIFICATION`: input, evidence, scope/tier, canonical
-  coverage, or reproducibility is missing, stale, contradictory, or unsafe.
-
-Append the verdict/evidence summary to structurally valid task `verify`. If the
-task record is malformed, keep evidence in protocol/artifacts and route repair.
+No unperformed observation is evidence, and a PASS is limited to its stated
+coverage. Report only material findings and questions relevant to this verdict.
 </required_outputs>
 
-<validation>
-Before reporting, confirm every required claim is reproducible from recorded
-commands/flows/artifacts; no feature-wide requirement was misassigned; actual
-scope did not require a higher tier; and no material branch was silently
-resolved. Also confirm that every planning-required T2/T3 execution path is
-honest, safe, and claim-linked through RED/GREEN, pre-GREEN, or its accepted
-not-applicable reason; no T2 required claim and no T3 task-owned harm-driving
-claim required by accepted requirements or evidenced material risk relies only
-on self-attested execute evidence, and every reused candidate is
-current-attempt, state-matched, bounded-input, and auditably reported.
-
-Higher-tier evidence returns `NEEDS-CLARIFICATION`, records original/required
-tier and trigger, and routes `/feature-doctor FT-<NNN>` before the owning
-controlled rebuild/split, review, and re-execution of the replacement ID.
-</validation>
-
 <handoff_contract>
-- Scheduler mode -> return verdict/evidence and recommended scheduler action;
-  leave lifecycle unchanged.
-- Manual T0/T1 PASS -> may set `done` or `done_for_prod` under the explicit-owner
-  conditions in tier policy and after evidence is in task `verify`.
-- T2 PASS -> closure-eligible for the explicit owner/scheduler; per-task
-  red-verify is optional, while T2 feature completion still requires
-  `/red-verify --feature FT-<ID>`.
-- T3 PASS -> per-task `/red-verify <TASK_ID>`; it is not closure-eligible yet.
-- FAIL or NEEDS-CLARIFICATION -> the named lifecycle/planning/evidence owner.
-- A difficult observed FAIL may additionally recommend separate
-  `/debug <TASK_ID>`; this command does not invoke it, and the debug report
-  cannot replace verifier-owned functional proof.
-
-Do not run `/red-verify`, `/mb-sync`, planning repair, or scheduler transitions
-inside this command.
+Return verdict, evidence, limitations, and the next useful action. A delegated
+or read-only verifier leaves lifecycle decisions to its caller. A top-level
+manual owner with an end-to-end assignment may close the task under tier policy;
+a scheduler owns closure in its run. Further review or repair can occur in the
+same authorized flow without a prescribed skill sequence.
 </handoff_contract>

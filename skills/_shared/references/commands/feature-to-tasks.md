@@ -1,401 +1,103 @@
 ---
-description: Plan or reconcile one product feature into canonical SDD coverage, an implementation plan, and complete JSON task cards.
+description: Turn one feature into useful design context and executable JSON tasks.
 status: active
 ---
-# /feature-to-tasks - Feature design -> implementation plan -> JSON tasks
+# /feature-to-tasks — Plan a feature
 
-<objective>
-Close or safely reconcile one product feature's tasking surface:
-- applicable feature-level SDD concern coverage and canonical spec links;
-- one implementation plan;
-- optional evidence-grounded behavior examples;
-- an execution-cohesive schema-backed JSON task queue;
-- verification-ready T2/T3 single-card handoff.
+## Outcome
+Reconcile one product feature's needed specs and indexed JSON tasks so another
+agent can understand the result, dependencies, constraints, and verification.
+Apply `.memory-bank/workflows/execute-loop.md#working-policy`,
+`.memory-bank/workflows/sdd-design-contract.md`, and applicable
+`.memory-bank/workflows/tier-policy.md` guidance.
 
-This command plans; it never executes tasks.
-</objective>
+Use one `FT-<NNN>` from the request or current agreed work. Clarify an ambiguous
+target; `FT-000` uses `/foundation-to-tasks`. Read the feature's accepted
+requirements/ACs, relevant specs, existing queue/evidence, and the installed task
+schema. Missing design approvals, Planning Revision, or previous command history
+do not by themselves prevent planning.
 
-<input_contract>
-Accept exactly one product `FT-<NNN>`. Without arguments, ask the operator to
-select one feature in interactive mode; unattended callers must supply it
-explicitly. Reject `FT-000` and every non-single-feature target; Foundation
-tasking belongs to `/foundation-to-tasks`.
+## Useful design and boundaries
+Reuse or extend canonical subject specs before adding new ones. Describe a
+concrete interface, data/state rule, or ownership boundary when execution would
+otherwise guess its meaning. Link relevant architecture, contracts, and the
+accepted dependency graph; do not copy the graph into each task.
 
-Before any durable plan or task write, require:
-- target feature, linked epic, governing REQ/RTM, clarified PRD, and applicable
-  Constitution rules;
-- `.memory-bank/spec-backbone.md` Global Backbone Status `complete`, or valid
-  `minimal` with explicit global/shared not-applicable rationales, and positive
-  integer `Planning Revision`;
-- `.memory-bank/spec-index.md` plus existing feature links and plausible
-  subject-based canonical specs;
-- `.memory-bank/contracts/boundary-map.md` as the canonical accepted
-  module/change-unit inventory and dependency topology;
-- a valid Foundation decision. When Foundation is required, the concrete
-  indexed `FT-000` final gate must be `done` and its ID retained as a direct or
-  transitive dependency of every product task;
-- `.memory-bank/tasks/index.json`, every existing indexed task for the target,
-  and existing plan/protocol/behavior evidence used for reconciliation;
-- `.memory-bank/workflows/execute-loop.md#fresh-feature-tasking-boundary`,
-  `#execution-cohesive-task-boundary`, and
-  `.memory-bank/workflows/tier-policy.md#task-claim-and-dependency-ownership`
-  before slicing;
-- available `.memory-bank/schemas/task.schema.json` and remaining applicable
-  tier-policy sections; parse them after boundary acceptance and before drafting
-  task records.
+Discuss unresolved material choices in manual work. Under authorized autonomy,
+choose within scope. Apply accepted changes to the affected canonical artifacts
+in the same work; owning commands are available tools, not mandatory hops.
+Preserve explicit user constraints and distinguish evidence from assumptions.
 
-Block task drafting when clarification is explicitly `pending|blocked`, feature
-design is `blocked`, a decomposition-relevant unresolved marker remains, global
-backbone/foundation readiness is invalid, or schema/tier policy is unavailable
-or incompatible. `PLANNING_RECONCILIATION_REQUIRED` is an instruction to
-reconcile, not a blocker. Missing clarification metadata alone is allowed.
-</input_contract>
+Task boundaries follow independently completable implementation outcomes, not
+files, layers, AC count, or test categories. Keep a result's tests and proof with
+its implementation. Present a compact proposed decomposition when the operator
+needs to choose; no prescribed slicing presentation, separate acceptance stage,
+or fresh planning context is required.
 
-<hard_invariants>
-- JSON task records and `.memory-bank/tasks/index.json` are the only task model.
-  Do not add a schema, registry, planning mode field, nested context model, or
-  lifecycle value.
-- Concrete IDs use `TASK-NNN-TN-FT-NNN-WN`; ID tier/feature/wave segments match
-  record fields. Product tasks use dependency-driven `W1+`; `W0` belongs only
-  to `FT-000`.
-- Lifecycle/status ownership is defined by
-  `.memory-bank/workflows/tier-policy.md#closure-authority`. Planning writes
-  `planned`, or `ready` only when dependencies and blockers are already
-  satisfied; it does not claim scheduler closure/promotion ownership.
-- Existing queue reconciliation is the default. Preserve ID, feature, wave,
-  tier, dependencies, lifecycle status, verification evidence, protocol links,
-  and the semantic basis of `in_progress|done|done_for_prod|failed` records. Full re-slicing
-  requires an explicit operator request.
-- If repair needs identity, tier, wave, dependency, AC, or material-scope
-  changes, report `rebuild_required`; do not hide a new task behind repair.
-- Every task boundary satisfies
-  `.memory-bank/workflows/execute-loop.md#execution-cohesive-task-boundary`.
-- Product feature, architecture slice/module, and task are distinct. A feature
-  may cross slices and a slice may support several features. A task normally
-  has one primary owning slice/module. A task may cross slices only after the
-  execution-cohesion rule leaves one indivisible outcome; an orchestration
-  owner and explicit crossed boundaries establish ownership, not merge
-  evidence.
-- `boundary-map.md` alone owns module identity and topology; plans and tasks
-  link relevant graph/contract blocks without copying the subgraph.
-- `touched_files` is advisory and non-exhaustive. A non-empty
-  `runtime_context.write_boundary` is a deliberate hard boundary and not a
-  copy of `touched_files`; `forbidden_scope` and stop conditions remain hard.
-- Features compose product behavior and canonical links; they do not own
-  default `FT-*` multi-concern design hubs.
-- New specs use subject-based canonical paths.
-- `spec-index.md` remains the pure
-  `Type | Path | Status | Scope | Change route` registry.
-- Never resolve competing canonical paths by creating a third spec.
-- Behavior specs are optional JSON `given/when/then` examples linked only
-  through feature `## Behavior specs` and task `source_artifacts`. They are not
-  a registry, schema, task field, readiness gate, verification target, or done
-  criterion.
-</hard_invariants>
+## Task records
+Use `.memory-bank/tasks/index.json` and schema-valid
+`TASK-NNN-TN-FT-NNN-WN.task.json` records. Keep ID tier/feature/wave segments
+consistent with fields. Product tasks use W1+; W0 is reserved for Foundation.
+Preserve existing IDs and historical evidence when their meaning is unchanged.
+Reconcile queued work rather than recreate it. If an authorized change really
+requires an identity change, update index/dependencies/links together and retain
+history; do not silently redefine completed work.
 
-<operator_decisions>
-Any unresolved material branch that can change product behavior, UX/acceptance,
-architecture, component/API/event/data/agent-tool contracts, storage/state,
-security/privacy/compliance, compatibility, task boundaries, tier,
-dependencies, verification strategy, Foundation dependency,
-or canonical spec identity belongs to the operator.
+Populate the existing schema fields with task-relevant information:
+- `purpose` and `success_outcome` make the motivation and observable result clear;
+- `feature`, `reqs`, and exact feature AC locators in `source_artifacts` preserve
+  acceptance traceability;
+- `depends_on` represents actual prerequisite outcomes, including an applicable
+  Foundation final gate, not a copy of module dependencies;
+- `touched_files` is an advisory, non-exhaustive expected change surface;
+- `normative_inputs`, `constraints`, `invariants`, `anti_goals`, and `docs` carry
+  relevant context and links without copying entire specs;
+- `verification_targets` describes the result/probe to check;
+- `evidence_required` describes the decisive observations/artifacts needed to
+  substantiate it; keep method and expected evidence distinct;
+- `gates` contains existing meaningful project-native commands, not invented
+  checks or a required catalogue of test levels;
+- `verify` preserves actual execution/verification evidence, never planned proof
+  presented as already observed.
 
-- Interactive/manual flow asks an adaptive focused question, states what it
-  unblocks, and may recommend an option; recommendation/default/silence is not
-  acceptance.
-- Apply an accepted answer to the existing owning feature, PRD, canonical spec,
-  Constitution, or Foundation artifact; record it in
-  `.protocols/FT-<NNN>/decision-log.md` when useful for handoff, remove
-  contradictory wording, and revalidate before task writes.
-- Route accepted shared/global design changes to `/spec-redesign`, PRD-owned
-  acceptance to `/write-prd`, missing REQ/AC decomposition to
-  `/prd-to-features`, and feature-local ambiguity to `/feature-doctor FT-<NNN>`.
-- Unattended flow records the question and affected scope, writes no affected
-  tasks, returns `HALT_CLARIFICATION_REQUIRED` for product clarification or
-  `HALT_BLOCKING_QUESTIONS` for design/contract decisions, and names the exact
-  interactive resume skill.
+Keep required schema keys even when their arrays are empty. Optional fields need
+no filler. T2/T3 handoffs should be understandable without rediscovery of their
+purpose, relevant spec, change surface, or verification path. Choose proportionate
+proof; tier alone does not impose RED/GREEN or a separate review ceremony.
 
-Do not ask again when authoritative evidence or an accepted policy already
-settles the decision. Independent read-only analysis may continue without
-predetermining the branch.
-</operator_decisions>
+A non-empty `runtime_context.write_boundary` is an intentional hard boundary,
+not a copy of `touched_files`. Preserve explicit forbidden scopes and stop
+conditions. Do not add new fields or a second task/context registry.
 
-<agent_discretion>
-Within the objective, authoritative evidence, hard boundaries, schema, and tier
-policy, the agent chooses:
-- discovery/read order, tools, temporary working notes, and proportional depth;
-- how to identify applicable concerns and canonical candidates;
-- whether a resumable concern note is useful or an in-memory audit is enough;
-- `reuse|extend|create|not_applicable|block` for each applicable concern;
-- the minimal canonical artifact shape;
-- task slicing and, after boundary acceptance, dependency/wave shape and
-  cheapest sufficient verification;
-- whether 0-3 behavior examples materially reduce real ambiguity.
+Map each task-owned accepted AC through its exact
+`.memory-bank/features/FT-<NNN>-<slug>.md#FT-<NNN>-AC-<NNN>` locator. Preserve
+stable AC IDs and REQ links. If accepted behavior needs a missing criterion,
+clarify its meaning and update the owning feature/requirements directly; do not
+invent a new product target. A spec or REQ link is context unless it names an
+owned observable acceptance result. Dependency proof stays with its owner.
 
-Architecture, Interfaces/Contracts, Data, state, security, runtime, operations,
-and Verification are completeness lenses, not a mandatory thinking order. Do
-not force irrelevant categories or fabricate `not_applicable` filler.
-</agent_discretion>
+Group production-only configuration/checks in a final `Production acceptance:`
+task when needed; keep that exact prefix because scheduling recognizes it. It
+depends on implementation tasks, has no dependents, and may remain planned
+without blocking development. Development-required configuration stays with its
+implementation outcome.
 
-<required_outputs>
-Edit the required outputs only when durable feature design/planning state,
-accepted decisions, canonical contracts, task records, registry links, or
-routing have changed, or the existing contract needs repair. Do not append
-per-run audit/reconciliation history, changed-spec/task inventories,
-queue-action summaries, or mirror the final chat handoff; preserve durable
-decision provenance, blockers, task lifecycle/evidence, and protocol resume
-state.
+Use `planned` for future work and `ready` when actual prerequisites are met.
+Retain lifecycle state and completed evidence during planning; do not manufacture
+PASS results or backfill historical RED/GREEN.
 
-## Planning artifacts
+## Other artifacts and checks
+An `IMPL-FT-<NNN>.md` plan or `.protocols/FT-<NNN>/` notes are useful for decisions
+spanning tasks; omit them when the feature/specs/cards already suffice. Optional
+behavior examples remain `given/when/then` JSON linked through `source_artifacts`,
+not new gates or proof obligations.
 
-Create/update only the existing artifacts:
-- `.protocols/FT-<NNN>/plan.md`;
-- `.protocols/FT-<NNN>/decision-log.md`;
-- `.memory-bank/tasks/plans/IMPL-FT-<NNN>.md`.
+Keep feature `spec_design_status: complete|not_required|blocked` and relevant
+`spec_design_links` truthful. Clear resolved reconciliation markers. Validate
+changed JSON/index entries, IDs, dependency existence/cycles, AC links, and the
+specific assumptions needed to execute. An actual gap blocks only affected work.
 
-The implementation plan captures goals, scope/non-goals, cohesive strategy,
-dependencies, expected advisory change surface, tests/gates/UAT, applicable
-Constitution constraints, source/normative inputs, invariants, verification
-targets, and direct canonical links. `.protocols/FT-<NNN>/plan.md` is bounded
-resume state, not another task model.
-
-Reconcile the feature with the canonical graph before handoff. Every
-task-relevant change unit and inter-module interaction must resolve to a
-registered node and an accepted edge with an exact contract heading, or block.
-For changed providers, cover relevant consumers until a compatible boundary
-stops propagation. Leaf modules/edges inside accepted architecture preserve
-Planning Revision; global architecture or ownership changes route to
-`/spec-redesign`. The plan records only affected module/contract links and the
-implementation reason for task order, dependencies, and waves.
-
-Expected project-authored paths follow `AGENTS.md#source-path-semantics`. Carry
-an evidence-backed expected path through existing plan fields and advisory
-`touched_files`; leave an immaterial exact filename choice to `/exe`, not a
-blocker, new task field, or hard `write_boundary`.
-
-When the accepted architecture defines modules or capability slices, the plan
-names the primary owner and code root for each outcome. A cross-slice outcome
-names one accepted capability owner, crossed public boundaries, and forbidden
-ownership/direct-write bypasses; business orchestration does not belong in a
-transport handler, generic helper, or composition root. Missing accepted
-ownership routes to `/spec-redesign`. Do not derive task count from slices,
-layers, or files.
-
-## Canonical SDD coverage
-
-For each changed or depended-on concrete concern, select exactly one action:
-- `reuse`: one canonical path is sufficient;
-- `extend`: the same cohesive canonical concern needs grounded detail;
-- `create`: no suitable canonical spec exists;
-- `not_applicable`: evidence proves the concern irrelevant;
-- `block`: identity/scope/decision remains unresolved.
-
-A task that changes or depends on a concrete boundary must link exactly one
-applicable canonical spec defining:
-- shape;
-- `MUST` / `MUST NOT` rules;
-- edge cases/errors;
-- verification target.
-
-Before handoff, resolve each evidenced material boundary decision in its owning
-canonical artifact when execution would otherwise determine public or
-cross-boundary behavior, compatibility or migration, authority, or state/data
-ownership. Unresolved authority uses the existing operator-decision and blocker
-route. This constrains outcomes, not analysis order, inapplicable coverage, or
-implementation tactics.
-
-Direct routes include Architecture Specification, Component/API/Event/Data
-Contracts, Data Specification for internal models/storage/migrations, domain or
-state specs, testing specs under `.memory-bank/testing/*`, guides/runbooks, and
-applicable AD/ADR/boundary decisions. Data Contract covers payloads crossing
-boundaries; internal DB/
-storage/persistence belongs to Data Specification. Create a new subject-based
-spec only after existing identity and synonyms are checked. Do not expand a
-legacy `.memory-bank/tech-specs/FT-*.md` hub as the canonical T2/T3 answer.
-
-Keep a simple material-quality probe/review in the AC and task record. Use a
-subject spec only for non-trivial reproducible measurement or an expert rubric;
-it defines method/evidence, never a missing product target.
-
-For an Alembic migration under an accepted linear topology, reuse the
-project-level database contract for dynamic head/branch/ancestry integrity.
-Keep feature testing limited to its revision, direct `down_revision`,
-upgrade/downgrade, schema transition, and data preservation. Plans, specs, and
-task cards must not make the mutable current head an exact-head requirement or
-require historical feature-test updates.
-
-Feature frontmatter remains:
-
-```yaml
-spec_design_status: complete|not_required|blocked
-spec_design_links:
-  - .memory-bank/contracts/<subject>.md
-```
-
-- `complete` requires every applicable feature concern to have one canonical
-  link or a grounded not-applicable rationale;
-- `not_required` is only for truly local/simple work with empty links and a
-  rationale;
-- unresolved concern means `blocked` and no affected task handoff;
-- no `needed_before_tasks` Backbone Area Matrix row may remain after a
-  successful handoff.
-- Successful reconciliation removes `PLANNING_RECONCILIATION_REQUIRED` even
-  when no artifact change was needed; blocked/incomplete handoff keeps it.
-
-## Optional behavior specs
-
-Create 0-3 short files only when a grounded example materially reduces
-ambiguity:
-
-```text
-.memory-bank/behavior-specs/FT-<NNN>-BHV-<NNN>-<slug>.behavior.json
-```
-
-Use only `id`, `feature_id`, `title`, `given`, `when`, and `then`; link the
-relevant examples as described by the hard invariant above.
-
-## JSON task records
-
-Before boundary confirmation, use only authoritative feature acceptance,
-current queue constraints, applicable canonical specs/owners,
-`.memory-bank/workflows/execute-loop.md#execution-cohesive-task-boundary`, and
-`.memory-bank/workflows/tier-policy.md#task-claim-and-dependency-ownership`.
-Do not persist slicing analysis or let generated detail create authority.
-
-Close the eligible exact claim set before slicing. Add the minimally sufficient
-atomic AC for each independent material feature outcome not already covered by
-an exact AC. A distinct material technical acceptance result may use an exact
-single-obligation canonical locator; a multi-obligation section is context, not
-a claim. Constraints, safeguards, methods, and artifact formats do not become
-claims without accepted authority. Material edge/failure outcomes require an AC
-or sourced exclusion; material NFRs require an accepted REQ/AC result and
-verification method.
-
-Run one slicing pass:
-1. Enumerate grounded material implementation/change outcomes exposed by exact
-   claims and canonical owners.
-2. Keep proof, tests, probes, RED/GREEN, and UAT with their implementation task;
-   they do not create task boundaries.
-3. Group all production-only configuration and checks (ports, SSH, policies,
-   service users, external scans, recovery) into one final, highest-wave
-   `Production acceptance:` task. It depends on all implementation tasks, has no
-   dependents, and may remain `planned` without blocking development.
-   Development-required configuration stays with its implementation task.
-4. Split only independently completable implementation/change outcomes under
-   accepted contracts and available code/change evidence.
-
-Assign claims and locators to owning tasks after slicing; they do not determine
-task count. Existing-queue identity, tier, dependency, AC, target/condition, or
-material-scope changes use `rebuild_required`; unresolved authority uses its
-existing blocker route.
-
-In direct interactive use, show the named
-`unmerged implementation outcomes -> justified merges -> final task
-candidates`; attach proof to its candidate and justify each merge with the
-source/code fact that makes the outcomes inseparable.
-Counts alone are insufficient. For a new queue, assign no task IDs, tiers,
-waves, concrete `depends_on`, or record fields before explicit boundary
-acceptance. Wait for acceptance or a specific split/consolidation request;
-apply requests only when contracts and execution cohesion remain valid.
-
-After acceptance, persist the concise boundary outline in
-`.protocols/FT-<NNN>/plan.md` as the first durable task-planning write.
-Unattended orchestration performs the same pass without the operator checkpoint.
-Keep slicing limited to direct sources and enough code/proof surface for the
-boundary decision; do not persist a check/report or perform a full audit.
-Slicing never silently changes an existing indexed queue.
-
-After the boundary pass is accepted interactively or completed unattended,
-parse `.memory-bank/schemas/task.schema.json` and read
-`.memory-bank/workflows/tier-policy.md#tier-classification-and-escalation`,
-`#hard-write-boundary`, `#task-scoped-acceptance-evidence`,
-`#claim-linked-red--green-for-t2t3`, `#tier-obligations`, and
-`#closure-authority`. Then assign IDs, tiers, waves, concrete `depends_on`, proof
-fields, and other record content. Existing queues retain the identity and
-lifecycle constraints above.
-
-Create/reconcile
-`.memory-bank/tasks/TASK-<NNN>-T<N>-FT-<NNN>-W<N>.task.json` and index each
-record exactly once. The loaded schema and tier policy are authoritative.
-
-Additionally require:
-- map every task-relevant feature AC through an exact
-  `.memory-bank/features/FT-<NNN>-<slug>.md#FT-<NNN>-AC-<NNN>` locator in
-  its owning task's `source_artifacts`, and cover every accepted feature AC.
-  A grounded locator may be added to a historical task without inventing
-  RED/GREEN evidence or changing its lifecycle;
-- every T1/T2/T3 task has concrete governing `REQ-*` links;
-- every required Foundation final-gate dependency is direct or transitive;
-- for accepted module/slice boundaries, map direct architecture/graph/contract
-  links, expected files, owner, crossed boundaries, and ownership/bypass rules
-  through existing fields. Do not add `owning_slice`, mechanically copy a code
-  root into `write_boundary`, place cross-slice business orchestration in a
-  forbidden technical owner, or exclude task-required work;
-- carry an applicable existing project-native architecture check through
-  `gates` or `verification_targets`. If an accepted rule requires a missing
-  check, plan that accepted work instead of emitting a nonexistent command;
-- when a linked runtime/state rule requires reproducibility, carry its known
-  initial state, safe rerun, observable result, and cleanup/isolation proof;
-  do not infer this process for simple/stateless work;
-- populate fields only with task-relevant grounded evidence; leave optional
-  fields empty/absent. T2/T3 records satisfy tier obligations and carry advisory
-  expected change surface and/or a justified hard write scope;
-- an AC-linked mapping retains its exact `FT-<NNN>-AC-<NNN>` ID. A
-  not-applicable mapping uses `<AC-ID> RED_NOT_APPLICABLE: <reason>;
-  alternative proof: <proof>` and the tier-policy justification rule;
-- mutable persistence names the real runtime storage path and a read/write or
-  repository-integration proof; otherwise the applicable spec records why it
-  is not relevant.
-</required_outputs>
-
-<validation>
-Before handoff:
-- validate every changed record against the loaded schema and its unique index
-  entry;
-- verify ID/tier/feature/wave consistency, concrete REQ links, valid Foundation
-  dependencies, existing/acyclic dependencies, and legal initial statuses;
-- verify the positive Planning Revision remained unchanged during feature/task
-  reconciliation;
-- verify task-relevant modules, edges, exact contract headings, and affected
-  consumers are complete and consistent with the accepted architecture;
-- map every stable feature AC locator and governing REQ to at least one task
-  and every task back to feature scope without orphan, duplicate, or unrelated
-  outcomes;
-- reread changed specs/tasks and reconcile any shared detail changed later in
-  the run;
-- confirm canonical identity is unique, linked concrete blocks are sufficient,
-  feature design state is truthful, and each T2/T3 card is independently
-  executable without guessing;
-- confirm each newly created or reconciled `planned|ready` T2/T3 card has a
-  credible claim-linked RED/GREEN path or a concrete accepted not-applicable
-  reason; reject inherited dependency proof, unsupported evidence requirements,
-  and unsafe or permission-expanding T3 probes;
-- for module/slice boundaries and advisory project-authored paths, confirm a
-  fresh executor can locate the owner/root, public boundary, forbidden bypasses,
-  proof path, and an expected path compliant with
-  `AGENTS.md#source-path-semantics`; any remaining filename choice is immaterial;
-- confirm every accepted operator decision is durably applied and no material
-  branch remains unresolved.
-
-Do not fabricate or backfill RED/GREEN evidence for historical
-`in_progress|done|done_for_prod|failed` records. Preserve their identity, lifecycle, and
-accumulated evidence under the reconciliation rules above.
-</validation>
-
-<handoff_contract>
-In the final chat response, report:
-- feature ID and queue action `created|reconciled|rebuild_required`;
-- final design status and specs reused/extended/created;
-- task records created/updated;
-- blockers/questions or `none`;
-- immediate next step.
-
-- Successful single-feature result -> `/review-tasks-plan FT-<NNN>`.
-- Blocked PRD-owned target/scope/pass-fail decision -> `/write-prd`;
-  feature-local product clarification -> `/feature-doctor
-  FT-<NNN>`; missing REQ/AC decomposition -> `/prd-to-features`; blocked
-  shared/global decision -> `/spec-redesign`.
-
-Conditional `/mb-doctor` and execution happen only after the task-plan review;
-they are not performed by this command.
-</handoff_contract>
+## Handoff
+Report the tasks, meaningful planning changes, and unresolved questions. Execution
+can continue when its actual inputs are sufficient. `/review-tasks-plan` and
+`/mb-doctor` are available checks; neither is an automatic permission gate.

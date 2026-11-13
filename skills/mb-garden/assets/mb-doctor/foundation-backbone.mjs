@@ -74,7 +74,7 @@ export function createFoundationBackboneChecks(context) {
   function checkBackboneReadiness() {
     const specBackboneAbs = absolute(SPEC_BACKBONE_REL);
     const specIndexAbs = absolute(SPEC_INDEX_REL);
-    const severity = options.strict ? 'error' : 'warning';
+    const severity = 'warning';
   
     checkSpecIndexPurity(specIndexAbs, specBackboneAbs, severity);
   
@@ -90,12 +90,12 @@ export function createFoundationBackboneChecks(context) {
       addFinding(
         severity,
         'SPEC_BACKBONE_NOT_READY',
-        `${SPEC_BACKBONE_REL}: mandatory /spec-design status is missing.`,
+        `${SPEC_BACKBONE_REL}: recorded design status is missing.`,
         {
           path: SPEC_BACKBONE_REL,
           details: { status: 'missing', migration_hint: migrationHint },
           suggested_fix:
-            `Run /spec-init to create ${SPEC_BACKBONE_REL}, then /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.`,
+            `Record the applicable design decisions in ${SPEC_BACKBONE_REL} when needed for the current work; no separate command sequence is required.`,
         }
       );
       return;
@@ -140,7 +140,7 @@ export function createFoundationBackboneChecks(context) {
           path: SPEC_BACKBONE_REL,
           details,
           suggested_fix:
-            'Continue with /prd-to-features, then run /spec-design before /feature-to-tasks, /autopilot, or autonomous scheduler mode.',
+            'Continue the requested planning or implementation once its actual inputs are understood.',
         }
       );
       return;
@@ -149,12 +149,12 @@ export function createFoundationBackboneChecks(context) {
     addFinding(
       severity,
       'SPEC_BACKBONE_NOT_READY',
-      `${SPEC_BACKBONE_REL}: mandatory /spec-design status is not ready for downstream task execution.`,
+      `${SPEC_BACKBONE_REL}: recorded design status is not ready for downstream task execution.`,
       {
         path: SPEC_BACKBONE_REL,
         details,
         suggested_fix:
-          'Run /spec-design after /prd-to-features. Record Global Backbone Status complete, or minimal with explicit not_applicable areas; resolve blocked decisions before /feature-to-tasks.',
+          'Clarify missing design decisions relevant to the current work; absent status markers alone do not block execution.',
       }
     );
   }
@@ -353,10 +353,10 @@ export function createFoundationBackboneChecks(context) {
     const severity = options.strict ? 'error' : 'warning';
   
     if (!isFile(foundationAbs)) {
-      addFinding(severity, 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: a non-empty indexed task queue requires an explicit Foundation decision.`, {
+      addFinding('warning', 'FOUNDATION_ANCHORS_INVALID', `${FOUNDATION_REL}: no separate Foundation decision is recorded.`, {
         path: FOUNDATION_REL,
         details: { issue: 'foundation_file_missing' },
-        suggested_fix: 'Run /spec-design to record the accepted Foundation decision and current Gate Anchors before unattended execution.',
+        suggested_fix: 'Record a Foundation decision if baseline work or dependencies need one.',
       });
       return;
     }
@@ -376,7 +376,6 @@ export function createFoundationBackboneChecks(context) {
     }
   
     const foundationRecords = orderedRecords.filter((record) => record.task.feature === 'FT-000');
-    const productRecords = orderedRecords.filter((record) => record.task.feature !== 'FT-000');
   
     if (anchors.required === false) {
       if (!foundationRecords.length) return;
@@ -398,7 +397,7 @@ export function createFoundationBackboneChecks(context) {
     }
   
     if (anchors.gateTask === FOUNDATION_GATE_PENDING) {
-      addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: required Foundation still has a pending final gate.`, {
+      addFinding('warning', 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: required Foundation still has a pending final gate.`, {
         path: FOUNDATION_REL,
         details: { gate_task: anchors.gateTask },
         suggested_fix: 'Run /foundation-to-tasks to create/reconcile the FT-000 queue and replace the pending anchor with its concrete final gate task ID.',
@@ -433,51 +432,8 @@ export function createFoundationBackboneChecks(context) {
       return;
     }
   
-    if (productRecords.length && gate.task.status !== 'done') {
-      addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${gate.rel}: foundation gate task is not done.`, {
-        path: gate.rel,
-        task_id: anchors.gateTask,
-        details: { status: gate.task.status },
-        suggested_fix: 'Finish /exe, /verify, and /mb-sync for the foundation gate task before product feature execution.',
-      });
-    }
-  
-    if (productRecords.length && gate.task.status === 'done') {
-      const unresolvedFoundationRecords = foundationRecords
-        .filter((record) => record.id !== anchors.gateTask)
-        .filter((record) => UNRESOLVED_FOUNDATION_STATUSES.has(record.task.status));
-  
-      if (unresolvedFoundationRecords.length) {
-        addFinding(severity, 'FOUNDATION_GATE_TASK_INVALID', `${FOUNDATION_REL}: product tasks exist while FT-000 work remains unresolved.`, {
-          path: FOUNDATION_REL,
-          task_id: anchors.gateTask,
-          details: {
-            gate_task: anchors.gateTask,
-            unresolved_foundation_tasks: unresolvedFoundationRecords.map((record) => ({
-              id: record.id,
-              path: record.rel,
-              status: record.task.status,
-            })),
-          },
-          suggested_fix:
-            'Return to the /autonomous-owned Foundation phase and resolve planned, ready, in_progress, or blocked FT-000 work before /autopilot.',
-        });
-      }
-    }
-  
-    const missing = productRecords
-      .filter((record) => !taskDependsOn(record.id, anchors.gateTask, records))
-      .map((record) => ({ id: record.id, path: record.rel, feature: record.task.feature }));
-  
-    if (!missing.length) return;
-  
-    addFinding(severity, 'FOUNDATION_GATE_DEP_MISSING', `${FOUNDATION_REL}: product tasks are missing the required foundation gate dependency.`, {
-      path: FOUNDATION_REL,
-      task_id: anchors.gateTask,
-      details: { gate_task: anchors.gateTask, tasks: missing },
-      suggested_fix:
-        'Update product task depends_on so every non-FT-000 task depends directly or transitively on the final foundation gate task.',
-    });
+    // Actual dependencies are checked per task; planning product work does not
+    // require every Foundation task to have completed first.
   }
   
   function parseFoundationAnchors(text) {
@@ -526,18 +482,6 @@ export function createFoundationBackboneChecks(context) {
     return issues;
   }
   
-  function taskDependsOn(taskId, dependencyId, records, seen = new Set()) {
-    if (taskId === dependencyId) return true;
-    if (seen.has(taskId)) return false;
-    seen.add(taskId);
-  
-    const record = records.get(taskId);
-    const deps = Array.isArray(record?.task?.depends_on) ? record.task.depends_on : [];
-    if (deps.includes(dependencyId)) return true;
-  
-    return deps.some((depId) => records.has(depId) && taskDependsOn(depId, dependencyId, records, seen));
-  }
-
   return {
     checkBackboneReadiness,
     checkConstitutionStructure,

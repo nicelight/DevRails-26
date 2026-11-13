@@ -23,9 +23,9 @@ export function runPreflight(context) {
     const lintAbs = absolute(LINT_REL);
     if (!isFile(lintAbs)) {
       const severity = options.strict ? 'error' : 'warning';
-      addFinding(severity, 'MB_LINT_SCRIPT_MISSING', `${LINT_REL} not found. Install/copy mb-lint before running mb-doctor.`, {
+      addFinding(severity, 'MB_LINT_SCRIPT_MISSING', `${LINT_REL} not found. Use framework installer sync to restore diagnostics.`, {
         path: LINT_REL,
-        suggested_fix: 'Create .memory-bank/scripts/mb-lint.mjs from the mb-garden asset and rerun mb-doctor.',
+        suggested_fix: 'Run the external DevRails installer with --bootstrap --sync for this target.',
       });
       return;
     }
@@ -45,7 +45,7 @@ export function runPreflight(context) {
     }
   
     if (result.status !== 0) {
-      addFinding('error', 'MB_LINT_FAILED', `${LINT_REL} failed. Fix lint errors before autonomous/autopilot execution.`, {
+      addFinding('error', 'MB_LINT_FAILED', `${LINT_REL} failed. Review the reported structural errors for the affected work.`, {
         path: LINT_REL,
         details: {
           exit_code: result.status,

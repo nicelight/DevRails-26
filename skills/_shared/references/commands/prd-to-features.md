@@ -1,177 +1,58 @@
 ---
-description: Decompose a clarified PRD into Memory Bank product, requirements, epics, and features.
+description: Map accepted product requirements into coherent epics, features, and acceptance criteria.
 status: active
 ---
-# /prd-to-features - Clarified PRD -> product plan
+# /prd-to-features — Product decomposition
 
-<objective>
-Derive the canonical L1-L3 product structure from an already clarified PRD:
-- `.memory-bank/product.md`;
-- `.memory-bank/requirements.md` with stable `REQ-*` IDs and RTM;
-- `.memory-bank/epics/EP-*.md`;
-- `.memory-bank/features/FT-*.md`;
-- `.memory-bank/index.md`.
+## Outcome
+Maintain `.memory-bank/product.md`, `requirements.md`, `epics/EP-*.md`,
+`features/FT-*.md`, and their navigation from a sufficiently clear PRD or accepted
+product delta. Apply `.memory-bank/workflows/execute-loop.md#working-policy`.
 
-This command owns product decomposition, not PRD clarification, architecture
-design, testing policy, task generation, or implementation planning.
-</objective>
+Read relevant project principles, product sources, framing, and canonical specs.
+Resolve material uncertainty about behavior, acceptance, or product boundaries
+under the working policy; do not require completion of earlier commands when
+the needed information already exists.
 
-<input_contract>
-Require:
-- `.memory-bank/prd.md` with `type: prd`,
-  `clarification_status: complete`, and `constitution_checked: true`;
-- `.memory-bank/spec-backbone.md` with
-  `Pre-PRD Spec Status: ready_for_prd` and explicit decomposition inputs;
-- a pure `.memory-bank/spec-index.md`.
+## Decomposition
+Choose the smallest coherent set of independently useful product outcomes.
+Technical layers, migrations, security concerns, and files do not by themselves
+create separate features. Preserve existing identities when their meaning is
+unchanged. `FT-000` remains reserved for Foundation, not product behavior.
 
-Read the Constitution before writing. Use spec-backbone decomposition inputs
-and only canonical specs routed by spec-index that are relevant to the current
-PRD. Do not load every SDD spec by default.
+Maintain stable `REQ-*` IDs and RTM `REQ -> Epic -> Feature -> Test`. Epics and
+features describe value, scope, observable acceptance, and relevant source links.
+Use document `status: draft` while material questions remain, and `active` when
+their content is settled; these are not task lifecycle statuses.
 
-Stop and route to the owning command when an input is missing, stale,
-placeholder-only, blocked, internally inconsistent, or has broken relevant
-links:
-- PRD/Constitution issue -> `/write-prd` or `/constitution`;
-- framing/index issue -> `/spec-init`.
-</input_contract>
+Each product feature keeps `## Acceptance Criteria` with stable
+`### FT-<NNN>-AC-<NNN>` headings. Each AC names at least one governing requirement
+on `- REQ: REQ-<NNN>[, ...]`, the observable result, and its verification method.
+Preserve IDs for unchanged behavior; do not renumber or reuse retired IDs.
 
-<hard_invariants>
-- Do not write/clarify the PRD, perform architecture design, create TASK records
-  or implementation plans, choose test levels, define global testing gates, or
-  create/modify `.memory-bank/testing/*`. `/prd-to-features` does not create or modify files
-  under `.memory-bank/testing/`.
-- Do not let a lower-precedence PRD or feature override Constitution or an
-  authoritative canonical spec.
-- `FT-000` is reserved for Foundation Dev Path and is never a product feature.
-- Do not set feature `spec_design_status: complete` before the global design
-  backbone exists and feature concerns are actually satisfied.
-- Do not add clarification metadata to every feature; it is only for an
-  explicit feature-level decomposition blocker.
-- Product feature acceptance criteria use stable
-  `FT-<NNN>-AC-<NNN>` IDs. Preserve an ID while its accepted behavior is the
-  same; never renumber or reuse an existing ID.
-</hard_invariants>
+Cover material failure outcomes and qualities through accepted ACs. An accepted
+exclusion can use `Disposition: out_of_scope`, its source, and
+`Change route: /write-prd`. Material quality requirements retain their accepted
+criterion and decisive conditions; reference them instead of duplicating prose.
+Do not invent product targets to complete decomposition.
 
-<operator_decisions>
-The agent may choose ordinary decomposition tactics, but a real ambiguity or
-branch that could materially change product scope, REQ/EP/FT boundaries,
-acceptance, actors, behavior, ownership, or traceability belongs to the
-operator.
+## Durable result
+Update affected product artifacts and index links. Optional feature clarification
+metadata is `clarification_status: pending|complete|blocked`, `last_clarified`,
+and `clarification_questions`; use it only when useful for a real clarification.
+Keep design links as links, not speculative specs. `spec_design_status` describes
+actual design readiness, never mere completion of this command.
 
-In interactive mode, ask one question or a small group of tightly related
-questions, explain what the decomposition choice changes, and optionally
-recommend an option. The recommendation is not accepted without an explicit
-answer. Record accepted decomposition-only decisions in
-`.protocols/PRD-BOOTSTRAP/decision-log.md` and the owning product artifact,
-remove contradictions, then revalidate before deriving dependent docs. If the
-answer changes PRD scope, behavior, acceptance, or another PRD-owned contract,
-route it through `/write-prd` and stop this run before continuing decomposition.
+A protocol plan or decision log is optional when the product artifacts already
+preserve the decisions and next work. Reconcile an accepted product correction
+in the same session instead of requiring another command first.
 
-In autonomous mode, use only an already accepted authoritative decision. If
-none exists, record the question/affected artifacts and set terminal state
-`HALT_BLOCKING_QUESTIONS`; do not write the affected decomposition as fact.
-</operator_decisions>
+Check traceability, stable IDs, AC/REQ links, and whether the feature boundaries
+hide independently acceptable outcomes. Keep this check proportional to the
+product; it needs no separate report or review context.
 
-<required_outputs>
-Create `.protocols/PRD-BOOTSTRAP/plan.md` and `decision-log.md` if missing.
-
-Update `product.md` with product identity, core value, audience, primary flow,
-constraints, and non-goals. Update `requirements.md` with stable `REQ-*` IDs,
-out-of-scope items, and RTM `REQ -> Epic -> Feature -> Test`.
-
-Each epic records value, success metrics, acceptance criteria, evidence-backed
-source/normative/constraint links when useful. Set epic `status: draft` by
-default; promote it to document `status: active` only after its open questions
-are closed. This document status is not the task lifecycle.
-
-Each feature records:
-- use cases, edge/failure behavior, and `## Acceptance Criteria` with one
-  `### FT-<NNN>-AC-<NNN>` block per accepted criterion. Each block names at
-  least one governing `REQ-*` on an exact `- REQ: REQ-<NNN>[, ...]` line, the
-  observable criterion, and its verification method;
-- acceptance closure for every material product outcome: each observable
-  edge/failure outcome that can itself block acceptance or realize a
-  significant accepted risk names one or more covering AC IDs, or records an
-  authoritative `Disposition: out_of_scope` with its source and
-  `Change route: /write-prd`. Several related outcomes may share one AC;
-- for each material NFR, an owning `REQ-*` that preserves the observable
-  quality, accepted numeric target or qualitative criterion, and general
-  pass/fail-changing conditions. Its feature AC preserves the feature-specific
-  application, observable criterion, and verification method; do not duplicate
-  the full requirement across artifacts;
-- optional evidence-backed source artifacts, normative inputs,
-  constraints/invariants, and verification targets;
-- optional `## Behavior specs` routing only; do not create behavior JSON;
-- `status: draft` by default;
-- an `## SDD Design Gate` note routing immediately to mandatory
-  `/spec-design`, with feature-level canonical design completed later by
-  `/feature-to-tasks` or `/spec-auto` after any required Foundation Gate;
-- candidate canonical links only when grounded in evidence; omit
-  `spec_design_status` unless its existing truthful state must be preserved.
-
-When the clarified PRD leaves a feature-level blocker, optional metadata remains:
-
-```yaml
-clarification_status: pending|blocked
-last_clarified: null
-clarification_questions: 0
-```
-
-If a material outcome has neither a covering AC nor an authoritative exclusion,
-or a material NFR lacks an accepted target/criterion or decisive condition,
-stop the affected decomposition. PRD-owned acceptance changes route to
-`/write-prd`; decomposition-only repair remains owned here.
-
-Update `.memory-bank/index.md` with annotated links.
-</required_outputs>
-
-<agent_discretion>
-Choose source-reading order, tools, decomposition technique, epic/feature
-grouping, filenames/slugs, and the smallest coherent product structure. Use
-traceability, independent product value, acceptance cohesion, and downstream
-designability as coverage criteria, not a mandatory reasoning sequence.
-`Smallest coherent` does not mean the fewest features.
-
-Before finalizing the complete product map, run one bounded feature-boundary
-scan. Give focused attention only to candidates where authoritative evidence
-shows multiple independently acceptable user outcomes or acceptance clusters,
-distinct lifecycle/release/rollback units, or actor/authority/boundary paths
-that may produce standalone product outcomes. Split only when concrete parts
-have their own observable product result and acceptance and can be verified or
-released independently. A pressure signal alone is not a split decision;
-technical layers, migrations, integrations, or security concerns alone are not
-product features. Stop the focused analysis once the boundary is sufficient or
-an operator-owned ambiguity is identified. Do not persist a score, matrix, or
-pressure rationale; record only material accepted decisions through the
-existing decision route.
-</agent_discretion>
-
-<validation>
-Verify:
-- every derived claim is supported by the clarified PRD or authoritative
-  linked evidence;
-- every requirement has a stable `REQ-*` ID;
-- every product feature AC has a unique stable ID matching its feature and at
-  least one existing governing `REQ-*`;
-- every material product outcome satisfies the acceptance-closure contract
-  above;
-- each epic/feature traces to requirements or an explicit accepted delta;
-- each feature boundary was checked proportionally to evidence, and no concrete
-  independently acceptable product outcome remains hidden inside another
-  feature;
-- no product feature uses `FT-000`;
-- blockers and optional clarification metadata are truthful;
-- no task or testing-policy artifact was created;
-- global backbone remains pending until `/spec-design`.
-</validation>
-
-<handoff_contract>
-For high-risk, large, or autonomous work, the immediate handoff is mandatory
-fresh-context `/review-feat-plan`. For small manual work it is recommended unless
-the Constitution/operator requires it. After applicable approval, continue to
-`/spec-design`.
-
-If one feature is explicitly pending/blocked, `/feature-doctor FT-<NNN>` may
-resolve it before review/design. Do not copy or recommend the entire downstream
-execution chain from this leaf command.
-</handoff_contract>
+## Handoff
+Report the resulting product map and remaining questions. `/spec-design` or
+`/feature-to-tasks` may be useful next. `/review-feat-plan` is an optional focused
+review, or required when the operator explicitly requests it; its absence alone
+is not a development blocker.

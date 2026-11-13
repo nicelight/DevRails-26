@@ -18,8 +18,8 @@ explicitly changed.
   clarification, SDD linkage, handoff completeness, and queue state.
 - `acceptance-trace.mjs`: AC identity, REQ linkage, task coverage, and retained
   acceptance proof/evidence.
-- `terminal-compat.mjs`: compact/full protocol evidence, terminal closure,
-  RED/T3 closure, failed-task artifacts, and legacy brownfield compatibility.
+- `terminal-compat.mjs`: factual terminal result evidence and failure follow-up
+  diagnostics, without prescribed protocol depth or review ceremonies.
 
 Do not add a generic utils module, check registry, plugin layer, or new status
 vocabulary here. If a check crosses ownership boundaries, keep the finding in

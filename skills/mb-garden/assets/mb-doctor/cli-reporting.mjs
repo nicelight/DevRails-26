@@ -34,7 +34,7 @@ Usage:
   node .memory-bank/scripts/mb-doctor.mjs [--strict] [--json]
 
 Flags:
-  --strict  Require an executable autonomous/autopilot task queue.
+  --strict  Include deeper diagnostics; not a workflow admission gate.
   --json    Emit stable machine-readable JSON findings.
 `);
 }

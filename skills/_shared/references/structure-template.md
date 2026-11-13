@@ -128,18 +128,18 @@ status: active
 - **Docstrings**: contracts + `@docs` pointers.
 - **Memory Bank**: WHY/WHERE — boundaries, invariants, navigation.
 
-## Hard rules
+## Structure and maintenance
 1. Every `.memory-bank/**/*.md` file MUST have frontmatter with `description:`.
 2. Use annotated links: `[.memory-bank/path](rel-path): короткое описание`.
 3. Atomic docs: one cohesive concern per doc; split by boundary, change cadence,
    consumers, or reuse, not by file length alone.
 4. Duo docs remain valid: `architecture/` (WHAT/WHY) + `guides/` (HOW), cross-link both ways for concepts that use the classic pair model.
 5. C4 layering: L1 product → L2 epics → L3 features → L4 plans/tasks.
-6. Docs First: update MB immediately after finishing a task.
-7. Refactor MB every 5–10 updates (split, merge, archive).
+6. Keep changed project knowledge and task results current before handing off.
+7. Split, merge, or archive documents when actual drift or duplication makes it useful.
 8. Separate facts from interpretations: mark hypotheses explicitly ("предположительно", "требует проверки").
 9. After merge/rebase conflicts: re-check MB consistency.
-10. MB-SYNC after each wave/significant change (see `workflows/mb-sync.md`).
+10. Use MB-SYNC for broader reconciliation when needed (see `workflows/mb-sync.md`).
 11. When present, `constitution.md`, `spec-backbone.md`, `spec-index.md`, `glossary.md`, `invariants.md`, `contracts/*`, `states/*`, `runbooks/*`, and `testing/*` act as an explicit normative layer and should be linked from relevant docs.
 12. Features compose product behavior and exact canonical spec links. New design
     specs use subject-based paths without `FT-<NNN>` names or feature ownership.
@@ -264,7 +264,7 @@ status: active
 ## Handoff To /prd-to-features
 - Ready: no
 - Required reads: .memory-bank/prd.md, .memory-bank/spec-index.md, this file, and linked pre-PRD specs.
-- Stop conditions: Pre-PRD Spec Status is missing, stale, or blocked.
+- Clarify unresolved inputs that affect the current decomposition; a missing status marker alone is not a blocker.
 
 ## Handoff To /spec-design
 - Backbone areas to revisit: all
@@ -588,7 +588,7 @@ status: draft
 
 ## 6b) Example task record template
 
-The skeleton does not generate this file. Concrete task IDs use `TASK-<NNN>-T<N>-FT-<NNN>-W<N>`; the `T<N>`, `FT-<NNN>`, and `W<N>` ID segments must match the task record `tier`, `feature`, and `wave` fields. `/foundation-to-tasks` creates normal `FT-000` foundation `.task.json` records only when `.memory-bank/foundation.md` says foundation is required. `/feature-to-tasks FT-<NNN>` first resolves feature design concerns through subject-based canonical specs, then creates real product feature `.memory-bank/tasks/TASK-*.task.json` records with direct task-relevant spec links when the feature is ready and any required final foundation gate task is `done`, or marks design blocked and stops. Fresh bootstrap does not create `.memory-bank/foundation.md`, `REQ-000`, `FT-000`, `TASK-000-T1-FT-000-W0`, or any runnable task records.
+The skeleton does not generate task records. IDs use `TASK-<NNN>-T<N>-FT-<NNN>-W<N>` with tier/feature/wave segments matching the card. `/foundation-to-tasks` prepares FT-000 work when a baseline needs implementation or proof; `/feature-to-tasks` prepares product work with its relevant context and actual dependencies. Existing outcomes may be reused without separate command runs. Fresh bootstrap does not create `foundation.md`, `REQ-000`, `FT-000`, or runnable tasks.
 
 ```json
 {
@@ -628,8 +628,8 @@ Optional (but recommended) plans folder:
 Optional runtime context rules:
 - `gates` starts empty. Add only evidence-backed project-native checks that are
   applicable to the task outcome; do not add a test level merely to fill a
-  category. T0/T1 may keep it empty when compact evidence or a documented
-  no-meaningful-runnable-check route is valid under tier policy.
+  category. Keep it empty when another verification method is sufficient;
+  record skipped or unavailable checks honestly.
 - `purpose`, `success_outcome`, `anti_goals`, and `runtime_context` are optional; existing tasks without them remain valid.
 - `touched_files` is an advisory, expected, non-exhaustive change surface. It
   guides preflight and review but does not prohibit another file needed for the
@@ -643,10 +643,10 @@ Optional runtime context rules:
 - Existing `allowed_write_scope` is a deprecated read alias; never emit both.
 - `forbidden_scope` and `stop_conditions` are hard preflight/evidence contracts.
   These fields do not replace sandbox permissions or role write-scope instructions.
-- T2/T3 task cards require non-empty `purpose` and scalar `success_outcome`,
-  an existing task-linked SDD path, an expected change surface, and a
-  verification path at handoff. Optional evidence-driven fields stay empty when
-  ungrounded.
+- A useful handoff explains the outcome, why it matters, relevant sources,
+  change surface, and verification. Richer context is recommended for T2/T3;
+  use the fields that carry real information, without inventing specs or proof
+  requirements to satisfy a checklist.
 
 ### 6c) `.memory-bank/behavior-specs/`
 
@@ -723,9 +723,9 @@ status: active
   specs, feature plans, and task cards.
 
 ## Evidence and ownership
-- T2/T3 require an executable verification path; T0/T1 may use compact evidence
-  or a documented no-runnable-check route when meaningful checks do not exist.
-- Store execution evidence in `.protocols/<TASK_ID>/` and `.tasks/<TASK_ID>/`.
+- Choose verification depth under `.memory-bank/workflows/execute-loop.md#working-policy`.
+- Record actual results and skipped/unavailable checks in task `verify`; use
+  `.protocols/<TASK_ID>/` or `.tasks/<TASK_ID>/` for useful supporting evidence.
 - Keep product quality targets in requirements/features and simple verification
   methods in feature AC/task records. Use a subject spec only for a non-trivial
   reproducible measurement method or expert rubric; it never supplies a missing

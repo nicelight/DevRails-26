@@ -1,34 +1,18 @@
 ---
-description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/red-verification.md (adversarial semantic verification).
+description: Optional detail for a bounded adversarial semantic assessment.
 status: active
 ---
 # Red Verification — <TASK_ID>
 
-## Semantic target
-- Task/feature outcome: ...
-- Accepted contract and boundaries: ...
+- Accepted outcome and inspected scope:
+- Decisive evidence:
+- Material reachable defects, or none:
+- Question or evidence limitation affecting judgment:
 
-## Evidence and adversarial coverage
-- Existing verification verdict: ...
-- Changed files / diff / runtime evidence: ...
-- Accepted-outcome surfaces covered: ...
-- Supported paths exercised: ...
-
-## Admitted findings
-Only evidenced material breaks of an accepted outcome. Use `none` when no
-finding is admitted.
-- ...
-
-## Operator questions
-Only questions required to judge a proved realistic material risk or accepted
-outcome. Use `none` when no operator decision is required.
-- ...
-
-## Verdict
-Replace the placeholder with one exact standalone marker:
 SEMANTIC_VERDICT: <semantic-pass|semantic-concern|semantic-fail>
 
-## Owner handoff
-- Evidence/report paths: ...
-- Recommended owner action: ...
-- Resume route or `n/a`: ...
+- Verdict basis and next useful action:
+
+Record one actual verdict. Do not include private hypotheses, rejected
+candidates, speculative hardening, or a target finding count. This optional
+report does not change lifecycle or require another review roundtrip.

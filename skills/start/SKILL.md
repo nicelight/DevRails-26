@@ -65,5 +65,5 @@ external bootstrap, rerun `/start` in the target repository.
 
 ## If `.memory-bank/` Exists
 
-Use the generated `/start` command. It resolves authoritative runtime
-state and invokes one owning skill; do not duplicate its routing contract here.
+Use the generated `/start` command to resume the requested work from durable
+project state. Optional skills assist that work without imposing a command chain.

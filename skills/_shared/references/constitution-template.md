@@ -1,5 +1,5 @@
 ---
-description: Project Constitution — governing principles for AI-first development.
+description: Project Constitution — project principles and agent working boundaries.
 status: active
 version: 1
 project_principles: framework-default
@@ -8,53 +8,43 @@ last_updated: {{TODAY}}
 ---
 # Project Constitution
 
-## Purpose
+## Project principles
+These are framework defaults until the operator establishes project-specific
+principles. Keep accepted constraints, scope, and intended product experience
+explicit. Prefer the simplest sufficient result; do not create requirements or
+architecture for hypothetical needs.
 
-This Constitution defines the non-negotiable principles that guide AI agents when planning, implementing, verifying, and synchronizing project work.
+`project_principles` is `ratified` when governing choices are settled, `partial`
+when proceeding with named open choices is authorized, `skipped` when the
+operator skips the interview, or `framework-default` before that. Use a
+ratification date for ratified/partial principles; otherwise keep `ratified: null`.
 
-## Core Principles
+## Agent decisions
+Follow `.memory-bank/workflows/execute-loop.md#working-policy`. By default,
+consult the operator on material product, technical, and process choices.
+Autopilot or an explicit instruction to act autonomously authorizes decisions
+within the provided scope and constraints. Do not re-ask settled decisions or
+treat silence as permission.
 
-### 0. Project Principles Status
+## Working memory
+Memory Bank preserves useful requirements, design, task context, and results
+across sessions. Update affected knowledge after meaningful changes and link
+canonical detail instead of copying it. Use the indexed JSON task model and its
+current schema when recording tasks; preserve identities and historical evidence.
 
-This skeleton uses framework-default principles until `/constitution` runs the contextual interview. `ratified: null` means project principles are not ratified yet. When `/constitution` sets `project_principles: ratified` or `project_principles: partial`, it must fill `ratified: YYYY-MM-DD`. If the user explicitly skips that interview, keep or set `project_principles: skipped`, keep `ratified: null`, and continue; revisit `/constitution` later.
+## Completion
+State what changed, what was checked, and what remains uncertain. Do not claim
+an unrun check passed or hide a failed result. Choose proportionate verification;
+explicit project requirements and operator constraints still apply.
 
-### I. AI-First Spec-Driven Development
+## Flexible process
+Framework commands, reviews, TDD, and protocol templates are tools. Use the depth
+that serves the work under the agreed decision authority. The operator may skip
+framework ceremony without an exception document. Missing process artifacts alone
+do not prevent authorized work. Real missing prerequisites and unresolved choices
+outside agent authority pause only dependent work.
 
-Agents MUST derive implementation work from explicit product, requirement, feature, task, and workflow artifacts. Agents MUST NOT invent product scope without evidence or user instruction.
-
-### II. Memory Bank Is Durable Project Knowledge
-
-`.memory-bank/` is the durable source of project knowledge. Chat context is temporary. Agents MUST update Memory Bank after meaningful changes.
-
-### III. Schema-Backed Task Execution
-
-Tasks MUST use the current schema-backed JSON task record model. If the framework uses `tier: T0|T1|T2|T3`, agents MUST route execution and verification through that tier model.
-
-### IV. Minimal Verifiable Change
-
-Agents SHOULD prefer the smallest change that satisfies the task. Every completed task MUST have clear checks or evidence.
-
-### V. Evidence Before Done
-
-A task MUST NOT be marked done without verification evidence appropriate to its tier and scope.
-
-### VI. No Legacy Fallback and No Speculation
-
-Agents MUST NOT rely on deprecated task formats, old risk models, or undocumented assumptions. Unknowns MUST be recorded as blockers or explicit assumptions.
-
-### VII. Context Discipline
-
-Agents SHOULD read the smallest sufficient context for the task. Higher-tier or cross-cutting tasks MUST read relevant normative docs such as invariants, contracts, states, testing, and workflow policies.
-
-### VIII. Synchronization
-
-After meaningful changes, agents MUST synchronize affected Memory Bank docs, task state, changelog, and routing files.
-
-## Governance
-
-- Constitution has precedence over workflow habits and generated plans.
-- MBB, spec-index, spec-backbone, invariants, contracts, states, testing, and workflow docs refine this Constitution; they must not contradict it.
-- Amendments must include rationale and update affected docs if needed.
-- Constitution should stay short. Put concrete project rules into `invariants.md`, `contracts/*`, `states/*`, or workflow policy docs.
-
-**Version**: 1 | **Ratified**: not ratified | **Last updated**: {{TODAY}}
+## Changes to these principles
+Apply an accepted amendment and reconcile affected canonical wording. Keep this
+file short; domain rules belong in their relevant specs. Framework defaults do
+not override explicit operator instructions.

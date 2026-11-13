@@ -1,67 +1,38 @@
-# Greenfield Manual + Autopilot Workflow
+# Greenfield: ручная работа и автопилот
 
-Эта Mermaid-схема показывает happy path для greenfield проекта: сначала ручная подготовка Memory Bank и JSON task queue, затем выбор между ручным исполнением задач и `/autopilot`.
+Основные этапы сохраняются. Команды — удобные инструменты для достижения
+результата этапа; их можно сочетать, а уже готовые результаты использовать
+повторно. Отдельный вызов команды, документ или новая сессия нужны по пользе.
 
 ```mermaid
 flowchart TD
-  idea["Идея / черновик"] --> grill["/grill-me → analysis/brief.md"]
-  grill --> constitution["/constitution"]
-  constitution --> writePrd["/write-prd"]
-  writePrd --> specInit["/spec-init"]
-  specInit --> prd["/prd-to-features"]
-  prd --> reviewFeat{"High-risk / large work?"}
-  reviewFeat -- "да" --> reviewFeatPlan["/review-feat-plan"]
-  reviewFeat -- "нет" --> specDesign["/spec-design"]
-  reviewFeatPlan --> specDesign
-
-  specDesign --> foundation{"Нужен executable baseline?"}
-  foundation -- "да" --> foundationTasks["/foundation-to-tasks"]
-  foundationTasks --> foundationDoctor["/mb-doctor --strict<br/>foundation/task-queue"]
-  foundationDoctor --> foundationExec["/exe + /verify<br/>FT-000 до final gate done"]
-  foundationExec --> tasking["/feature-to-tasks FT-001"]
-  foundation -- "нет" --> tasking
-
-  tasking --> reviewTasks["/review-tasks-plan<br/>FT-001<br/>contract readiness"]
-  reviewTasks --> doctorNeeded{"T3, autonomous/autopilot handoff,<br/>or complex T2/foundation/dependency/<br/>stale-doc/risky-link?"}
-  doctorNeeded -- "да" --> doctor["/mb-doctor<br/>feature/task-queue"]
-  doctorNeeded -- "нет" --> mode
-  doctor --> mode{"Как выполнять JSON task queue?"}
-
-  mode -- "Manual" --> exec["/exe<br/>TASK-NNN-TN-FT-NNN-WN"]
-  exec --> fastLane{"T0/T1 fast-lane?<br/>explicit owner + compact evidence"}
-  fastLane -- "да" --> localDone["Task done<br/>compact evidence / no-runnable-check note"]
-  fastLane -- "нет / T2-T3 / uncertainty" --> verify["/verify<br/>TASK-NNN-TN-FT-NNN-WN"]
-  localDone --> more
-  verify --> redTask{"Нужен semantic pass?"}
-  redTask -- "T3 task" --> redVerify["/red-verify<br/>TASK-NNN-TN-FT-NNN-WN"]
-  redTask -- "T2 feature completion" --> redFeature["/red-verify --feature<br/>FT-NNN"]
-  redTask -- "нет" --> sync["/mb-sync<br/>boundary when needed"]
-  redVerify --> sync
-  redFeature --> sync
-  sync --> more{"Еще tasks/features?"}
-  more -- "следующая task" --> exec
-  more -- "следующая feature" --> tasking
-  more -- "нет" --> done["Готово"]
-
-  mode -- "Autopilot" --> autopilot["/autopilot"]
-  autopilot --> scheduler["Recovery-first sequential scheduler:<br/>resume checkpoint + in_progress; then one task -> execute -> verify -> closure;<br/>red-verify для T3; mb-sync once per wave"]
-  scheduler --> terminal{"Queue terminal?"}
-  terminal -- "done" --> done
-  terminal -- "blocked / failed" --> repair["Исправить findings:<br/>task records / specs"]
-  repair --> reviewTasks
+  intent["Замысел и требования<br/>grill-me · constitution · write-prd"]
+  design["Фичи и нужный дизайн<br/>spec-init · prd-to-features · spec-design"]
+  tasks["Задачи и реальные зависимости<br/>foundation-to-tasks при необходимости<br/>feature-to-tasks"]
+  work["Реализация и проверка результата<br/>exe · подходящие проверки"]
+  memory["Актуальные карточки и память<br/>mb-sync при необходимости"]
+  next{"Осталась работа?"}
+  intent --> design --> tasks --> work --> memory --> next
+  next -- "Следующая задача" --> work
+  next -- "Следующая фича / уточнение" --> design
+  next -- "Нет" --> done["Результат и честный отчёт о проверках"]
 ```
 
-`/autonomous` owns the bounded FT-000 phase shown above; `/autopilot` begins
-only at the reviewed product queue and never executes Foundation tasks.
-`/autonomous` tasks one product feature per isolated child context and reviews
-it in a separate fresh context before selecting the next feature.
-Canonical `/autopilot` and `/autonomous` execution is sequential. Experimental
-parallel execution is available only through explicit `--experimental-parallel`
-with isolated worktrees/sandboxes and pairwise-disjoint hard
-`runtime_context.write_boundary`; advisory `touched_files` does not prove
-independence.
+- В manual flow агент консультируется по новым содержательным продуктовым,
+  техническим и процессным решениям. Принятое решение не требует повторного
+  согласования. Оператор может пропустить рекомендацию процесса обычной фразой.
+- `/autonomous` проходит тот же flow самостоятельно в пределах поручения.
+  `/autopilot` выполняет уже подготовленную продуктовую очередь.
+- Ревью планов, `/verify`, `/red-verify`, TDD, doctor и свежие контексты —
+  инструменты по необходимости, а не обязательные пропускные пункты.
+- Сохраняются понятный ожидаемый результат, действительные зависимости,
+  согласованные ограничения и фактические результаты проверок. Пропущенная
+  проверка не считается пройденной.
+- Foundation `FT-000` нужен для реально отсутствующего baseline. Продуктовые
+  задачи зависят от тех результатов Foundation, которые им действительно нужны.
+- При возобновлении агент читает карточку и сохранённый ход работы. Вопрос за
+  пределами автономности или недоступная предпосылка останавливает зависимую
+  работу; отсутствие формального approval само по себе её не останавливает.
 
-Within task planning, implementation, testing, and verification, agents choose
-their local tactics. A new material product/design/contract/task-boundary/tier/
-dependency/verification branch always returns to the operator; unattended mode
-halts with the existing clarification/blocking state and an exact resume route.
+Memory Bank и JSON-реестр остаются общими для ручного и автономного режима.
+Подробности — в [howItWorks.md](howItWorks.md).

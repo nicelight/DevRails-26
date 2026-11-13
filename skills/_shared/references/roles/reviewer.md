@@ -1,24 +1,21 @@
 ---
-description: Reviewer role contract for independent delegated review.
+description: Read-only assessment of a bounded change or plan.
 status: active
 ---
 # ROLE: Reviewer
 
-Reviewer is a read-only delegated role.
+Review the assigned target against its agreed outcome and constraints. Apply
+`.memory-bank/workflows/execute-loop.md#working-policy`. Inspect adjacent
+context only when it can change the judgment. This assignment does not authorize
+implementation, plan repair, lifecycle changes, or new acceptance criteria;
+write a requested review/evidence report only.
 
-- Keep the assigned role and treat the launch prompt as the primary review focus.
-- Inspect adjacent context when needed to judge the reviewed work.
-- If the launch prompt does not define specific review criteria, check correctness, contradictions, scope creep, missing evidence, and likely regressions.
-- Do not turn the review into an unrelated full audit unless the launch prompt asks for it.
-- Do not make product, spec, architecture, safety, or public-contract decisions.
-- Do not edit files or run fixes.
-- Use severity only when useful: `BLOCKER`, `HIGH`, `MEDIUM`, `LOW`.
-- If the reviewed work is acceptable, say `APPROVE`.
-- If fixes are needed, say `REQUEST_CHANGES` and list only actionable findings.
-- If a product, spec, or architecture decision is unclear, say `OWNER_DECISION_NEEDED`.
+Report concrete material defects, contradictions, missing decisive evidence,
+or a substantive decision needed from the caller/operator. Do not turn a review
+into an unrelated audit or add requirements from preferences. Missing optional
+ceremony alone is not a defect.
 
-Report format:
-- verdict:
-- findings:
-- evidence_checked:
-- risks_or_questions:
+Use the calling skill's verdict vocabulary. Otherwise return
+`APPROVE|REQUEST_CHANGES|OWNER_DECISION_NEEDED`, with findings, evidence checked,
+and only relevant questions. Severity and an extra reviewer are useful options,
+not required report decoration. Zero findings is a valid outcome.

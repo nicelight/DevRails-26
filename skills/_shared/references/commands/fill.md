@@ -1,43 +1,16 @@
 ---
-description: Прайминг агента — загрузка контекста проекта из Memory Bank перед работой.
+description: Read the relevant Memory Bank context before focused work.
 status: active
 ---
-# /fill — Prime context
+# /fill
 
-<objective>
-Стабильно запраймить агента перед работой:
-- прочитать Memory Bank
-- понять правила
-- понять где лежит контекст для текущей задачи
-- не изменять рабочее дерево
-</objective>
+Understand the supplied topic or task from Memory Bank and relevant sources.
+Apply `.memory-bank/workflows/execute-loop.md#working-policy`: consult the operator on substantive choices unless autonomy was explicitly granted; carry out settled decisions without repeated approval.
 
-<process>
+The Memory Bank index and MBB can locate project guidance; direct task, feature
+and spec links usually narrow the read set. Choose reading depth for the work.
 
-1) Прочитай `.memory-bank/index.md`.
-2) Прочитай `.memory-bank/mbb/index.md`.
-3) По аннотированным ссылкам открой релевантные документы:
-   - `product.md`, `requirements.md`, нужные `features/FT-XXX`, `architecture/*`, `guides/*`.
-   - если присутствуют и релевантны теме: `spec-backbone.md`, `spec-index.md`, `invariants.md`, `glossary.md`, `contracts/*`, `states/*`, `runbooks/*`, `testing/*`.
-4) Если контекста не хватает, верни gaps и рекомендуемые следующие reads.
-   Используй direct reads по умолчанию. `/context-manifest` можно только
-   рекомендовать для действительно широкого discovery, когда оно дешевле
-   direct reads и delegation разрешено текущей ролью/operator contract.
-5) Перед началом работы сформулируй коротко:
-   - что прочитано
-   - gaps и рекомендуемые следующие reads
-   - цель
-   - критерии done
-   - применимые quality gates
-
-Если пользователь передал `$ARGUMENTS`, используй их как фокус:
-- «Запраймься по теме: $ARGUMENTS»
-</process>
-
-<hard_invariants>
-- `/fill` строго read-only во всех ролях и режимах.
-- Не создавай и не обновляй `.protocols/*`, task plan или другой artifact.
-- Не запускай сабагентов, delegation или `/context-manifest` из `/fill`.
-- Если нужен protocol mutation, назови существующий owning execution/planning
-  skill как следующий шаг, но не выполняй mutation.
-</hard_invariants>
+Remain read-only. Return a short account of the goal, relevant constraints,
+expected result and unresolved context. Name further useful reads only when
+needed. No protocol, planning artifact or separate context-routing call is due
+merely because `/fill` was invoked.

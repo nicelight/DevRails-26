@@ -1,80 +1,41 @@
 ---
-description: Add the cheapest sufficient regression coverage inside one existing in-progress indexed task.
+description: Add useful checks within one existing task's agreed outcome.
 status: active
 ---
 # /add-tests - Improve task-scoped coverage
 
 <objective>
-Add useful tests that prove the selected task outcome and catch meaningful
-regressions without widening its product/spec boundary or creating a testing
-workflow of its own.
+Add the smallest useful tests for an existing task and record their results.
+Tests support its outcome; they do not create a separate workflow.
 </objective>
 
 <input_contract>
-Require one explicit `TASK-NNN-TN-FT-NNN-WN` that:
-- resolves uniquely through `.memory-bank/tasks/index.json`;
-- has `status: in_progress`;
-- has an outcome/AC/REQ/spec boundary covering the proposed test behavior.
-
-Read the task record, `.memory-bank/workflows/tier-policy.md#tier-obligations`,
-`#closure-authority`, `#hard-write-boundary` when applicable, linked
-specs/verification targets, implementation evidence, and project-native test
-configuration needed for the chosen check.
+Resolve the selected task and read relevant outcome/specs, implementation,
+constraints, and test configuration. Apply
+`.memory-bank/workflows/execute-loop.md#working-policy` and tier policy.
+Implementation work belongs to an active task; its owner applies `/exe`'s
+task-start rules in the same flow before test writes when it has not started.
 </input_contract>
 
-<hard_invariants>
-- Reuse the existing task ID, lifecycle, tier, protocol, and evidence paths.
-  Do not create synthetic testing tasks, a second lifecycle, or new task fields.
-- Test files outside advisory `touched_files` are allowed only for the same
-  outcome and inside hard allowed/forbidden scopes; record the deviation.
-- Do not weaken assertions, disable failures, introduce decorative tests, or
-  substitute screenshots for behavior proof.
-- Do not create or modify `.memory-bank/testing/`; accepted shared testing-spec
-  changes route through `/spec-redesign`, Foundation detail through
-  `/foundation-to-tasks`, and feature detail through `/feature-to-tasks`.
-- `/add-tests` does not own task closure or scheduler transitions.
-</hard_invariants>
+<execution>
+Choose test level, fixtures, tools, and depth for the behavior and regression
+risk. Prefer an existing meaningful check over decorative coverage. Do not
+weaken assertions to manufacture success or introduce unresolved product
+requirements through a test. New substantive choices follow Working policy.
 
-<operator_decisions>
-If useful coverage requires a new product behavior, contract, state/data,
-security/compatibility rule, task-boundary/tier change, external dependency, or
-verification-policy choice not already settled, stop and surface the exact
-decision.
-
-Interactive flow asks the operator and resumes only after the owning
-feature/spec/task plan is durably repaired. Unattended flow returns the blocker
-to the scheduler without choosing and names `/feature-to-tasks FT-<NNN>`,
-`/spec-redesign`, or `/feature-doctor FT-<NNN>` as the applicable resume route.
-A recommendation is not an accepted decision.
-</operator_decisions>
-
-<agent_discretion>
-The agent chooses exploration order, tools, test level, test shape, fixtures,
-and proportional flakiness checks. Select the narrowest credible proof: a unit,
-integration/contract, e2e, or existing project-native check according to the
-actual behavior and regression risk. No requirement exists to fill every test
-category or put browser/e2e first.
-</agent_discretion>
+Advisory `touched_files` does not exclude necessary test files; explicit hard
+boundaries and permissions still apply. Shared test specifications may be
+updated within an authorized assignment, without a mandatory skill roundtrip.
+</execution>
 
 <required_outputs>
-- scoped test changes;
-- exact commands/results and substantive artifacts in the existing task's
-  tier-selected paths:
-  - T0/T1 -> `.protocols/<TASK_ID>/run.md`;
-  - T2/T3 -> full protocol state plus `.tasks/<TASK_ID>/` evidence;
-- recorded actual test files, advisory deviations, hard-scope compliance,
-  flakiness evidence when relevant, and remaining blockers.
+Record actual test changes, commands/results, limitations, and useful evidence
+links in the existing task `verify` or its active protocol. A failing test is
+an observation, not by itself a final task failure decision. No new testing
+record, full protocol, or report is required merely for this command.
 </required_outputs>
 
-<validation>
-Confirm the added tests fail for the meaningful regression they target when
-practical, pass against the implementation, prove the task-scoped outcome, and
-do not authorize or encode an unresolved product/design decision.
-</validation>
-
 <handoff_contract>
-Return immediately to `/exe`, `/verify`, the scheduler, or the explicit task
-owner under `.memory-bank/workflows/tier-policy.md#closure-authority`.
-Out-of-scope coverage routes to normal `/feature-to-tasks FT-<NNN>` planning
-instead of being smuggled into the current task.
+Return the result to the task owner. Further implementation/checking can continue
+in the same authorized flow. The scheduler or top-level owner retains closure.
 </handoff_contract>

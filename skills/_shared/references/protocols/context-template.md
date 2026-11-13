@@ -1,49 +1,25 @@
 ---
-description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/context.md (clean-session context set).
+description: Optional context pointers for a task resumed in another session.
 status: active
 ---
 # Context — <TASK_ID>
 
-## Purpose
-This file captures the **minimal reproducible context** so a fresh session can resume work safely.
+## Task and relevant sources
+- Indexed task card:
+- Only the source/spec links needed to continue:
 
-## Execution Attempt
+## Material decisions and limits
+- Accepted decisions:
+- Unresolved question / actual blocker:
+
+## Resume
+- What has already happened:
+- State or side effects that need reconciliation:
+- Next useful action:
+
+## Execution Attempt (when useful)
 - attempt:
 - started:
 
-## Inputs (what drives this task)
-- Task record: `.memory-bank/tasks/<TASK_ID>.task.json`
-- Task index: `.memory-bank/tasks/index.json`
-- Specs: (FT/EP/REQ docs you opened)
-- Acceptance criteria source: (FT or verification section)
-
-## Richer inputs (optional)
-- Source Artifacts: ...
-- Normative Inputs: ...
-- Constraints / Invariants: ...
-- Verification Targets: ...
-
-## Fallback basis (if richer inputs were absent)
-- Classic feature doc: ...
-- Requirements / RTM: ...
-- Duo docs: ...
-
-## Loaded context set (what was read)
-Keep this list short (2–8 items). Prefer SSOT pointers.
-- `AGENTS.md`
-- `.memory-bank/index.md`
-- ...
-
-## Decisions / assumptions
-- Decision: ...
-- Assumption (needs verification): ...
-
-## Commands run / environment notes
-- `...` → OK/FAIL (logs/evidence → `.tasks/<TASK_ID>/...`)
-
-## Open questions / blockers
-- ...
-
-## Next session
-- Start by reading: `context.md`, `plan.md`, `progress.md`
-- Next action (one concrete step): ...
+Prefer pointers to canonical memory over copies. Omit sections that add no
+information beyond the task card; this file is optional.

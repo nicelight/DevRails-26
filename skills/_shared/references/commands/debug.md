@@ -1,115 +1,45 @@
 ---
-description: Diagnose one task failure read-only and route evidence-backed recurrence prevention.
+description: Diagnose a concrete task failure and recommend a bounded correction.
 status: active
 ---
 # /debug - Diagnose one TASK failure
 
 <objective>
-Trace one observed failure for a concrete indexed task to its confirmed root
-cause and first violated invariant, or report the exact evidence gap. When
-confirmed, classify recurrence and recommend durable prevention only for an
-evidence-backed material repeat. Produce supporting evidence only; do not
-implement, verify, or own lifecycle decisions.
+Trace an observed task failure to an evidenced cause, or identify the exact
+missing evidence. Diagnosis does not implement a correction or own lifecycle.
 </objective>
 
 <input_contract>
-Expected `$ARGUMENTS`: one `TASK-NNN-TN-FT-NNN-WN` with an observed failure
-bound to the current Execution Attempt and actual change surface.
-
-Read the indexed task card, direct task-linked specs, current-attempt protocol
-and handoff, functional/semantic verdict evidence, actual changes, and only the
-callers or boundaries needed to trace the failure. Missing reproduction or
-evidence is a valid diagnostic input and must remain explicit.
-
-After root-cause confirmation, inspect only relevant prior diagnostic,
-execution, verification, bug, or repository-history evidence needed to compare
-the mechanism. Keep missing history explicit.
+Read the selected task, actual failure/change surface, relevant specs, and
+current-attempt evidence. Apply
+`.memory-bank/workflows/execute-loop.md#working-policy`. Missing reproduction
+or history is a valid limitation, not a reason to invent either.
 </input_contract>
 
-<hard_invariants>
-- Diagnosis is read-only over implementation, tests, specs, task records,
-  protocols, scheduler state, and external systems. The only allowed write is
-  this command's report under `.tasks/<TASK_ID>/`.
-- Do not change status, tier, dependencies, scope, Execution Attempt, retry
-  budget, or permissions.
-- Do not issue functional/semantic verdicts, accept product/spec/architecture
-  decisions, implement a correction, or create BUG/follow-up work.
-- Recurrence and prevention are advisory evidence. Do not infer recurrence from
-  similar symptoms or absence of a prior match, create a durable rule without a
-  confirmed material recurring mechanism, or expand current task authority.
-- A probe may mutate only known local isolated or disposable state with safe
-  rerun and cleanup. It grants no production, destructive, privileged, secret,
-  or external permission. When safety or initial state is uncertain, do not run
-  it and keep the diagnosis inconclusive.
-- Keep tracing task-scoped. Neighboring callers and boundaries are evidence,
-  not authority to expand the task.
-</hard_invariants>
+<diagnosis>
+Choose the cheapest distinguishing investigation. Keep probes within existing
+permissions and safe local/disposable state. Do not replay an ambiguously
+completed unsafe effect. Read adjacent callers or history only when needed to
+establish the cause or a realistic recurrence.
 
-<agent_discretion>
-Choose the smallest evidence-producing path. Useful tactics include reproducing
-the symptom with exact inputs/environment, reading the complete failure,
-tracing `symptom -> immediate cause -> caller/source -> first violated
-invariant`, and testing one evidence-backed hypothesis at a time with a
-distinguishing experiment. Condition-based waiting is usually preferable for
-async or flaky behavior. No fixed phase model, checklist, script, or mandatory
-failing test is required.
-</agent_discretion>
+This assignment is read-only over implementation, tests, specs, task lifecycle,
+and external systems. A diagnostic report is its allowed write. It does not
+change scope, retry budget, requirements, or acceptance. A prevention measure
+is useful only for an evidenced material recurring mechanism and remains advice.
+</diagnosis>
 
 <required_outputs>
-Write exactly:
-
-```text
-.tasks/<TASK_ID>/<TASK_ID>-S-DEBUG-final-report-docs-01.md
-```
-
-Include:
-- symptom and reproduction, or the exact evidence gap;
-- current Execution Attempt and actual change surface;
-- confirmed root cause plus first violated invariant, or `inconclusive`;
-- experiments and only materially useful rejected hypotheses;
-- minimum recommended correction;
-- suitable regression check;
-- recurrence: `repeated_confirmed|no_prior_evidence|unclassified`, with inspected
-  evidence scope. `repeated_confirmed` requires a prior failure with the same
-  causal mechanism and first violated invariant; `no_prior_evidence` is scoped
-  to inspected history; insufficient evidence is `unclassified`;
-- for `repeated_confirmed`, prior evidence locators, the previous correction
-  and why it failed to prevent recurrence, or the exact correction-history gap;
-- for a material `repeated_confirmed`, one cheapest sufficient prevention
-  guardrail — test, invariant, contract, lint/tooling check, runbook condition,
-  or architecture boundary — with canonical artifact/owner, owning workflow,
-  and adoption check; otherwise no guardrail and the reason;
-- residual uncertainty and next owner;
-- exactly one standalone marker:
-
-```text
-DIAGNOSIS: CONFIRMED|INCONCLUSIVE
-```
-
-`CONFIRMED` requires evidence connecting the observed failure to both the root
-cause and first violated invariant. This marker is supporting classification,
-not a verdict or task status.
-
-If a complete report already binds the same current attempt and unchanged
-failure/change surface, reuse it instead of repeating diagnosis. A report for
-an older attempt does not satisfy the current-attempt output.
+Write or reuse the current-scope report at
+`.tasks/<TASK_ID>/<TASK_ID>-S-DEBUG-final-report-docs-01.md`.
+Keep symptom, reproduction/evidence gap, cause, decisive evidence, minimum
+correction, useful regression check, and remaining uncertainty concise.
+Identify the current attempt when retries matter. Record recurrence only when
+it affects the correction: `repeated_confirmed|no_prior_evidence|unclassified`.
+Use `DIAGNOSIS: CONFIRMED|INCONCLUSIVE`; this is not a functional verdict.
 </required_outputs>
 
-<validation>
-Before returning, confirm that every causal claim points to observable evidence,
-the report names its attempt and change surface, probes stayed within existing
-permissions and replay-safety constraints, recurrence/guardrail admission is
-evidence-backed, and no implementation, verdict, lifecycle, planning, or
-architecture authority was exercised.
-</validation>
-
 <handoff_contract>
-Return the report path, diagnosis, recurrence, and prevention owner/route when
-present. In manual flow, when the report supports a concrete non-trivial or
-multi-surface correction inside the accepted task boundary, recommend
-`/technical-premortem <TASK_ID>` as the next step instead of `/exe`; its handoff
-returns the later advisory route back to execution. Recommend a separate
-`/exe <TASK_ID>` only for a contained correction that does not need that
-pre-mortem. Otherwise name the existing planning, canonical-change,
-clarification, or evidence owner. `/debug` does not invoke the next command.
+Return the report and next useful action. A clear correction may go directly to
+the authorized executor; pre-mortem, planning help, or another review is optional.
+The scheduler/owner retains retry and lifecycle decisions.
 </handoff_contract>

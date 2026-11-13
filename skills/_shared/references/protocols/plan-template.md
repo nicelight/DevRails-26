@@ -1,88 +1,28 @@
 ---
-description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/plan.md (execution plan + MB-SYNC handoff).
+description: Optional task execution plan for work that benefits from one.
 status: active
 ---
 # Plan — <TASK_ID>
 
-## Goal
+## Outcome and scope
+- Task card / accepted source:
+- Outcome:
+- Important exclusions or limits:
 
-## Non-goals
+## Approach
+- Smallest sufficient approach:
+- Decisions requiring consultation, if any:
 
-## Inputs / source specs
-- Task record: `.memory-bank/tasks/<TASK_ID>.task.json`
-- Task index: `.memory-bank/tasks/index.json`
-- Feature/Epic: ...
-- REQ IDs: ...
+## Checks
+- Outcome / criterion:
+- Useful check or evidence method:
+- Explicitly accepted limitations:
 
-## Richer execution inputs (optional)
-- Source Artifacts: ...
-- Normative Inputs: ...
-- Verification Targets: ...
+## Continuation
+- Current progress:
+- Next action:
+- Memory that needs updating:
 
-## Fallback basis
-- If richer inputs are absent, record the classic basis used for execution:
-  - feature doc
-  - requirements / RTM
-  - duo docs
-  - related contracts / states / runbooks / testing docs (if needed)
-
-## Constraints / invariants (MUST / NEVER)
-- MUST: ...
-- NEVER: ...
-
-## Scope
-### In scope
-
-### Out of scope
-
-## Proposed changes
-### Touched areas (hypotheses OK)
-- `path/to/file` — why
-
-### Preflight-confirmed change surface
-- Expected hints kept: ...
-- Additional same-outcome files/areas and rationale: ...
-- Hard `write_boundary` present and satisfied: yes | no | not set
-- `forbidden_scope` / stop-condition check: clear | blocked
-
-## Applicable quality gates
-List only evidence-backed project-native checks required by the task record,
-linked specs/PRD, or repository configuration.
-
-- [ ] `<check name>`: `<cmd>` — proves `<task outcome or concrete risk>`
-- No meaningful runnable check: `<not applicable | rationale>`
-
-## Claim-linked RED / GREEN (T2/T3)
-- applicability: applicable | not applicable
-- accepted claim locator(s): <AC / REQ / exact canonical spec anchor>
-- planned test/probe and environment:
-- observable RED:
-- corresponding GREEN:
-- accepted not-applicable reason and alternative proof:
-- T3 isolation, safe rerun, cleanup, and permission boundary:
-
-## Fan-out plan (if needed)
-- Delegated agent A: scope ...
-- Delegated agent B: scope ...
-
-## MB-SYNC handoff / owner
-Scheduler or explicit standalone owner performs sync after verification/status
-decision. `/exe` only records handoff notes.
-
-An `explicit standalone owner` exists only when the user directly asked the
-current top-level agent to close the task, or when the top-level
-agent/orchestrator explicitly runs a manual workflow for one TASK and records
-that it owns closure. Subagent prompts do not silently become closure
-owners.
-
-Checklist:
-- [ ] Owner identified: scheduler | explicit standalone owner | human | none
-- [ ] Explicit standalone owner basis recorded if manual closure is expected: user direct instruction | top-level manual workflow ownership | n/a
-- [ ] `.memory-bank/` docs needing update (WHY/WHERE, no pseudocode): ...
-- [ ] `.memory-bank/index.md` router update needed: yes | no
-- [ ] RTM update in `.memory-bank/requirements.md` needed: yes | no
-- [ ] Task registry/status update owner: ...
-- [ ] Changelog update owner: ...
-
-## Definition of done
-- ...
+Use only useful sections. Detailed TDD, delegation, and multi-stage plans are
+options; do not duplicate the task card or invent mandatory checks to fill this
+shape. Status and observed evidence remain in the indexed card.

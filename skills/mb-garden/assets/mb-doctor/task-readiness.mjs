@@ -15,7 +15,6 @@ const VALID_CLARIFICATION_STATUSES = new Set(['pending', 'complete', 'blocked'])
 const LINK_REQUIRED_TIERS = new Set(['T1', 'T2', 'T3']);
 const DONE_STATUSES = new Set(['done', 'done_for_prod']);
 const TERMINAL_STATUSES = new Set(['done', 'done_for_prod', 'failed']);
-const FULL_PROTOCOL_TIERS = new Set(['T2', 'T3']);
 const SDD_SPEC_REQUIRED_TIERS = new Set(['T2', 'T3']);
 const PRODUCTION_ACCEPTANCE_TITLE_RE = /^\s*Production acceptance\s*:/i;
 const REQ_ID_RE = /^REQ-(?:[A-Z]+-)?[0-9]{3,}$/;
@@ -23,7 +22,6 @@ const FT_ID_RE = /^FT-[0-9]{3,}$/;
 const SDD_SPEC_DIRS = ['tech-specs', 'architecture', 'contracts', 'domains', 'states', 'adrs', 'testing', 'guides', 'runbooks'];
 const SDD_SPEC_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:tech-specs|architecture|contracts|domains|states|adrs|testing|guides|runbooks)\/[^\s"'`]+/i;
 const ARCHITECTURE_CONTRACT_ADR_PATH_RE = /(?:\.\/)?\.memory-bank\/(?:architecture|contracts|adrs)\/[^\s"'`]+/i;
-const RED_VERIFY_PASS_RE = /^\s*SEMANTIC_VERDICT: semantic-pass\s*$/im;
 
 export function createTaskReadinessChecks(context) {
   const ROOT = context.root;
@@ -44,10 +42,7 @@ export function createTaskReadinessChecks(context) {
   } = context.foundation;
   const { checkFeatureAcceptanceTrace } = context.acceptance;
   const {
-    addLegacyTerminalCompatibilitySummary,
-    checkCompactDoneProtocol,
     checkFailedTaskClosure,
-    checkFullProtocolTask,
     checkTerminalEvidence,
   } = context.terminal;
   let featureClarificationCache;
@@ -72,12 +67,10 @@ export function createTaskReadinessChecks(context) {
     }
   
     if (index.tasks.length === 0) {
-      const severity = options.strict ? 'error' : 'info';
+      const severity = 'info';
       addFinding(severity, 'TASK_INDEX_EMPTY', 'No task records yet. This is valid for a fresh skeleton.', {
         path: TASK_INDEX_REL,
-        suggested_fix: options.strict
-          ? 'Create task records via /feature-to-tasks FT-XXX after /write-prd and /prd-to-features.'
-          : undefined,
+        suggested_fix: 'Create task records when the project has concrete work to track.',
       });
       addQueueSummary([], []);
       return;
@@ -92,9 +85,6 @@ export function createTaskReadinessChecks(context) {
     for (const record of orderedRecords) {
       checkFoundationWave(record);
       checkReadyDependencies(record, records);
-      checkInProgressProtocol(record);
-      checkFullProtocolTask(record);
-      checkCompactDoneProtocol(record);
       checkTerminalEvidence(record);
       checkReqFeatureLinkage(record);
       checkSddSpecLinkage(record);
@@ -104,10 +94,8 @@ export function createTaskReadinessChecks(context) {
   
     checkFeatureAcceptanceTrace(orderedRecords);
     checkFailedTaskClosure(orderedRecords);
-    checkT2FeatureSemanticCompletion(orderedRecords);
     checkFailedDependentsBlocked(orderedRecords);
     checkQueueState(orderedRecords, records, invalidEntries);
-    addLegacyTerminalCompatibilitySummary(orderedRecords);
     addQueueSummary(orderedRecords, invalidEntries);
   }
   
@@ -217,21 +205,6 @@ export function createTaskReadinessChecks(context) {
     });
   }
   
-  function checkInProgressProtocol(record) {
-    const { id, rel, task } = record;
-    if (task.status !== 'in_progress') return;
-    if (FULL_PROTOCOL_TIERS.has(task.tier)) return;
-    const runRel = normalizeRel(joinRelative('.protocols', id, 'run.md'));
-    if (isFile(absolute(runRel))) return;
-  
-    const severity = options.strict ? 'error' : 'warning';
-    addFinding(severity, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', `${rel}: in_progress task has no compact ${runRel}.`, {
-      path: rel,
-      task_id: id,
-      suggested_fix: `Create ${runRel} from the framework template or move the task out of in_progress.`,
-    });
-  }
-  
   function checkReqFeatureLinkage(record) {
     const { id, rel, task } = record;
     if (!LINK_REQUIRED_TIERS.has(task.tier)) return;
@@ -288,27 +261,11 @@ export function createTaskReadinessChecks(context) {
     if (!SDD_SPEC_REQUIRED_TIERS.has(task.tier)) return;
   
     const taskSpecLinks = sddSpecLinkStatusFromTask(task);
-    const severity = options.strict ? 'error' : 'warning';
+    const severity = taskSpecLinks.missing.length && options.strict ? 'error' : 'warning';
     const featureId = typeof task.feature === 'string' && FT_ID_RE.test(task.feature) ? task.feature : undefined;
     const featureSpec = featureId ? getFeatureSpecDesign(featureId) : null;
-    if (taskSpecLinks.existing.length) {
-      if (taskSpecLinks.existing.every((link) => isGuideSddSpecPath(link))) {
-        addFinding(severity, 'TASK_SDD_SPEC_GUIDE_ONLY', `${rel}: ${task.tier} task links only guide SDD specs.`, {
-          path: rel,
-          task_id: id,
-          details: {
-            feature: featureId,
-            guide_sdd_spec_links: taskSpecLinks.existing,
-            feature_spec_design_status: featureSpec?.status,
-            feature_spec_design_links: featureSpec?.links.existing ?? [],
-          },
-          suggested_fix:
-            'Keep guides as supplemental links, but add direct task-relevant canonical architecture, contract, domain, state, testing, runbook, or ADR links for T2/T3 work.',
-        });
-      }
-      return;
-    }
-  
+    if (taskSpecLinks.existing.length) return;
+
     addFinding(severity, 'TASK_SDD_SPEC_LINK_MISSING', `${rel}: ${task.tier} task has no existing linked SDD spec paths in richer task fields.`, {
       path: rel,
       task_id: id,
@@ -373,13 +330,13 @@ export function createTaskReadinessChecks(context) {
   
     if (!issues.length) return;
   
-    const severity = options.strict ? 'error' : 'warning';
+    const severity = 'warning';
     addFinding(severity, 'TASK_HANDOFF_INCOMPLETE', `${rel}: ${task.tier} single-card handoff is structurally incomplete.`, {
       path: rel,
       task_id: id,
       details: { issues },
       suggested_fix:
-        'Repair the indexed task card through /feature-to-tasks or /foundation-to-tasks; use touched_files as advisory non-exhaustive hints and write_boundary only for a deliberate hard boundary.',
+        'Clarify the outcome, relevant context and suitable checks in the existing task when needed; touched_files is advisory and write_boundary is deliberate.',
     });
   }
   
@@ -477,47 +434,6 @@ export function createTaskReadinessChecks(context) {
             tasks: group.tasks,
           },
           suggested_fix: `Complete /feature-doctor ${group.featureId} before generating or running task records for that feature.`,
-        }
-      );
-    }
-  }
-  
-  function checkT2FeatureSemanticCompletion(records) {
-    if (!records.length) return;
-  
-    const groups = new Map();
-    for (const record of records) {
-      const featureId = typeof record.task.feature === 'string' ? record.task.feature.trim() : '';
-      if (!FT_ID_RE.test(featureId) || featureId === 'FT-000') continue;
-  
-      if (!groups.has(featureId)) {
-        groups.set(featureId, { featureId, records: [], hasT2: false });
-      }
-      const group = groups.get(featureId);
-      group.records.push(record);
-      if (record.task.tier === 'T2' && !isProductionAcceptanceTask(record)) group.hasT2 = true;
-    }
-  
-    const severity = options.strict ? 'error' : 'warning';
-    for (const group of groups.values()) {
-      if (!group.hasT2) continue;
-      const implementationRecords = group.records.filter((record) => !isProductionAcceptanceTask(record));
-      if (!implementationRecords.every((record) => DONE_STATUSES.has(record.task.status))) continue;
-  
-      const passFiles = featureSemanticPassFiles(group.featureId);
-      if (passFiles.length) continue;
-  
-      addFinding(
-        severity,
-        'FEATURE_RED_VERIFY_VERDICT_MISSING',
-        `${group.featureId}: completed T2 feature has no feature-doc semantic-pass verdict.`,
-        {
-          path: '.memory-bank/features/',
-          details: {
-            feature: group.featureId,
-            tasks: implementationRecords.map((record) => ({ id: record.id, path: record.rel, tier: record.task.tier })),
-          },
-          suggested_fix: `Run /red-verify --feature ${group.featureId} and record SEMANTIC_VERDICT: semantic-pass in the matching .memory-bank/features/${group.featureId}-*.md file.`,
         }
       );
     }
@@ -744,18 +660,6 @@ export function createTaskReadinessChecks(context) {
   function featureFileMatches(file, featureId) {
     const base = basenameWithoutExtension(file);
     return base === featureId || base.startsWith(`${featureId}-`) || base.startsWith(`${featureId}_`);
-  }
-  
-  function featureSemanticPassFiles(featureId) {
-    return featureMarkdownFiles()
-      .filter((file) => featureFileMatches(file, featureId))
-      .filter((file) => {
-        try {
-          return RED_VERIFY_PASS_RE.test(readText(file));
-        } catch {
-          return false;
-        }
-      });
   }
   
   function getFeatureClarificationIndex() {

@@ -11,6 +11,8 @@ project implementation or workflow state.
 </objective>
 
 <input_contract>
+Apply `.memory-bank/workflows/execute-loop.md#working-policy`: consult the operator on substantive choices unless autonomy was explicitly granted; carry out settled decisions without repeated approval.
+
 Invocation provides exactly one review intent:
 
 ```text

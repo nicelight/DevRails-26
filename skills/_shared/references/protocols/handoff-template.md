@@ -1,32 +1,16 @@
 ---
-description: Template for .protocols/TASK-NNN-TN-FT-NNN-WN/handoff.md (what the next agent needs).
+description: Optional concise handoff for work continuing in another context.
 status: active
 ---
 # Handoff — <TASK_ID>
 
-## Summary
-- what changed
-- why it changed
+- Task card:
+- Agreed outcome and actual result:
+- Material changes / decisions:
+- Checks, evidence links, and unverified scope:
+- Remaining work or question:
+- Next useful action:
 
-## Where to look
-- key files:
-  - ...
-- advisory `touched_files` deviations and rationale:
-  - ...
-- hard write-boundary compliance: yes | no | not set
-
-## How to run / verify
-- gates:
-  - ...
-- claim-linked RED/GREEN evidence:
-  - <claim locator plus progress/artifact paths, accepted not-applicable reason, or none>
-- current-attempt reuse candidate locators:
-  - <attempt plus protocol/artifact path and heading, or none>
-- superseded/supporting-only receipt locators:
-  - <protocol/artifact path and heading, or none>
-
-## Known issues
-- ...
-
-## Follow-ups
-- ...
+Include extra context only when the next agent needs it. Refer to existing
+sources instead of copying the plan, protocol, or card. The handoff does not
+require a particular next skill or grant new permissions.

@@ -1,92 +1,47 @@
 ---
-description: Evidence-bounded redesign of an already accepted SDD backbone or shared contract.
+description: Apply a design change and reconcile only the work it actually affects.
 status: active
 ---
-# /spec-redesign - Accepted design change gate
+# /spec-redesign — Reconcile design changes
 
-<objective>
-Apply an accepted change to an existing positive-revision SDD backbone or
-shared contract, prove its planning impact, and route only affected planning
-surfaces. Do not replay initial architecture discovery.
-</objective>
+## Outcome
+Update the canonical design and affected consumers for an authorized change.
+Apply `.memory-bank/workflows/execute-loop.md#working-policy` and
+`.memory-bank/workflows/sdd-design-contract.md`.
 
-<input_contract>
-Require:
-- Global Backbone Status `complete|minimal` with positive `Planning Revision`;
-- the accepted change or exact unresolved operator decision;
-- current canonical specs, feature links, task plans/cards, and review evidence
-  needed to trace consumers and planning impact;
-- `.memory-bank/workflows/sdd-design-contract.md`;
-- `.memory-bank/workflows/execute-loop.md#planning-redesign-boundary` and
-  `#fresh-feature-tasking-boundary`.
+Read the requested delta, relevant specs, feature/task links, and current-state
+evidence. If no design exists, establish the necessary initial design; a separate
+`/spec-design` invocation is optional.
 
-If no successful positive-revision backbone exists, route to `/spec-design`.
-If the requested target change is not authoritative, obtain the operator-owned
-decision before changing canonical contracts.
-</input_contract>
+## Reconciliation
+Update each changed rule at its canonical owner and trace its affected consumers.
+Preserve unaffected work and historical evidence. A missing review, revision, or
+command marker is not proof that all planning is invalid.
 
-<hard_invariants>
-- Change only the owning canonical backbone, spec, ADR, Foundation, feature, or
-  registry links required by the accepted decision.
-- Do not create task records, plans, revision history, impact registries,
-  lifecycle, schema, or a parallel review system. Bounded routing uses only the
-  feature-body marker below.
-- Preserve task lifecycle, completed evidence, protocols, and unaffected
-  approvals.
-- Do not use revision mismatch as impact proof. Establish semantic impact
-  before deciding whether revision changes.
-- Do not revisit Foundation unless its decision or executable baseline contract
-  is affected.
-</hard_invariants>
+Describe impact as `none|bounded|global`:
+- `none`: planning meaning is unchanged;
+- `bounded`: named features or tasks need adjustment;
+- `global`: the change genuinely affects product-wide planning.
 
-<operator_decisions>
-Apply the shared authority and operator-decision boundary. Unattended flow uses
-the existing blocking halt and names `/spec-redesign` as the resume route.
-</operator_decisions>
+Keep Planning Revision unchanged for none/bounded and increment it once for a
+global change when the backbone tracks a revision. It is navigation/history,
+not an execution approval token. Do not infer global impact from a shared file's
+location alone.
 
-<required_outputs>
-Apply the SDD Design Contract to the accepted delta: update its canonical owner,
-every affected canonical consumer, registry links, and affected feature links.
-Update backbone status/matrix/mode or Foundation only when their owned semantics
-actually changed.
+Reconcile affected specs, features, plans, and queued task context directly within
+the authorized change. Preserve valid task IDs, lifecycle history, and evidence;
+do not fabricate completed proof or silently redefine completed outcomes.
+If reconciliation remains unfinished, an existing
+`PLANNING_RECONCILIATION_REQUIRED` marker may identify the affected feature;
+remove it when the work is reconciled. The actual unresolved mismatch determines
+whether dependent work can continue, not the marker alone.
 
-Classify impact under the loaded Planning Redesign Boundary. Report the
-`none|bounded|global` verdict, changed planning semantics or the evidence that
-they were preserved, exact affected features, Planning Revision before/after,
-and Foundation impact. If the impact boundary cannot be proved, return blocked
-without changing revision.
+Revisit Foundation only when its baseline or decision changes. Record unresolved
+questions where the next agent will find them; stop only work that depends on a
+missing decision or prerequisite.
 
-Reconcile `bounded|global` affected features one at a time through the Fresh
-Feature Tasking Boundary. For `bounded`, add
-`PLANNING_RECONCILIATION_REQUIRED` only to affected task-linked feature bodies
-whose planning needs repair; do not change feature frontmatter, Global Backbone
-Status, or Planning Revision. Unaffected features remain eligible. Rerun
-Foundation planning only when its decision or executable baseline changed.
-</required_outputs>
-
-<agent_discretion>
-Choose the minimum reading, trace, artifact edits, and validation sufficient to
-prove the verdict. Reuse current accepted artifact shapes and canonical paths.
-</agent_discretion>
-
-<validation>
-Apply Shared Validation from the SDD Design Contract, then verify:
-- the verdict cites changed planning semantics and exact affected consumers;
-- Planning Revision is unchanged for `none|bounded` and increments once for
-  `global`;
-- Foundation routing matches actual Foundation impact;
-- task statuses, completed evidence, protocols, and unaffected approvals are
-  unchanged;
-- every bounded feature whose planning needs repair has the marker and a
-  sequential reconciliation/review route; unaffected work remains eligible.
-</validation>
-
-<handoff_contract>
-Report changed contracts, impact verdict and evidence, Planning Revision
-before/after, affected features, Foundation impact, blockers, and one next
-command:
-- `none` -> resume the prior owner;
-- `bounded|global` -> next affected `/spec-auto FT-<NNN>` when feature design
-  needs reconciliation, otherwise fresh `/feature-to-tasks FT-<NNN>`;
-- blocked -> obtain the named decision/evidence and rerun `/spec-redesign`.
-</handoff_contract>
+## Handoff
+Report changed decisions, impact, reconciled consumers, and remaining work.
+Continue the useful next action in the same context when possible.
+`/feature-to-tasks`, `/spec-auto`, or a focused review may help; no mandatory
+repair/review chain follows from this command.

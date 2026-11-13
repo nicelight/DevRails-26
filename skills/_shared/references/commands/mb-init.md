@@ -45,8 +45,8 @@ the skeleton itself.
 </process>
 
 <handoff_contract>
-- After a successful external bootstrap or sync, rerun `/mb-init` to confirm
-  `.memory-bank/` is present.
+- After external bootstrap or sync, confirm `.memory-bank/` is present and
+  resume the original request; a separate command invocation is unnecessary.
 - If the Memory Bank is present and no sync was requested, make no changes and
   hand off to `/start` only when its `SKILL.md` exists in the active
   `.agents/skills/` or `.claude/skills/` runtime surface. Otherwise report that

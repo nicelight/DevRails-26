@@ -1,41 +1,30 @@
 ---
-description: Convert an accepted Foundation Dev Path decision into the minimum FT-000 JSON queue, or prove an existing brownfield baseline.
+description: Plan the smallest executable Foundation baseline using the ordinary task model.
 status: active
 ---
-# /foundation-to-tasks - Foundation decision -> FT-000 JSON tasks
+# /foundation-to-tasks — Foundation work
 
-<objective>
-Turn the already accepted Foundation Dev Path decision into the smallest
-executable walking-skeleton queue, using the normal JSON task model. In
-`--verify-existing` mode, record a proven brownfield baseline without creating
-`FT-000`, or create only the probes needed to prove it.
-</objective>
+## Outcome
+Create or reconcile the smallest necessary executable-baseline queue, or prove
+that an existing baseline needs no separate Foundation work. Apply
+`.memory-bank/workflows/execute-loop.md#working-policy`,
+`.memory-bank/workflows/sdd-design-contract.md`, and applicable tier guidance.
 
-<input_contract>
-Supported arguments:
-- no argument: create or reconcile the required foundation queue;
-- `--verify-existing`: verify an existing brownfield executable baseline.
+Use `.memory-bank/foundation.md`, current accepted product/design needs, actual
+build/runtime evidence, existing indexed tasks, and the task schema. The optional
+`--verify-existing` argument focuses on proving a brownfield baseline. Missing
+prior command/review markers alone do not require a new queue.
 
-Require:
-- `.memory-bank/foundation.md` produced by `/spec-design`;
-- clarified PRD, requirements, epics, product features, and current Feature
-  Pressure Map;
-- `.memory-bank/spec-backbone.md` with Global Backbone Status `complete`, or
-  valid `minimal` with explicit not-applicable rationales, and positive integer
-  `Planning Revision`;
-- pure `.memory-bank/spec-index.md` plus applicable linked canonical specs;
-- `.memory-bank/tasks/index.json` and
-  `.memory-bank/schemas/task.schema.json`;
-- `.memory-bank/workflows/tier-policy.md#tier-classification-and-escalation`,
-  `#hard-write-boundary`, `#task-claim-and-dependency-ownership`,
-  `#task-scoped-acceptance-evidence`, and `#claim-linked-red--green-for-t2t3`.
+## Foundation decision
+The baseline serves current features: a working build/start/smoke/test path or a
+concrete compatibility requirement. Do not build a future platform, empty slices,
+or speculative endpoints. Preserve accepted architecture and explicit constraints.
 
-Read enough of those sources to prove the selected baseline, spec identity,
-task shape, dependencies, and tier. The agent chooses the efficient reading
-and exploration order, except that the task schema and tier policy must be
-loaded before drafting durable task records.
+Discuss an unresolved baseline choice in manual work; under authorized autonomy
+choose the minimum within scope. Apply an authorized design correction and its
+affected links directly rather than requiring `/spec-redesign` first.
 
-Require this parseable anchor block:
+Keep the existing anchors in `foundation.md`:
 
 ```markdown
 ## Gate Anchors
@@ -45,215 +34,46 @@ Require this parseable anchor block:
 - Foundation Gate Task: pending_foundation_to_tasks|TASK-<NNN>-T<N>-FT-000-W<N>|not_required
 ```
 
-If the initial backbone or Foundation decision is missing/incomplete, route to
-`/spec-design`. If an accepted positive-revision backbone, Foundation decision,
-anchors, or Feature Pressure Map needs change, route to `/spec-redesign` before
-foundation writes.
-</input_contract>
+With sufficient evidence and no needed baseline work, use `false/not_required`
+and create no empty Foundation artifacts. Preserve existing completed history.
+If the choice remains unresolved, record the question instead of fabricating a
+true/false decision.
 
-<hard_invariants>
-- Foundation is the minimum executable baseline, not product implementation or
-  a future-ready platform.
-- Apply the accepted architecture, composition, module/slice boundaries, and
-  code roots that constrain the walking skeleton; do not revise or reinterpret
-  them while tasking Foundation.
-- `REQ-000`, `FT-000`, and product-foundation `W0` are reserved. Product
-  features must not use `FT-000`; product tasks must not use `W0`.
-- Foundation uses only `.memory-bank/tasks/TASK-*.task.json`,
-  `.memory-bank/tasks/index.json`, the existing task schema/lifecycle, and the
-  tier-selected protocol/evidence paths. Do not add a foundation registry,
-  schema, status machine, task fields, or protocol family.
-- Task IDs use `TASK-NNN-TN-FT-000-WN`; ID tier/feature/wave segments match the
-  record. Existing IDs are not renumbered.
-- Lifecycle and closure ownership come from
-  `.memory-bank/workflows/tier-policy.md#closure-authority`. This command
-  creates/reconciles planning state only and never marks the final gate `done`.
-- `touched_files` is advisory and non-exhaustive. A non-empty
-  `runtime_context.write_boundary` is a deliberate hard boundary, never a
-  mechanical copy of `touched_files`; `forbidden_scope` and stop conditions
-  remain hard.
-- New specs use subject-based canonical paths without `FT-000` or product
-  feature identity. `spec-index.md` remains
-  `Type | Path | Status | Scope | Change route`, without decision bodies,
-  ownership, or `used_by` metadata.
-- Do not invent future endpoints, event payloads, domain behavior, state
-  machines, schemas, migrations, security policy, or operational layers that
-  are not needed to prove the baseline.
-- When the accepted target uses capability slices, scaffold only the
-  composition root and slice roots required by the walking skeleton. Do not
-  create layer-centric application structure, empty future slices,
-  cross-slice business behavior, or speculative shared abstractions.
-- Never resolve competing canonical paths by creating a third spec.
-</hard_invariants>
+## Queue when needed
+Maintain `REQ-000`, `FT-000-foundation.md`, and ordinary indexed task records.
+The pseudo-feature uses `planned|implemented|verified` and links its baseline,
+requirements, and specs. Use `feature: FT-000`, normally `reqs: [REQ-000]`, W0 for
+baseline work, and later waves only when useful.
 
-<operator_decisions>
-This command consumes the Foundation decision; it does not silently revise it.
-If evidence exposes a new material branch about whether Foundation is required,
-what executable baseline is sufficient, or which architecture, component/API/
-event/data, storage/state, security, compatibility, task-boundary, tier,
-dependency, or verification contract should govern it:
+Create the necessary implementation/probe tasks and one final integrated
+Foundation gate that depends on them. Replace the pending gate anchor with its
+concrete ID. Product tasks depend on this gate only when the accepted Foundation
+path is their prerequisite. Do not claim the gate is done until its intended
+integrated result is supported by actual evidence.
 
-- interactive/manual flow asks the operator an adaptive focused question,
-  explains the downstream effect, and treats a recommendation/default as not
-  accepted until the operator answers;
-- record an accepted answer in the existing owning canonical artifact and
-  `.protocols/FT-000/decision-log.md` when the queue exists, remove
-  contradictory wording, and revalidate the Foundation anchors/spec routes;
-- if the answer changes accepted global design or the Foundation decision,
-  route through `/spec-redesign` before task generation;
-- unattended flow records the exact question and affected scope, creates no
-  affected task records, returns `HALT_BLOCKING_QUESTIONS`, and names
-  `/spec-redesign` as the resume route.
+Preserve task schema, ID/field consistency, lifecycle history, existing evidence,
+and meaningful dependencies. `ready` means actual prerequisites are satisfied;
+otherwise use `planned`. A plan or `.protocols/FT-000/` notes are optional when
+specs and cards already preserve the needed context.
 
-Do not ask when current authoritative evidence already settles the branch.
-</operator_decisions>
+Cards carry a clear purpose/outcome, direct applicable canonical links, an expected
+change surface, and a credible verification path. Use `verification_targets` for
+method/results to test, `evidence_required` for expected decisive observations,
+and `verify` for actual evidence. Do not copy prerequisite proof into downstream
+tasks or the final integrated gate. Tier guides depth; it does not mandate a
+protocol family, TDD sequence, or separate reviewer.
 
-<agent_discretion>
-Within the accepted Foundation objective, source precedence, KISS constraints,
-schema, tier policy, and hard scopes, the agent chooses:
-- exploration order, tools, and working notes;
-- the minimum walking skeleton and proof path;
-- which applicable Architecture, Interfaces/Contracts, Data, testing, runbook,
-  and evidence concerns need concrete coverage;
-- `reuse|extend|create|not_applicable|block` per concern;
-- the smallest cohesive task slicing, dependency shape, waves, and cheapest
-  credible verification path.
+`touched_files` stays advisory. Add a hard `runtime_context.write_boundary` only
+when intentionally needed; preserve explicit forbidden scopes and stop conditions.
+Use subject-based specs for actual runtime/data/contract concerns. For linear
+Alembic histories, keep dynamic head/ancestry checks project-wide and revision-local
+proof with the relevant change; do not freeze a mutable head ID in task cards.
 
-Architecture, Interfaces/Contracts, Data, Verification, security, runtime, and
-operations are coverage criteria driven by actual foundation pressure, not a
-mandatory analysis sequence or a requirement to create every spec family.
-</agent_discretion>
+Check JSON/index consistency, dependencies/cycles, the final gate's actual
+coverage, and links needed by execution. Keep unresolved decisions and unsafe
+prerequisites visible without requiring a separate review or strict-doctor pass.
 
-<required_outputs>
-Edit the required outputs only when durable Foundation planning state,
-accepted decisions, canonical contracts, evidence basis, task records,
-registry links, or gate anchors have changed, or the existing contract needs
-repair. Do not append per-run audit/reconciliation history, changed-artifact
-inventories, or mirror the final chat handoff; preserve durable decision
-provenance, blockers, lifecycle evidence, and protocol resume state.
-
-When `Foundation Required: false`:
-- require `Foundation Gate Task: not_required` and concise evidence/rationale;
-- create no `REQ-000`, `FT-000`, foundation plans, protocols, or task records.
-
-For `--verify-existing`, if the baseline is already credibly proven, update the
-existing Foundation decision to the same no-queue state. If evidence is
-insufficient, keep `Foundation Required: true` and create only the minimum
-probe/verification queue.
-
-When `Foundation Required: true`:
-1. Reconcile only the substrate-level canonical specs needed by the proof path.
-   Each changed or depended-on concrete concern has one canonical spec defining
-   shape, `MUST`/`MUST NOT` rules, edge cases/errors, and a verification target.
-   Before handoff, resolve each evidenced material boundary decision in its
-   owning canonical artifact when execution would otherwise determine public or
-   cross-boundary behavior, compatibility or migration, authority, or state/data
-   ownership. Unresolved authority uses the existing operator-decision and
-   blocker route. This constrains outcomes, not analysis order, inapplicable
-   coverage, or implementation tactics.
-   Typical routes are:
-   - runtime/module shape -> `.memory-bank/architecture/*`;
-   - component/API/event/protocol/agent/tool boundaries and crossing payloads
-     -> `.memory-bank/contracts/*`;
-   - internal DB/session/UoW/migration/seed/storage/state ->
-     `.memory-bank/domains/*`, `.memory-bank/states/*`, or the stack-native
-     schema/migration source;
-   - proof harness/evidence -> `.memory-bank/testing/*`;
-   - local bootstrap/runtime/troubleshooting -> `.memory-bank/runbooks/*`.
-   For an accepted linear Alembic topology, reuse or create one project-level
-   database contract owner that derives the single head and proves no branches
-   plus intact ancestry. Do not seed a literal current head ID into Foundation
-   specs, plans, or task cards.
-   For an accepted capability-sliced target, preserve its composition root,
-   required slice roots, public boundaries, ownership, dependency rules, and
-   proof paths; do not design product behavior or additional slices here.
-2. Add/update `REQ-000` in `.memory-bank/requirements.md` as the verified
-   executable-baseline requirement.
-3. Create/update `.memory-bank/features/FT-000-foundation.md` with lifecycle
-   `planned|implemented|verified`, clarification omitted or `complete`, links
-   to Foundation/REQ/specs, and an explicit pseudo-feature note.
-4. Create/update `.protocols/FT-000/plan.md`,
-   `.protocols/FT-000/decision-log.md`, and
-   `.memory-bank/tasks/plans/IMPL-FT-000.md`.
-5. Create/reconcile at least one implementation/probe task and exactly one
-   final foundation gate task. The final gate depends on every required
-   foundation implementation/probe task and proves only the integrated
-   build/start/test/smoke and required compatibility outcome.
-6. Replace `pending_foundation_to_tasks` with the concrete final gate task ID.
-7. Index every record exactly once and keep Foundation records before product
-   records.
-
-When a Foundation plan or advisory expected change surface names a new, moved,
-or renamed project-authored source path, follow
-`AGENTS.md#source-path-semantics`, the accepted owner/code root, and governing
-framework/tooling/generator/scaffold semantics. Preserve required or reserved
-filename parts, and do not infer import/module, public path, package export,
-route, or build-target identities from name similarity.
-Leave an immaterial exact filename choice to `/exe`; do not turn it into a task
-blocker or hard `write_boundary`.
-
-Task-record rules:
-- use `feature: "FT-000"`, normally `reqs: ["REQ-000"]`, and `W0` only for
-  executable-baseline work; later probe/integration waves may use `W1+`;
-- `ready` requires no unmet dependency or blocker; otherwise use `planned`;
-- choose tier only from
-  `tier-policy.md#tier-classification-and-escalation`;
-- populate schema fields only from evidence and leave optional grounded-only
-  fields empty/absent rather than inventing filler;
-- link task-relevant substrate, architecture, and boundary specs through
-  existing link-bearing fields so a Foundation executor can locate every
-  accepted composition/slice constraint that applies;
-- every T2/T3 record has non-empty `purpose`, scalar `success_outcome`, at
-  least one existing direct task-linked canonical SDD path, advisory expected
-  change surface and/or justified hard write scope, and a real gate command
-  and/or non-empty verification target.
-- every newly created or reconciled `planned|ready` T2/T3 record maps only its
-  tier-policy proof scope. Dependency outcomes are prerequisites; do not copy
-  their claims, probes, or evidence into the final gate or downstream records;
-- `evidence_required` keeps the minimal result contract; required probe method
-  remains in `verification_targets` or a direct testing link. T3 covers every
-  task-owned harm-driving claim required by accepted requirements or evidenced
-  material risk, using only authorized isolated/disposable state with safe rerun
-  and cleanup.
-</required_outputs>
-
-<validation>
-Before handoff, prove:
-- schema/index validity and ID/tier/feature/wave consistency;
-- `REQ-000`, `FT-000`, W0, and final-gate rules;
-- one and only one final gate with complete dependencies and an acyclic graph;
-- no task inherits dependency proof or adds unsupported evidence requirements;
-- no product behavior or speculative substrate escaped the Foundation scope;
-- accepted composition/module/slice boundaries were applied without inventing
-  layer-centric scaffolding, extra slices, or a hard write boundary copied from
-  a code root;
-- advisory authored-source paths preserve accepted owner/code-root,
-  naming/path, framework/tooling/generator/scaffold, and executable-identity
-  semantics; any remaining exact filename choice is immaterial execution
-  discretion;
-- canonical-path uniqueness and spec-index purity;
-- every T2/T3 card satisfies the complete single-card handoff contract;
-- every newly created or reconciled `planned|ready` T2/T3 card has a credible
-  claim-linked RED/GREEN path or concrete accepted not-applicable reason, with
-  safe coverage of its task-owned T3 risk-driving claims;
-- Gate Anchors name the final gate or `not_required` truthfully;
-- no affected material operator decision remains unresolved.
-
-Do not fabricate or backfill RED/GREEN evidence for historical
-`in_progress|done|failed` Foundation records.
-</validation>
-
-<handoff_contract>
-In the final chat response, report queue action, specs
-reused/extended/created, task IDs, final gate ID or `not_required`, and
-blockers/questions.
-
-- Queue created/reconciled: stop before execution and hand off immediately to
-  `/mb-doctor --strict` for the FT-000 queue. In an unattended run, return to
-  the `/autonomous`-owned Foundation phase; never hand FT-000 execution to
-  `/autopilot`.
-- No Foundation required/proven brownfield baseline: hand off to
-  `/feature-to-tasks FT-<NNN>`.
-- Unresolved accepted Foundation/design decision: no affected queue handoff;
-  `/spec-redesign` is the repair/resume owner.
-</handoff_contract>
+## Handoff
+Report planned baseline work, the final gate or no-queue evidence, and the next
+useful action. Manual execution or the caller's Foundation phase may continue
+in the same context. `/mb-doctor` is diagnostic support, not a compulsory hop.

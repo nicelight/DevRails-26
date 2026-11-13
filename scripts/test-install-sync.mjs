@@ -271,132 +271,35 @@ function assertFreshBootstrap(target) {
   assertRuntimeInventory(target);
   assertRuntimeParity(target);
   assertCanonicalCopies(target);
-  const sddContract = readTarget(target, '.memory-bank/workflows/sdd-design-contract.md');
-  const specDesign = readTarget(target, '.agents/skills/spec-design/SKILL.md');
-  const specRedesign = readTarget(target, '.agents/skills/spec-redesign/SKILL.md');
-  const specAuto = readTarget(target, '.agents/skills/spec-auto/SKILL.md');
-  const autonomous = readTarget(target, '.agents/skills/autonomous/SKILL.md');
-  const autopilot = readTarget(target, '.agents/skills/autopilot/SKILL.md');
-  const multiagentic = readTarget(target, '.agents/skills/multiagentic/SKILL.md');
-  const multipilot = readTarget(target, '.agents/skills/multipilot/SKILL.md');
-  const exe = readTarget(target, '.agents/skills/exe/SKILL.md');
-  const featureDoctor = readTarget(target, '.agents/skills/feature-doctor/SKILL.md');
-  const featureToTasks = readTarget(target, '.agents/skills/feature-to-tasks/SKILL.md');
-  const reviewTasksPlan = readTarget(target, '.agents/skills/review-tasks-plan/SKILL.md');
-  const verify = readTarget(target, '.agents/skills/verify/SKILL.md');
-  const autonomyPolicy = readTarget(target, '.memory-bank/workflows/autonomy-policy.md');
   const executeLoop = readTarget(target, '.memory-bank/workflows/execute-loop.md');
-  const grillMe = readTarget(target, '.agents/skills/grill-me/SKILL.md');
-  const writePrd = readTarget(target, '.agents/skills/write-prd/SKILL.md');
-  const constitution = readTarget(target, '.agents/skills/constitution/SKILL.md');
-  const judgeOverlay = readTarget(target, '.memory-bank/workflows/multiagents_with_judge.md');
-  const judgeRole = readTarget(target, '.memory-bank/roles/judge.md');
-
+  assert(executeLoop.includes('## Working policy'), 'Shared working policy is missing.');
   assert(
-    grillMe.includes('design tree')
-      && grillMe.includes('The **frontier**')
-      && grillMe.includes('Finding facts is the agent')
-      && grillMe.includes('`.memory-bank/analysis/brief.md`')
-      && grillMe.includes('load and apply the installed `creator-vibe` skill')
-      && writePrd.includes('`.memory-bank/analysis/brief.md`')
-      && writePrd.includes('request `/grill-me`')
-      && constitution.includes('`.memory-bank/analysis/brief.md`')
-      && executeLoop.includes('`/grill-me -> /constitution`'),
-    'Runtime discovery flow lost /grill-me mechanics or durable brief routing.',
+    readTarget(target, 'AGENTS.md').includes('.memory-bank/workflows/execute-loop.md#working-policy'),
+    'Target guide does not route to the shared working policy.',
   );
 
-  assert(
-    sddContract.includes('## Evidence and authority')
-      && sddContract.includes('## Canonical ownership and coverage')
-      && sddContract.includes('## Authoring and architecture integrity')
-      && sddContract.includes('## Shared validation')
-      && !sddContract.includes('Planning Revision increments')
-      && [specDesign, specRedesign, specAuto]
-        .every((skill) => skill.includes('.memory-bank/workflows/sdd-design-contract.md')),
-    'Runtime SDD workflows lost their deployed shared authoring contract.',
-  );
-  assert(
-    executeLoop.includes('only when both are proved')
-      && executeLoop.includes('affects product-wide planning')
-      && executeLoop.includes('`none` preserves revision and reviews')
-      && executeLoop.includes('`bounded` preserves revision')
-      && specRedesign.includes('Do not use revision mismatch as impact proof')
-      && specRedesign.includes('Preserve task lifecycle, completed evidence')
-      && specAuto.includes('feature design never owns revision'),
-    'Runtime SDD workflows lost bounded redesign or Planning Revision ownership.',
-  );
-  assert(
-    autopilot.includes('separate fresh Reviewer')
-      && autopilot.includes('Never reuse or resume the `/verify` child for `/red-verify`'),
-    'Runtime autopilot lost independent functional and semantic reviewer contexts.',
-  );
-  assert(
-    verify.includes('agents/review-code.md')
-      && verify.includes('`Codex Luna` with reasoning effort `xhigh`')
-      && verify.includes('Do not retry or block verification'),
-    'Runtime /verify lost its best-effort code co-review.',
-  );
-  assert(
-    multiagentic.includes('Load `/autopilot` and its Judge section')
-      && multiagentic.includes('Delegate the queue to the installed')
-      && multiagentic.includes('single Judge session')
-      && multiagentic.includes('existing Judge target')
-      && multiagentic.includes('must not launch or replace it')
-      && multiagentic.includes('multiagents_with_judge.md#judge-session-and-consultation')
-      && multiagentic.includes('#autonomous-with-judge')
-      && multiagentic.includes('#autopilot-with-judge')
-      && judgeOverlay.includes('launch exactly one `ROLE: JUDGE`')
-      && judgeOverlay.includes('owns and reuses that subagent')
-      && judgeOverlay.includes('does no routine discovery')
-      && !judgeOverlay.includes('Launch a fresh `ROLE: JUDGE`')
-      && judgeOverlay.includes('At `/multiagentic` or `/multipilot` start')
-      && judgeRole.includes('one `/multiagentic`')
-      && judgeRole.includes('or `/multipilot` run')
-      && judgeOverlay.includes('## autonomous with judge')
-      && judgeOverlay.includes('## autopilot with judge')
-      && judgeOverlay.includes('whenever the operator explicitly requests consultation')
-      && !autonomous.includes('multiagents_with_judge')
-      && !autopilot.includes('multiagents_with_judge'),
-    'Runtime multiagentic overlay is incomplete or leaked into a base skill.',
-  );
-  assert(
-    multipilot.includes('Run an already reviewed and strict-ready product queue')
-      && multipilot.includes('installed `/autopilot` `SKILL.md`')
-      && multipilot.includes('multiagents_with_judge.md#judge-session-and-consultation')
-      && multipilot.includes('`#autopilot-with-judge`')
-      && multipilot.includes('Delegate the queue to the installed `/autopilot`')
-      && multipilot.includes('existing Judge target')
-      && multipilot.includes('must not launch or replace')
-      && multipilot.includes('Act as `/multipilot`')
-      && !multipilot.includes('#autonomous-with-judge')
-      && !multipilot.includes('installed `/autonomous`'),
-    'Runtime multipilot lost its standalone autopilot-with-Judge contract.',
-  );
-  assert(
-    executeLoop.includes('PLANNING_RECONCILIATION_REQUIRED')
-      && specRedesign.includes('whose planning needs repair')
-      && featureToTasks.includes('removes `PLANNING_RECONCILIATION_REQUIRED`')
-      && reviewTasksPlan.includes('blocks review')
-      && autopilot.includes('makes only that')
-      && exe.includes('only the selected feature')
-      && autonomyPolicy.includes('only that feature is withheld')
-      && !autopilot.includes('every previous product task-plan approval is stale')
-      && !exe.includes('every previous product task-plan approval is stale')
-      && !autonomyPolicy.includes('makes every product task-plan approval stale'),
-    'Runtime planning freshness lost bounded feature routing or retained blanket invalidation.',
-  );
-  assert(
-    featureDoctor.includes('Validate the semantic basis')
-      && featureDoctor.includes('Recommend only among options')
-      && featureDoctor.includes('`/spec-redesign` owns')
-      && reviewTasksPlan.includes('unresolved feature-related semantic finding to `/feature-doctor')
-      && verify.includes('preserving the evidence-required functional')
-      && autonomous.includes("doctor's handoff in existing run state")
-      && autopilot.includes('persist its handoff')
-      && autonomyPolicy.includes('semantic finding through `/feature-doctor FT-<NNN>` before repair')
-      && executeLoop.includes('reported feature-related semantic findings'),
-    'Runtime feature-doctor triage or autonomous recommendation contract is incomplete.',
-  );
+  // A compact skill must still be executable after deployment: every explicit
+  // workflow reference and anchor must resolve in the target, not just source.
+  expectedSkillNames.forEach((name) => {
+    const content = readTarget(target, `.agents/skills/${name}/SKILL.md`);
+    assert(!content.includes('skills/_shared/'), `/${name} contains a source-only reference.`);
+    for (const match of content.matchAll(/\.memory-bank\/workflows\/([a-z0-9_-]+\.md)(?:#([a-z0-9-]+))?/g)) {
+      const rel = `.memory-bank/workflows/${match[1]}`;
+      assert(existsSync(targetPath(target, rel)), `/${name} references missing ${rel}.`);
+      if (match[2]) {
+        const anchors = [...readTarget(target, rel).matchAll(/^#+ (.+)$/gm)]
+          .map((heading) => heading[1].toLowerCase().replace(/[^a-z0-9 _-]/g, '').replace(/ /g, '-'));
+        assert(anchors.includes(match[2]), `/${name} references missing ${rel}#${match[2]}.`);
+      }
+    }
+  });
+
+  // Process simplification must not silently change the persisted task format.
+  const schema = JSON.parse(readTarget(target, '.memory-bank/schemas/task.schema.json'));
+  assert(schema.required.length === 18 && Object.keys(schema.properties).length === 22,
+    'Workflow simplification unexpectedly changed the task field model.');
+  assert(schema.properties.id.pattern === '^TASK-[0-9]{3}-T[0-3]-FT-[0-9]{3}-W[0-9]+$',
+    'Task identity changed without a format migration.');
   assert(existsSync(targetPath(target, '.memory-bank/tasks/index.json')), 'Task index is missing.');
   assert(existsSync(targetPath(target, 'PAPERCUTS/TECHDEBTS')), 'Papercut directories are missing.');
   assert(!existsSync(targetPath(target, 'scripts')), 'Fresh bootstrap exposed runtime scripts in visible scripts/.');
@@ -443,8 +346,18 @@ function assertSync(target) {
   const snapshots = new Map(managed.map((rel) => [rel, readTarget(target, rel)]));
   managed.forEach((rel) => writeTarget(target, rel, `${snapshots.get(rel).trimEnd()}\n<!-- stale -->\n`));
 
+  const preservedTaskId = 'TASK-999-T1-FT-999-W1';
+  const preservedTask = {
+    id: preservedTaskId, title: 'Preserve a completed project result', status: 'done',
+    tier: 'T1', feature: 'FT-999', wave: 'W1', reqs: ['REQ-999'], depends_on: [],
+    touched_files: ['src/result.js'], gates: [],
+    verify: [{ verdict: 'PASS', result: 'Observed project result before framework sync.' }],
+    docs: [], evidence_required: [], source_artifacts: [], normative_inputs: [],
+    constraints: [], invariants: [], verification_targets: [],
+  };
   const projectFiles = new Map([
-    ['.memory-bank/tasks/index.json', '{"version":1,"tasks":[]}\n'],
+    ['.memory-bank/tasks/index.json', JSON.stringify({ version: 1, tasks: [{ id: preservedTaskId, file: `${preservedTaskId}.task.json` }] }) + '\n'],
+    [`.memory-bank/tasks/${preservedTaskId}.task.json`, JSON.stringify(preservedTask, null, 2) + '\n'],
     ['.memory-bank/contracts/boundary-map.md', '# Project boundary map\n'],
     ['.protocols/TASK-999-T1-FT-999-W1/run.md', '# Task-owned state\n'],
     ['.memory-bank/templates/protocols/project-notes.md', '# Project template\n'],

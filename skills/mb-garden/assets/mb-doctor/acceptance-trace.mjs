@@ -6,7 +6,6 @@
 
 import {
   escapeRegExp,
-  nonEmptyString,
   normalizeRel,
   splitLines,
 } from './readers.mjs';
@@ -26,7 +25,6 @@ const FEATURE_AC_LOCATOR_RE = new RegExp(
   `(?:\\./)?(\\.memory-bank/features/[^#\\s"']+\\.md)#(${FEATURE_AC_ID_SOURCE})(?![A-Za-z0-9_-])`,
   'g',
 );
-const PASS_EVIDENCE_RE = /^\s*VERDICT: PASS\s*$/im;
 
 export function createAcceptanceTraceChecks(context) {
   const ROOT = context.root;
@@ -177,7 +175,7 @@ export function createAcceptanceTraceChecks(context) {
         const invalid = proof.filter((entry) => !entry.valid);
         if (invalid.length) {
           addFinding(
-            severity,
+            'warning',
             'TASK_ACCEPTANCE_PROOF_MISSING',
             `${record.rel}: planned acceptance trace lacks a complete prospective proof path.`,
             {
@@ -187,7 +185,7 @@ export function createAcceptanceTraceChecks(context) {
                 acceptance: invalid.map(({ ac, issues }) => ({ ac, issues })),
               },
               suggested_fix:
-                `Rerun /feature-to-tasks ${record.task.feature}; repeat each linked AC ID in a concrete verification_target and evidence_required RED/GREEN observations, or RED_NOT_APPLICABLE reason plus alternative proof.`,
+                `When needed, describe how to check each linked AC in verification_targets and what result to retain in evidence_required; RED/GREEN is optional.`,
             },
           );
         }
@@ -198,11 +196,11 @@ export function createAcceptanceTraceChecks(context) {
       if (!governed.length) continue;
   
       const missing = governed
-        .filter((entry) => !hasAcceptanceExecutionEvidence(record.id, entry.ac, entry.notApplicable))
+        .filter((entry) => !hasAcceptanceExecutionEvidence(record, entry.ac))
         .map((entry) => entry.ac);
       if (!missing.length) continue;
       addFinding(
-        severity,
+        'warning',
         'TASK_ACCEPTANCE_EVIDENCE_MISSING',
         `${record.rel}: done task does not retain claim-linked execution and verification evidence for its planned AC path.`,
         {
@@ -210,7 +208,7 @@ export function createAcceptanceTraceChecks(context) {
           task_id: record.id,
           details: { acceptance: missing },
           suggested_fix:
-            `Record the exact AC IDs and current-attempt RED/GREEN or accepted not-applicable evidence in .protocols/${record.id}/progress.md, then record verifier-owned PASS evidence for the same IDs in verification.md.`,
+            `Link the actual result to the relevant AC in task.verify or existing task evidence when claim-level traceability is useful; no separate protocol or review is required.`,
         },
       );
     }
@@ -272,57 +270,24 @@ export function createAcceptanceTraceChecks(context) {
   }
   
   function analyzeTaskAcceptanceProof(task, acId) {
-    const verificationTargets = stringValues(task.verification_targets);
-    const evidenceRequired = stringValues(task.evidence_required).filter((value) => includesExactId(value, acId));
-    const targetLinked = verificationTargets.some((value) => includesExactId(value, acId));
-    const red = evidenceRequired.some((value) => hasConcreteLabel(value, 'RED'));
-    const green = evidenceRequired.some((value) => hasConcreteLabel(value, 'GREEN'));
-    const notApplicable = evidenceRequired.some((value) => (
-      hasConcreteLabel(value, 'RED_NOT_APPLICABLE')
-      && hasConcreteLabel(value, 'alternative[_ ]proof')
-    ));
-    const hasContract = targetLinked && evidenceRequired.some((value) => (
-      /\bRED\s*:/i.test(value)
-      || /\bGREEN\s*:/i.test(value)
-      || /\bRED_NOT_APPLICABLE\s*:/i.test(value)
-    ));
+    const targetLinked = stringValues(task.verification_targets).some((value) => includesExactId(value, acId));
+    const expectedLinked = stringValues(task.evidence_required).some((value) => includesExactId(value, acId));
     const issues = [];
     if (!targetLinked) issues.push('verification_target_missing');
-    if (!((red && green) || notApplicable)) {
-      issues.push('RED_and_GREEN_or_not_applicable_alternative_missing');
-    }
-  
-    return {
-      valid: issues.length === 0,
-      hasContract,
-      notApplicable,
-      issues,
-    };
+    if (!expectedLinked) issues.push('expected_result_missing');
+    return { valid: issues.length === 0, hasContract: targetLinked && expectedLinked, issues };
   }
-  
-  function hasAcceptanceExecutionEvidence(taskId, acId, notApplicable) {
-    const progressRel = normalizeRel(joinRelative('.protocols', taskId, 'progress.md'));
-    const verificationRel = normalizeRel(joinRelative('.protocols', taskId, 'verification.md'));
-    const progress = readTextIfFile(progressRel);
-    const verification = readTextIfFile(verificationRel);
-    if (
-      !(
-        hasConcreteBulletFieldContainingId(progress, 'accepted claim locator(s)', acId)
-        || hasConcreteBulletFieldContainingId(progress, 'accepted claim locator', acId)
-      )
-      || !includesExactId(verification, acId)
-    ) return false;
-    if (!PASS_EVIDENCE_RE.test(verification)) return false;
-  
-    if (notApplicable) {
-      return hasConcreteBulletField(progress, 'accepted not-applicable reason and alternative proof');
-    }
-    return (
-      hasConcreteBulletField(progress, 'RED observation and evidence')
-      && hasConcreteBulletField(progress, 'GREEN observation and evidence')
-    );
+
+  function hasAcceptanceExecutionEvidence(record, acId) {
+    const hasClaimEvidence = (text) => String(text ?? '').split('\n').some((line) =>
+      includesExactId(line, acId)
+      && (/\b(?:observed|checked)\b/i.test(line)
+        || /(?:result|evidence|output|checks?)\s*:\s*\S.+/i.test(line)));
+    if (stringValues(record.task.verify).some(hasClaimEvidence)) return true;
+    return ['run.md', 'progress.md', 'verification.md', 'handoff.md'].some((name) =>
+      hasClaimEvidence(readTextIfFile(normalizeRel(joinRelative('.protocols', record.id, name)))));
   }
-  
+
   function getFeatureAcceptanceIndex() {
     if (featureAcceptanceCache) return featureAcceptanceCache;
   
@@ -455,25 +420,6 @@ export function createAcceptanceTraceChecks(context) {
     return new RegExp(`(?:^|[^A-Za-z0-9-])${escapeRegExp(id)}(?:$|[^A-Za-z0-9-])`).test(String(text ?? ''));
   }
   
-  function hasConcreteLabel(text, labelSource) {
-    const match = String(text ?? '').match(new RegExp(`\\b${labelSource}\\s*:\\s*([^;\\n]+)`, 'i'));
-    return Boolean(match && isConcreteHandoffValue(match[1]));
-  }
-  
-  function hasConcreteBulletField(text, label) {
-    const match = String(text ?? '').match(new RegExp(`^-\\s*${escapeRegExp(label)}:\\s*(.+)$`, 'im'));
-    return Boolean(match && isConcreteHandoffValue(match[1]));
-  }
-  
-  function hasConcreteBulletFieldContainingId(text, label, id) {
-    const match = String(text ?? '').match(new RegExp(`^-\\s*${escapeRegExp(label)}:\\s*(.+)$`, 'im'));
-    return Boolean(
-      match
-      && isConcreteHandoffValue(match[1])
-      && includesExactId(match[1], id)
-    );
-  }
-
   function readTextIfFile(rel) {
     const abs = absolute(rel);
     if (!isFile(abs)) return '';
@@ -482,11 +428,6 @@ export function createAcceptanceTraceChecks(context) {
     } catch {
       return '';
     }
-  }
-  
-  function isConcreteHandoffValue(value) {
-    if (!nonEmptyString(value)) return false;
-    return !/^(?:tbd|todo|none|n\/a|not[_ -]?applicable|<[^>]+>|\{\{[^}]+\}\})$/i.test(value.trim());
   }
   
   function featureMarkdownFiles() {

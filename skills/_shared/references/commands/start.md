@@ -1,65 +1,31 @@
 ---
-description: Default DevRails entrypoint when the first operator prompt names no skill and implies no unambiguous workflow action; resolves current durable state and routes one owning skill.
+description: Resume the requested work from durable project state.
 status: active
 ---
-# /start — Resolve next workflow owner
+# /start
 
-<objective>
-Resolve the current authoritative workflow state and invoke exactly one next
-owning skill. If no route or target is authoritative, ask one focused operator
-question and stop.
-</objective>
+Identify the user's intended work and the relevant durable project state.
+Apply `.memory-bank/workflows/execute-loop.md#working-policy`: consult the operator on substantive choices unless autonomy was explicitly granted; carry out settled decisions without repeated approval.
 
-<input_contract>
-Use `$ARGUMENTS` as operator focus when present.
+The normal project progression is intent/requirements → features/design → tasks
+→ implementation/checks → updated memory. Preserve the useful inputs and
+outcomes of these stages without requiring a separate command for each.
 
-If `.memory-bank/` is missing, treat the repository root as `<target-repo>`
-unless the operator supplied another target. Accept `<devrails-checkout>` only
-when supplied by the operator or already verifiable by its
-`scripts/install-framework.mjs`.
+If Memory Bank exists, use its index, task cards and any unfinished handoff to
+resume useful work. Read affected specs and actual code as needed. Missing
+review markers, Planning Revision approvals or protocol files alone do not
+require a return through earlier commands. Ask about a substantive unresolved
+choice; an optional skill may assist the current agent without becoming a
+mandatory transition. Do not select unattended execution without authorization.
 
-When both paths are known, return this command with shell-safe resolved paths:
+If Memory Bank is missing, use the project root or supplied target and an
+available verified DevRails checkout to give the external bootstrap command:
 
 ```bash
-node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <target-repo> --yes
+node <devrails-checkout>/scripts/install-framework.mjs --bootstrap --target <project-path> --yes
 ```
 
-Otherwise ask for the checkout path and stop. Do not call `/mb-init`, run local
-bootstrap logic, copy helpers, install dependencies, or create the skeleton.
-After external bootstrap, rerun `/start`.
-
-When `.memory-bank/` exists, read `.memory-bank/index.md`,
-`.memory-bank/workflows/execute-loop.md#interactive-mode-you-stay`, and only
-the product, PRD, baseline, spec/foundation, feature, task, review, protocol, or
-handoff records needed to resolve the current incomplete boundary. File
-existence and conversation memory are not workflow state; use authoritative
-statuses, verdicts, Planning Revision, dependencies, and durable handoffs.
-</input_contract>
-
-<hard_invariants>
-- `/start` writes no artifact or lifecycle state; the selected skill owns
-  its mutations and handoff.
-- Select no unattended mode without an explicit operator instruction.
-- Do not create roadmap or task state without a clarified PRD/delta.
-- Do not bypass an existing review, Foundation, dependency, doctor, tier, or
-  operator-decision gate.
-- Do not choose among multiple eligible features or tasks without an
-  authoritative target.
-</hard_invariants>
-
-<routing_contract>
-Prefer a valid unfinished durable handoff or resume route. Otherwise select the
-first incomplete boundary in the interactive execute-loop whose prerequisites
-are satisfied. Substantial existing code without a current evidence-backed
-baseline routes to `/map-codebase` before new product planning.
-
-Invoke the one selected owning skill and stop routing. If the owner or target
-depends on an unresolved operator choice, ask that one question and stop. Do
-not output or execute a downstream chain.
-</routing_contract>
-
-<validation>
-Confirm that the selected owner matches authoritative state, all earlier gates
-remain satisfied, and the result contains only one invoked skill or one blocking
-operator question.
-</validation>
+Replace placeholders with verified shell-safe paths. If the checkout is unknown,
+ask for it. Do not invent a path, reconstruct the skeleton locally or use direct
+`npx skills add` for this source-only framework. After installation, resume the
+original request. Report the next useful action or the specific missing input.

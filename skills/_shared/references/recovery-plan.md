@@ -1,54 +1,20 @@
-# Memory Bank Recovery Plan
+# Memory Bank Recovery
 
-Три уровня восстановления в зависимости от масштаба повреждений.
+Recover the information needed to continue the current work. Preserve existing
+project decisions, task identities and evidence; do not rebuild the whole Memory
+Bank because a few documents are stale.
 
-## Level 1: Cosmetic (быстрый фикс)
+- For broken links or indexes, `/mb-garden` can make mechanical repairs.
+- For drift between code and memory, `/map-codebase` can establish the current
+  state. Reconcile affected specs, features and task records with the accepted
+  target; current code alone does not authorize a new target.
+- For missing framework assets, use the external installer through `/mb-init`.
+  A coherent sync updates runtime skills and framework-owned Memory Bank assets
+  together while preserving project-owned content.
 
-**Симптомы**: пропущен frontmatter, битые ссылки, устаревшие записи, неактуальный changelog.
-
-**Действие**: запусти `mb-garden`.
-1. `node .memory-bank/scripts/mb-lint.mjs` — найти ошибки.
-2. Добавить пропущенный frontmatter.
-3. Исправить битые ссылки.
-4. Обновить changelog и index.
-5. Архивировать stale docs.
-
-**Время**: 10–30 минут.
-
-## Level 2: Structural (рассинхрон с кодом)
-
-**Симптомы**: MB описывает архитектуру/фичи, которые уже не соответствуют коду. RTM разошёлся. Support docs неполные, противоречивы или врут.
-
-**Действие**: запусти `/map-codebase` (re-scan).
-1. Создай `.tasks/TASK-MB-RECOVERY/`.
-2. Запусти repo-scanner сабагентов по зонам.
-3. Сравни отчёты с текущим MB — найди расхождения.
-4. Обнови MB: architecture, guides, spec-index, glossary, invariants, contracts, states, runbooks, features, requirements, RTM — только те слои, которые реально используются и подтверждаются evidence.
-5. Запусти MB-SYNC чеклист.
-6. Запусти `/review-feat-plan` или `/review-tasks-plan` для нужной поверхности.
-
-**Время**: 1–3 часа.
-
-## Level 3: Full Rebuild (MB утерян или полностью устарел)
-
-**Симптомы**: MB отсутствует, или >80% контента невалидно, или произошла крупная миграция без обновления docs.
-
-**Действие**: запусти `/start` заново.
-1. Сохрани старый MB в `.memory-bank/archive/pre-rebuild/`.
-2. Запусти `mb-init` для создания нового скелета.
-3. Для brownfield: запусти `/map-codebase`.
-4. Для greenfield: запусти `/prd-to-features` после `/write-prd` и `/spec-init`.
-5. Перенеси salvageable контент из archive (ADRs, decision logs).
-6. Запусти `/review-feat-plan`, затем `/review-tasks-plan` после task planning.
-
-**Время**: 3–8 часов.
-
-## Как определить уровень
-
-| Признак | Level |
-|---------|-------|
-| lint errors < 10 | 1 |
-| lint errors > 10 + RTM drift | 2 |
-| >50% файлов MB stale / MB отсутствует | 3 |
-| Крупный рефакторинг без обновления MB | 2 |
-| Миграция на новый стек | 3 |
+Consult on unresolved substantive decisions under
+`.memory-bank/workflows/execute-loop.md#working-policy`. Use reviews or doctor
+when they help establish what is missing; they are not mandatory recovery stages.
+Before resuming a task, reconcile its recorded state with actual work and avoid
+replaying an uncertain non-idempotent action. Record the remaining issue and
+next useful action where the next agent will find them.

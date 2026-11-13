@@ -1,95 +1,34 @@
 ---
-description: Additive Judge supervision for /multiagentic and /multipilot over current autonomous and autopilot contracts.
+description: Optional Judge guidance for multiagentic and multipilot runs.
 status: active
 ---
 # Judge supervision overlay
 
-The active `/autonomous` or `/autopilot` contract owns lifecycle, status,
-retries, scheduler stages, registries, and durable artifacts. This overlay owns
-Judge consultation and route reaction.
+The base `/autonomous` or `/autopilot` owns task states, recovery, retries, and
+run results. Judge adds advice under Working policy; it is not another gate.
 
 ## Judge session and consultation
 
-At `/multiagentic` or `/multipilot` start, launch exactly one `ROLE: JUDGE`
-subagent on Codex Sol (`gpt-5.6-sol`) with `xhigh` reasoning effort, requiring
-`.memory-bank/roles/judge.md`. The active wrapper owns and reuses that subagent
-for every consultation, including delegated `/autopilot`; never launch,
-replace, or reset it during the run.
+Reuse one Judge context when available. Choose model and context depth to suit
+the work; unavailable delegation does not prevent the base workflow. Send a
+compact `JUDGE_BRIEF` with objective, current situation, decisive evidence,
+progress/failure history, proposed route, and the question to assess.
 
-Before each consultation, the orchestrator sends one compact `JUDGE_BRIEF` with
-decision-relevant facts and exact project-relative `file:line` locators. Judge
-does no routine discovery or context assembly:
-
-```text
-JUDGE_BRIEF
-
-objective: original objective and applicable success conditions
-checkpoint: current phase, owner, and reason for consultation
-progress_since_last_judge: material actions and durable outcomes
-evidence: decisive facts with exact project-relative file:line locators
-trajectory: attempts, repairs, verdicts, blockers, and budget counters
-noticed_problems: decision-relevant confirmed or potential signals
-proposed_route: one existing skill/owner and expected result
-real_alternatives: only material existing alternatives
-question: one decision-relevant question
-```
-
-Judge returns:
-
-```text
-JUDGE_ASSESSMENT
-
-assessment: SUPPORT | REDIRECT | ESCALATE_OPERATOR
-basis: concise evidence-based reason
-trajectory_signal: progress | repeated_pattern | symptom_repair | owning_layer_drift | none
-recommended_route: proposed route or one existing skill/owner
-conditions: only required evidence or operator-decision conditions
-evidence_checked: decisive file:line locators
-```
-
-`SUPPORT` permits the proposed route after its conditions pass. `REDIRECT`
-requires the named existing route. `ESCALATE_OPERATOR`, an impossible or
-policy-conflicting recommendation, or orchestrator disagreement uses the
-existing `HALT_BLOCKING_QUESTIONS` route with both positions and exact resume
-owner. A rejected route resumes through the Judge recommendation or an
-operator-resolved disagreement.
-
-Record only the compact assessment and accepted route in the existing run
-status or decision log when resume/audit needs it. Judge returns a read-only
-route assessment; owning workflows retain artifact, state, verdict, and retry
-authority.
+Judge returns `JUDGE_ASSESSMENT` with `assessment: SUPPORT|REDIRECT|ESCALATE_OPERATOR`,
+a brief basis, trajectory signal, recommended route, conditions, and evidence
+checked. Advice informs the caller's judgment; it neither grants new authority
+nor changes lifecycle. Record a material accepted decision in existing run state.
+Consult the operator when the route exceeds delegated authority.
 
 ## autonomous with judge
 
-Consult Judge:
-
-- after the Foundation decision and before `/foundation-to-tasks`, only when
-  Foundation is required;
-- after product tasking, reviews, lint, and strict doctor, before product
-  scheduler handoff;
-- when a second consecutive review `REJECT`, proposed owning-layer change,
-  contradictory evidence, materially different recovery routes, repeated work
-  without progress, or drift from the original objective can change the next
-  move;
-- whenever the operator explicitly requests consultation.
-
-After product handoff, `#autopilot-with-judge` becomes the active supervision
-section.
+Judge is useful for materially different design paths, repeated review failures,
+loss of progress, or an operator-requested consultation. The caller chooses
+useful points without a fixed consultation count or mandatory phase boundary.
 
 ## autopilot with judge
 
-Consult Judge:
-
-- after verification of any retry attempt, before another correction,
-  disposition, or closure;
-- at each complete wave boundary after semantic gates, `/mb-sync`, lint,
-  strict doctor, applicable re-reviews, and `/tech-debt`, before the next wave
-  or terminal success;
-- when evidence suggests repeated failure, symptom repair, owning-layer drift,
-  competing recovery routes, or loss of progress toward the objective;
-- whenever the operator explicitly requests consultation.
-
-For failed retry recovery, Judge may recommend `/debug` when cause is unknown,
-`/technical-premortem` for an evidence-backed non-trivial correction, a bounded
-retry for a confirmed local safe correction, or the existing upstream owner.
-The active scheduler retains every lifecycle and terminal decision.
+Judge is useful after repeated unsuccessful attempts, ambiguous recovery, or a
+wave whose results call the next route into question. A routine successful task
+or wave does not require consultation. The scheduler retains closure and retry
+ownership, including its existing budget.

@@ -4,6 +4,8 @@ status: active
 ---
 # /find-skills — Find relevant skills (project-first)
 
+Apply `.memory-bank/workflows/execute-loop.md#working-policy`: consult the operator on substantive choices unless autonomy was explicitly granted; carry out settled decisions without repeated approval.
+
 ## Цель
 Быстро понять, какие skills уже доступны в этом проекте и какой безопасный
 route применим к отсутствующему skill.

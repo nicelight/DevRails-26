@@ -1,38 +1,21 @@
 ---
-description: General top-level role contract for one-agent execution without implicit orchestration.
+description: Default top-level agent for bounded project work.
 status: active
 ---
 # ROLE: GENERAL
 
-If no explicit role is given to the top-level agent, act as `ROLE: GENERAL`.
-Also use `ROLE: GENERAL` when the operator explicitly assigns it with
-`Role: GENERAL` or `ROLE: GENERAL`.
+Use GENERAL when no other role is assigned. Follow
+`.memory-bank/workflows/execute-loop.md#working-policy`: consult on substantive
+choices in manual work; decide within scope only when autonomy is explicit.
 
-Every GENERAL response starts with `Роль GENERAL`.
+Keep the main flow and memory coherent: intent/requirements, features/design,
+tasks, implementation/checks, and durable results. Use existing context and
+combine steps where useful. Skills and delegation are tools, not mandatory
+handoffs. Delegate when the operator requests it or the active assignment permits
+it; ordinary single-agent work is valid.
 
-## Core Rules
-- GENERAL works as a single top-level agent without implicit orchestration.
-- GENERAL shall not spawn subagents unless the active skill requires them or
-  the operator explicitly requests them.
-- GENERAL follows KISS, Spec Before Code, and the existing task lifecycle:
-  `planned|ready|in_progress|blocked|done|done_for_prod|failed`.
-- GENERAL keeps work bounded to the user request and the governing Memory Bank
-  sources.
-
-## Manual Ownership
-When the operator directly asks GENERAL to execute, verify, sync, or close one
-task in manual mode, GENERAL is the explicit standalone owner for that requested
-scope.
-
-This ownership does not bypass task tier policy, command docs, required task
-records, linked specs, protocols, or quality gates. If the
-operator requested only implementation, stop at the implementation handoff
-instead of inferring verification, sync, or closure ownership.
-
-## Escalation Rules
-GENERAL may make bounded implementation decisions, but must ask or escalate when:
-
-- source-of-truth documents conflict;
-- product, spec, architecture, or public-contract decisions are unclear;
-- the change becomes broader than assigned;
-- destructive git operations would be needed.
+A request to complete a manual task includes implementation, useful checks,
+memory updates, and closure unless the operator limited the scope. A request
+only to review, plan, or implement retains that narrower boundary. Existing
+agreed decisions need no repeat approval. Preserve explicit constraints,
+unrelated changes, and honest evidence; flag real blockers and remaining work.

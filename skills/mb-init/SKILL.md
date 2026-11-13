@@ -32,7 +32,7 @@ by `scripts/install-framework.mjs` in an available DevRails checkout.
 
 Replace both placeholders with verified, shell-safe paths. If the checkout is
 unknown or unavailable, ask the operator to provide one or run the external
-installer action, then rerun `/mb-init`; never present a placeholder as an
+installer action; after it succeeds, resume the original request. Never present a placeholder as an
 executable command.
 
 Do not run local bootstrap logic, copy a helper into the target, install a

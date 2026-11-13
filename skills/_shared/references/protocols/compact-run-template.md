@@ -1,90 +1,37 @@
 ---
-description: Template for compact .protocols/<TASK_ID>/run.md used by T0/T1 tasks.
+description: Optional compact task progress and evidence note.
 status: active
 ---
-# Compact Run
+# Run — <TASK_ID>
 
-## Metadata
-- task: TASK-NNN-TN-FT-NNN-WN
-- tier: T0 | T1
-- finished:
-- local evidence verdict: <PASS|FAIL|BLOCKED>
-- closure owner: scheduler | explicit standalone owner | human | none
-- manual /exe decision: <status unchanged|status: done|status: done_for_prod>
-- scheduler decision: <none|status: done|status: done_for_prod|status: failed|status: blocked>
+Use only sections that help continuation. The indexed task card owns lifecycle;
+this note adds detail without duplicating its full context.
 
-## Execution Attempt
+## Goal and current state
+- Agreed outcome:
+- Current progress / next action:
+
+## Changes and decisions
+- Actual change surface:
+- Material decisions or operator answers:
+- Explicit scope limits, when relevant:
+
+## Checks and evidence
+- Check / command:
+- Observed result and evidence:
+- Unchecked or intentionally omitted scope:
+
+## Closure or handoff
+- Outcome achieved / remaining work:
+- Task card `verify` updated:
+- Recorded lifecycle decision, if the owner acted:
+- Next useful action or unresolved question:
+
+An optional functional marker uses `VERDICT: PASS|FAIL|BLOCKED` for local
+execution evidence, or the owning verifier's verdict vocabulary. Replace it
+with one actual result; a marker neither proves an observation nor closes a task.
+
+## Execution Attempt (when retries or recovery need it)
 - attempt:
 - started:
-
-## Goal
-- ...
-
-## Scope
-- changed files:
-  - ...
-- non-goals:
-  - ...
-
-## Context Used
-- ...
-
-## Changes
-- ...
-
-## Checks
-- command:
-- result:
-- evidence:
-
-## Reuse Candidates (optional)
-- receipt_status: current | superseded | supporting-only
-- attempt:
-- claim:
-- command: <exact filters/arguments; secrets redacted>
-- cwd:
-- exit_code:
-- input_state_basis: <declared pre-command source/config/dependency/runtime basis>
-- completed_at:
-- evidence: <concise redacted output or artifact path/checksum; no standalone workflow verdict markers>
-
-## Evidence Verdict
-This marker records local evidence only. It is not task closure and does not set
-final task status.
-
-Replace the placeholder with one exact marker:
-VERDICT: PASS
-VERDICT: FAIL
-VERDICT: BLOCKED
-
-## Closure Decision
-Record task closure separately from the evidence verdict.
-
-### Manual `/exe`
-
-- explicit standalone owner present: yes | no
-- owner basis: user direct instruction | top-level manual workflow ownership | none
-- decision: status unchanged | `status: done` | `status: done_for_prod`
-- compact PASS and every fast-lane condition satisfied: yes | no
-- task record evidence updated in `verify`: yes | no
-
-Manual `/exe` may set `status` to `done|done_for_prod` only after exact compact
-PASS and every tier-policy fast-lane condition. `VERDICT: FAIL|BLOCKED` is evidence,
-not manual lifecycle authority; leave status unchanged and hand off.
-
-### Scheduler
-
-- decision: none | `status: done` | `status: done_for_prod` | `status: failed` | `status: blocked`
-- reason/evidence link:
-
-Only the scheduler records this branch under tier policy. If no authorized
-closure owner acted, leave task status unchanged and hand off the recommendation.
-
-## MB-SYNC Handoff
-- owner: scheduler | explicit standalone owner | human | none
-- reason:
-- files/docs likely needing sync:
-  - ...
-
-## Notes / Follow-ups
-- ...
+- prior evidence retained / correction:

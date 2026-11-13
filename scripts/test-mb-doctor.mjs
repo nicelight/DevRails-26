@@ -139,7 +139,7 @@ ${criteria.map(({ id, req = 'REQ-001' }) => `### ${id} — Fixture outcome
 ${semanticPass ? 'SEMANTIC_VERDICT: semantic-pass\n' : ''}`;
 }
 
-function createFixture(name, { foundation, tasks = [], directories = [], files = [] }) {
+function createFixture(name, { foundation, tasks = [], directories = [], files = [], autoProtocols = true }) {
   const root = join(tempRoot, name);
   mkdirSync(root, { recursive: true });
 
@@ -171,14 +171,14 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
     writeJsonFixture(root, `.memory-bank/tasks/${record.id}.task.json`, record);
     if (/^FT-[0-9]{3,}$/.test(record.feature)) featureIds.add(record.feature);
 
-    if (DONE_STATUSES.has(record.status) && (record.tier === 'T0' || record.tier === 'T1')) {
+    if (autoProtocols && DONE_STATUSES.has(record.status) && (record.tier === 'T0' || record.tier === 'T1')) {
       writeFixture(
         root,
         `.protocols/${record.id}/run.md`,
         '# Compact run\n\n- Evidence: fixture result\n\nVERDICT: PASS\n',
       );
     }
-    if (DONE_STATUSES.has(record.status) && (record.tier === 'T2' || record.tier === 'T3')) {
+    if (autoProtocols && DONE_STATUSES.has(record.status) && (record.tier === 'T2' || record.tier === 'T3')) {
       const acId = record.source_artifacts
         .join('\n')
         .match(/FT-[0-9]{3,}-AC-[0-9]{3,}/)?.[0];
@@ -193,7 +193,7 @@ function createFixture(name, { foundation, tasks = [], directories = [], files =
 `);
       writeFixture(root, `.protocols/${record.id}/verification.md`, `# Verification
 
-- ${acId ?? 'legacy'}: verifier-owned fixture evidence
+- ${acId ?? 'legacy'}: expected fixture behavior observed
 
 VERDICT: PASS
 `);
@@ -394,7 +394,7 @@ Usage:
   node .memory-bank/scripts/mb-doctor.mjs [--strict] [--json]
 
 Flags:
-  --strict  Require an executable autonomous/autopilot task queue.
+  --strict  Include deeper diagnostics; not a workflow admission gate.
   --json    Emit stable machine-readable JSON findings.
 
 `,
@@ -450,14 +450,16 @@ Flags:
   );
 
   const emptyStrict = runCase('empty-strict', {}, ['--strict']);
-  expectFinding(emptyStrict, 'TASK_INDEX_EMPTY', 'error');
+  expectFinding(emptyStrict, 'TASK_INDEX_EMPTY', 'info');
+  expectPass(emptyStrict, 'emptyStrict is not an admission gate');
 
   const noFoundationFixture = { tasks: [task(PRODUCT_FIRST)] };
   const noFoundationDefault = runCase('no-foundation-default', noFoundationFixture);
   expectPass(noFoundationDefault, 'missing foundation default');
   expectFinding(noFoundationDefault, 'FOUNDATION_ANCHORS_INVALID', 'warning');
   const noFoundationStrict = runCase('no-foundation-strict', noFoundationFixture, ['--strict']);
-  expectFinding(noFoundationStrict, 'FOUNDATION_ANCHORS_INVALID', 'error');
+  expectFinding(noFoundationStrict, 'FOUNDATION_ANCHORS_INVALID', 'warning');
+  expectPass(noFoundationStrict, 'noFoundationStrict is not an admission gate');
 
   const invalidAnchors = runCase('invalid-anchors', {
     foundation: foundationMarkdown(true, 'not_required'),
@@ -469,7 +471,8 @@ Flags:
     foundation: foundationMarkdown(true, 'pending_foundation_to_tasks'),
     tasks: [task(FOUNDATION_GATE)],
   }, ['--strict']);
-  expectFinding(pendingGate, 'FOUNDATION_GATE_TASK_INVALID', 'error');
+  expectFinding(pendingGate, 'FOUNDATION_GATE_TASK_INVALID', 'warning');
+  expectPass(pendingGate, 'pendingGate is not an admission gate');
 
   const openFoundationOnly = runCase('open-foundation-only', {
     foundation: foundationMarkdown(true, FOUNDATION_GATE),
@@ -496,7 +499,8 @@ Flags:
       task(PRODUCT_FIRST, { status: 'planned', dependsOn: [FOUNDATION_GATE] }),
     ],
   }, ['--strict']);
-  expectFinding(openGateWithProduct, 'FOUNDATION_GATE_TASK_INVALID', 'error');
+  expectNoFinding(openGateWithProduct, 'FOUNDATION_GATE_TASK_INVALID');
+  expectPass(openGateWithProduct, 'workflow ceremony is optional');
 
   const missingGateDependency = runCase('missing-gate-dependency', {
     foundation: foundationMarkdown(true, FOUNDATION_GATE),
@@ -505,7 +509,8 @@ Flags:
       task(PRODUCT_FIRST),
     ],
   }, ['--strict']);
-  expectFinding(missingGateDependency, 'FOUNDATION_GATE_DEP_MISSING', 'error');
+  expectNoFinding(missingGateDependency, 'FOUNDATION_GATE_DEP_MISSING');
+  expectPass(missingGateDependency, 'workflow ceremony is optional');
 
   const validTransitiveGate = runCase('valid-transitive-gate', {
     foundation: foundationMarkdown(true, FOUNDATION_GATE),
@@ -537,7 +542,8 @@ Flags:
       task(PRODUCT_FIRST, { dependsOn: [FOUNDATION_GATE] }),
     ],
   }, ['--strict']);
-  expectFinding(unresolvedFoundationWork, 'FOUNDATION_GATE_TASK_INVALID', 'error');
+  expectNoFinding(unresolvedFoundationWork, 'FOUNDATION_GATE_TASK_INVALID');
+  expectPass(unresolvedFoundationWork, 'workflow ceremony is optional');
 
   const failedNamedGate = runCase('failed-named-gate', {
     foundation: foundationMarkdown(true, FOUNDATION_GATE),
@@ -550,7 +556,8 @@ Flags:
     tasks: [task(PRODUCT_FIRST, { status: 'in_progress' })],
     directories: [`.protocols/${PRODUCT_FIRST}`],
   }, ['--strict']);
-  expectFinding(compactDirectoryOnly, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL', 'error');
+  expectNoFinding(compactDirectoryOnly, 'TASK_IN_PROGRESS_WITHOUT_PROTOCOL');
+  expectPass(compactDirectoryOnly, 'workflow ceremony is optional');
 
   const compactRunPresent = runCase('compact-in-progress-run-present', {
     foundation: foundationMarkdown(false, 'not_required'),
@@ -720,7 +727,8 @@ Flags:
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, { evidenceRequired: [] })],
   }, ['--strict']);
-  expectFinding(missingAcceptanceProof, 'TASK_ACCEPTANCE_PROOF_MISSING', 'error');
+  expectFinding(missingAcceptanceProof, 'TASK_ACCEPTANCE_PROOF_MISSING', 'warning');
+  expectPass(missingAcceptanceProof, 'prospective proof detail is advisory');
   const missingAcceptanceProofDefault = runCase('missing-acceptance-proof-default', {
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, { evidenceRequired: [] })],
@@ -766,6 +774,7 @@ Flags:
   expectNoFinding(validGroupedAcceptanceProof, 'TASK_ACCEPTANCE_PROOF_MISSING');
 
   const missingAcceptanceEvidence = runCase('missing-acceptance-evidence', {
+    autoProtocols: false,
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, { status: 'done' })],
     files: [{
@@ -779,7 +788,7 @@ Flags:
 `,
     }],
   }, ['--strict']);
-  expectFinding(missingAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', 'error');
+  expectFinding(missingAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', 'warning');
 
   const historicalSingularAcceptanceEvidence = runCase('historical-singular-acceptance-evidence', {
     foundation: foundationMarkdown(false, 'not_required'),
@@ -799,7 +808,7 @@ Flags:
         rel: `.protocols/${PRODUCT_T2}/verification.md`,
         content: `# Verification
 
-- FT-001-AC-001: verifier-owned fixture evidence
+- FT-001-AC-001: expected fixture behavior observed
 
 VERDICT: PASS
 `,
@@ -810,6 +819,7 @@ VERDICT: PASS
   expectNoFinding(historicalSingularAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
 
   const misboundAcceptanceEvidence = runCase('misbound-acceptance-evidence', {
+    autoProtocols: false,
     foundation: foundationMarkdown(false, 'not_required'),
     tasks: [task(PRODUCT_T2, {
       status: 'done',
@@ -819,14 +829,12 @@ VERDICT: PASS
         '.memory-bank/contracts/fixture.md',
       ],
       verificationTargets: [
-        'FT-001-AC-001: node --test test/fixture.test.mjs',
-        'FT-001-AC-002: node --test test/fixture.test.mjs',
+        'FT-001-AC-001: exercise outcome A',
+        'FT-001-AC-002: exercise outcome B',
       ],
       evidenceRequired: [
-        'FT-001-AC-001 RED: accepted fixture behavior A is absent',
-        'FT-001-AC-001 GREEN: accepted fixture behavior A is observed',
-        'FT-001-AC-002 RED: accepted fixture behavior B is absent',
-        'FT-001-AC-002 GREEN: accepted fixture behavior B is observed',
+        'FT-001-AC-001: retain the observed result for outcome A',
+        'FT-001-AC-002: retain the observed result for outcome B',
       ],
     })],
     files: [
@@ -835,44 +843,21 @@ VERDICT: PASS
         content: featureMarkdown([
           { id: 'FT-001-AC-001' },
           { id: 'FT-001-AC-002' },
-        ], { semanticPass: true }),
+        ]),
       },
       {
-        rel: `.protocols/${PRODUCT_T2}/progress.md`,
-        content: `# Progress
-
-## Claim-linked RED / GREEN (T2/T3)
-- accepted claim locator(s): FT-001-AC-002
-- RED observation and evidence: fixture RED artifact for FT-001-AC-002
-- GREEN observation and evidence: fixture GREEN artifact for FT-001-AC-002
-
-## Open issues / risks
-- FT-001-AC-001 has no retained execution evidence.
-`,
-      },
-      {
-        rel: `.protocols/${PRODUCT_T2}/verification.md`,
-        content: `# Verification
-
-- FT-001-AC-001: verifier-owned fixture evidence
-- FT-001-AC-002: verifier-owned fixture evidence
-
-VERDICT: PASS
-`,
+        rel: `.protocols/${PRODUCT_T2}/run.md`,
+        content: 'FT-001-AC-001: pending\nResult: FT-001-AC-002 observed\n',
       },
     ],
   }, ['--strict']);
-  const misboundFinding = findFinding(
-    misboundAcceptanceEvidence,
-    'TASK_ACCEPTANCE_EVIDENCE_MISSING',
-    'error',
-  );
+  const misboundFinding = findFinding(misboundAcceptanceEvidence, 'TASK_ACCEPTANCE_EVIDENCE_MISSING', 'warning');
   assert(
-    misboundFinding?.details?.acceptance?.includes('FT-001-AC-001')
-      && !misboundFinding.details.acceptance.includes('FT-001-AC-002'),
-    'Evidence for one AC was incorrectly accepted as terminal evidence for another AC.',
+    JSON.stringify(misboundFinding?.details?.acceptance) === JSON.stringify(['FT-001-AC-001']),
+    'Evidence for outcome B must not cover the pending outcome A in the same document.',
     misboundAcceptanceEvidence,
   );
+  expectPass(misboundAcceptanceEvidence, 'claim-level evidence completeness remains advisory');
 
   const historicalDoneWithoutProof = runCase('historical-done-without-proof', {
     foundation: foundationMarkdown(false, 'not_required'),
@@ -885,115 +870,70 @@ VERDICT: PASS
   expectPass(historicalDoneWithoutProof, 'historical done task without prospective proof');
   expectNoFinding(historicalDoneWithoutProof, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
 
-  const currentT3ClosureGap = runCase('current-t3-closure-gap', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, { status: 'done' })],
+  const cardOnlyT3 = runCase('card-only-t3', {
+    autoProtocols: false,
+    tasks: [task(PRODUCT_T3, { status: 'done', verify: [
+      'FT-001-AC-001: result observed by the fixture check; separate review was not run.',
+    ] })],
   }, ['--strict']);
-  expectFinding(currentT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING', 'error');
-  expectNoFinding(currentT3ClosureGap, 'TASK_LEGACY_TERMINAL_COMPATIBILITY');
+  expectPass(cardOnlyT3, 'T3 closes with actual card evidence and no protocol ceremony');
+  expectNoFinding(cardOnlyT3, 'TASK_FULL_PROTOCOL_MISSING');
+  expectNoFinding(cardOnlyT3, 'TASK_RED_VERIFY_EVIDENCE_MISSING');
+  expectNoFinding(cardOnlyT3, 'TASK_ACCEPTANCE_EVIDENCE_MISSING');
 
-  const currentT3Closure = runCase('current-t3-closure', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, { status: 'done' })],
-    files: [{
-      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
-      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-pass\n',
-    }],
+  const compactT3 = runCase('compact-t3', {
+    autoProtocols: false,
+    tasks: [task(PRODUCT_T3, { status: 'done', verify: [] })],
+    files: [{ rel: `.protocols/${PRODUCT_T3}/run.md`,
+      content: '# Run\n\nResult: FT-001-AC-001 fixture behavior observed.\n' }],
   }, ['--strict']);
-  expectPass(currentT3Closure, 'current T3 closure');
+  expectPass(compactT3, 'compact evidence is valid for T3');
 
-  const legacyT3ClosureGap = runCase('legacy-t3-closure-gap', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, {
-      status: 'done',
-      runtimeContext: { allowed_write_scope: ['src/fixture.mjs'] },
+  const noTerminalEvidence = runCase('no-terminal-evidence', {
+    autoProtocols: false,
+    tasks: [task(PRODUCT_T3, { status: 'done', verify: ['PASS'] })],
+  }, ['--strict']);
+  expectFinding(noTerminalEvidence, 'TASK_DONE_EVIDENCE_MISSING', 'error');
+
+  const missingOutcome = task(PRODUCT_T2);
+  delete missingOutcome.success_outcome;
+  const incompleteContext = runCase('incomplete-context-advisory', {
+    tasks: [missingOutcome],
+  }, ['--strict']);
+  expectFinding(incompleteContext, 'TASK_HANDOFF_INCOMPLETE', 'warning');
+  expectPass(incompleteContext, 'context completeness asks for judgement');
+
+  const guideOnly = runCase('guide-only-source', {
+    tasks: [task(PRODUCT_T2, { sourceArtifacts: [
+      '.memory-bank/features/FT-001-fixture.md#FT-001-AC-001',
+      '.memory-bank/guides/component.md',
+    ] })],
+    files: [{ rel: '.memory-bank/guides/component.md', content: '# Component behavior\n' }],
+  }, ['--strict']);
+  expectPass(guideOnly, 'normative guide source is not rejected by directory');
+  expectNoFinding(guideOnly, 'TASK_SDD_SPEC_GUIDE_ONLY');
+
+  const nonTddProof = runCase('non-tdd-proof', {
+    tasks: [task(PRODUCT_T2, {
+      verificationTargets: ['FT-001-AC-001: exercise the completed behavior'],
+      evidenceRequired: ['FT-001-AC-001: retain the observed result and test output'],
     })],
   }, ['--strict']);
-  expectPass(legacyT3ClosureGap, 'legacy T3 terminal closure gaps');
-  expectNoFinding(legacyT3ClosureGap, 'TASK_RED_VERIFY_EVIDENCE_MISSING');
-  const legacySummary = findFinding(
-    legacyT3ClosureGap,
-    'TASK_LEGACY_TERMINAL_COMPATIBILITY',
-    'info',
-  );
-  assert(
-    legacySummary?.details?.records_with_preserved_gaps === 1
-      && legacySummary.details.gap_types?.TASK_RED_VERIFY_EVIDENCE_MISSING === 1,
-    'Legacy terminal compatibility summary does not retain exact gap counts.',
-    legacyT3ClosureGap,
-  );
+  expectPass(nonTddProof, 'prospective proof need not prescribe RED/GREEN');
+  expectNoFinding(nonTddProof, 'TASK_ACCEPTANCE_PROOF_MISSING');
 
-  const activeLegacyAlias = runCase('active-legacy-alias', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, {
-      status: 'in_progress',
-      runtimeContext: { allowed_write_scope: ['src/fixture.mjs'] },
-    })],
+  const unmetDependency = runCase('unmet-ready-dependency', {
+    tasks: [task(PRODUCT_FIRST, { status: 'planned' }),
+      task(PRODUCT_SECOND, { status: 'ready', dependsOn: [PRODUCT_FIRST] })],
   }, ['--strict']);
-  expectFinding(activeLegacyAlias, 'TASK_FULL_PROTOCOL_MISSING', 'error');
-  expectNoFinding(activeLegacyAlias, 'TASK_LEGACY_TERMINAL_COMPATIBILITY');
+  expectFinding(unmetDependency, 'TASK_READY_DEP_NOT_DONE', 'error');
 
-  const ownerAcceptedClosure = {
-    stage: 'owner_lifecycle_closure',
-    mode: 'manual_explicit_owner',
-    decision: 'done',
-    gate_summary: {
-      red_verification: 'OWNER-ACCEPTED semantic-fail as residual risk; no semantic-pass claim',
-    },
-    accepted_evidence: ['.protocols/TASK-301-T3-FT-001-W1/administrative-closure.md'],
-    accepted_residual_risk: ['Fixture risk accepted by the explicit owner.'],
-  };
-  const ownerAcceptedSemanticFail = runCase('owner-accepted-semantic-fail', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, {
-      status: 'done',
-      verify: ['VERDICT: PASS\nEvidence: fixture success', ownerAcceptedClosure],
-    })],
-    files: [
-      {
-        rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
-        content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
-      },
-      {
-        rel: `.protocols/${PRODUCT_T3}/administrative-closure.md`,
-        content: '# Administrative closure\n\nExplicit owner risk acceptance.\n',
-      },
-    ],
-  }, ['--strict']);
-  expectPass(ownerAcceptedSemanticFail, 'owner-accepted semantic findings');
-  expectNoFinding(ownerAcceptedSemanticFail, 'TASK_RED_VERIFY_VERDICT_MISSING');
+  const invalidTask = task(PRODUCT_FIRST);
+  invalidTask.status = 'invented';
+  const corruptState = runCase('corrupt-task-status', { tasks: [invalidTask] }, ['--strict']);
+  expectFinding(corruptState, 'TASK_RECORD_INVALID', 'error');
 
-  const ownerAcceptedClosureWithoutExtraGate = runCase('owner-accepted-closure-without-extra-gate', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, {
-      status: 'done',
-      verify: ['VERDICT: PASS\nEvidence: fixture success', ownerAcceptedClosure],
-    })],
-    files: [{
-      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
-      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
-    }],
-  }, ['--strict']);
-  expectPass(ownerAcceptedClosureWithoutExtraGate, 'owner-accepted closure without extra gate');
-  expectNoFinding(ownerAcceptedClosureWithoutExtraGate, 'TASK_RED_VERIFY_VERDICT_MISSING');
-
-  const incompleteOwnerAcceptance = runCase('incomplete-owner-acceptance', {
-    foundation: foundationMarkdown(false, 'not_required'),
-    tasks: [task(PRODUCT_T3, {
-      status: 'done',
-      verify: [
-        'VERDICT: PASS\nEvidence: fixture success',
-        { ...ownerAcceptedClosure, accepted_residual_risk: [] },
-      ],
-    })],
-    files: [{
-      rel: `.protocols/${PRODUCT_T3}/red-verification.md`,
-      content: '# Red verification\n\nSEMANTIC_VERDICT: semantic-fail\n',
-    }],
-  }, ['--strict']);
-  expectFinding(incompleteOwnerAcceptance, 'TASK_RED_VERIFY_VERDICT_MISSING', 'error');
-
-  console.log('mb-doctor readiness, brownfield, and acceptance-trace regression passed');
+  console.log('mb-doctor diagnostics, evidence, and acceptance-trace regression passed');
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });
 }
