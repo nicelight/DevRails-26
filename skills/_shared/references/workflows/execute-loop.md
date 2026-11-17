@@ -27,6 +27,13 @@ specs, task cards, implementation, and evidence together. Respect an explicitly
 bounded or read-only assignment. Consult before expanding the authorized goal
 or changing an explicit operator constraint.
 
+End each operator-facing step report with one recommended next action and, when
+applicable, an available command with concrete known arguments. For blocked
+work, name the action needed to unblock it. If the agreed work is complete,
+state completion without inventing further work. This guidance adds no gate or
+approval requirement; continue already authorized work without waiting for
+confirmation.
+
 Framework reviews, fresh contexts, TDD, doctor runs, and protocol templates are
 recommendations. Use them when they help the work; in manual mode discuss
 substantive choices about depth or omission, unless already authorized. The
@@ -77,6 +84,11 @@ natural language and the project's comment conventions; a `Module contract`
 label is sufficient. Omit empty fields, symbol/import inventories, change logs,
 and implementation recipes. Section comments are useful only for non-obvious
 semantic boundaries; simple functions need no repetitive contracts.
+
+When a race fix establishes or changes a module-wide guarantee, state the
+ordering or synchronization invariant in the module header. Explain conflicting
+interleavings only when needed to clarify that guarantee; a generic "race-safe"
+claim is insufficient.
 
 Accepted requirements and specs govern intended behavior; the header captures
 their file-local implications and local invariants. Link existing governing
